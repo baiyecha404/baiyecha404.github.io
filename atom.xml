@@ -119,27 +119,6 @@
   </entry>
   
   <entry>
-    <title>Some thoughts about Node.js</title>
-    <link href="https://www.bycsec.top/2020/09/20/Some-thoughts-about-Node-js/"/>
-    <id>https://www.bycsec.top/2020/09/20/Some-thoughts-about-Node-js/</id>
-    <published>2020-09-20T02:13:23.000Z</published>
-    <updated>2020-09-20T02:23:00.000Z</updated>
-    
-    
-    <summary type="html">Here&#39;s something encrypted, password is required to continue reading.</summary>
-    
-    
-    
-    
-    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
-    
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
-    <category term="Node.js" scheme="https://www.bycsec.top/tags/Node-js/"/>
-    
-  </entry>
-  
-  <entry>
     <title>钓鱼城-zblog</title>
     <link href="https://www.bycsec.top/2020/08/27/%E9%92%93%E9%B1%BC%E5%9F%8E-zblog/"/>
     <id>https://www.bycsec.top/2020/08/27/%E9%92%93%E9%B1%BC%E5%9F%8E-zblog/</id>
@@ -418,6 +397,25 @@
     <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
     
     <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Make jwt great again</title>
+    <link href="https://www.bycsec.top/2020/06/24/Make-jwt-great-again/"/>
+    <id>https://www.bycsec.top/2020/06/24/Make-jwt-great-again/</id>
+    <published>2020-06-24T13:03:40.000Z</published>
+    <updated>2020-06-24T13:17:58.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;jwt，全称json-web-token.其安全问题一直以来众所周知。CTF中也经常性的会出现相关的jwt伪造的题目。但是之前在打了场NahamconCTF的比赛后，对jwt又有了全新的认识。因此在这里全面的解释下jwt的相关漏洞。Let’s make jwt great again :)&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
   </entry>
   

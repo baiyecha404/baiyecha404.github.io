@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>byc_404&#39;s blog</title>
+  
+  
+  <link href="https://www.bycsec.top/atom.xml" rel="self"/>
+  
+  <link href="https://www.bycsec.top/"/>
+  <updated>2020-10-26T14:41:18.000Z</updated>
+  <id>https://www.bycsec.top/</id>
+  
+  <author>
+    <name>byc_404</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>ByteCTF2020-easyscrapy</title>
+    <link href="https://www.bycsec.top/2020/10/26/ByteCTF2020-easyscrapy/"/>
+    <id>https://www.bycsec.top/2020/10/26/ByteCTF2020-easyscrapy/</id>
+    <published>2020-10-26T00:39:02.000Z</published>
+    <updated>2020-10-26T14:41:18.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt; 这次ByteCTF的web题难度属实离谱。好几道题几乎都无法下手。自己第一天主要是看了easyscrapy以及配了beaker的环境(结果根本操作不起来，于是放弃了……)第二天上午在配scrapy的环境，一直到下午才出思路,基本上给我几小时就能出了。然而因为要赶飞机结果没时间做了……晚上到了后总归是把题目做出来了。只能说有点可惜，不然可以为小绿草拿个三/四血的。&lt;/p&gt;
+&lt;p&gt;这里我分享下自己一路下来的主要思路吧。希望能对他人有所帮助。另外写文章时环境已经关了，没啥图，将就着看吧&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
+    
+    <category term="redis" scheme="https://www.bycsec.top/tags/redis/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>N1CTF2020</title>
+    <link href="https://www.bycsec.top/2020/10/19/N1CTF2020/"/>
+    <id>https://www.bycsec.top/2020/10/19/N1CTF2020/</id>
+    <published>2020-10-19T13:11:14.000Z</published>
+    <updated>2020-10-23T11:43:54.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;  N1CTF的题目质量毋庸置疑,可惜自己能力不足。除了签到还看了easytp5,filters,还有渗透系列的Victim.基本都没思路或者思路跑偏了……抓紧复现下来学习学习。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>学习笔记-Java深入</title>
+    <link href="https://www.bycsec.top/2020/10/09/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E6%B7%B1%E5%85%A5/"/>
+    <id>https://www.bycsec.top/2020/10/09/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E6%B7%B1%E5%85%A5/</id>
+    <published>2020-10-09T13:21:48.000Z</published>
+    <updated>2020-10-15T13:35:40.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;java继续开坑学习。看到哪个学哪个，shiro懒得看了。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="Java" scheme="https://www.bycsec.top/tags/Java/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>bootcamp-2020&amp;&amp;mctf-2020</title>
+    <link href="https://www.bycsec.top/2020/10/05/bootcamp-2020&amp;mctf-2020/"/>
+    <id>https://www.bycsec.top/2020/10/05/bootcamp-2020&amp;mctf-2020/</id>
+    <published>2020-10-05T09:07:55.000Z</published>
+    <updated>2020-10-05T12:34:08.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;  国庆放假一直在刷题,大概是因为国赛自己打的太烂了吧…..感觉有不少东西还是可以精进的。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>DarkCTF-WEB</title>
+    <link href="https://www.bycsec.top/2020/09/25/DarkCTF-WEB/"/>
+    <id>https://www.bycsec.top/2020/09/25/DarkCTF-WEB/</id>
+    <published>2020-09-25T11:27:48.000Z</published>
+    <updated>2020-09-30T07:01:54.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;好久没发新文章了。正好国庆就要到了，加上还有巅峰极客跟国赛要打。所以周五晚上练手了DarkCTF的题目，稍微花了几小时ak掉当时放出的web。其中大部分都比较简单，其中一道拿了二血的nodejs题目有点意思打算稍微记录下。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Some thoughts about Node.js</title>
+    <link href="https://www.bycsec.top/2020/09/20/Some-thoughts-about-Node-js/"/>
+    <id>https://www.bycsec.top/2020/09/20/Some-thoughts-about-Node-js/</id>
+    <published>2020-09-20T02:13:23.000Z</published>
+    <updated>2020-09-20T02:23:00.000Z</updated>
+    
+    
+    <summary type="html">Here&#39;s something encrypted, password is required to continue reading.</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="Node.js" scheme="https://www.bycsec.top/tags/Node-js/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>钓鱼城-zblog</title>
+    <link href="https://www.bycsec.top/2020/08/27/%E9%92%93%E9%B1%BC%E5%9F%8E-zblog/"/>
+    <id>https://www.bycsec.top/2020/08/27/%E9%92%93%E9%B1%BC%E5%9F%8E-zblog/</id>
+    <published>2020-08-27T12:44:43.000Z</published>
+    <updated>2020-08-27T14:26:40.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;最近忙着复习去了。等到中午概统的复习课结束了才有时间完整看下题。除开一道web-pwn,剩下两个php都是常规考点,就是脑洞跟环境真心恶心人。学弟们也轻松解决，应该不需要什么记录。我自己做了下zblog这道java题,简单记录下。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="Java" scheme="https://www.bycsec.top/tags/Java/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Laravel-popchain</title>
+    <link href="https://www.bycsec.top/2020/08/17/Laravel-popchain/"/>
+    <id>https://www.bycsec.top/2020/08/17/Laravel-popchain/</id>
+    <published>2020-08-17T07:06:24.000Z</published>
+    <updated>2020-08-17T10:27:40.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;考虑了下还是打算把laravel的链子跟一遍。看了下基本上就5.7,5.8两个版本的rce反序列化popchain。所以工作量应该不大。正好最近完成tp系列的popchain学习审计代码的感觉还在,那就趁热打铁吧 。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="PHP" scheme="https://www.bycsec.top/tags/PHP/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>hackthebox-Unbalanced</title>
+    <link href="https://www.bycsec.top/2020/08/15/hackthebox-Unbalanced/"/>
+    <id>https://www.bycsec.top/2020/08/15/hackthebox-Unbalanced/</id>
+    <published>2020-08-15T08:17:48.000Z</published>
+    <updated>2020-08-16T02:55:36.000Z</updated>
+    
+    
+    <summary type="html">Here&#39;s something encrypted, password is required to continue reading.</summary>
+    
+    
+    
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
+    
+    <category term="Linux" scheme="https://www.bycsec.top/tags/Linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>hackthebox-Fatty-JavaExploits</title>
+    <link href="https://www.bycsec.top/2020/08/10/hackthebox-Fatty-JavaExploits/"/>
+    <id>https://www.bycsec.top/2020/08/10/hackthebox-Fatty-JavaExploits/</id>
+    <published>2020-08-10T02:13:15.000Z</published>
+    <updated>2020-08-10T05:29:40.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt; Faaty 是htb这周刚退役的靶机。本来一周前自己打算下手试试的,不过做了一会发现因为即将退役就干脆搁置等ippsec出视频自己再做233. 不过整体来说这台靶机真的非常有趣。并且涉及到大量的java知识。在这一次实际操作中自己才真正体会到前段时间巩固java开发的基础知识有多么重要。因此这里记录下具体操作的流程,将学到的新知识巩固一下。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
+    
+    <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
+    
+    <category term="Java" scheme="https://www.bycsec.top/tags/Java/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Thinkphp-vuln</title>
+    <link href="https://www.bycsec.top/2020/08/05/Thinkphp-vuln/"/>
+    <id>https://www.bycsec.top/2020/08/05/Thinkphp-vuln/</id>
+    <published>2020-08-05T08:20:07.000Z</published>
+    <updated>2020-08-16T08:32:54.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;  这段时间因为一些原因老是有点自我纠结,很大程度上是因为对所计划学习的内容无法定夺的原因。上周因为hw所以错过了wmctf,赛后去看题发现基本都是php之类的,都不是很想看。相对感兴趣的框架的链子自己也没找全。感觉菜的不行,相比几个月前审一些比赛中的框架手生了很多。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="PHP" scheme="https://www.bycsec.top/tags/PHP/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CyBRICS-CTF 2020</title>
+    <link href="https://www.bycsec.top/2020/07/26/CyBRICS-CTF-2020/"/>
+    <id>https://www.bycsec.top/2020/07/26/CyBRICS-CTF-2020/</id>
+    <published>2020-07-26T12:56:52.000Z</published>
+    <updated>2020-07-27T06:43:36.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;Cybrics比赛感觉都没队友在打……简单记录下做的几道题&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>hackthebox-Dyplesher</title>
+    <link href="https://www.bycsec.top/2020/07/24/hackthebox-Dyplesher/"/>
+    <id>https://www.bycsec.top/2020/07/24/hackthebox-Dyplesher/</id>
+    <published>2020-07-24T00:23:57.000Z</published>
+    <updated>2020-10-29T11:37:40.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;  Dyplesher靶机是自己第一次完成的现役insane难度htb靶机。靶机涉及的服务相对比较多,包括web,gogs,minecraft,memcache等等。不过说实话做完后感觉难度跟Travel差不多,到不了insane难度。可能主要是里面的Java知识对于大部分人来说偏繁琐了。总体上感觉还是不错的。这里还是简单记录下过程以及提权部分学到的知识吧。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
+    
+    <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
+    
+    <category term="Java" scheme="https://www.bycsec.top/tags/Java/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>hackthebox-Intense</title>
+    <link href="https://www.bycsec.top/2020/07/22/hackthebox-Intense/"/>
+    <id>https://www.bycsec.top/2020/07/22/hackthebox-Intense/</id>
+    <published>2020-07-22T10:40:50.000Z</published>
+    <updated>2020-08-15T03:47:34.000Z</updated>
+    
+    
+    <summary type="html">Here&#39;s something encrypted, password is required to continue reading.</summary>
+    
+    
+    
+    
+    <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
+    
+    <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>RingZer0-CTF JavascriptChallenge</title>
+    <link href="https://www.bycsec.top/2020/07/22/%C2%96RingZer0-CTF-JavascriptChallenge/"/>
+    <id>https://www.bycsec.top/2020/07/22/%C2%96RingZer0-CTF-JavascriptChallenge/</id>
+    <published>2020-07-22T03:27:17.000Z</published>
+    <updated>2020-07-24T13:13:40.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;在网上无意间看见一个CTF 解题平台，感觉里面的分类还挺有意思的。于是挑了一个javascript challenge来做一下。最近做题时经常感慨js的很多弱类型特性远比php丰富的多了，所以借此机会简单接触下js的魔鬼代码&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="javascript" scheme="https://www.bycsec.top/tags/javascript/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>hackthebox-SneakyMailer</title>
+    <link href="https://www.bycsec.top/2020/07/16/hackthebox-SneakyMailer/"/>
+    <id>https://www.bycsec.top/2020/07/16/hackthebox-SneakyMailer/</id>
+    <published>2020-07-16T10:57:21.000Z</published>
+    <updated>2020-07-19T07:45:50.000Z</updated>
+    
+    
+    <summary type="html">Here&#39;s something encrypted, password is required to continue reading.</summary>
+    
+    
+    
+    
+    <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
+    
+    <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>学习笔记-Java相关</title>
+    <link href="https://www.bycsec.top/2020/07/09/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E7%9B%B8%E5%85%B3/"/>
+    <id>https://www.bycsec.top/2020/07/09/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E7%9B%B8%E5%85%B3/</id>
+    <published>2020-07-09T03:04:44.000Z</published>
+    <updated>2020-09-22T08:22:26.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;从几个月前就说要学javaweb。结果一直在拖。现在开篇文章强迫自己写写笔记。&lt;/p&gt;
+&lt;p&gt;大体上打算从常见漏洞和框架使用两个方面学习。因为有语言基础就不谈比较基础的部分了。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="Java" scheme="https://www.bycsec.top/tags/Java/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>hackthebox-Travel</title>
+    <link href="https://www.bycsec.top/2020/07/07/hackthebox-Travel/"/>
+    <id>https://www.bycsec.top/2020/07/07/hackthebox-Travel/</id>
+    <published>2020-07-07T12:10:55.000Z</published>
+    <updated>2020-11-05T09:04:29.179Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;Travel这台靶机真的是做hackthebox以来遇到的最佳靶机了。相比之前因为pwn的知识而根本没法下手的一些hard靶机。Travel属于纯渗透WEB知识,而且非常接近实战。难度甚至完全可以担当insane了。其起手式相比其他靶机相当困难。但我也因此学到了ssrf利用的新姿势,并且在之后的提权部分也基本上是面对完全未知的系统操作。所以最后完成的瞬间真的非常高兴。毕竟这是自己第一次做出不到四位数solved的靶机。整个过程中也遇到了很多困难。感谢anoNym1ty与traut的帮助。在他们给我的提示下我才能找到下手点并逐步完成渗透的过程。&lt;/p&gt;
+&lt;p&gt;Let’s get it started.&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="PHP" scheme="https://www.bycsec.top/tags/PHP/"/>
+    
+    <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
+    
+    <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
+    
+    <category term="Linux" scheme="https://www.bycsec.top/tags/Linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>SCTF2020 writeup</title>
+    <link href="https://www.bycsec.top/2020/07/05/SCTF2020-writeup/"/>
+    <id>https://www.bycsec.top/2020/07/05/SCTF2020-writeup/</id>
+    <published>2020-07-05T12:33:28.000Z</published>
+    <updated>2020-11-05T09:04:29.469Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;越打越菜 :(&lt;br&gt;这次比赛难度相比上次RCTF的难度好了点。但是最后还是只能感慨自己tcl。做出来的只有CloudDisk跟UnsafeDefenseSystem.相比下solve比较多的pythonsandbox自己反而因为总觉得pyjail太老套不去研究,连下手都做不到……赛后还是把能复现的都复现下吧。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>hackthebox-Oouch</title>
+    <link href="https://www.bycsec.top/2020/07/01/hackthebox-Oouch/"/>
+    <id>https://www.bycsec.top/2020/07/01/hackthebox-Oouch/</id>
+    <published>2020-07-01T05:43:43.000Z</published>
+    <updated>2020-08-02T12:56:04.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;Oouch靶机的难度相比最近做完的两个hard machine Quick跟Forwardslash而言有过之而无不及。甚至于感觉可能接近到Insane难度了。从web界面下手时遇到很多不稳定的问题，而之后从user提权到root更是出现玄学问题，一模一样的的payload头一天失败第二天就成了。但是总归学到了不少新知识，所以赶紧总结下。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
+    
+    <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
+    
+  </entry>
+  
+</feed>

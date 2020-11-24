@@ -6,7 +6,7 @@
   <link href="https://www.bycsec.top/atom.xml" rel="self"/>
   
   <link href="https://www.bycsec.top/"/>
-  <updated>2020-10-26T14:41:18.000Z</updated>
+  <updated>2020-11-24T15:59:38.646Z</updated>
   <id>https://www.bycsec.top/</id>
   
   <author>
@@ -15,6 +15,25 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>NCTF2020-出题小记</title>
+    <link href="https://www.bycsec.top/2020/11/11/NCTF2020-%E5%87%BA%E9%A2%98%E5%B0%8F%E8%AE%B0/"/>
+    <id>https://www.bycsec.top/2020/11/11/NCTF2020-%E5%87%BA%E9%A2%98%E5%B0%8F%E8%AE%B0/</id>
+    <published>2020-11-11T13:09:25.000Z</published>
+    <updated>2020-11-24T15:59:38.646Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://soreatu-1300077947.cos.ap-nanjing.myqcloud.com/uPic/%E6%80%BB%E6%A6%9C.png&quot; alt&gt;&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
+    
+  </entry>
   
   <entry>
     <title>ByteCTF2020-easyscrapy</title>
@@ -339,11 +358,10 @@
     <link href="https://www.bycsec.top/2020/07/07/hackthebox-Travel/"/>
     <id>https://www.bycsec.top/2020/07/07/hackthebox-Travel/</id>
     <published>2020-07-07T12:10:55.000Z</published>
-    <updated>2020-11-05T09:04:29.179Z</updated>
+    <updated>2020-11-23T02:59:25.460Z</updated>
     
     
-    <summary type="html">&lt;p&gt;Travel这台靶机真的是做hackthebox以来遇到的最佳靶机了。相比之前因为pwn的知识而根本没法下手的一些hard靶机。Travel属于纯渗透WEB知识,而且非常接近实战。难度甚至完全可以担当insane了。其起手式相比其他靶机相当困难。但我也因此学到了ssrf利用的新姿势,并且在之后的提权部分也基本上是面对完全未知的系统操作。所以最后完成的瞬间真的非常高兴。毕竟这是自己第一次做出不到四位数solved的靶机。整个过程中也遇到了很多困难。感谢anoNym1ty与traut的帮助。在他们给我的提示下我才能找到下手点并逐步完成渗透的过程。&lt;/p&gt;
-&lt;p&gt;Let’s get it started.&lt;/p&gt;</summary>
+    <summary type="html">Here&#39;s something encrypted, password is required to continue reading.</summary>
     
     
     
@@ -397,25 +415,6 @@
     <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
     
     <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Make jwt great again</title>
-    <link href="https://www.bycsec.top/2020/06/24/Make-jwt-great-again/"/>
-    <id>https://www.bycsec.top/2020/06/24/Make-jwt-great-again/</id>
-    <published>2020-06-24T13:03:40.000Z</published>
-    <updated>2020-06-24T13:17:58.000Z</updated>
-    
-    
-    <summary type="html">&lt;p&gt;jwt，全称json-web-token.其安全问题一直以来众所周知。CTF中也经常性的会出现相关的jwt伪造的题目。但是之前在打了场NahamconCTF的比赛后，对jwt又有了全新的认识。因此在这里全面的解释下jwt的相关漏洞。Let’s make jwt great again :)&lt;/p&gt;</summary>
-    
-    
-    
-    
-    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
-    
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
   </entry>
   

@@ -5,8 +5,6 @@
   <!-- SEO相关 -->
   
     
-      <meta name="robots" content="noindex,follow">
-    
   
   <!-- 渲染优化 -->
   <meta name="renderer" content="webkit">
@@ -18,7 +16,9 @@
 
   <!-- 页面元数据 -->
   
-    <title>归档：2020/3 - byc_404&#39;s blog</title>
+    <title>NCTF2020-出题小记 - byc_404&#39;s blog</title>
+  
+    <meta name="keywords" content="CTF,wp">
   
   
 
@@ -75,7 +75,7 @@
   
   <div class="cover-wrapper">
     
-      <cover class='cover  half'>
+      <cover class='cover post half'>
         <div class='cover-body'>
   <div class='a'>
     
@@ -366,34 +366,11 @@
       
 
 <div class='l_main'>
-	
-		
-  <section class="post-list ">
-    
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-    
-    
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
   
+
+  
+    <article id="post" class="post white-box reveal shadow article-type-post" itemscope itemprop="blogPost">
+      
 
 
   <section class='meta'>
@@ -403,11 +380,11 @@
       <div class="meta" id="header-meta">
         
           
-  <h2 class="title">
-    <a href="/2020/03/30/VolgaCTF2020Qualifier%E5%A4%8D%E7%8E%B0/">
-      VolgaCTF2020Qualifier复现
+  <h1 class="title">
+    <a href="/2020/11/11/NCTF2020-%E5%87%BA%E9%A2%98%E5%B0%8F%E8%AE%B0/">
+      NCTF2020-出题小记
     </a>
-  </h2>
+  </h1>
 
 
         
@@ -435,15 +412,12 @@
               <div class="new-meta-item date">
   <a class='notlink'>
     <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Mar 30, 2020</p>
+    <p>发布于：Nov 11, 2020</p>
   </a>
 </div>
 
             
           
-            
-              
-
             
           
         </div>
@@ -455,637 +429,207 @@
   </section>
 
 
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>比赛没有怎么认真打，但是毕竟题还是看了的。除了幽灵猫以外的题也是很有价值的，好好学习一波。</p>
-<h2 id="NetCorp"><a href="#NetCorp" class="headerlink" title="NetCorp"></a>NetCorp</h2><p>这个周末最大的收获就是做了几道java题，对java题的相关套路有了一定了解。<br>比如此题，开始上来页面并无任何有用信息。唯一能做的从路由下手，这里不使用路径爆破工具的话，可以通过构造一些错误路径来尝试爆版本以及爆服务。这里在bp通过构造爆出了tomcat服务的相关信息。</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/03/30/VolgaCTF2020Qualifier%E5%A4%8D%E7%8E%B0/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
+      <section class="article typo">
+        <div class="article-entry" itemprop="articleBody">
           
-  <h2 class="title">
-    <a href="/2020/03/29/WUSTCTF&MRCTF%E9%83%A8%E5%88%86web%E9%A2%98%E8%A7%A3/">
-      WUSTCTF&MRCTF部分web题解
-    </a>
-  </h2>
+          <p><img src="https://soreatu-1300077947.cos.ap-nanjing.myqcloud.com/uPic/%E6%80%BB%E6%A6%9C.png" alt></p>
+<a id="more"></a>
 
 
-        
-        <div class='new-meta-box'>
+<p>nctf2020终于结束了。我手头的题目也基本无了 XD<br>因为这次nctf学长他们要来的奖励挺丰厚的(xray license我也想要啊),所以就把手头的题都放出来了。如果难度对新生有些劝退的话还请多多包涵。校赛前几天，甚至以为yypl要来就临时赶出了一道bg_laravel,结果被忽悠了。最后大部分师傅可能都去做祥云杯了，所以没能过来打，算是比较可惜了。</p>
+<p>这次我的题目除了bg_laravel以外全都有人解出.(rmb师傅还有其他师傅tql)题目环境放github上了,可以自取复现。<br><a href="https://github.com/baiyecha404/My-NCTF2020-Challs" target="_blank" rel="noopener">https://github.com/baiyecha404/My-NCTF2020-Challs</a></p>
+<h2 id="JS-world-11-solves"><a href="#JS-world-11-solves" class="headerlink" title="JS-world [11 solves]"></a>JS-world [11 solves]</h2><p>这道是专门为校赛准备的签到题目。整体思想上其实就是想展示下js在前后端的通用性。只要理解了前端源码就能推断后端逻辑。同时也想说明前端的waf等于没有waf :).加上<code>powered by ejs</code>的提示,应该不难看出用的是ejs来渲染html代码。那么直接用ejs的语句就可以RCE了.</p>
+<p>比赛的时候本来一血很快就出了的，结果后来半天没人解。我看了眼html发现有的师傅已经可以RCE了结果就是不去看根目录的flag.txt.阿这……</p>
+<h2 id="Mango-3-solves"><a href="#Mango-3-solves" class="headerlink" title="Mango [3 solves]"></a>Mango [3 solves]</h2><p>Mango 自然是为了玩一个mongo &lt;-&gt; mango的梗。这道题的起源比较有意思，来自于上半年某国际赛的赛题。当时题目考点是node-serialize的反序列化,不过我在黑盒测的时候意外发现那道题目还有nosql注入的漏洞存在。于是后来getshell后索性dump源码下来研究了下，也大致明白了为什么他的配置会产生nosql注入。加上后来发现这样的代码写法其实还挺常见的，所以干脆单独剥出来做成nosql注入了。</p>
+<p>但是我的定位只是中等难度，最后只有3 solves我也很迷。不知道是因为大家没有接触过nosql注入还是什么的。我现在见过的大部分nodejs写的项目数据库都是用的mongodb,感觉出现nosql的概率还是不小的。稍微需要更换方式fuzz的地方就是json传递数据了。这个也算是比较常见的trick吧,node由于传递json导致与对象混淆的问题简直不要太多。所以第二个提示给出了<code>app.use(express.json())</code>。手抖加一个json中间件或者因为某个需求不得不加中间件(写api时),很有可能带来奇怪的问题。所以写node传参一定要记得类型检查啊。</p>
+<h2 id="PackageManager-v1-0-v2-0-7-solves-3-solves"><a href="#PackageManager-v1-0-v2-0-7-solves-3-solves" class="headerlink" title="PackageManager v1.0/v2.0 [7 solves / 3 solves]"></a>PackageManager v1.0/v2.0 [7 solves / 3 solves]</h2><p>PackageManager 系列放了两道题。其实源码基本相差不大，2就是1的升级版。一开始的PackageManager 6月份就出好了。不过后来过了几个月后意外发现居然存在非预期。于是索性就把非预期放到第二版里并且加难了。考点其实是我觉得很值得去学习的用子进程来<code>prototype pollution to RCE</code>的一种手段.相比深挖模板污染属性的利用方法，子进程导致RCE算是大大降低了利用难度。然而国内相关文章貌似主要是先知上的一篇kibana cve分析,不过就子进程利用范围上有些差错。所以希望借此让大家重新关注下。</p>
+<p>当然，后来意外发现这个考点第5空间线下貌似也出现过,不过我题目先出好的233。</p>
+<p>v2除了达成RCE以外,为了增加一点难度，特意就把flag放到mongodb中了。这点根据hint.txt以及目录下的文件来推断应该不成问题。其实目的是模拟一个开发上线到生产环境的情景。比如像我这样,容易装了某个依赖写个demo，然后字段留到package.json里了,本地删了相关js代码后拿到生产环境下直接<code>npm install</code> ,就多装了没有用的依赖。所以这里就能用mongodb依赖连接内网mongodb拿flag.</p>
+<p>然后比赛就翻车了……nunjucks把我给害了。之所以选nunjucks做模板引擎本来是因为我所知道的引擎除了nunjucks外，像hbs,ejs,pug,jade都是可以污染模板RCE的。所以没有跟源码就直接想看看有没有人非预期污染nunjucks属性的（p1g3师傅应该是找了nunjucks的污染，但是只能等我靶机每分钟重启才能看一次执行结果,没有预期解方便）。结果发现nunjucks直接模板注入根本不受这些影响…… 我v2本来目的就是说明其实不止fork,任意子进程都可以结合污染环境变量然后RCE,所以就用了<code>execSync(&#39;whoami&#39;)</code>。中间件里还考察了一个trick绕过debug路由的限制.结果模板注入直接通杀v1,v2 orz</p>
+<p>不过貌似看v2的人不多，所以最后rmb跟p1g3师傅应该是预期做的。一血的Somnus师傅就直接非预期模板注入了……不过非预期什么的无所谓,能拿flag都是好方法,大家能学到子进程污染的知识我就比较满足了。最后比较普遍的问题是有的师傅连接mongodb代码写好后没有<code>db.close()</code>.那这本地必然是拿不到查询结果的。</p>
+<h2 id="SimpleSimplePie-1-solves"><a href="#SimpleSimplePie-1-solves" class="headerlink" title="SimpleSimplePie [1 solves]"></a>SimpleSimplePie [1 solves]</h2><p>挖链子是不可能的，所以只能自己手写几个乱七八糟的类来构造pop链了。整体思路我感觉跟tp系列的pop chain 差不多？就是个super-mini版的<code>__toString() -&gt; __call() -&gt; call_user_func</code>调用自身函数。</p>
+<p>然后利用则比较有意思。灵感当然就是之前做htb时发现的新姿势 ssrf 打memcache触发反序列化. 后来意外发现这样的利用其实实战中还挺不少的，比如之前安恒俊杰师傅的<code>ssrf -&gt; RCE的艰难利用</code>就是ssrf 打redis触发thinkphp反序列化.我的题相比实战还是简单多了。</p>
+<p>这里pop链里有个小坑就是链子的起点选<code>__wakeup</code>最好。我自己当初调试的时候就发现如果用<code>__destruct</code>做起点，会因为序列化数据的一些内容触发simplepie的报错。所以写利用类时故意刁难加了个<code>__destruct</code>希望踩个坑(我爬了)。但是唯一解出的rmb师傅在选择了<code>__destruct</code>做起点后是用了phpggc里的fast destruct 来进入<code>__destruct</code>。这倒确实出乎我意料,学到了。</p>
+<h2 id="bg-laravel-0-solves"><a href="#bg-laravel-0-solves" class="headerlink" title="bg_laravel [0 solves]"></a>bg_laravel [0 solves]</h2><p>没想到最后laravel成了防ak题……因为时临时赶的，所以很多地方写的不是很好，还请见谅。甚至由sql注入到上传getshell都是灵光一闪想出来的。</p>
+<p>题目之所以用了保国当然是因为最近被马老师的鬼畜给洗脑了233。所以我的题目上传不给回显路径，其实是年轻人不讲武德不告诉你文件名 :) </p>
+<p>首先在国内CTF laravel的反序列化早就被打烂了，所以我就想能不能出点新意。说起来之前七月火师傅的laravel文章下居然有人说没人这么写控制器所以反序列化没有用，这就来打脸。众所周知,phar反序列化直接扩宽了php反序列化的利用面。一个laravel站里出现的文件流操作绝对不少，那么如果能有可控点触发phar反序列化,结合pop链直接就能getshell.</p>
+<p>但是这么考太简单了，所以自然是加点花。</p>
+<p>刚好我最近接触到了laravel 5.8.10的很冷门的sql注入。冷门主要是因为github上修复都只是说修复了逃逸单引号的漏洞,而不是明说的sql注入漏洞。而且利用条件也有点苛刻，一个是要输入可控,另一个是回显得有json数据,否则<code>json_extract()</code>会报错。wp里给的参考文章也只是说了<code>addSelect()</code>,<code>select()</code> + json回显的数据可能会导致sql注入。可实际上，题目中出现的<code>orderby()</code>也是可以注入的。这就要看师傅们自己debug了。我自己是当初直接wrapJsonPath那下断点碰运气在可控位置一个个尝试触发才发现的。</p>
+<p>sql注入怎么跟phar反序列化结合呢？除开可控的<code>phar://</code>输入点，我第一想法是把上传的文件名随机化，然后把文件名之类的保存在mysql里。但是很有意思的是，我在网上找了不少laravel的文件上传都用了ORM,也就是说,File类是个Eloquent model.执行<code>$file-&gt;save()</code>时对应的数据就都到了数据库里了,正合我意。</p>
+<p>所以可能大部分师傅被这个冷门的laravel sql注入给难住了。所以还是要多谷歌+查看官方这个版本的一些小改动,说不定就能定位漏洞点了。</p>
+<h2 id="summary"><a href="#summary" class="headerlink" title="summary"></a>summary</h2><p>  总之这次比赛能看到师傅们做自己的题,顺便交流下思路还是比较开心的。希望大家明年能接着来玩，也可以期待下不知道有没有的X1CTF </p>
+
           
-            
-          
-            
+            <div class='article_footer'>
               
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Mar 29, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>这周末顺手打了下两个新生赛。本来不想写wp的,但是想到上周BJD比赛的wp也没写就想着还是补着吧。（上周BJD不写是因为对比赛题目心里有意见，说是新生赛，脑洞跟套娃题把一堆老手都整得不舒服。当时差一道ASP.NET,因为ysoserial的gadget用的不对就一直出不了结果，直接心态搞崩）所以这次把这两个新生赛题目写写。具体只大致讲下思路吧</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/03/29/WUSTCTF&MRCTF%E9%83%A8%E5%88%86web%E9%A2%98%E8%A7%A3/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/03/18/%E4%BD%BF%E7%94%A8Soap%E7%9A%84ssrf-crlf%E6%94%BB%E5%87%BB/">
-      使用Soap的ssrf/crlf攻击
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Mar 18, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>这几天在buu上疯狂刷题。突然接触到了一个之前没有注意过的知识点。那就是使用Soap进行ssrf。目前做到的几道题个人觉得还是非常有营养的。那么干脆总结下关于php+Soap的相关知识。</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/03/18/%E4%BD%BF%E7%94%A8Soap%E7%9A%84ssrf-crlf%E6%94%BB%E5%87%BB/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/03/10/XCTF%E9%AB%98%E6%A0%A1%E6%88%98%E2%80%9C%E7%96%AB%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%88%86%E4%BA%AB%E8%B5%9B/">
-      XCTF高校战“疫”网络安全分享赛
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Mar 10, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>萌新第一次xctf自闭了。<br>第一次代表X1c打比赛，结果输出贼低，几乎就完整贡献一道题。有几道基本到位了也没做出来，没能分担队友压力…..但是最后队伍拿到第8名挺强的，其他师傅太给力了，中间有段时间还冲到了第四名，只不过大家因为要上课就都睡觉去了hhh。</p>
-<p>所以趁着其他战队的wp出来自己先把几道自己当时接触了的题目以及没完整做出来的题目小结下。顺便提醒自己要加紧查漏补缺了。</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/03/10/XCTF%E9%AB%98%E6%A0%A1%E6%88%98%E2%80%9C%E7%96%AB%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%88%86%E4%BA%AB%E8%B5%9B/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/03/09/To-Dolist/">
-      To-Dolist
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Mar 9, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>第一次 XCTF 就自闭了。最难受的就是队友辛苦付出，自己却基本没啥输出……<br>之前公益赛还以为有了一定水准，现在看还差得远啊。<br>所以一定要一定要尽快把能力提升起来，刷题固然重要，知识点也不能落下。<br>这次比赛打下来发现自己居然只能在sql跟Node.js下手，太嘲讽了。<br>把近期一些需要彻底弄懂的知识点列一下，总有一天要全部解决。</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/03/09/To-Dolist/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/03/06/Vulhub%E5%A4%8D%E7%8E%B0/">
-      Vulhub复现
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Mar 6, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>p牛参与的项目vulhub,对于web安全从事人员而言应该说是宝库般的存在。里面许多的漏洞都是值得一一去学习的。在此感谢那些大佬为项目作出的付出。才让我们能够轻松复现题目。<br>环境从github上获取。环境搭建只需<code>docker-compose up -d</code></p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/03/06/Vulhub%E5%A4%8D%E7%8E%B0/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/03/02/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E5%8F%8A%E8%8A%B1%E5%BC%8Fbypass%E5%86%99shell/">
-      学习笔记-命令执行及花式bypass写shell
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Mar 2, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>  命令执行的坑其实早就想填了。最早是因为校赛时，easyphp一题自己因为不熟悉命令执行的一些特性导致套娃题绕到最后一层却没拿到flag。当时十分不爽，下定决心要好好了解下命令执行的相关知识点。</p>
-<p>关于命令执行我大体上归为php绕过+rce两类。php的难点主要是在绕过写shell上，而linux的知识主要在RCE达成上。</p>
-<p>先从简单说起：</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/03/02/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E5%8F%8A%E8%8A%B1%E5%BC%8Fbypass%E5%86%99shell/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-    
-  </section>
-  
-    
-    <!-- 根据主题中的设置决定是否在archive中针对摘要部分的MathJax公式加载mathjax.js文件 -->
-    
-    
-
-  
-
-
-	
-</div>
-<aside class='l_side'>
-  
+                
   
     
     
 
-<section class="widget blogger shadow desktop mobile">
+
+
+  
+
+  
+    
+    
+
+
+
+  
+
+  
+    
+    
+
+<section class="widget copyright  desktop mobile">
   <div class='content'>
     
-      
-        <a class='avatar flat-box' href='/about/'>
-          <img no-lazy src='/assests/shiroyasha.jpeg'/>
-        </a>
-      
-    
-    
-    
-      <div class="social-wrapper">
+      <blockquote>
         
           
-            <a href="/atom.xml"
-              class="social fas fa-rss flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-            </a>
+            <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
+
           
         
           
-            <a href="mailto:895531613@qq.com"
-              class="social fas fa-envelope flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-            </a>
+            <p>本文永久链接是：<a href=https://www.bycsec.top/2020/11/11/NCTF2020-%E5%87%BA%E9%A2%98%E5%B0%8F%E8%AE%B0/>https://www.bycsec.top/2020/11/11/NCTF2020-%E5%87%BA%E9%A2%98%E5%B0%8F%E8%AE%B0/</a></p>
           
         
-          
-            <a href="https://github.com/baiyecha404"
-              class="social fab fa-github flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-            </a>
-          
-        
-      </div>
+      </blockquote>
     
   </div>
 </section>
 
   
 
+
+              
+            </div>
+          
+        </div>
+        
+          
+
+
+  <section class='meta' id="footer-meta">
+    <div class='new-meta-box'>
+      
+        
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-11-24T23:59:38+08:00">
+  <a class='notlink'>
+    <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
+    <p>更新于：Nov 24, 2020</p>
+  </a>
+</div>
+
+        
+      
+        
+          
+  
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/wp/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>wp</p></a></div>
+
+
+        
+      
+        
+          
+
+        
+      
+        
+          
+
+        
+      
+    </div>
+  </section>
+
+
+        
+        
+          <div class="prev-next">
+            
+            
+              <a class='next' href='/2020/10/26/ByteCTF2020-easyscrapy/'>
+                <p class='title'>ByteCTF2020-easyscrapy<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+                <p class='content'> 这次ByteCTF的web题难度属实离谱。好几道题几乎都无法下手。自己第一天主要是看了easyscrapy以及配了beaker的环境(结果根本操作不起来，于是放弃了……)第二天上午在配scra...</p>
+              </a>
+            
+          </div>
+        
+      </section>
+    </article>
+  
+
+  
+    <!-- 显示推荐文章和评论 -->
+
+
+
+  <article class="post white-box reveal comments shadow">
+    <section class="article typo">
+      <p ct><i class='fas fa-comments'></i> 评论</p>
+      
+      
+      
+      
+      
+      
+        <section id="comments">
+          <div id="valine_container" class="valine_thread">
+            <i class="fas fa-cog fa-spin fa-fw fa-2x"></i>
+          </div>
+        </section>
+      
+      
+    </section>
+  </article>
+
+
+  
+
+
+
+
+<!-- 根据页面mathjax变量决定是否加载MathJax数学公式js -->
+
+
+
+  <script>
+    window.subData = {
+      title: 'NCTF2020-出题小记',
+      tools: true
+    }
+  </script>
+
+
+</div>
+<aside class='l_side'>
+  
+  
+
   
     
     
 
-  
 
-  
-    
-    
-  
-
-  <section class="widget tagcloud shadow desktop mobile">
+  <section class="widget toc-wrapper shadow desktop mobile">
     
   <header>
     
-      <a href='/tags/'><i class="fas fa-tags fa-fw" aria-hidden="true"></i><span class='name'>热门标签</span></a>
+      <i class="fas fa-list fa-fw" aria-hidden="true"></i><span class='name'>本文目录</span>
     
   </header>
 
 
     <div class='content'>
-      <a href="/tags/CTF/" style="font-size: 22.89px; color: #5d5d5d">CTF</a> <a href="/tags/Java/" style="font-size: 17.33px; color: #828282">Java</a> <a href="/tags/Linux/" style="font-size: 16.22px; color: #8a8a8a">Linux</a> <a href="/tags/Node-js/" style="font-size: 14px; color: #999">Node.js</a> <a href="/tags/PHP/" style="font-size: 18.44px; color: #7b7b7b">PHP</a> <a href="/tags/WEB/" style="font-size: 24px; color: #555">WEB</a> <a href="/tags/hackthebox/" style="font-size: 20.67px; color: #6c6c6c">hackthebox</a> <a href="/tags/javascript/" style="font-size: 15.11px; color: #919191">javascript</a> <a href="/tags/pentest/" style="font-size: 19.56px; color: #737373">pentest</a> <a href="/tags/redis/" style="font-size: 15.11px; color: #919191">redis</a> <a href="/tags/windows/" style="font-size: 14px; color: #999">windows</a> <a href="/tags/wp/" style="font-size: 21.78px; color: #646464">wp</a>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#JS-world-11-solves"><span class="toc-text">JS-world [11 solves]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mango-3-solves"><span class="toc-text">Mango [3 solves]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PackageManager-v1-0-v2-0-7-solves-3-solves"><span class="toc-text">PackageManager v1.0&#x2F;v2.0 [7 solves &#x2F; 3 solves]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SimpleSimplePie-1-solves"><span class="toc-text">SimpleSimplePie [1 solves]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bg-laravel-0-solves"><span class="toc-text">bg_laravel [0 solves]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#summary"><span class="toc-text">summary</span></a></li></ol>
     </div>
   </section>
 
-
-  
 
   
 
@@ -1154,14 +698,6 @@
   </footer>
 
 <script>setLoadingBarProgress(80);</script>
-
-
-
-
-	<!-- 根据主题中的设置决定是否在archive中针对摘要部分的MathJax公式加载mathjax.js文件 -->
-	
-
-	
 
 
       <script>setLoadingBarProgress(60);</script>
@@ -1266,6 +802,60 @@
 
 
 
+
+  
+    
+<script src="https://cdn.jsdelivr.net/npm/valine@1.4/dist/Valine.min.js"></script>
+
+  
+  <script>
+  var GUEST_INFO = ['nick','mail','link'];
+  var meta = 'nick,mail,link'.split(',').filter(function(item){
+    return GUEST_INFO.indexOf(item) > -1
+  });
+  var REQUIRED_FIELDS = ['nick','mail','link'];
+  var requiredFields = 'nick,mail'.split(',').filter(function(item){
+    return REQUIRED_FIELDS.indexOf(item) > -1
+  });
+  var valine = new Valine();
+  function emoji(path, idx, ext) {
+      return path + "/" + path + "-" + idx + "." + ext;
+  }
+  var emojiMaps = {};
+  for (var i = 1; i <= 54; i++) {
+    emojiMaps['tieba-' + i] = emoji('tieba', i, 'png');
+  }
+  for (var i = 1; i <= 101; i++) {
+    emojiMaps['qq-' + i] = emoji('qq', i, 'gif');
+  }
+  for (var i = 1; i <= 116; i++) {
+    emojiMaps['aru-' + i] = emoji('aru', i, 'gif');
+  }
+  for (var i = 1; i <= 125; i++) {
+    emojiMaps['twemoji-' + i] = emoji('twemoji', i, 'png');
+  }
+  for (var i = 1; i <= 4; i++) {
+    emojiMaps['weibo-' + i] = emoji('weibo', i, 'png');
+  }
+  valine.init({
+    el: '#valine_container',
+    meta: meta,
+    
+    appId: "pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz",
+    appKey: "9HlyBGu0qm9EmkSNKD2qoBx4",
+    placeholder: "快来评论吧~",
+    pageSize:'10',
+    avatar:'robohash',
+    lang:'zh-cn',
+    visitor: 'true',
+    highlight: 'true',
+    mathJax: 'false',
+    enableQQ: 'true',
+    requiredFields: requiredFields,
+    emojiCDN: 'https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/emoji/valine/',
+    emojiMaps: emojiMaps
+  })
+  </script>
 
 
 

@@ -6,7 +6,7 @@
   <link href="https://www.bycsec.top/atom.xml" rel="self"/>
   
   <link href="https://www.bycsec.top/"/>
-  <updated>2020-11-24T15:59:38.646Z</updated>
+  <updated>2020-12-31T13:42:30.246Z</updated>
   <id>https://www.bycsec.top/</id>
   
   <author>
@@ -15,6 +15,21 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Farewell to 2020</title>
+    <link href="https://www.bycsec.top/2020/12/30/Farewell-to-2020/"/>
+    <id>https://www.bycsec.top/2020/12/30/Farewell-to-2020/</id>
+    <published>2020-12-30T06:24:42.000Z</published>
+    <updated>2020-12-31T13:42:30.246Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;Time to say goodbye&lt;/p&gt;</summary>
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>NCTF2020-出题小记</title>
@@ -396,27 +411,6 @@
     <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
     <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>hackthebox-Oouch</title>
-    <link href="https://www.bycsec.top/2020/07/01/hackthebox-Oouch/"/>
-    <id>https://www.bycsec.top/2020/07/01/hackthebox-Oouch/</id>
-    <published>2020-07-01T05:43:43.000Z</published>
-    <updated>2020-08-02T12:56:04.000Z</updated>
-    
-    
-    <summary type="html">&lt;p&gt;Oouch靶机的难度相比最近做完的两个hard machine Quick跟Forwardslash而言有过之而无不及。甚至于感觉可能接近到Insane难度了。从web界面下手时遇到很多不稳定的问题，而之后从user提权到root更是出现玄学问题，一模一样的的payload头一天失败第二天就成了。但是总归学到了不少新知识，所以赶紧总结下。&lt;/p&gt;</summary>
-    
-    
-    
-    
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
-    <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
-    
-    <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
     
   </entry>
   

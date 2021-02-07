@@ -18,7 +18,7 @@
 
   <!-- 页面元数据 -->
   
-    <title>Tag: hackthebox - byc_404&#39;s blog</title>
+    <title>Tag: Go - byc_404&#39;s blog</title>
   
   
 
@@ -376,24 +376,6 @@
         
           
         
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
       
     
     
@@ -412,8 +394,8 @@
         
           
   <h2 class="title">
-    <a href="/2020/08/15/hackthebox-Unbalanced/">
-      hackthebox-Unbalanced
+    <a href="/2021/02/07/golang%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/">
+      golang的一些安全问题
     </a>
   </h2>
 
@@ -443,7 +425,7 @@
               <div class="new-meta-item date">
   <a class='notlink'>
     <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Aug 15, 2020</p>
+    <p>发布于：Feb 7, 2021</p>
   </a>
 </div>
 
@@ -466,795 +448,70 @@
   <section class="article typo">
     <div class="article-entry" itemprop="articleBody">
       
-        <p>  Unbalanced 可能是自己做过的htb困难靶机中里最简单的一个。其主要难度来自于最开始的起手式部分。比较需要耐心,但是没有难度。而提权部分直接可以用nday打。这对于一个困难靶机而言基本太过简单了。所以到时简单分析下这个用到的cve。</p>
+        <h1 id="golang-的一些安全问题"><a href="#golang-的一些安全问题" class="headerlink" title="golang 的一些安全问题"></a>golang 的一些安全问题</h1><blockquote>
+<p>[toc]</p>
+</blockquote>
+<p>寒假主要是先出完了之前心心念念的typescript 题目，之后主要是抽点时间学golang.同学推荐的仓库讲的还是很不错的</p>
+<p><a href="https://github.com/unknwon/the-way-to-go_ZH_CN" target="_blank" rel="noopener">https://github.com/unknwon/the-way-to-go_ZH_CN</a></p>
+<p>从简单的开发与学习过程中可以感觉到golang的确非常安全，很多问题由于作为强类型的静态语言，从编译过程就能防止不安全的操作。因此大部分漏洞产生还是归结于依赖库（通常已经发展为CVE或者issue）以及开发者自身的操作漏洞。这里就作为小结,简单谈一谈</p>
+<h2 id="interger-overflow-truncation"><a href="#interger-overflow-truncation" class="headerlink" title="interger overflow/truncation"></a>interger overflow/truncation</h2><p>golang 存在非常经典的整数反转/溢出问题</p>
+<p>对无符号数的反转</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> a <span class="keyword">uint32</span> = <span class="number">2147483648</span></span><br><span class="line">	<span class="keyword">var</span> b <span class="keyword">uint32</span> = <span class="number">2147483648</span></span><br><span class="line">	<span class="keyword">var</span> sum  =  a + b</span><br><span class="line">	fmt.Println(reflect.TypeOf(sum))</span><br><span class="line">	fmt.Printf(<span class="string">"Sum is : %d"</span>,sum)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//uint32</span></span><br><span class="line"><span class="comment">//Sum is : 0</span></span><br></pre></td></tr></table></figure>
+<p>象要直接声明一个大小已经溢出的数自然不会通过编译，因此出现反转的话，主要是在变量的相加这样的计算才会会导致标志CF位反转</p>
+<p>有符号数的溢出</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">int8</span> = <span class="number">127</span></span><br><span class="line"><span class="keyword">var</span> b <span class="keyword">int8</span> = <span class="number">1</span></span><br><span class="line"><span class="keyword">var</span> sum <span class="keyword">int8</span> =  a + b</span><br><span class="line">fmt.Println(reflect.TypeOf(sum))</span><br><span class="line">fmt.Printf(<span class="string">"Sum is : %d"</span>,sum)</span><br><span class="line"><span class="comment">//int8</span></span><br><span class="line"><span class="comment">//-128</span></span><br></pre></td></tr></table></figure>
+
+<p>具体的值可以看到math包中的常量定义。<br><img src="https://hackmd.summershrimp.com/uploads/upload_5ffbbfdc9f0ebffa65ffa3ce5f05a35c.png" alt></p>
+<p>在类型转换中,也会出现较大整型向较小整型转换的截断问题</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">int16</span> = <span class="number">256</span></span><br><span class="line"><span class="keyword">var</span> b  = <span class="keyword">int8</span>(a)</span><br><span class="line">fmt.Println(b)</span><br><span class="line"><span class="comment">// 0 </span></span><br><span class="line"><span class="comment">// high-order byte is truncated</span></span><br></pre></td></tr></table></figure>
+
+<p>我们可以看到整型安全的检查也出现在了<a href="https://github.com/securego/gosec" target="_blank" rel="noopener">gosec</a>中，一个比较经典的例子就是：<code>kubectl</code>命令行中出现了一个<code>strconv.Atoi</code>导致的截断问题。当我们传入port参数的对应字符串后,容器启动的端口这一参数会将经Atoi处理后的字符串进行int32的类型转换。由于64位系统的int是int64类型。转int32的话会出现明显截断<br>可以简化成以下代码：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">v , _ := strconv.Atoi(<span class="string">"4294967377"</span>)</span><br><span class="line">s  := <span class="keyword">int32</span>(v)</span><br><span class="line">fmt.Println(s)</span><br><span class="line"><span class="comment">// 81</span></span><br></pre></td></tr></table></figure>
+<p>这样就有可能导致81端口的服务启动，或者被停止。所以使用<code>ParseInt ,ParseUInt</code>会比较好。或者对端口号进行限制。</p>
+<p>CTF中出现整数溢出的scenario 一般都是 xx shop之类的。通过重复的加数进行溢出然后鉴权。</p>
+<h2 id="pseudo-rand"><a href="#pseudo-rand" class="headerlink" title="pseudo-rand"></a>pseudo-rand</h2><p>golang 的math/rand 包中，我们可以看到随机数生成的函数形式</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_f6708f74d8bc16d6c4f6d5085e798521.png" alt></p>
+<p>跟进一下函数与结构体</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> globalRand = New(&amp;lockedSource&#123;src: NewSource(<span class="number">1</span>).(*rngSource)&#125;)</span><br><span class="line"></span><br><span class="line">......</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewSource</span><span class="params">(seed <span class="keyword">int64</span>)</span> <span class="title">Source</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> rng rngSource</span><br><span class="line">	rng.Seed(seed)</span><br><span class="line">	<span class="keyword">return</span> &amp;rng</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到,这些随机数函数的seed默认为1.也就是说如果不使用<code>rand.Seed()</code>确认种子的话，生成的只是所谓的伪随机数。</p>
+<p>这种问题可能会出现在开发者直接用rand生成的字符串作为密钥的场景，比如gin的cookie的key.从而导致本地复现，直接鉴权。</p>
+<h2 id="go-net-http"><a href="#go-net-http" class="headerlink" title="go net/http"></a>go net/http</h2><h3 id="net-http-lt-1-11-CRLF"><a href="#net-http-lt-1-11-CRLF" class="headerlink" title="net/http &lt; 1.11 CRLF"></a>net/http &lt; 1.11 CRLF</h3><p>低版本的http库会导致CRLF.比如<code>http.NewRequest()</code>。貌似是原本没有问题，但是在一次升级中疏忽了导致重新出现<br><img src="https://hackmd.summershrimp.com/uploads/upload_c155e0320b2e007aeda1c3d2f4b63b37.png" alt></p>
+<p>现在会看到存在限制，我们无法传入<code>\r\n</code>的字符</p>
+<p>WMCTF中的gogogo出现过这一漏洞，利用自然是通过CRLF发送POST请求进行绕过与上传。</p>
+<h3 id="weird-stuff"><a href="#weird-stuff" class="headerlink" title="weird stuff"></a>weird stuff</h3><p>在之前的<a href="https://ctftime.org/event/1050" target="_blank" rel="noopener">justCTF</a>中，出现了一道go题。题目原本的漏洞是由出题人发现的一个issue<a href="https://github.com/golang/go/issues/40940" target="_blank" rel="noopener">https://github.com/golang/go/issues/40940</a> 加上其对fileServer一些代码的魔改组合的。</p>
+<p>简单陈述下的话，题目提供了一个go http起的FileServer</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http.Handle(<span class="string">"/"</span>, http.FileServer(http.Dir(<span class="string">"/tmp"</span>)))</span><br></pre></td></tr></table></figure>
+<p>flag就在其提供文件服务的文件夹下，但是，出题人加上了web服务的flag路由,从而使得我们没法通过直接访问<code>/flag</code>来获取文件。而是得到<code>/flag</code>路由的回显。</p>
+<p>出题人的意图是利用其挖掘到的这个漏洞，造成错误的文件读取范围。通过访问其他文件越界读到flag.(http的Fileserver在我们访问时，会先根据我们访问的url进行一系列处理，杜绝路径穿越的url,之后进行文件读取返回给用户)</p>
+<p>但是比较有意思的时，比赛中出现了一个非预期读flag的方式<br><code>curl --path-as-is -X CONNECT http://gofs.web.jctf.pro/../flag</code></p>
+<p>简单说就是用CONNECT请求+路径穿越的url读取到了文件。我们看看源码是怎么处理的<br><img src="https://hackmd.summershrimp.com/uploads/upload_f9abcabe3b0a17bac5f8e41a586d74ab.png" alt><br>如果是CONNECT方式请求，就不会处理url中的特殊字符。导致直接读取flag.其他的请求方法都会在<code>cleanPath</code>中被处理url</p>
+<p>算是一个很有意思的问题。不过golang1.16似乎已经处理了。但是包括我在内的大部分应该还是使用的go1.15及以下版本，所以还是值得注意的</p>
+<h2 id="feature-of-slice"><a href="#feature-of-slice" class="headerlink" title="feature of slice"></a>feature of slice</h2><p>之前在做buu上的roarCTF时遇到一道go题，其中一个利用点来自Confidence CTF,其中用到了golang slice的一个feature</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">a := <span class="built_in">make</span>([]<span class="keyword">uint64</span>, <span class="number">0</span>)</span><br><span class="line">a = <span class="built_in">append</span>(a, <span class="number">1</span>)</span><br><span class="line">a = <span class="built_in">append</span>(a, <span class="number">2</span>)</span><br><span class="line">a = <span class="built_in">append</span>(a, <span class="number">3</span>)</span><br><span class="line">b := <span class="built_in">append</span>(a, <span class="number">4</span>)</span><br><span class="line">c := <span class="built_in">append</span>(a, <span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">fmt.Println(a)</span><br><span class="line">fmt.Println(b)</span><br><span class="line">fmt.Println(c)</span><br><span class="line"></span><br><span class="line"><span class="comment">//result:</span></span><br><span class="line"><span class="comment">//[1 2 3]</span></span><br><span class="line"><span class="comment">//[1 2 3 5]</span></span><br><span class="line"><span class="comment">//[1 2 3 5]</span></span><br></pre></td></tr></table></figure>
+
+<p>按照直觉来说，b这里应该是<code>[1,2,3,4]</code>,但实际上却是<code>[1,2,3,5]</code><br>这就与golang的slice也就是切片的结构相关了</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> slice <span class="keyword">struct</span> &#123;</span><br><span class="line">    array unsafe.Pointer <span class="comment">// ptr</span></span><br><span class="line">    <span class="built_in">len</span>   <span class="keyword">int</span></span><br><span class="line">    <span class="built_in">cap</span>   <span class="keyword">int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_07c51c4e5face9078a0c61cadce82aa7.png" alt></p>
+<p>slice结构中的cap是按2的倍数扩容的。所以说当我们<code>append(3)</code>时会发生第一次扩容，此时len为3，cap为<code>2*2=4</code>.<br>执行<code>b := append(a, 4)</code>时，我们的4会被放在指针ptr的第四个位置。然后返回ptr len=4 cap=4给b。不过这并没有改变a的结构（slice只是指向内存的指针）之后进行<code>c := append(a, 5)</code>时，由于a没变，新元素只会覆盖之前b那放上的4.</p>
+<p>那一道题目就是利用这点，可以通过先beg三次构造出len=3,cap=4的切片，通过题目中一个append超大随机数的机会，在下一次beg时达成元素覆盖。</p>
+<p>这个可以算是slice的feature,还是很有意思的。</p>
+<h2 id="reDOS"><a href="#reDOS" class="headerlink" title="reDOS"></a>reDOS</h2><p>原本是以为golang不存在reDOS的问题的。当初阅读lmt-swallow的文章时也看到他提到golang有linear time matching。 不过后来发现还是有途径的。</p>
+<p>当然，reDOS主要还是在js里影响比较大，因为其事件队列阻塞对于web服务的影响是巨大的。相比之下其他的DOS影响可能就较小。用nginx做个处理基本就没有影响。不过，如果是以<code>Blind regex injection</code>为目的考虑reDOS的话，就另当别论了。</p>
+<p>回到golang上。golang使用的正则引擎是re2。但是用的是无回溯机制(DFA)。<br>所以之前的payload如</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">但是,通过其他方法制造延时仍然是可行的。比如re2对于&#96;&#123;n&#125;&#96;这样的正则，n存在有上限1000，且对于DFA状态数没有限制.我们可以通过不断重复&#96;(.?)&#123;1000&#125;&#96;来制造足够的DFA状态进行一定程度上的延时</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">reDOS其实一直是一个很有意思的点,除了喜闻乐见的nodejs,前端中xss也可以导致这个问题，从而xsleak ,ruby中也有类似问题。当然，如果是从reDOS引申到正则盲注的话，sql注入中倒也有类似的情况。总之就是利用差异性进行数据提取。可惜因为太容易坏环境了，所以很难出道题到比赛中 :(</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">## SSTI</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">最后一个就简单提一下ssti.要说golang这种静态编译还会出ssti还是挺难的( 除非源码中用sprintf 或者说拼接来构建template的参数</span><br><span class="line">&#96;&#96;&#96;go</span><br><span class="line">var tmpl &#x3D; fmt.Sprintf(&#96;&lt;h2&gt;No search results for %s&lt;&#x2F;h2&gt;&#96;, xxx)</span><br></pre></td></tr></table></figure>
+
+<p>golang的template跟很多模板引擎的语法差不多，比如双花括号指定可解析的对象。<code>.xxx</code>表示一个对象的xxx属性。<code>.</code>就是当前作用域的当前对象，基本就跟handlebars里的this差不多。</p>
+<p>假如我们传入的参数是可解析的,就有可能泄露template在执行过程中引入的对象内容(执行的本质就是合并替换)</p>
+<p>简单的demo可以参考这里 <a href="https://blog.takemyhand.xyz/2020/05/ssti-breaking-gos-template-engine-to.html" target="_blank" rel="noopener">https://blog.takemyhand.xyz/2020/05/ssti-breaking-gos-template-engine-to.html</a></p>
+<p>如果传入的struct属性含有指针的话(非常常见，因为用指针可以节省很很多空间),我们ssti的回显就只是一个地址。需要我们手动去访问属性才会解引</p>
+<h2 id="Summary-amp-amp-Reference"><a href="#Summary-amp-amp-Reference" class="headerlink" title="Summary &amp;&amp; Reference"></a>Summary &amp;&amp; Reference</h2><p>简单的梳理下自己见过的golang安全问题(CTF-based web go)。其实像之前dasCTF中也有golang的题目，用gob序列化存内容到cookie，不过利用点与go的关系为0，所以不谈。</p>
+<p>自己golang的开发还有很多值得去学的，这门语言确实有其优越之处以及一些可能存在并被挖掘的安全问题</p>
+<p><a href="https://github.com/tsg-ut/tsgctf2020" target="_blank" rel="noopener">https://github.com/tsg-ut/tsgctf2020</a><br><a href="https://annevi.cn/2020/08/14/wmctf2020-gogogo-writeup/" target="_blank" rel="noopener">https://annevi.cn/2020/08/14/wmctf2020-gogogo-writeup/</a><br><a href="https://github.com/golang/go/issues/30794" target="_blank" rel="noopener">https://github.com/golang/go/issues/30794</a><br><a href="https://github.com/golang/go/issues/40940" target="_blank" rel="noopener">https://github.com/golang/go/issues/40940</a><br><a href="https://github.com/mwarzynski/confidence2019_teaser_lottery" target="_blank" rel="noopener">https://github.com/mwarzynski/confidence2019_teaser_lottery</a></p>
+
       
     </div>
     
-      
-        <div class="button readmore">
-          <a href="/2020/08/15/hackthebox-Unbalanced/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/08/10/hackthebox-Fatty-JavaExploits/">
-      hackthebox-Fatty-JavaExploits
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Aug 10, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p> Faaty 是htb这周刚退役的靶机。本来一周前自己打算下手试试的,不过做了一会发现因为即将退役就干脆搁置等ippsec出视频自己再做233. 不过整体来说这台靶机真的非常有趣。并且涉及到大量的java知识。在这一次实际操作中自己才真正体会到前段时间巩固java开发的基础知识有多么重要。因此这里记录下具体操作的流程,将学到的新知识巩固一下。</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/08/10/hackthebox-Fatty-JavaExploits/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/07/24/hackthebox-Dyplesher/">
-      hackthebox-Dyplesher
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Jul 24, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>  Dyplesher靶机是自己第一次完成的现役insane难度htb靶机。靶机涉及的服务相对比较多,包括web,gogs,minecraft,memcache等等。不过说实话做完后感觉难度跟Travel差不多,到不了insane难度。可能主要是里面的Java知识对于大部分人来说偏繁琐了。总体上感觉还是不错的。这里还是简单记录下过程以及提权部分学到的知识吧。</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/07/24/hackthebox-Dyplesher/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/07/22/hackthebox-Intense/">
-      hackthebox-Intense
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Jul 22, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>纠结了好久要不要写这篇wp.最后还是打算把流程过一遍吧。首先这台靶机没料到的是开开心心做到root部分发现是个pwn一脸懵逼。想自己上手最后发现还是tcl,只好去请教朋友。所幸最后还是打成了。因此pwn部分我不做解释,主要把前面getshell流程写一遍。</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/07/22/hackthebox-Intense/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/07/16/hackthebox-SneakyMailer/">
-      hackthebox-SneakyMailer
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Jul 16, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>SneakyMailer是自己在htb上完成的第30台靶机。因为特殊纪念意义加上涉及到一些很有意思的知识所以记录下。整体难度比较简单。</p>
-<p>由于SneakyMailer还是active状态，所以我会给文章上锁直到靶机退役。<br>ps:已退役<br><img src="/2020/07/16/hackthebox-SneakyMailer/head.PNG" alt></p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/07/16/hackthebox-SneakyMailer/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/07/07/hackthebox-Travel/">
-      hackthebox-Travel
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Jul 7, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Travel这台靶机真的是做hackthebox以来遇到的最佳靶机了。相比之前因为pwn的知识而根本没法下手的一些hard靶机。Travel属于纯渗透WEB知识,而且非常接近实战。难度甚至完全可以担当insane了。其起手式相比其他靶机相当困难。但我也因此学到了ssrf利用的新姿势,并且在之后的提权部分也基本上是面对完全未知的系统操作。所以最后完成的瞬间真的非常高兴。毕竟这是自己第一次做出不到四位数solved的靶机。整个过程中也遇到了很多困难。感谢anoNym1ty与traut的帮助。在他们给我的提示下我才能找到下手点并逐步完成渗透的过程。</p>
-<p>Let’s get it started.</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/07/07/hackthebox-Travel/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/07/01/hackthebox-Oouch/">
-      hackthebox-Oouch
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Jul 1, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Oouch靶机的难度相比最近做完的两个hard machine Quick跟Forwardslash而言有过之而无不及。甚至于感觉可能接近到Insane难度了。从web界面下手时遇到很多不稳定的问题，而之后从user提权到root更是出现玄学问题，一模一样的的payload头一天失败第二天就成了。但是总归学到了不少新知识，所以赶紧总结下。</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/07/01/hackthebox-Oouch/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/06/23/hackthebox-Quick-%E4%B8%80%E6%AC%A1%E8%89%B0%E9%9A%BE%E7%9A%84%E6%B8%97%E9%80%8F/">
-      hackthebox-Quick-一次艰难的渗透
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Jun 23, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>因为现在还没有接到确切通知说是否考试,原本期末复习的计划也被打乱了。既然现在复习觉得有点亏，于是干脆去做做hackthebox的靶机算了，正好好久没写wp了2333。</p>
-<p>虽然没更新文章，但是其实自己每周都在跟着ippsec的视频做退役靶机。当然其实也做了5.6台现役的。不过今天要写的Quick靶机的wp是自己头一次独立完成的困难难度的靶机。真的真的学到了很多东西。所以一定要记录下。</p>
-<p>另外由于Quick还是active状态，所以我会给文章上锁直到靶机退役。</p>
-<p><img src="/2020/06/23/hackthebox-Quick-%E4%B8%80%E6%AC%A1%E8%89%B0%E9%9A%BE%E7%9A%84%E6%B8%97%E9%80%8F/head.PNG" alt></p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/06/23/hackthebox-Quick-%E4%B8%80%E6%AC%A1%E8%89%B0%E9%9A%BE%E7%9A%84%E6%B8%97%E9%80%8F/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/">
-      hackthebox-Sniper--初尝windows靶机
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Apr 1, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>好久没做htb的靶机，这次又跟着着大佬的思路去做了一台新的靶机。不同以往的是,这次的靶机Sniper是windows靶机，因此也收获了许多新姿势。就是在中间从github下了不少东西……因为不是假期，具体过程不会像以往那么详细。同时windows靶机下自己不太理解的东西也希望不会给别人带进误区。<br>有趣的是,这台靶机获得webroot的shell有不同的操作方法，同时具体后面提权时也将有不同的方法进行细节上不同的操作。具体细节将在后面的文章中提到。</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2020/02/06/hackthebox-ezpz/">
-      hackthebox-ezpz
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
-    <p>byc_404</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Feb 6, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>hackthebox上的web challenge ezpz是去年十二月末才新出的一道ctf题目。这道题相当的有意思，而且对我还是比较有难度的，但是做出来的那一瞬间又发现其实并非那么令人困扰，反而学到了许多。所以在此记录一下做题过程。<br>感谢zjy师傅以及外国网友Z1LV3R的提示</p>
-      
-    </div>
-    
-      
-        <div class="button readmore">
-          <a href="/2020/02/06/hackthebox-ezpz/">
-            Read More <i class="fas fa-chevron-right"></i>
-          </a>
-        </div>
       
     
   </section>
@@ -1266,21 +523,6 @@
     
   </section>
   
-    
-      <br>
-      <div class="prev-next">
-        
-        <p class="current">
-          1 / 2
-        </p>
-        
-          <a class="next" rel="next" href="/tags/hackthebox/page/2/">
-            <section class="post next white-box shadow">
-              &nbsp;Next&nbsp;<i class="fas fa-chevron-right" aria-hidden="true"></i>
-            </section>
-          </a>
-        
-      </div>
     
     <!-- 根据主题中的设置决定是否在archive中针对摘要部分的MathJax公式加载mathjax.js文件 -->
     

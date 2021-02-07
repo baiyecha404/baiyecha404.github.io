@@ -6,7 +6,7 @@
   <link href="https://www.bycsec.top/atom.xml" rel="self"/>
   
   <link href="https://www.bycsec.top/"/>
-  <updated>2020-12-31T13:42:30.246Z</updated>
+  <updated>2021-02-07T13:59:37.225Z</updated>
   <id>https://www.bycsec.top/</id>
   
   <author>
@@ -15,6 +15,26 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>golang的一些安全问题</title>
+    <link href="https://www.bycsec.top/2021/02/07/golang%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/"/>
+    <id>https://www.bycsec.top/2021/02/07/golang%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/</id>
+    <published>2021-02-07T13:56:47.000Z</published>
+    <updated>2021-02-07T13:59:37.225Z</updated>
+    
+    
+      
+      
+    <summary type="html"></summary>
+      
+    
+    
+    
+    
+    <category term="Go" scheme="https://www.bycsec.top/tags/Go/"/>
+    
+  </entry>
   
   <entry>
     <title>Farewell to 2020</title>
@@ -390,27 +410,6 @@
     <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
     
     <category term="Linux" scheme="https://www.bycsec.top/tags/Linux/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>SCTF2020 writeup</title>
-    <link href="https://www.bycsec.top/2020/07/05/SCTF2020-writeup/"/>
-    <id>https://www.bycsec.top/2020/07/05/SCTF2020-writeup/</id>
-    <published>2020-07-05T12:33:28.000Z</published>
-    <updated>2020-11-05T09:04:29.469Z</updated>
-    
-    
-    <summary type="html">&lt;p&gt;越打越菜 :(&lt;br&gt;这次比赛难度相比上次RCTF的难度好了点。但是最后还是只能感慨自己tcl。做出来的只有CloudDisk跟UnsafeDefenseSystem.相比下solve比较多的pythonsandbox自己反而因为总觉得pyjail太老套不去研究,连下手都做不到……赛后还是把能复现的都复现下吧。&lt;/p&gt;</summary>
-    
-    
-    
-    
-    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
-    
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
-    <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
   </entry>
   

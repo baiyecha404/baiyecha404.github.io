@@ -18,7 +18,7 @@
 
   <!-- 页面元数据 -->
   
-    <title>Archive: 2021 - byc_404&#39;s blog</title>
+    <title>歸檔：2021 - byc_404&#39;s blog</title>
   
   
 
@@ -446,70 +446,18 @@
   <section class="article typo">
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="golang-的一些安全问题"><a href="#golang-的一些安全问题" class="headerlink" title="golang 的一些安全问题"></a>golang 的一些安全问题</h1><blockquote>
-<p>[toc]</p>
-</blockquote>
-<p>寒假主要是先出完了之前心心念念的typescript 题目，之后主要是抽点时间学golang.同学推荐的仓库讲的还是很不错的</p>
+        <p>寒假主要是先出完了之前心心念念的typescript 题目，之后主要是抽点时间学golang.同学推荐的仓库讲的还是很不错的</p>
 <p><a href="https://github.com/unknwon/the-way-to-go_ZH_CN" target="_blank" rel="noopener">https://github.com/unknwon/the-way-to-go_ZH_CN</a></p>
 <p>从简单的开发与学习过程中可以感觉到golang的确非常安全，很多问题由于作为强类型的静态语言，从编译过程就能防止不安全的操作。因此大部分漏洞产生还是归结于依赖库（通常已经发展为CVE或者issue）以及开发者自身的操作漏洞。这里就作为小结,简单谈一谈</p>
-<h2 id="interger-overflow-truncation"><a href="#interger-overflow-truncation" class="headerlink" title="interger overflow/truncation"></a>interger overflow/truncation</h2><p>golang 存在非常经典的整数反转/溢出问题</p>
-<p>对无符号数的反转</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> a <span class="keyword">uint32</span> = <span class="number">2147483648</span></span><br><span class="line">	<span class="keyword">var</span> b <span class="keyword">uint32</span> = <span class="number">2147483648</span></span><br><span class="line">	<span class="keyword">var</span> sum  =  a + b</span><br><span class="line">	fmt.Println(reflect.TypeOf(sum))</span><br><span class="line">	fmt.Printf(<span class="string">"Sum is : %d"</span>,sum)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//uint32</span></span><br><span class="line"><span class="comment">//Sum is : 0</span></span><br></pre></td></tr></table></figure>
-<p>象要直接声明一个大小已经溢出的数自然不会通过编译，因此出现反转的话，主要是在变量的相加这样的计算才会会导致标志CF位反转</p>
-<p>有符号数的溢出</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">int8</span> = <span class="number">127</span></span><br><span class="line"><span class="keyword">var</span> b <span class="keyword">int8</span> = <span class="number">1</span></span><br><span class="line"><span class="keyword">var</span> sum <span class="keyword">int8</span> =  a + b</span><br><span class="line">fmt.Println(reflect.TypeOf(sum))</span><br><span class="line">fmt.Printf(<span class="string">"Sum is : %d"</span>,sum)</span><br><span class="line"><span class="comment">//int8</span></span><br><span class="line"><span class="comment">//-128</span></span><br></pre></td></tr></table></figure>
-
-<p>具体的值可以看到math包中的常量定义。<br><img src="https://hackmd.summershrimp.com/uploads/upload_5ffbbfdc9f0ebffa65ffa3ce5f05a35c.png" alt></p>
-<p>在类型转换中,也会出现较大整型向较小整型转换的截断问题</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">int16</span> = <span class="number">256</span></span><br><span class="line"><span class="keyword">var</span> b  = <span class="keyword">int8</span>(a)</span><br><span class="line">fmt.Println(b)</span><br><span class="line"><span class="comment">// 0 </span></span><br><span class="line"><span class="comment">// high-order byte is truncated</span></span><br></pre></td></tr></table></figure>
-
-<p>我们可以看到整型安全的检查也出现在了<a href="https://github.com/securego/gosec" target="_blank" rel="noopener">gosec</a>中，一个比较经典的例子就是：<code>kubectl</code>命令行中出现了一个<code>strconv.Atoi</code>导致的截断问题。当我们传入port参数的对应字符串后,容器启动的端口这一参数会将经Atoi处理后的字符串进行int32的类型转换。由于64位系统的int是int64类型。转int32的话会出现明显截断<br>可以简化成以下代码：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">v , _ := strconv.Atoi(<span class="string">"4294967377"</span>)</span><br><span class="line">s  := <span class="keyword">int32</span>(v)</span><br><span class="line">fmt.Println(s)</span><br><span class="line"><span class="comment">// 81</span></span><br></pre></td></tr></table></figure>
-<p>这样就有可能导致81端口的服务启动，或者被停止。所以使用<code>ParseInt ,ParseUInt</code>会比较好。或者对端口号进行限制。</p>
-<p>CTF中出现整数溢出的scenario 一般都是 xx shop之类的。通过重复的加数进行溢出然后鉴权。</p>
-<h2 id="pseudo-rand"><a href="#pseudo-rand" class="headerlink" title="pseudo-rand"></a>pseudo-rand</h2><p>golang 的math/rand 包中，我们可以看到随机数生成的函数形式</p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_f6708f74d8bc16d6c4f6d5085e798521.png" alt></p>
-<p>跟进一下函数与结构体</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> globalRand = New(&amp;lockedSource&#123;src: NewSource(<span class="number">1</span>).(*rngSource)&#125;)</span><br><span class="line"></span><br><span class="line">......</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewSource</span><span class="params">(seed <span class="keyword">int64</span>)</span> <span class="title">Source</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> rng rngSource</span><br><span class="line">	rng.Seed(seed)</span><br><span class="line">	<span class="keyword">return</span> &amp;rng</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>可以看到,这些随机数函数的seed默认为1.也就是说如果不使用<code>rand.Seed()</code>确认种子的话，生成的只是所谓的伪随机数。</p>
-<p>这种问题可能会出现在开发者直接用rand生成的字符串作为密钥的场景，比如gin的cookie的key.从而导致本地复现，直接鉴权。</p>
-<h2 id="go-net-http"><a href="#go-net-http" class="headerlink" title="go net/http"></a>go net/http</h2><h3 id="net-http-lt-1-11-CRLF"><a href="#net-http-lt-1-11-CRLF" class="headerlink" title="net/http &lt; 1.11 CRLF"></a>net/http &lt; 1.11 CRLF</h3><p>低版本的http库会导致CRLF.比如<code>http.NewRequest()</code>。貌似是原本没有问题，但是在一次升级中疏忽了导致重新出现<br><img src="https://hackmd.summershrimp.com/uploads/upload_c155e0320b2e007aeda1c3d2f4b63b37.png" alt></p>
-<p>现在会看到存在限制，我们无法传入<code>\r\n</code>的字符</p>
-<p>WMCTF中的gogogo出现过这一漏洞，利用自然是通过CRLF发送POST请求进行绕过与上传。</p>
-<h3 id="weird-stuff"><a href="#weird-stuff" class="headerlink" title="weird stuff"></a>weird stuff</h3><p>在之前的<a href="https://ctftime.org/event/1050" target="_blank" rel="noopener">justCTF</a>中，出现了一道go题。题目原本的漏洞是由出题人发现的一个issue<a href="https://github.com/golang/go/issues/40940" target="_blank" rel="noopener">https://github.com/golang/go/issues/40940</a> 加上其对fileServer一些代码的魔改组合的。</p>
-<p>简单陈述下的话，题目提供了一个go http起的FileServer</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http.Handle(<span class="string">"/"</span>, http.FileServer(http.Dir(<span class="string">"/tmp"</span>)))</span><br></pre></td></tr></table></figure>
-<p>flag就在其提供文件服务的文件夹下，但是，出题人加上了web服务的flag路由,从而使得我们没法通过直接访问<code>/flag</code>来获取文件。而是得到<code>/flag</code>路由的回显。</p>
-<p>出题人的意图是利用其挖掘到的这个漏洞，造成错误的文件读取范围。通过访问其他文件越界读到flag.(http的Fileserver在我们访问时，会先根据我们访问的url进行一系列处理，杜绝路径穿越的url,之后进行文件读取返回给用户)</p>
-<p>但是比较有意思的时，比赛中出现了一个非预期读flag的方式<br><code>curl --path-as-is -X CONNECT http://gofs.web.jctf.pro/../flag</code></p>
-<p>简单说就是用CONNECT请求+路径穿越的url读取到了文件。我们看看源码是怎么处理的<br><img src="https://hackmd.summershrimp.com/uploads/upload_f9abcabe3b0a17bac5f8e41a586d74ab.png" alt><br>如果是CONNECT方式请求，就不会处理url中的特殊字符。导致直接读取flag.其他的请求方法都会在<code>cleanPath</code>中被处理url</p>
-<p>算是一个很有意思的问题。不过golang1.16似乎已经处理了。但是包括我在内的大部分应该还是使用的go1.15及以下版本，所以还是值得注意的</p>
-<h2 id="feature-of-slice"><a href="#feature-of-slice" class="headerlink" title="feature of slice"></a>feature of slice</h2><p>之前在做buu上的roarCTF时遇到一道go题，其中一个利用点来自Confidence CTF,其中用到了golang slice的一个feature</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">a := <span class="built_in">make</span>([]<span class="keyword">uint64</span>, <span class="number">0</span>)</span><br><span class="line">a = <span class="built_in">append</span>(a, <span class="number">1</span>)</span><br><span class="line">a = <span class="built_in">append</span>(a, <span class="number">2</span>)</span><br><span class="line">a = <span class="built_in">append</span>(a, <span class="number">3</span>)</span><br><span class="line">b := <span class="built_in">append</span>(a, <span class="number">4</span>)</span><br><span class="line">c := <span class="built_in">append</span>(a, <span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">fmt.Println(a)</span><br><span class="line">fmt.Println(b)</span><br><span class="line">fmt.Println(c)</span><br><span class="line"></span><br><span class="line"><span class="comment">//result:</span></span><br><span class="line"><span class="comment">//[1 2 3]</span></span><br><span class="line"><span class="comment">//[1 2 3 5]</span></span><br><span class="line"><span class="comment">//[1 2 3 5]</span></span><br></pre></td></tr></table></figure>
-
-<p>按照直觉来说，b这里应该是<code>[1,2,3,4]</code>,但实际上却是<code>[1,2,3,5]</code><br>这就与golang的slice也就是切片的结构相关了</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> slice <span class="keyword">struct</span> &#123;</span><br><span class="line">    array unsafe.Pointer <span class="comment">// ptr</span></span><br><span class="line">    <span class="built_in">len</span>   <span class="keyword">int</span></span><br><span class="line">    <span class="built_in">cap</span>   <span class="keyword">int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_07c51c4e5face9078a0c61cadce82aa7.png" alt></p>
-<p>slice结构中的cap是按2的倍数扩容的。所以说当我们<code>append(3)</code>时会发生第一次扩容，此时len为3，cap为<code>2*2=4</code>.<br>执行<code>b := append(a, 4)</code>时，我们的4会被放在指针ptr的第四个位置。然后返回ptr len=4 cap=4给b。不过这并没有改变a的结构（slice只是指向内存的指针）之后进行<code>c := append(a, 5)</code>时，由于a没变，新元素只会覆盖之前b那放上的4.</p>
-<p>那一道题目就是利用这点，可以通过先beg三次构造出len=3,cap=4的切片，通过题目中一个append超大随机数的机会，在下一次beg时达成元素覆盖。</p>
-<p>这个可以算是slice的feature,还是很有意思的。</p>
-<h2 id="reDOS"><a href="#reDOS" class="headerlink" title="reDOS"></a>reDOS</h2><p>原本是以为golang不存在reDOS的问题的。当初阅读lmt-swallow的文章时也看到他提到golang有linear time matching。 不过后来发现还是有途径的。</p>
-<p>当然，reDOS主要还是在js里影响比较大，因为其事件队列阻塞对于web服务的影响是巨大的。相比之下其他的DOS影响可能就较小。用nginx做个处理基本就没有影响。不过，如果是以<code>Blind regex injection</code>为目的考虑reDOS的话，就另当别论了。</p>
-<p>回到golang上。golang使用的正则引擎是re2。但是用的是无回溯机制(DFA)。<br>所以之前的payload如</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">但是,通过其他方法制造延时仍然是可行的。比如re2对于&#96;&#123;n&#125;&#96;这样的正则，n存在有上限1000，且对于DFA状态数没有限制.我们可以通过不断重复&#96;(.?)&#123;1000&#125;&#96;来制造足够的DFA状态进行一定程度上的延时</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">reDOS其实一直是一个很有意思的点,除了喜闻乐见的nodejs,前端中xss也可以导致这个问题，从而xsleak ,ruby中也有类似问题。当然，如果是从reDOS引申到正则盲注的话，sql注入中倒也有类似的情况。总之就是利用差异性进行数据提取。可惜因为太容易坏环境了，所以很难出道题到比赛中 :(</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">## SSTI</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">最后一个就简单提一下ssti.要说golang这种静态编译还会出ssti还是挺难的( 除非源码中用sprintf 或者说拼接来构建template的参数</span><br><span class="line">&#96;&#96;&#96;go</span><br><span class="line">var tmpl &#x3D; fmt.Sprintf(&#96;&lt;h2&gt;No search results for %s&lt;&#x2F;h2&gt;&#96;, xxx)</span><br></pre></td></tr></table></figure>
-
-<p>golang的template跟很多模板引擎的语法差不多，比如双花括号指定可解析的对象。<code>.xxx</code>表示一个对象的xxx属性。<code>.</code>就是当前作用域的当前对象，基本就跟handlebars里的this差不多。</p>
-<p>假如我们传入的参数是可解析的,就有可能泄露template在执行过程中引入的对象内容(执行的本质就是合并替换)</p>
-<p>简单的demo可以参考这里 <a href="https://blog.takemyhand.xyz/2020/05/ssti-breaking-gos-template-engine-to.html" target="_blank" rel="noopener">https://blog.takemyhand.xyz/2020/05/ssti-breaking-gos-template-engine-to.html</a></p>
-<p>如果传入的struct属性含有指针的话(非常常见，因为用指针可以节省很很多空间),我们ssti的回显就只是一个地址。需要我们手动去访问属性才会解引</p>
-<h2 id="Summary-amp-amp-Reference"><a href="#Summary-amp-amp-Reference" class="headerlink" title="Summary &amp;&amp; Reference"></a>Summary &amp;&amp; Reference</h2><p>简单的梳理下自己见过的golang安全问题(CTF-based web go)。其实像之前dasCTF中也有golang的题目，用gob序列化存内容到cookie，不过利用点与go的关系为0，所以不谈。</p>
-<p>自己golang的开发还有很多值得去学的，这门语言确实有其优越之处以及一些可能存在并被挖掘的安全问题</p>
-<p><a href="https://github.com/tsg-ut/tsgctf2020" target="_blank" rel="noopener">https://github.com/tsg-ut/tsgctf2020</a><br><a href="https://annevi.cn/2020/08/14/wmctf2020-gogogo-writeup/" target="_blank" rel="noopener">https://annevi.cn/2020/08/14/wmctf2020-gogogo-writeup/</a><br><a href="https://github.com/golang/go/issues/30794" target="_blank" rel="noopener">https://github.com/golang/go/issues/30794</a><br><a href="https://github.com/golang/go/issues/40940" target="_blank" rel="noopener">https://github.com/golang/go/issues/40940</a><br><a href="https://github.com/mwarzynski/confidence2019_teaser_lottery" target="_blank" rel="noopener">https://github.com/mwarzynski/confidence2019_teaser_lottery</a></p>
-
       
     </div>
     
+      
+        <div class="button readmore">
+          <a href="/2021/02/07/golang%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/">
+            Read More <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
       
     
   </section>
@@ -667,9 +615,9 @@
     
       
         <a href="https://bycsec.top/" target="_blank" class="codename">IGNITE</a>
-        , total visits
+        ，總訪問量為
           <span id="busuanzi_value_site_pv"><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
-          times
+          次
         
       
     

@@ -21,6 +21,10 @@
     <meta name="keywords" content="Go">
   
   
+    <meta name="description" content="寒假主要是先出完了之前心心念念的typescript 题目，之后主要是抽点时间学golang.同学推荐的仓库讲的还是很不错的
+https://github.com/unknwon/the-way-to-go_ZH_CN
+从简单的开发与学习过程中可以感觉到golang的确非常安全，很多问题由于作为强类型的静态语言，...">
+  
 
   <!-- feed -->
   
@@ -432,12 +436,12 @@
       <section class="article typo">
         <div class="article-entry" itemprop="articleBody">
           
-          <h1 id="golang-的一些安全问题"><a href="#golang-的一些安全问题" class="headerlink" title="golang 的一些安全问题"></a>golang 的一些安全问题</h1><blockquote>
-<p>[toc]</p>
-</blockquote>
-<p>寒假主要是先出完了之前心心念念的typescript 题目，之后主要是抽点时间学golang.同学推荐的仓库讲的还是很不错的</p>
+          <p>寒假主要是先出完了之前心心念念的typescript 题目，之后主要是抽点时间学golang.同学推荐的仓库讲的还是很不错的</p>
 <p><a href="https://github.com/unknwon/the-way-to-go_ZH_CN" target="_blank" rel="noopener">https://github.com/unknwon/the-way-to-go_ZH_CN</a></p>
 <p>从简单的开发与学习过程中可以感觉到golang的确非常安全，很多问题由于作为强类型的静态语言，从编译过程就能防止不安全的操作。因此大部分漏洞产生还是归结于依赖库（通常已经发展为CVE或者issue）以及开发者自身的操作漏洞。这里就作为小结,简单谈一谈</p>
+<a id="more"></a>
+
+
 <h2 id="interger-overflow-truncation"><a href="#interger-overflow-truncation" class="headerlink" title="interger overflow/truncation"></a>interger overflow/truncation</h2><p>golang 存在非常经典的整数反转/溢出问题</p>
 <p>对无符号数的反转</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> a <span class="keyword">uint32</span> = <span class="number">2147483648</span></span><br><span class="line">	<span class="keyword">var</span> b <span class="keyword">uint32</span> = <span class="number">2147483648</span></span><br><span class="line">	<span class="keyword">var</span> sum  =  a + b</span><br><span class="line">	fmt.Println(reflect.TypeOf(sum))</span><br><span class="line">	fmt.Printf(<span class="string">"Sum is : %d"</span>,sum)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//uint32</span></span><br><span class="line"><span class="comment">//Sum is : 0</span></span><br></pre></td></tr></table></figure>
@@ -551,7 +555,7 @@
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-07T21:59:37+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-07T22:01:51+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
     <p>更新于：Feb 7, 2021</p>
@@ -728,9 +732,9 @@
     
       
         <a href="https://bycsec.top/" target="_blank" class="codename">IGNITE</a>
-        , total visits
+        ，總訪問量為
           <span id="busuanzi_value_site_pv"><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
-          times
+          次
         
       
     

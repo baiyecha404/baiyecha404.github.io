@@ -6,7 +6,7 @@
   <link href="https://www.bycsec.top/atom.xml" rel="self"/>
   
   <link href="https://www.bycsec.top/"/>
-  <updated>2021-02-07T13:59:37.225Z</updated>
+  <updated>2021-02-07T14:01:51.685Z</updated>
   <id>https://www.bycsec.top/</id>
   
   <author>
@@ -21,13 +21,12 @@
     <link href="https://www.bycsec.top/2021/02/07/golang%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/"/>
     <id>https://www.bycsec.top/2021/02/07/golang%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/</id>
     <published>2021-02-07T13:56:47.000Z</published>
-    <updated>2021-02-07T13:59:37.225Z</updated>
+    <updated>2021-02-07T14:01:51.685Z</updated>
     
     
-      
-      
-    <summary type="html"></summary>
-      
+    <summary type="html">&lt;p&gt;寒假主要是先出完了之前心心念念的typescript 题目，之后主要是抽点时间学golang.同学推荐的仓库讲的还是很不错的&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/unknwon/the-way-to-go_ZH_CN&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/unknwon/the-way-to-go_ZH_CN&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;从简单的开发与学习过程中可以感觉到golang的确非常安全，很多问题由于作为强类型的静态语言，从编译过程就能防止不安全的操作。因此大部分漏洞产生还是归结于依赖库（通常已经发展为CVE或者issue）以及开发者自身的操作漏洞。这里就作为小结,简单谈一谈&lt;/p&gt;</summary>
     
     
     

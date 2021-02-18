@@ -472,7 +472,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <h2 id="interger-overflow-truncation"><a href="#interger-overflow-truncation" class="headerlink" title="interger overflow/truncation"></a>interger overflow/truncation</h2><p>golang 存在非常经典的整数反转/溢出问题</p>
 <p>对无符号数的反转</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> a <span class="keyword">uint32</span> = <span class="number">2147483648</span></span><br><span class="line">	<span class="keyword">var</span> b <span class="keyword">uint32</span> = <span class="number">2147483648</span></span><br><span class="line">	<span class="keyword">var</span> sum  =  a + b</span><br><span class="line">	fmt.Println(reflect.TypeOf(sum))</span><br><span class="line">	fmt.Printf(<span class="string">"Sum is : %d"</span>,sum)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//uint32</span></span><br><span class="line"><span class="comment">//Sum is : 0</span></span><br></pre></td></tr></table></figure>
-<p>象要直接声明一个大小已经溢出的数自然不会通过编译，因此出现反转的话，主要是在变量的相加这样的计算才会会导致标志CF位反转</p>
+<p>想要直接声明一个大小已经溢出的数自然不会通过编译，因此出现反转的话，主要是在变量的相加这样的计算才会会导致标志CF位反转</p>
 <p>有符号数的溢出</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">int8</span> = <span class="number">127</span></span><br><span class="line"><span class="keyword">var</span> b <span class="keyword">int8</span> = <span class="number">1</span></span><br><span class="line"><span class="keyword">var</span> sum <span class="keyword">int8</span> =  a + b</span><br><span class="line">fmt.Println(reflect.TypeOf(sum))</span><br><span class="line">fmt.Printf(<span class="string">"Sum is : %d"</span>,sum)</span><br><span class="line"><span class="comment">//int8</span></span><br><span class="line"><span class="comment">//-128</span></span><br></pre></td></tr></table></figure>
 
@@ -573,10 +573,10 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-09T20:37:28+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T11:44:26+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Feb 9, 2021</p>
+    <p>更新于：Feb 18, 2021</p>
   </a>
 </div>
 

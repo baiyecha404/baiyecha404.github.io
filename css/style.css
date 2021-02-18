@@ -3066,7 +3066,8 @@ article#tag .all-tags ul li span:before {
   margin: 8px;
 }
 .md .footer .donate .imgs img {
-  width: 80px;
+  width: 150px;
+  height: 200px;
 }
 article .readmore {
   display: block;

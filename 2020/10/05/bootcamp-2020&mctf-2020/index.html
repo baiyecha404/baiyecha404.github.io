@@ -28,8 +28,6 @@
   
 
   
-    <meta name="description" content="  国庆放假一直在刷题,大概是因为国赛自己打的太烂了吧…..感觉有不少东西还是可以精进的。">
-  
 
   <!-- feed -->
   
@@ -462,9 +460,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
   
   
   <p>  国庆放假一直在刷题,大概是因为国赛自己打的太烂了吧…..感觉有不少东西还是可以精进的。</p>
-<a id="more"></a>
-
-<p>  然后头几天怼了下htb的几道challenge.一个做了很久的题终于怼出来了,还有一道新题卡住了,另一道难题以为有了突破结果发现源码改了。。。。。。于是这两天就打了下ctftime上的两个ctf放松下。 bootcamp-2020是b01lers办的新手赛还是比较简单的,就是lua那题我怎么也没想到它websocket端口是对外的。另一个m*ctf2020挺有意思，难度有点高。而且其中除了web这个分类还有专门一个反序列化分类，比较有趣。目前他们都已经开放仓库，感兴趣的也可以去看看 :)<br><a href="https://github.com/b01lers/bootcamp-2020" target="_blank" rel="noopener">https://github.com/b01lers/bootcamp-2020</a></p>
+<p>  然后头几天怼了下htb的几道challenge.一个做了很久的题终于怼出来了,还有一道新题卡住了,另一道难题以为有了突破结果发现源码改了。。。。。。不过最后终于怼出来了2333.于是这两天就打了下ctftime上的两个ctf放松下。 bootcamp-2020是b01lers办的新手赛还是比较简单的,就是lua那题我怎么也没想到它websocket端口是对外的。另一个m*ctf2020挺有意思，难度有点高。而且其中除了web这个分类还有专门一个反序列化分类，比较有趣。目前他们都已经开放仓库，感兴趣的也可以去看看 :)<br><a href="https://github.com/b01lers/bootcamp-2020" target="_blank" rel="noopener">https://github.com/b01lers/bootcamp-2020</a></p>
 <p><a href="https://gitlab.com/mctf/quals-2020" target="_blank" rel="noopener">https://gitlab.com/mctf/quals-2020</a></p>
 <h2 id="bootcampCTF-2020"><a href="#bootcampCTF-2020" class="headerlink" title="bootcampCTF-2020"></a>bootcampCTF-2020</h2><p>做题时简单做的笔记。所以没图。将就看吧</p>
 <h3 id="Find-That-Data"><a href="#Find-That-Data" class="headerlink" title="Find That Data!"></a>Find That Data!</h3><p>整体上是个静态功能。首先登陆界面js中提示存在<code>/maze</code>路由。接下来发现maze.js中定义</p>
@@ -525,16 +521,16 @@ exp<figure class="highlight python"><table><tr><td class="gutter"><pre><span cla
 <p>比较符合实战的题目。有两种文件上传方式。其中一个是直接上传。还有一种应该是<code>file_get_contents</code>上传.这个环境是laravel，而且可以推测上传路径。加上只有jpeg的限制，那么就能够上传phar并进行触发达成rce.</p>
 <p>phpggc真好用。。。直接生成rce的phar-&gt;jpeg文件。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./phpggc -pj src_public_uploads_test.jpeg  -o  exp.jpeg Laravel/RCE1  system env</span><br></pre></td></tr></table></figure>
-<p>然后<br><code>phar:///app/public/uploads/YWGXnnP49J.jpeg</code><br>触发<br><img src="/2020/10/05/bootcamp-2020&mctf-2020/0.PNG" class="lazyload" data-srcset="bootcamp-2020&mctf-2020/0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br><code>flag=mctf{better_than_w@r}</code></p>
+<p>然后<br><code>phar:///app/public/uploads/YWGXnnP49J.jpeg</code><br>触发<br><img src="https://upload-images.jianshu.io/upload_images/18060177-8e25c404f2ce3bf5.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" class="lazyload" data-srcset="https://upload-images.jianshu.io/upload_images/18060177-8e25c404f2ce3bf5.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><code>flag=mctf{better_than_w@r}</code></p>
 <h3 id="Chat"><a href="#Chat" class="headerlink" title="Chat"></a>Chat</h3><p>序列化分类的java反序列化<br>首先给出服务端的依赖以及一个jar包。应该是jdk11的环境。不过只是一个thin client.</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    implementation <span class="string">'org.springframework.boot:spring-boot-starter-websocket'</span></span><br><span class="line">    compile group: <span class="string">'com.esotericsoftware'</span>, name: <span class="string">'kryo'</span>, version: <span class="string">'4.0.2'</span></span><br><span class="line">    compile group: <span class="string">'org.apache.xbean'</span>, name: <span class="string">'xbean-naming'</span>, version: <span class="string">'4.17'</span></span><br><span class="line">    compileOnly <span class="string">'org.projectlombok:lombok'</span></span><br><span class="line">    annotationProcessor <span class="string">'org.projectlombok:lombok'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>直接走到关键点找writeObject<br><img src="/2020/10/05/bootcamp-2020&mctf-2020/1.PNG" class="lazyload" data-srcset="bootcamp-2020&mctf-2020/1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
-<p>然后就大致可以确认是kyro反序列化了。具体利用方法主要是marshalsec + Xbean依赖生成一个payloadfile.然后用类似jndi的方法加载恶意class抛出Error.在error中反序列化ChatMessage类<br>不过因为没有指定类以及一些细节问题。还需要重新编译marshalsec.具体参考<br><a href="https://gitlab.com/mctf/quals-2020/chat/-/blob/master/exploit/marshalsec.patch" target="_blank" rel="noopener">https://gitlab.com/mctf/quals-2020/chat/-/blob/master/exploit/marshalsec.patch</a><br>加上一个写有静态方法抛出读文件payload的class即可达成rce.<br>整体上我还是有很多问题……不过既然源码都有了的话以后接触到kyro反序列化再回来填坑。</p>
-<h3 id="rails"><a href="#rails" class="headerlink" title="rails"></a>rails</h3><p>反序列化类的ruby反序列化<br>基本上就是可以用这个直接打。不过因为要求ruby版本2.5.1就没在本机上打。基本流程是两个cve打组合拳。<br>首先CVE-2019-5418是一个路径穿越的洞。可以在header中设置</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Accept: ..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;etc&#x2F;passwd&#123;&#123;</span><br></pre></td></tr></table></figure>
-<p>穿越路径访问到文件。<br>然后可以任意读了后就能读到反序列化的配置文件credentials.yml.enc ,master.key.计算出secret_key_base 后就能访问指定资源进行反序列化rce.CVE-2019-5420<br><a href="https://github.com/mpgn/Rails-doubletap-RCE" target="_blank" rel="noopener">https://github.com/mpgn/Rails-doubletap-RCE</a></p>
-<p>最后还是决定docker起了个2.5.1的环境……然后用这个exp时先bundle install (换源) + 安装nodejs + 去掉exploit.rb里的代理即可运行并反弹shell<br><img src="/2020/10/05/bootcamp-2020&mctf-2020/2.PNG" class="lazyload" data-srcset="bootcamp-2020&mctf-2020/2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
-<h2 id="summary"><a href="#summary" class="headerlink" title="summary"></a>summary</h2><p>  假期就这么在刷题中度过了,但感觉还是很空虚。最近又不知道学什么好，但是偏偏遇到的就是不会……tcltcl.啥时候能学好php跟java啊</p>
+<p>直接走到关键点:找writeObject<br><img src="https://upload-images.jianshu.io/upload_images/18060177-f91f23b07a8d3aaa.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" class="lazyload" data-srcset="https://upload-images.jianshu.io/upload_images/18060177-f91f23b07a8d3aaa.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>然后就大致可以确认是kyro反序列化了。具体利用方法主要是marshalsec + Xbean依赖生成一个payloadfile.然后用类似jndi的方法加载恶意class抛出Error.在error中反序列化ChatMessage类<br>不过因为没有指定类以及一些细节问题。还需要重新编译marshalsec.具体参考<a href="https://gitlab.com/mctf/quals-2020/chat/-/blob/master/exploit/marshalsec.patch" target="_blank" rel="noopener">https://gitlab.com/mctf/quals-2020/chat/-/blob/master/exploit/marshalsec.patch</a>加上一个写有静态方法抛出读文件payload的class即可达成rce.</p>
+<p>整体上我还是有很多问题……不过既然源码都有了的话以后接触到kyro反序列化再回来填坑。</p>
+<h3 id="rails"><a href="#rails" class="headerlink" title="rails"></a>rails</h3><p>反序列化类的ruby反序列化<br>基本上就是可以用这个直接打。<del>不过因为要求ruby版本2.5.1就懒得打了</del>。基本流程是两个cve打组合拳。<br>首先CVE-2019-5418是一个路径穿越的洞。可以在header中设置<code>Accept: ../../../../../../../../etc/passwd</code>穿越路径访问到文件。<br>然后可以任意读了后就能读到反序列化的配置文件credentials.yml.enc ,master.key.计算出secret_key_base 后就能访问指定资源进行反序列化rce.CVE-2019-5420<br><a href="https://github.com/mpgn/Rails-doubletap-RCE" target="_blank" rel="noopener">https://github.com/mpgn/Rails-doubletap-RCE</a></p>
+<p>最后还是决定docker起了个2.5.1的环境……然后用这个exp时先bundle install (换源) + 安装nodejs + 去掉exploit.rb里的代理即可运行并反弹shell<br><img src="https://upload-images.jianshu.io/upload_images/18060177-a1bee5391134b092.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" class="lazyload" data-srcset="https://upload-images.jianshu.io/upload_images/18060177-a1bee5391134b092.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><code>flag:mctf{1_l0ve_rzhd</code></p>
 
   
   
@@ -553,11 +549,6 @@ exp<figure class="highlight python"><table><tr><td class="gutter"><pre><span cla
             
               
                 <p>本文永久链接是：<a href=https://www.bycsec.top/2020/10/05/bootcamp-2020&mctf-2020/>https://www.bycsec.top/2020/10/05/bootcamp-2020&mctf-2020/</a></p>
-              
-            
-              
-                <p>欢迎打赏！ 您的支持将是我创作的重要动力</p>
-
               
             
           </blockquote>
@@ -582,10 +573,10 @@ exp<figure class="highlight python"><table><tr><td class="gutter"><pre><span cla
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-10-05T20:34:08+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T13:14:05+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Oct 5, 2020</p>
+    <p>更新于：Feb 18, 2021</p>
   </a>
 </div>
 
@@ -664,7 +655,7 @@ fastjsonexp利用不必多说，主要是学习下原理。以下都在jdk1.8调
 
 
     <div class='content'>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#bootcampCTF-2020"><span class="toc-text">bootcampCTF-2020</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Find-That-Data"><span class="toc-text">Find That Data!</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Programs-Only"><span class="toc-text">Programs Only</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Reindeer-Flotilla"><span class="toc-text">Reindeer Flotilla</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#First-Day-Inspection"><span class="toc-text">First Day Inspection</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#EnFlaskCom"><span class="toc-text">EnFlaskCom</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Where’s-Tron"><span class="toc-text">Where’s Tron?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Next-Gen-Networking"><span class="toc-text">Next Gen Networking</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Derezzy"><span class="toc-text">Derezzy</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#m-ctf2020"><span class="toc-text">m*ctf2020</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Web-wiki"><span class="toc-text">Web-wiki</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DeadJournal"><span class="toc-text">DeadJournal</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2in1"><span class="toc-text">2in1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Chat"><span class="toc-text">Chat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rails"><span class="toc-text">rails</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#summary"><span class="toc-text">summary</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#bootcampCTF-2020"><span class="toc-text">bootcampCTF-2020</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Find-That-Data"><span class="toc-text">Find That Data!</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Programs-Only"><span class="toc-text">Programs Only</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Reindeer-Flotilla"><span class="toc-text">Reindeer Flotilla</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#First-Day-Inspection"><span class="toc-text">First Day Inspection</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#EnFlaskCom"><span class="toc-text">EnFlaskCom</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Where’s-Tron"><span class="toc-text">Where’s Tron?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Next-Gen-Networking"><span class="toc-text">Next Gen Networking</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Derezzy"><span class="toc-text">Derezzy</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#m-ctf2020"><span class="toc-text">m*ctf2020</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Web-wiki"><span class="toc-text">Web-wiki</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DeadJournal"><span class="toc-text">DeadJournal</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2in1"><span class="toc-text">2in1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Chat"><span class="toc-text">Chat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rails"><span class="toc-text">rails</span></a></li></ol></li></ol>
     </div>
   </section>
 
@@ -750,7 +741,7 @@ fastjsonexp利用不必多说，主要是学习下原理。以下都在jdk1.8调
       
     
       
-        <div><p>博客内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener">署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</a></p>
+        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
 </div>
       
     
@@ -764,7 +755,7 @@ fastjsonexp利用不必多说，主要是学习下原理。以下都在jdk1.8调
       
         本站使用
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作为主题
+        作為主題
       
     
       

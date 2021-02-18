@@ -6,7 +6,7 @@
   <link href="https://www.bycsec.top/atom.xml" rel="self"/>
   
   <link href="https://www.bycsec.top/"/>
-  <updated>2021-02-18T03:44:26.560Z</updated>
+  <updated>2021-02-18T05:09:03.594Z</updated>
   <id>https://www.bycsec.top/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="https://www.bycsec.top/2021/02/07/golang%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/"/>
     <id>https://www.bycsec.top/2021/02/07/golang%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/</id>
     <published>2021-02-07T13:56:47.000Z</published>
-    <updated>2021-02-18T03:44:26.560Z</updated>
+    <updated>2021-02-18T05:09:03.594Z</updated>
     
     
     <summary type="html">&lt;p&gt;寒假主要是先出完了之前心心念念的typescript 题目，之后主要是抽点时间学golang.同学推荐的仓库讲的还是很不错的&lt;/p&gt;
@@ -40,7 +40,7 @@
     <link href="https://www.bycsec.top/2020/12/30/Farewell-to-2020/"/>
     <id>https://www.bycsec.top/2020/12/30/Farewell-to-2020/</id>
     <published>2020-12-30T06:24:42.000Z</published>
-    <updated>2020-12-31T13:42:30.246Z</updated>
+    <updated>2021-02-18T05:09:00.622Z</updated>
     
     
     <summary type="html">&lt;p&gt;Time to say goodbye&lt;/p&gt;</summary>
@@ -55,7 +55,7 @@
     <link href="https://www.bycsec.top/2020/11/11/NCTF2020-%E5%87%BA%E9%A2%98%E5%B0%8F%E8%AE%B0/"/>
     <id>https://www.bycsec.top/2020/11/11/NCTF2020-%E5%87%BA%E9%A2%98%E5%B0%8F%E8%AE%B0/</id>
     <published>2020-11-11T13:09:25.000Z</published>
-    <updated>2020-11-24T15:59:38.646Z</updated>
+    <updated>2021-02-18T05:09:40.104Z</updated>
     
     
     <summary type="html">&lt;p&gt;&lt;img src=&quot;https://soreatu-1300077947.cos.ap-nanjing.myqcloud.com/uPic/%E6%80%BB%E6%A6%9C.png&quot; class=&quot;lazyload&quot; data-srcset=&quot;https://soreatu-1300077947.cos.ap-nanjing.myqcloud.com/uPic/%E6%80%BB%E6%A6%9C.png&quot; srcset=&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=&quot; alt&gt;&lt;/p&gt;</summary>
@@ -74,7 +74,7 @@
     <link href="https://www.bycsec.top/2020/10/26/ByteCTF2020-easyscrapy/"/>
     <id>https://www.bycsec.top/2020/10/26/ByteCTF2020-easyscrapy/</id>
     <published>2020-10-26T00:39:02.000Z</published>
-    <updated>2020-10-26T14:41:18.000Z</updated>
+    <updated>2021-02-18T05:08:51.736Z</updated>
     
     
     <summary type="html">&lt;p&gt; 这次ByteCTF的web题难度属实离谱。好几道题几乎都无法下手。自己第一天主要是看了easyscrapy以及配了beaker的环境(结果根本操作不起来，于是放弃了……)第二天上午在配scrapy的环境，一直到下午才出思路,基本上给我几小时就能出了。然而因为要赶飞机结果没时间做了……晚上到了后总归是把题目做出来了。只能说有点可惜，不然可以为小绿草拿个三/四血的。&lt;/p&gt;
@@ -98,7 +98,7 @@
     <link href="https://www.bycsec.top/2020/10/19/N1CTF2020/"/>
     <id>https://www.bycsec.top/2020/10/19/N1CTF2020/</id>
     <published>2020-10-19T13:11:14.000Z</published>
-    <updated>2020-10-23T11:43:54.000Z</updated>
+    <updated>2021-02-18T05:09:36.903Z</updated>
     
     
     <summary type="html">&lt;p&gt;  N1CTF的题目质量毋庸置疑,可惜自己能力不足。除了签到还看了easytp5,filters,还有渗透系列的Victim.基本都没思路或者思路跑偏了……抓紧复现下来学习学习。&lt;/p&gt;</summary>
@@ -119,7 +119,7 @@
     <link href="https://www.bycsec.top/2020/10/09/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E6%B7%B1%E5%85%A5/"/>
     <id>https://www.bycsec.top/2020/10/09/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E6%B7%B1%E5%85%A5/</id>
     <published>2020-10-09T13:21:48.000Z</published>
-    <updated>2020-10-15T13:35:40.000Z</updated>
+    <updated>2021-02-18T05:08:43.422Z</updated>
     
     
     <summary type="html">&lt;p&gt;java继续开坑学习。看到哪个学哪个，shiro懒得看了。&lt;/p&gt;</summary>
@@ -135,11 +135,14 @@
     <title>bootcamp-2020&amp;&amp;mctf-2020</title>
     <link href="https://www.bycsec.top/2020/10/05/bootcamp-2020&amp;mctf-2020/"/>
     <id>https://www.bycsec.top/2020/10/05/bootcamp-2020&amp;mctf-2020/</id>
-    <published>2020-10-05T09:07:55.000Z</published>
-    <updated>2020-10-05T12:34:08.000Z</updated>
+    <published>2020-10-05T08:52:33.000Z</published>
+    <updated>2021-02-18T05:14:05.168Z</updated>
     
     
-    <summary type="html">&lt;p&gt;  国庆放假一直在刷题,大概是因为国赛自己打的太烂了吧…..感觉有不少东西还是可以精进的。&lt;/p&gt;</summary>
+      
+      
+    <summary type="html"></summary>
+      
     
     
     
@@ -155,7 +158,7 @@
     <link href="https://www.bycsec.top/2020/09/25/DarkCTF-WEB/"/>
     <id>https://www.bycsec.top/2020/09/25/DarkCTF-WEB/</id>
     <published>2020-09-25T11:27:48.000Z</published>
-    <updated>2020-09-30T07:01:54.000Z</updated>
+    <updated>2021-02-18T05:08:56.163Z</updated>
     
     
     <summary type="html">&lt;p&gt;好久没发新文章了。正好国庆就要到了，加上还有巅峰极客跟国赛要打。所以周五晚上练手了DarkCTF的题目，稍微花了几小时ak掉当时放出的web。其中大部分都比较简单，其中一道拿了二血的nodejs题目有点意思打算稍微记录下。&lt;/p&gt;</summary>
@@ -176,7 +179,7 @@
     <link href="https://www.bycsec.top/2020/08/27/%E9%92%93%E9%B1%BC%E5%9F%8E-zblog/"/>
     <id>https://www.bycsec.top/2020/08/27/%E9%92%93%E9%B1%BC%E5%9F%8E-zblog/</id>
     <published>2020-08-27T12:44:43.000Z</published>
-    <updated>2020-08-27T14:26:40.000Z</updated>
+    <updated>2021-02-18T05:08:32.118Z</updated>
     
     
     <summary type="html">&lt;p&gt;最近忙着复习去了。等到中午概统的复习课结束了才有时间完整看下题。除开一道web-pwn,剩下两个php都是常规考点,就是脑洞跟环境真心恶心人。学弟们也轻松解决，应该不需要什么记录。我自己做了下zblog这道java题,简单记录下。&lt;/p&gt;</summary>
@@ -195,7 +198,7 @@
     <link href="https://www.bycsec.top/2020/08/17/Laravel-popchain/"/>
     <id>https://www.bycsec.top/2020/08/17/Laravel-popchain/</id>
     <published>2020-08-17T07:06:24.000Z</published>
-    <updated>2020-08-17T10:27:40.000Z</updated>
+    <updated>2021-02-18T05:09:31.880Z</updated>
     
     
     <summary type="html">&lt;p&gt;考虑了下还是打算把laravel的链子跟一遍。看了下基本上就5.7,5.8两个版本的rce反序列化popchain。所以工作量应该不大。正好最近完成tp系列的popchain学习审计代码的感觉还在,那就趁热打铁吧 。&lt;/p&gt;</summary>
@@ -214,7 +217,7 @@
     <link href="https://www.bycsec.top/2020/08/15/hackthebox-Unbalanced/"/>
     <id>https://www.bycsec.top/2020/08/15/hackthebox-Unbalanced/</id>
     <published>2020-08-15T08:17:48.000Z</published>
-    <updated>2020-12-22T06:36:04.568Z</updated>
+    <updated>2021-02-18T05:09:27.449Z</updated>
     
     
     <summary type="html">&lt;p&gt;  Unbalanced 可能是自己做过的htb困难靶机中里最简单的一个。其主要难度来自于最开始的起手式部分。比较需要耐心,但是没有难度。而提权部分直接可以用nday打。这对于一个困难靶机而言基本太过简单了。所以到时简单分析下这个用到的cve。&lt;/p&gt;</summary>
@@ -235,7 +238,7 @@
     <link href="https://www.bycsec.top/2020/08/10/hackthebox-Fatty-JavaExploits/"/>
     <id>https://www.bycsec.top/2020/08/10/hackthebox-Fatty-JavaExploits/</id>
     <published>2020-08-10T02:13:15.000Z</published>
-    <updated>2020-08-10T05:29:40.000Z</updated>
+    <updated>2021-02-18T05:09:16.155Z</updated>
     
     
     <summary type="html">&lt;p&gt; Faaty 是htb这周刚退役的靶机。本来一周前自己打算下手试试的,不过做了一会发现因为即将退役就干脆搁置等ippsec出视频自己再做233. 不过整体来说这台靶机真的非常有趣。并且涉及到大量的java知识。在这一次实际操作中自己才真正体会到前段时间巩固java开发的基础知识有多么重要。因此这里记录下具体操作的流程,将学到的新知识巩固一下。&lt;/p&gt;</summary>
@@ -256,7 +259,7 @@
     <link href="https://www.bycsec.top/2020/08/05/Thinkphp-vuln/"/>
     <id>https://www.bycsec.top/2020/08/05/Thinkphp-vuln/</id>
     <published>2020-08-05T08:20:07.000Z</published>
-    <updated>2020-08-16T08:32:54.000Z</updated>
+    <updated>2021-02-18T05:09:49.002Z</updated>
     
     
     <summary type="html">&lt;p&gt;  这段时间因为一些原因老是有点自我纠结,很大程度上是因为对所计划学习的内容无法定夺的原因。上周因为hw所以错过了wmctf,赛后去看题发现基本都是php之类的,都不是很想看。相对感兴趣的框架的链子自己也没找全。感觉菜的不行,相比几个月前审一些比赛中的框架手生了很多。&lt;/p&gt;</summary>
@@ -275,7 +278,7 @@
     <link href="https://www.bycsec.top/2020/07/26/CyBRICS-CTF-2020/"/>
     <id>https://www.bycsec.top/2020/07/26/CyBRICS-CTF-2020/</id>
     <published>2020-07-26T12:56:52.000Z</published>
-    <updated>2020-07-27T06:43:36.000Z</updated>
+    <updated>2021-02-18T05:08:54.237Z</updated>
     
     
     <summary type="html">&lt;p&gt;Cybrics比赛感觉都没队友在打……简单记录下做的几道题&lt;/p&gt;</summary>
@@ -296,7 +299,7 @@
     <link href="https://www.bycsec.top/2020/07/24/hackthebox-Dyplesher/"/>
     <id>https://www.bycsec.top/2020/07/24/hackthebox-Dyplesher/</id>
     <published>2020-07-24T00:23:57.000Z</published>
-    <updated>2020-10-29T11:37:40.000Z</updated>
+    <updated>2021-02-18T05:09:12.856Z</updated>
     
     
     <summary type="html">&lt;p&gt;  Dyplesher靶机是自己第一次完成的现役insane难度htb靶机。靶机涉及的服务相对比较多,包括web,gogs,minecraft,memcache等等。不过说实话做完后感觉难度跟Travel差不多,到不了insane难度。可能主要是里面的Java知识对于大部分人来说偏繁琐了。总体上感觉还是不错的。这里还是简单记录下过程以及提权部分学到的知识吧。&lt;/p&gt;</summary>
@@ -317,7 +320,7 @@
     <link href="https://www.bycsec.top/2020/07/22/hackthebox-Intense/"/>
     <id>https://www.bycsec.top/2020/07/22/hackthebox-Intense/</id>
     <published>2020-07-22T10:40:50.000Z</published>
-    <updated>2020-11-29T13:06:02.074Z</updated>
+    <updated>2021-02-18T05:09:19.359Z</updated>
     
     
     <summary type="html">&lt;p&gt;纠结了好久要不要写这篇wp.最后还是打算把流程过一遍吧。首先这台靶机没料到的是开开心心做到root部分发现是个pwn一脸懵逼。想自己上手最后发现还是tcl,只好去请教朋友。所幸最后还是打成了。因此pwn部分我不做解释,主要把前面getshell流程写一遍。&lt;/p&gt;</summary>
@@ -336,7 +339,7 @@
     <link href="https://www.bycsec.top/2020/07/22/%C2%96RingZer0-CTF-JavascriptChallenge/"/>
     <id>https://www.bycsec.top/2020/07/22/%C2%96RingZer0-CTF-JavascriptChallenge/</id>
     <published>2020-07-22T03:27:17.000Z</published>
-    <updated>2020-07-24T13:13:40.000Z</updated>
+    <updated>2021-02-18T05:09:46.303Z</updated>
     
     
     <summary type="html">&lt;p&gt;在网上无意间看见一个CTF 解题平台，感觉里面的分类还挺有意思的。于是挑了一个javascript challenge来做一下。最近做题时经常感慨js的很多弱类型特性远比php丰富的多了，所以借此机会简单接触下js的魔鬼代码&lt;/p&gt;</summary>
@@ -353,11 +356,11 @@
     <link href="https://www.bycsec.top/2020/07/16/hackthebox-SneakyMailer/"/>
     <id>https://www.bycsec.top/2020/07/16/hackthebox-SneakyMailer/</id>
     <published>2020-07-16T10:57:21.000Z</published>
-    <updated>2020-11-29T12:50:31.545Z</updated>
+    <updated>2021-02-18T05:09:24.139Z</updated>
     
     
     <summary type="html">&lt;p&gt;SneakyMailer是自己在htb上完成的第30台靶机。因为特殊纪念意义加上涉及到一些很有意思的知识所以记录下。整体难度比较简单。&lt;/p&gt;
-&lt;p&gt;由于SneakyMailer还是active状态，所以我会给文章上锁直到靶机退役。&lt;br&gt;ps:已退役&lt;br&gt;&lt;img src=&quot;/2020/07/16/hackthebox-SneakyMailer/head.PNG&quot; class=&quot;lazyload&quot; data-srcset=&quot;hackthebox-SneakyMailer/head.PNG&quot; srcset=&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=&quot; alt&gt;&lt;/p&gt;</summary>
+&lt;p&gt;由于SneakyMailer还是active状态，所以我会给文章上锁直到靶机退役。&lt;br&gt;ps:已退役&lt;br&gt;&lt;img src=&quot;/2020/07/16/hackthebox-SneakyMailer/head.PNG&quot; class=&quot;lazyload&quot; data-srcset=&quot;head.PNG&quot; srcset=&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=&quot; alt&gt;&lt;/p&gt;</summary>
     
     
     
@@ -373,7 +376,7 @@
     <link href="https://www.bycsec.top/2020/07/09/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E7%9B%B8%E5%85%B3/"/>
     <id>https://www.bycsec.top/2020/07/09/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E7%9B%B8%E5%85%B3/</id>
     <published>2020-07-09T03:04:44.000Z</published>
-    <updated>2020-09-22T08:22:26.000Z</updated>
+    <updated>2021-02-18T05:08:44.717Z</updated>
     
     
     <summary type="html">&lt;p&gt;从几个月前就说要学javaweb。结果一直在拖。现在开篇文章强迫自己写写笔记。&lt;/p&gt;
@@ -389,26 +392,23 @@
   </entry>
   
   <entry>
-    <title>hackthebox-Travel</title>
-    <link href="https://www.bycsec.top/2020/07/07/hackthebox-Travel/"/>
-    <id>https://www.bycsec.top/2020/07/07/hackthebox-Travel/</id>
-    <published>2020-07-07T12:10:55.000Z</published>
-    <updated>2020-11-29T13:06:54.079Z</updated>
+    <title>SCTF2020 writeup</title>
+    <link href="https://www.bycsec.top/2020/07/05/SCTF2020-writeup/"/>
+    <id>https://www.bycsec.top/2020/07/05/SCTF2020-writeup/</id>
+    <published>2020-07-05T12:33:28.000Z</published>
+    <updated>2021-02-18T05:09:47.891Z</updated>
     
     
-    <summary type="html">&lt;p&gt;Travel这台靶机真的是做hackthebox以来遇到的最佳靶机了。相比之前因为pwn的知识而根本没法下手的一些hard靶机。Travel属于纯渗透WEB知识,而且非常接近实战。难度甚至完全可以担当insane了。其起手式相比其他靶机相当困难。但我也因此学到了ssrf利用的新姿势,并且在之后的提权部分也基本上是面对完全未知的系统操作。所以最后完成的瞬间真的非常高兴。毕竟这是自己第一次做出不到四位数solved的靶机。整个过程中也遇到了很多困难。感谢anoNym1ty与traut的帮助。在他们给我的提示下我才能找到下手点并逐步完成渗透的过程。&lt;/p&gt;
-&lt;p&gt;Let’s get it started.&lt;/p&gt;</summary>
+    <summary type="html">&lt;p&gt;越打越菜 :(&lt;br&gt;这次比赛难度相比上次RCTF的难度好了点。但是最后还是只能感慨自己tcl。做出来的只有CloudDisk跟UnsafeDefenseSystem.相比下solve比较多的pythonsandbox自己反而因为总觉得pyjail太老套不去研究,连下手都做不到……赛后还是把能复现的都复现下吧。&lt;/p&gt;</summary>
     
     
     
     
-    <category term="PHP" scheme="https://www.bycsec.top/tags/PHP/"/>
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
     
-    <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
-    <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
-    
-    <category term="Linux" scheme="https://www.bycsec.top/tags/Linux/"/>
+    <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
   </entry>
   

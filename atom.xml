@@ -6,7 +6,7 @@
   <link href="https://www.bycsec.top/atom.xml" rel="self"/>
   
   <link href="https://www.bycsec.top/"/>
-  <updated>2021-03-08T11:29:35.095Z</updated>
+  <updated>2021-04-08T13:01:17.855Z</updated>
   <id>https://www.bycsec.top/</id>
   
   <author>
@@ -15,6 +15,25 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>angstromCTF 2021</title>
+    <link href="https://www.bycsec.top/2021/04/04/angstromCTF-2021/"/>
+    <id>https://www.bycsec.top/2021/04/04/angstromCTF-2021/</id>
+    <published>2021-04-04T12:41:34.000Z</published>
+    <updated>2021-04-08T13:01:17.855Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;  放假时做了下 angstromCTF的题目, 质量都挺不错的。这里记录下自己做出来的题目以及复现的。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+  </entry>
   
   <entry>
     <title>D^3CTF 8-bit-pub</title>
@@ -389,26 +408,6 @@
     <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
     
     <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>学习笔记-Java相关</title>
-    <link href="https://www.bycsec.top/2020/07/09/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E7%9B%B8%E5%85%B3/"/>
-    <id>https://www.bycsec.top/2020/07/09/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E7%9B%B8%E5%85%B3/</id>
-    <published>2020-07-09T03:04:44.000Z</published>
-    <updated>2021-02-18T05:08:44.717Z</updated>
-    
-    
-    <summary type="html">&lt;p&gt;从几个月前就说要学javaweb。结果一直在拖。现在开篇文章强迫自己写写笔记。&lt;/p&gt;
-&lt;p&gt;大体上打算从常见漏洞和框架使用两个方面学习。因为有语言基础就不谈比较基础的部分了。&lt;/p&gt;</summary>
-    
-    
-    
-    
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
-    <category term="Java" scheme="https://www.bycsec.top/tags/Java/"/>
     
   </entry>
   

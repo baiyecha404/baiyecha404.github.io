@@ -6,7 +6,7 @@
   <link href="https://www.bycsec.top/atom.xml" rel="self"/>
   
   <link href="https://www.bycsec.top/"/>
-  <updated>2021-05-29T16:59:59.915Z</updated>
+  <updated>2021-06-06T12:45:23.675Z</updated>
   <id>https://www.bycsec.top/</id>
   
   <author>
@@ -15,6 +15,23 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>使用Node.js实现动态爬虫</title>
+    <link href="https://www.bycsec.top/2021/06/06/%E4%BD%BF%E7%94%A8Node-js%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E7%88%AC%E8%99%AB/"/>
+    <id>https://www.bycsec.top/2021/06/06/%E4%BD%BF%E7%94%A8Node-js%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E7%88%AC%E8%99%AB/</id>
+    <published>2021-06-06T12:44:20.000Z</published>
+    <updated>2021-06-06T12:45:23.675Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;  本文是关于自己用Node.js实现动态爬虫的一些记录以及踩坑。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="Node.js" scheme="https://www.bycsec.top/tags/Node-js/"/>
+    
+  </entry>
   
   <entry>
     <title>春秋杯-WEB</title>
@@ -394,23 +411,6 @@
     <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
     
     <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>RingZer0-CTF JavascriptChallenge</title>
-    <link href="https://www.bycsec.top/2020/07/22/%C2%96RingZer0-CTF-JavascriptChallenge/"/>
-    <id>https://www.bycsec.top/2020/07/22/%C2%96RingZer0-CTF-JavascriptChallenge/</id>
-    <published>2020-07-22T03:27:17.000Z</published>
-    <updated>2021-02-18T05:09:46.303Z</updated>
-    
-    
-    <summary type="html">&lt;p&gt;在网上无意间看见一个CTF 解题平台，感觉里面的分类还挺有意思的。于是挑了一个javascript challenge来做一下。最近做题时经常感慨js的很多弱类型特性远比php丰富的多了，所以借此机会简单接触下js的魔鬼代码&lt;/p&gt;</summary>
-    
-    
-    
-    
-    <category term="javascript" scheme="https://www.bycsec.top/tags/javascript/"/>
     
   </entry>
   

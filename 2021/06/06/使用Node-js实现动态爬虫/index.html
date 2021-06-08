@@ -474,7 +474,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">bgChange</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> rndCol = <span class="string">'rgb('</span> + random(<span class="number">255</span>) + <span class="string">','</span> + random(<span class="number">255</span>) + <span class="string">','</span> + random(<span class="number">255</span>) + <span class="string">')'</span>;</span><br><span class="line">  <span class="built_in">document</span>.body.style.backgroundColor = rndCol;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">btn.addEventListener(<span class="string">'click'</span>, bgChange);</span><br></pre></td></tr></table></figure>
 <p> 所以hook两种事件的方式当然就不同了，前者是设置访问器属性,后者直接hook <code>addEventListener</code>原型即可。<br> 具体参考 <a href="https://www.anquanke.com/post/id/178339#h2-2" target="_blank" rel="noopener">https://www.anquanke.com/post/id/178339#h2-2</a></p>
 <p> 这里hookJS 执行的context是在浏览器,不能在代码里直接通过global等方法获取到hook的url.所以方法就是hook时把结果存好,比如存到window里，额外<code>page.evaluate( () =&gt; return window.foo)</code>即可。</p>
-<h2 id="hook-Navaigation"><a href="#hook-Navaigation" class="headerlink" title="hook Navaigation"></a>hook Navaigation</h2><p>  前端导航是这次自己困惑最久的地方。本身也是一个难点。从 <a href="https://www.anquanke.com/post/id/178339#h2-7" target="_blank" rel="noopener">https://www.anquanke.com/post/id/178339#h2-7</a>  这里可以知道，我们一般希望自己的页面不会随便就跳转，但是hook <code>window.location</code>是不可行的，因为默认location属性的configurable选项是false。<br>  文中提到一种，由于开启了interception,只要修改返回值为204就好了。</p>
+<h2 id="hook-Navigation"><a href="#hook-Navigation" class="headerlink" title="hook Navigation"></a>hook Navigation</h2><p>  前端导航是这次自己困惑最久的地方。本身也是一个难点。从 <a href="https://www.anquanke.com/post/id/178339#h2-7" target="_blank" rel="noopener">https://www.anquanke.com/post/id/178339#h2-7</a>  这里可以知道，我们一般希望自己的页面不会随便就跳转，但是hook <code>window.location</code>是不可行的，因为默认location属性的configurable选项是false。<br>  文中提到一种，由于开启了interception,只要修改返回值为204就好了。</p>
 <blockquote>
 <p>204意思是，服务端说明操作已经执行成功，同时告诉浏览器不需要离开当前的文档内容</p>
 </blockquote>
@@ -561,10 +561,10 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-06-06T20:45:23+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-06-08T21:41:38+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Jun 6, 2021</p>
+    <p>更新于：Jun 8, 2021</p>
   </a>
 </div>
 
@@ -634,7 +634,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 
     <div class='content'>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#起手式"><span class="toc-text">起手式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#初始化"><span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hookJS"><span class="toc-text">hookJS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hook-Navaigation"><span class="toc-text">hook Navaigation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#收集link-amp-amp-注释"><span class="toc-text">收集link &amp;&amp; 注释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#表单输入以及提交。"><span class="toc-text">表单输入以及提交。</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#事件触发"><span class="toc-text">事件触发</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#入队-amp-amp-url去重"><span class="toc-text">入队 &amp;&amp; url去重</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Summary"><span class="toc-text">Summary</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#References"><span class="toc-text">References</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#起手式"><span class="toc-text">起手式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#初始化"><span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hookJS"><span class="toc-text">hookJS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hook-Navigation"><span class="toc-text">hook Navigation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#收集link-amp-amp-注释"><span class="toc-text">收集link &amp;&amp; 注释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#表单输入以及提交。"><span class="toc-text">表单输入以及提交。</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#事件触发"><span class="toc-text">事件触发</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#入队-amp-amp-url去重"><span class="toc-text">入队 &amp;&amp; url去重</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Summary"><span class="toc-text">Summary</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#References"><span class="toc-text">References</span></a></li></ol>
     </div>
   </section>
 
@@ -699,7 +699,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
             
           
             
-              <a href="mailto:895531613@qq.com"
+              <a href="mailto:baiyecha404@gmail.com"
                 class="social fas fa-envelope flat-btn"
                 target="_blank"
                 rel="external nofollow noopener noreferrer">

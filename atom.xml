@@ -6,7 +6,7 @@
   <link href="https://www.bycsec.top/atom.xml" rel="self"/>
   
   <link href="https://www.bycsec.top/"/>
-  <updated>2021-06-08T13:41:38.799Z</updated>
+  <updated>2021-07-06T16:14:41.855Z</updated>
   <id>https://www.bycsec.top/</id>
   
   <author>
@@ -15,6 +15,25 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>0ctf/tctf-soracon</title>
+    <link href="https://www.bycsec.top/2021/07/07/0ctf-tctf-soracon/"/>
+    <id>https://www.bycsec.top/2021/07/07/0ctf-tctf-soracon/</id>
+    <published>2021-07-06T16:11:05.000Z</published>
+    <updated>2021-07-06T16:14:41.855Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;  这次0ctf/tctf 抽空看了下soracon这题。最终还是非常可惜，可能有多点时间做题就能解出了。下面是自己的一个思路流程。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+  </entry>
   
   <entry>
     <title>使用Node.js实现动态爬虫</title>
@@ -392,25 +411,6 @@
     <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
     
     <category term="Java" scheme="https://www.bycsec.top/tags/Java/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>hackthebox-Intense</title>
-    <link href="https://www.bycsec.top/2020/07/22/hackthebox-Intense/"/>
-    <id>https://www.bycsec.top/2020/07/22/hackthebox-Intense/</id>
-    <published>2020-07-22T10:40:50.000Z</published>
-    <updated>2021-02-18T05:09:19.359Z</updated>
-    
-    
-    <summary type="html">&lt;p&gt;纠结了好久要不要写这篇wp.最后还是打算把流程过一遍吧。首先这台靶机没料到的是开开心心做到root部分发现是个pwn一脸懵逼。想自己上手最后发现还是tcl,只好去请教朋友。所幸最后还是打成了。因此pwn部分我不做解释,主要把前面getshell流程写一遍。&lt;/p&gt;</summary>
-    
-    
-    
-    
-    <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
-    
-    <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
     
   </entry>
   

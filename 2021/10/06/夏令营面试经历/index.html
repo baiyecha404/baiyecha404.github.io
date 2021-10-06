@@ -22,11 +22,11 @@
 
   <!-- 页面元数据 -->
   
-  <title>NCTF2020-出题小记 - byc_404&#39;s blog</title>
-  
-    <meta name="keywords" content="CTF,wp">
+  <title>夏令营面试经历 - byc_404&#39;s blog</title>
   
 
+  
+    <meta name="description" content="简单记录下今年暑假的夏令营经历。">
   
 
   <!-- feed -->
@@ -406,7 +406,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     
     
       <h1 class="title">
-        NCTF2020-出题小记
+        夏令营面试经历
       </h1>
       <div class='new-meta-box'>
         
@@ -430,7 +430,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
             <div class="new-meta-item date">
   <a class='notlink'>
     <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Nov 11, 2020</p>
+    <p>发布于：Oct 6, 2021</p>
   </a>
 </div>
 
@@ -441,7 +441,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
   <div class="new-meta-item browse leancloud">
     <a class='notlink'>
       
-      <div id="lc-pv" data-title="NCTF2020-出题小记" data-path="/2020/11/11/NCTF2020-%E5%87%BA%E9%A2%98%E5%B0%8F%E8%AE%B0/">
+      <div id="lc-pv" data-title="夏令营面试经历" data-path="/2021/10/06/%E5%A4%8F%E4%BB%A4%E8%90%A5%E9%9D%A2%E8%AF%95%E7%BB%8F%E5%8E%86/">
         <i class="fas fa-eye fa-fw" aria-hidden="true"></i>
         <span id='number'><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
         次浏览
@@ -459,32 +459,89 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
   
   
-  <p><img src="https://soreatu-1300077947.cos.ap-nanjing.myqcloud.com/uPic/%E6%80%BB%E6%A6%9C.png" class="lazyload" data-srcset="https://soreatu-1300077947.cos.ap-nanjing.myqcloud.com/uPic/%E6%80%BB%E6%A6%9C.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+  <p>简单记录下今年暑假的夏令营经历。</p>
 <a id="more"></a>
 
-
-<p>nctf2020终于结束了。我手头的题目也基本无了 XD<br>因为这次nctf学长他们要来的奖励挺丰厚的(xray license我也想要啊),所以就把手头的题都放出来了。如果难度对新生有些劝退的话还请多多包涵。校赛前几天，甚至以为yypl要来就临时赶出了一道bg_laravel,结果被忽悠了。最后大部分师傅可能都去做祥云杯了，所以没能过来打，算是比较可惜了。</p>
-<p>这次我的题目除了bg_laravel以外全都有人解出.(rmb师傅还有其他师傅tql)题目环境放github上了,可以自取复现。<br><a href="https://github.com/baiyecha404/My-NCTF2020-Challs" target="_blank" rel="noopener">https://github.com/baiyecha404/My-NCTF2020-Challs</a></p>
-<h2 id="JS-world-11-solves"><a href="#JS-world-11-solves" class="headerlink" title="JS-world [11 solves]"></a>JS-world [11 solves]</h2><p>这道是专门为校赛准备的签到题目。整体思想上其实就是想展示下js在前后端的通用性。只要理解了前端源码就能推断后端逻辑。同时也想说明前端的waf等于没有waf :).加上<code>powered by ejs</code>的提示,应该不难看出用的是ejs来渲染html代码。那么直接用ejs的语句就可以RCE了.</p>
-<p>比赛的时候本来一血很快就出了的，结果后来半天没人解。我看了眼html发现有的师傅已经可以RCE了结果就是不去看根目录的flag.txt.阿这……</p>
-<h2 id="Mango-3-solves"><a href="#Mango-3-solves" class="headerlink" title="Mango [3 solves]"></a>Mango [3 solves]</h2><p>Mango 自然是为了玩一个mongo &lt;-&gt; mango的梗。这道题的起源比较有意思，来自于上半年某国际赛的赛题。当时题目考点是node-serialize的反序列化,不过我在黑盒测的时候意外发现那道题目还有nosql注入的漏洞存在。于是后来getshell后索性dump源码下来研究了下，也大致明白了为什么他的配置会产生nosql注入。加上后来发现这样的代码写法其实还挺常见的，所以干脆单独剥出来做成nosql注入了。</p>
-<p>但是我的定位只是中等难度，最后只有3 solves我也很迷。不知道是因为大家没有接触过nosql注入还是什么的。我现在见过的大部分nodejs写的项目数据库都是用的mongodb,感觉出现nosql的概率还是不小的。稍微需要更换方式fuzz的地方就是json传递数据了。这个也算是比较常见的trick吧,node由于传递json导致与对象混淆的问题简直不要太多。所以第二个提示给出了<code>app.use(express.json())</code>。手抖加一个json中间件或者因为某个需求不得不加中间件(写api时),很有可能带来奇怪的问题。所以写node传参一定要记得类型检查啊。</p>
-<h2 id="PackageManager-v1-0-v2-0-7-solves-3-solves"><a href="#PackageManager-v1-0-v2-0-7-solves-3-solves" class="headerlink" title="PackageManager v1.0/v2.0 [7 solves / 3 solves]"></a>PackageManager v1.0/v2.0 [7 solves / 3 solves]</h2><p>PackageManager 系列放了两道题。其实源码基本相差不大，2就是1的升级版。一开始的PackageManager 6月份就出好了。不过后来过了几个月后意外发现居然存在非预期。于是索性就把非预期放到第二版里并且加难了。考点其实是我觉得很值得去学习的用子进程来<code>prototype pollution to RCE</code>的一种手段.相比深挖模板污染属性的利用方法，子进程导致RCE算是大大降低了利用难度。然而国内相关文章貌似主要是先知上的一篇kibana cve分析,不过就子进程利用范围上有些差错。所以希望借此让大家重新关注下。</p>
-<p>当然，后来意外发现这个考点第5空间线下貌似也出现过,不过我题目先出好的233。</p>
-<p>v2除了达成RCE以外,为了增加一点难度，特意就把flag放到mongodb中了。这点根据hint.txt以及目录下的文件来推断应该不成问题。其实目的是模拟一个开发上线到生产环境的情景。比如像我这样,容易装了某个依赖写个demo，然后字段留到package.json里了,本地删了相关js代码后拿到生产环境下直接<code>npm install</code> ,就多装了没有用的依赖。所以这里就能用mongodb依赖连接内网mongodb拿flag.</p>
-<p>然后比赛就翻车了……nunjucks把我给害了。之所以选nunjucks做模板引擎本来是因为我所知道的引擎除了nunjucks外，像hbs,ejs,pug,jade都是可以污染模板RCE的。所以没有跟源码就直接想看看有没有人非预期污染nunjucks属性的（p1g3师傅应该是找了nunjucks的污染，但是只能等我靶机每分钟重启才能看一次执行结果,没有预期解方便）。结果发现nunjucks直接模板注入根本不受这些影响…… 我v2本来目的就是说明其实不止fork,任意子进程都可以结合污染环境变量然后RCE,所以就用了<code>execSync(&#39;whoami&#39;)</code>。中间件里还考察了一个trick绕过debug路由的限制.结果模板注入直接通杀v1,v2 orz</p>
-<p>不过貌似看v2的人不多，所以最后rmb跟p1g3师傅应该是预期做的。一血的Somnus师傅就直接非预期模板注入了……不过非预期什么的无所谓,能拿flag都是好方法,大家能学到子进程污染的知识我就比较满足了。最后比较普遍的问题是有的师傅连接mongodb代码写好后没有<code>db.close()</code>.那这本地必然是拿不到查询结果的。</p>
-<h2 id="SimpleSimplePie-1-solves"><a href="#SimpleSimplePie-1-solves" class="headerlink" title="SimpleSimplePie [1 solves]"></a>SimpleSimplePie [1 solves]</h2><p>挖链子是不可能的，所以只能自己手写几个乱七八糟的类来构造pop链了。整体思路我感觉跟tp系列的pop chain 差不多？就是个super-mini版的<code>__toString() -&gt; __call() -&gt; call_user_func</code>调用自身函数。</p>
-<p>然后利用则比较有意思。灵感当然就是之前做htb时发现的新姿势 ssrf 打memcache触发反序列化. 后来意外发现这样的利用其实实战中还挺不少的，比如之前安恒俊杰师傅的<code>ssrf -&gt; RCE的艰难利用</code>就是ssrf 打redis触发thinkphp反序列化.我的题相比实战还是简单多了。</p>
-<p>这里pop链里有个小坑就是链子的起点选<code>__wakeup</code>最好。我自己当初调试的时候就发现如果用<code>__destruct</code>做起点，会因为序列化数据的一些内容触发simplepie的报错。所以写利用类时故意刁难加了个<code>__destruct</code>希望踩个坑(我爬了)。但是唯一解出的rmb师傅在选择了<code>__destruct</code>做起点后是用了phpggc里的fast destruct 来进入<code>__destruct</code>。这倒确实出乎我意料,学到了。</p>
-<h2 id="bg-laravel-0-solves"><a href="#bg-laravel-0-solves" class="headerlink" title="bg_laravel [0 solves]"></a>bg_laravel [0 solves]</h2><p>没想到最后laravel成了防ak题……因为时临时赶的，所以很多地方写的不是很好，还请见谅。甚至由sql注入到上传getshell都是灵光一闪想出来的。</p>
-<p>题目之所以用了保国当然是因为最近被马老师的鬼畜给洗脑了233。所以我的题目上传不给回显路径，其实是年轻人不讲武德不告诉你文件名 :) </p>
-<p>首先在国内CTF laravel的反序列化早就被打烂了，所以我就想能不能出点新意。说起来之前七月火师傅的laravel文章下居然有人说没人这么写控制器所以反序列化没有用，这就来打脸。众所周知,phar反序列化直接扩宽了php反序列化的利用面。一个laravel站里出现的文件流操作绝对不少，那么如果能有可控点触发phar反序列化,结合pop链直接就能getshell.</p>
-<p>但是这么考太简单了，所以自然是加点花。</p>
-<p>刚好我最近接触到了laravel 5.8.10的很冷门的sql注入。冷门主要是因为github上修复都只是说修复了逃逸单引号的漏洞,而不是明说的sql注入漏洞。而且利用条件也有点苛刻，一个是要输入可控,另一个是回显得有json数据,否则<code>json_extract()</code>会报错。wp里给的参考文章也只是说了<code>addSelect()</code>,<code>select()</code> + json回显的数据可能会导致sql注入。可实际上，题目中出现的<code>orderby()</code>也是可以注入的。这就要看师傅们自己debug了。我自己是当初直接wrapJsonPath那下断点碰运气在可控位置一个个尝试触发才发现的。</p>
-<p>sql注入怎么跟phar反序列化结合呢？除开可控的<code>phar://</code>输入点，我第一想法是把上传的文件名随机化，然后把文件名之类的保存在mysql里。但是很有意思的是，我在网上找了不少laravel的文件上传都用了ORM,也就是说,File类是个Eloquent model.执行<code>$file-&gt;save()</code>时对应的数据就都到了数据库里了,正合我意。</p>
-<p>所以可能大部分师傅被这个冷门的laravel sql注入给难住了。所以还是要多谷歌+查看官方这个版本的一些小改动,说不定就能定位漏洞点了。</p>
-<h2 id="summary"><a href="#summary" class="headerlink" title="summary"></a>summary</h2><p>  总之这次比赛能看到师傅们做自己的题,顺便交流下思路还是比较开心的。希望大家明年能接着来玩，也可以期待下不知道有没有的X1CTF </p>
+<p>最后是接受了信工所的预录取。期待自己明年的研究生生活 😃</p>
+<h2 id="初期准备"><a href="#初期准备" class="headerlink" title="初期准备"></a>初期准备</h2><ul>
+<li>个人情况：双非强化班(分流信安专业) + GPA rank 3/28 + 若干学科竞赛国奖 + 若干CTF竞赛国奖 + 0科研0项目。</li>
+<li>报名：信工所，复旦，上交，北邮，天大，东南，中科大 (都是直硕)</li>
+<li>入营： 北邮 信工所 东南</li>
+</ul>
+<p>先说下自己的目标。因为ctf经历的缘故，我对实力非常出众的ctf战队所在的学校是自然抱有向往的。所以一开始我把目标定在上交0ops，复旦白泽，信工所NeSE,北邮天枢。去这几个学校的难易程度还是有一定梯度的，所以我觉得还算比较合理吧。除此以外还要给自己留个后路，所以打算报下省内一直比较照顾我校的东南作为保底XD。 当然这里没有包括其他一些高校如华科，同样也是实力出众符合我选择标准的，不过因为我不想回武汉所以就没有考虑。</p>
+<p>不过整体上看，我当时还是低估了今年夏令营的内卷程度。最早是发现中科大信科夏令营第一条直接写明不收双非。。。这个真的很伤。之后就是复习期末的时候接到复旦的拒信，丧了一两天。所以临时起意报了天大。本来打算不管之前的顾忌，去报华科的。但是华科夏令营需要华科网安老师的推荐信，我给老师发了邮件就直接石沉大海，至今未收到回信。可能是能力不足以及联系时间过晚导致的吧。这些因素都导致自己早期特别特别焦虑。</p>
+<p>一方面是今年夏令营确实卷的更胜去年，而我坚定表示不投直博（所以华五基本没戏了），另一方面我没有摆对姿态海投高校。（但是到最后感觉投了也不感兴趣的确实不如不投。</p>
+<p>看了眼复旦的，报计院夏令营的总共300个，网安专业的总共50人。估计基本都是985优中选优；交大更不用说，去年只收非C9专业top1，不直博肯定凉凉。</p>
+<p>交大复旦没入营至少会发邮件/短信拒绝，这个算很贴心的了。其他的很多即使没入也不发邮件不发名单反而弄得意难平。</p>
+<p>所以现在看来当海王还是能够理解的。毕竟没有985出身，真的得靠海投来确保能有一定收获。</p>
+<h2 id="北邮"><a href="#北邮" class="headerlink" title="北邮"></a>北邮</h2><p>北邮网安大概是6月中旬开始报名，然后28号就结束了。而且除了填系统还要邮寄材料，但是最后开营的时候老师又说材料没寄到不要紧。最后拖到开营前一天通知入营。当时还是挺期待的，毕竟是报名夏令营里面第一个入营成功的。</p>
+<p>但是貌似今年是第一年以网安学院的名义办夏令营。导致我觉得很多地方细节都没做好。比如系统就炸了几次，报多个志愿没法看出是哪个老师通过了的。不过话说回来，北邮的入营生源质量我觉得倒是意外的不错，跟后面东南相比也不算差。我们院好像也只进了2个。</p>
+<p>第一天宣讲完后，我报的网安8组的老师拉了个群，第二天每个同学简单面了3分钟就结束了。然后4号结营前一天发邮件说以4周的远程实习方式来进行考核。。。。。。<br>5号上午表示因各招生组“导师见面会”时间不统一，报送的“优秀营员”时间不同，加之有多个志愿同时被录取为“优秀营员”的情况,所以不办结营仪式。。。。。。</p>
+<p>4周的远程实习我是真的不理解。更关键的是后面7月31号才发来消息让我参加，刚好跟学校的项目撞了，加上还在等没发通知的东南，所以只好拒了。</p>
+<p>总的来说，北邮网安可能第一次办夏令营导致很多地方安排不周，加上自己感觉4周远程实习这种考核方式不太理性吧，基本就阻碍你参与其他院校的机会了。希望以后安排会合理些。难度上没参加面试所以没法评价，但是入营选择上绝对不算简单。计算机院那边卷的更厉害，很多入不了营不谈，我们班rank1接了个电话面试，听说不直博就没后续了。</p>
+<h2 id="信工所"><a href="#信工所" class="headerlink" title="信工所"></a>信工所</h2><p>信工所差点没入营。。。谁都想不到今年信工所500人的夏令营规模，生源质量可能历年最好的，而且貌似没有以前的霸面了（就是找老师捞你入营）。7月9日那天本来都以为凉了打算暑假摸鱼，结果第二天收到补录通知原地复活。</p>
+<p>当初信工所报名因为是最早开始的，报名单上很多资料地方我都写的很草率，不像后面填了几个系统后有一套成熟的自我陈述模板了。所以如果因为自己的草率导致错过机会估计会后悔死。。。</p>
+<p>最后入营名单有600人，甚至5清华7北大。实际参营的大概500人。我们学校总共就进4个，3个都是在500-600编号的，多半就是补录的waiting list里了。前面基本全985 211</p>
+<p>然后第一天开个营，第二天听各个室宣讲。6个室宣讲完后给了1小时到各个室自己组织的会议里去交流即答疑。我进去6室的会议后一眼发现怎么这么多打CTF的师傅，有几个师傅的id好像原来xnuca/巅峰极客 线下群里都见过。更关键的是就我学校最拉。。。。。。一时间失学恐惧涌上心头。不过技术自信还是得有的。</p>
+<p>交流时大家好像都比较关注NeSE,可能这也是6室特色吧。然后有人问到机试的问题，结果发现今年6室机试只有算法题没有CTF了。心里有点失落。</p>
+<p>第二天机试，好在之前了解过6室算法机试不难，所以不是很担心。往年应该是现场机房给2道必做一道选做。我们今年最后是牛客网上三道题，一个字符串拼接，一个栈判断括号，一个完全背包的板子题，可以用c++/java 做。</p>
+<p>之后15号专业面试+英文面试</p>
+<p>专业面试总共15分钟，上来先ppt自我介绍5分钟。<br>基本就简历强相关，问你项目经历</p>
+<ul>
+<li>你是只去G2么</li>
+</ul>
+<p>填志愿时G2+不服从调剂，导致上来就被问到这个问题。。。。。。一时间懵了竟不知道说什么好，说没有吧结果又被逼问说你不是填了不服从调剂么，最后我整了个”如果有其他老师愿意要我还是非常乐意的“。老师都笑了一下。。。。。。 </p>
+<ul>
+<li>想去G2是因为要去NeSE打CTF吗</li>
+</ul>
+<p>大部分原因是的，但是肯定不是只打CTF。还是想借机会利用所学做下项目之类的。本科学校期间完全没机会做web安全。</p>
+<ul>
+<li>phpggc这个工具是你自己写的吗，那个链子是你挖的0day吗</li>
+</ul>
+<p>这种情况比较烦的就是要从头开始解释。。。先解释phpggc，然后解释反序列化链是啥以及为什么以前厂商收最近厂商不收，最后解释我觉得某种角度也可以叫0day。这一块说了好久。</p>
+<ul>
+<li>论文项目这块有对比工作吗。效果怎么样</li>
+</ul>
+<p>虽然那块工作不是我负责的，但是还是硬着头皮想答一下，结果绕了半天还是说做对比那块的算法因为不是我负责的所以不清楚。我只干了聚簇做case study。</p>
+<ul>
+<li>你是只读专硕吗</li>
+</ul>
+<p>专硕学硕都可以。直博确实不考虑。</p>
+<p>还有些忘了</p>
+<p>英文面试蛮简单，准备个自我介绍然后回答两个问题就行。看起来像国科大那边的老师问的。</p>
+<p>最后拖了挺久才出结果，拿了优营。</p>
+<p>整体上信工所的安排是我参加的夏令营里最规范的，包括听讲座入会有老师把控，机试面试时严格双机位检查等等。规范度高这点还是很长好感的（没有对比就没有伤害），至少证明人家是来认真招生的。难度对CTF选手而言应该基本不难，因为6室不算特别火，大部分来的都是搞过安全竞赛的。1室2室可能会更火一些，因为可能会有不少cs大佬过来。</p>
+<h2 id="东南"><a href="#东南" class="headerlink" title="东南"></a>东南</h2><p>东南报名开始的也晚，结束的也晚。加上疫情原因，估计成了全国最后一个结束的夏令营。7月3日开始报名，8月2日出结果。入了有550+吧。然后要求进一步发报名表，简历等等材料继续对你评估审核。8月21出结果。收到短信看是学硕名额。进交流群后发现好像直接按材料审核的结果分学硕/专硕/无锡专硕，而且不能改，差不多总共400人。</p>
+<p>不过东南的offer发放机制是按照这个名单，然后按照面试结果把你优先级提前或不变，并不会说就直接不给机会。</p>
+<p>第二天听宣讲，因为对东南不了解就听了全程。结果听到结束都没发现一个做漏洞挖掘的老师。最后晚上填意向导师时只好填了研究看起来比较靠WEB方向的老师。那位老师还是本科校友，后来硕士去了上交，tqllll.</p>
+<p>第二天中午微信视频面试，老师意外地问的安全专业性还可以，说明不是做cs的。基本是刚拿到简历，然后对着简历问，最后面了20多分钟吧</p>
+<ul>
+<li><p>先自我介绍下</p>
+</li>
+<li><p>爬虫有什么绕过反爬机制的</p>
+</li>
+</ul>
+<p>因为简历写了用puppeteer写爬虫，这一块就爬虫聊了一会，也不止这一个问题。我主要就提到了代理池绕ip.不过后面老师又问验证码那些怎么办，包括如果需要注册账号怎么办。我表示如果是拖动的可能还有办法，剩下的那种用js办不到的估计只能OCR了，不然肯定绕不过去。但是因为这些方法我自己实际写的时候并没有用到，所以解释了下我基本就是直接用我现成登录好的cookie爬自己有账号的站。</p>
+<ul>
+<li>打CTF面对一个网站怎么找洞怎么利用的</li>
+</ul>
+<p>解释下常规几板斧。但我可能没有答全自己平时的思路。基本就先看环境，判断语言，判断服务版本，有源码看源码，没有的话找现成对应版本有无利用……</p>
+<ul>
+<li>cobaltstrike / msf用过吗，读过源码吗</li>
+</ul>
+<p>这里我确实惊了，因为没想到老师会做这个相关的内容。我就说自己主要做代码审计不怎么渗透所以只用过简单的生成payload之类的没有看过源码。</p>
+<p>然后就开启咵天模式，老师讲说他这边做后渗透一些的比较多，包括一些日志分析之类的。我也表示我比较偏向做红队的，更想做漏洞挖掘跟代码审计。不过老师这里意思倒是说你做红队的也会有帮助，两者都有可提升的地方233.</p>
+<ul>
+<li>有没有其他offer，如果我给你offer你怎么选</li>
+</ul>
+<p>为了不影响老师招生实话实说比较好，我就老老实实说有信工所优营，可能更偏向信工所因为他们那边方向我更喜欢吧。最后聊了下老师说他还是表示欢迎的，我也表示自己会仔细考虑下。这里基本上知道稳了。</p>
+<p>最后结果出来确实给了学硕offer。老师人真的挺不错的。</p>
+<p>东南整体报名生源有点偏向江苏，看到好多本校以及河海这样的。对于想211升985的应该算高性价比的机会。不过目测网安院因为是全国第一批网安学院，导致真正做安全的还不多。貌似真正搞安全的在计算机院那边。难度上自然比计算机轻松很多。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>最后总结下。</p>
+<p> 整个夏令营流程下来，感觉对于我个人而言，最难的还是入营。因为对于清北华五这种很多人的梦校来说，自身条件再怎么好也很难跟其他扎堆的985/211的top3大佬相比，除非报直博。但是假如你像我一样并不想长期做科研，同时对这些名校的博士毕业风险感到担忧，只是想研究生阶段能做点实在的安全，然后硕士毕业入职的，我并不建议直博。毕竟这些院校的博士毕业压力是不小的，甚至像某校对硕士就有变相压榨+延毕警告(我只是随便说说XD。审核的老师往往也不会在意你的竞赛经历。所以我的优势只剩下GPA排名。GPA排名够硬的话(部分指top3,部分指top1)，除开上述院校以及部分有双非歧视的，入营问题应该不大。</p>
+<p> 然后就是面试难度。对于网安专业的同学而言，ctf经历绝对算是巨大优势了，因为一般你的动手能力跟学习能力都有保障，不会说到老师那干活结果配个环境配一个星期都弄不好2333。如果你被问到相关经历的话，也可以讲些令人印象深刻的trick。</p>
+<p> 面试内容上，我个人面的两所都是简历相关。老师主要关注的还是你简历上科研项目的那一块。我个人0科研0项目，但是当初看到前辈分享经验时都说肯定会被问项目相关，所以就把我github上的项目以及专业性不相关的科研经历写上去了。事实上，老师们也不会特别care你的项目怎么样，主要在于你自己做了这个项目，对它很了解，能娓娓道来而不是支支吾吾的。不然一眼就能看出掺了水分。</p>
+<p> 总的来说保研的事基本就快到尾声了。结果上来讲，得承认自己不算特别满意，但是毕竟有些沟壑不是靠努力就能跨越的。尽人事听天命就好。下面还要利用好时间提升技术，做些研究了。之前本来不是很重视的RCTF收获了意外的好成绩，希望后面还能跟X1c继续冲冲冲！</p>
 
   
   
@@ -502,7 +559,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
               
             
               
-                <p>本文永久链接是：<a href=https://www.bycsec.top/2020/11/11/NCTF2020-%E5%87%BA%E9%A2%98%E5%B0%8F%E8%AE%B0/>https://www.bycsec.top/2020/11/11/NCTF2020-%E5%87%BA%E9%A2%98%E5%B0%8F%E8%AE%B0/</a></p>
+                <p>本文永久链接是：<a href=https://www.bycsec.top/2021/10/06/%E5%A4%8F%E4%BB%A4%E8%90%A5%E9%9D%A2%E8%AF%95%E7%BB%8F%E5%8E%86/>https://www.bycsec.top/2021/10/06/%E5%A4%8F%E4%BB%A4%E8%90%A5%E9%9D%A2%E8%AF%95%E7%BB%8F%E5%8E%86/</a></p>
               
             
           </blockquote>
@@ -527,10 +584,10 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T13:09:40+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-10-06T15:30:15+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Feb 18, 2021</p>
+    <p>更新于：Oct 6, 2021</p>
   </a>
 </div>
 
@@ -538,9 +595,6 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
         
           
-  
-  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/wp/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>wp</p></a></div>
-
 
         
       
@@ -554,20 +608,15 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
   
     <div class="prev-next">
       
-        <a class='prev' href='/2020/12/30/Farewell-to-2020/'>
-          <p class='title'><i class="fas fa-chevron-left" aria-hidden="true"></i>Farewell to 2020</p>
-          <p class='content'>Time to say goodbye
-
-
-
-2020马上就结束了。按往年的惯例，总要写篇文章回顾下自己一年的经历的。因此就继续矫情的记录下吧。
-还记得1月份初时一堆期末考试扎堆，当时期末总共考...</p>
-        </a>
       
-      
-        <a class='next' href='/2020/10/26/ByteCTF2020-easyscrapy/'>
-          <p class='title'>ByteCTF2020-easyscrapy<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
-          <p class='content'> 这次ByteCTF的web题难度属实离谱。好几道题几乎都无法下手。自己第一天主要是看了easyscrapy以及配了beaker的环境(结果根本操作不起来，于是放弃了……)第二天上午在配scra...</p>
+        <a class='next' href='/2021/07/07/0ctf-tctf-soracon/'>
+          <p class='title'>0ctf/tctf-soracon<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+          <p class='content'>  这次0ctf/tctf 抽空看了下soracon这题。最终还是非常可惜，可能有多点时间做题就能解出了。下面是自己的一个思路流程。
+
+
+
+（什么时候才能做出zsx的题呢
+vuln题目给出了源码...</p>
         </a>
       
     </div>
@@ -610,7 +659,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 
     <div class='content'>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#JS-world-11-solves"><span class="toc-text">JS-world [11 solves]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mango-3-solves"><span class="toc-text">Mango [3 solves]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PackageManager-v1-0-v2-0-7-solves-3-solves"><span class="toc-text">PackageManager v1.0&#x2F;v2.0 [7 solves &#x2F; 3 solves]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SimpleSimplePie-1-solves"><span class="toc-text">SimpleSimplePie [1 solves]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bg-laravel-0-solves"><span class="toc-text">bg_laravel [0 solves]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#summary"><span class="toc-text">summary</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#初期准备"><span class="toc-text">初期准备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#北邮"><span class="toc-text">北邮</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#信工所"><span class="toc-text">信工所</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#东南"><span class="toc-text">东南</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#小结"><span class="toc-text">小结</span></a></li></ol>
     </div>
   </section>
 
@@ -629,7 +678,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <script>
   window.pdata={}
   pdata.ispage=true;
-  pdata.postTitle="NCTF2020-出题小记";
+  pdata.postTitle="夏令营面试经历";
   pdata.commentPath="";
   pdata.commentPlaceholder="";
   // header 这里无论是否开启pjax都需要

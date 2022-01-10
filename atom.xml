@@ -6,7 +6,7 @@
   <link href="https://www.bycsec.top/atom.xml" rel="self"/>
   
   <link href="https://www.bycsec.top/"/>
-  <updated>2021-10-06T07:31:28.039Z</updated>
+  <updated>2022-01-10T03:34:00.349Z</updated>
   <id>https://www.bycsec.top/</id>
   
   <author>
@@ -15,6 +15,23 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>低版本JDK下gopher的困境</title>
+    <link href="https://www.bycsec.top/2022/01/10/%E4%BD%8E%E7%89%88%E6%9C%ACJDK%E4%B8%8Bgopher%E7%9A%84%E5%9B%B0%E5%A2%83/"/>
+    <id>https://www.bycsec.top/2022/01/10/%E4%BD%8E%E7%89%88%E6%9C%ACJDK%E4%B8%8Bgopher%E7%9A%84%E5%9B%B0%E5%A2%83/</id>
+    <published>2022-01-10T03:30:56.000Z</published>
+    <updated>2022-01-10T03:34:00.349Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;记一次踩坑记录&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="Java" scheme="https://www.bycsec.top/tags/Java/"/>
+    
+  </entry>
   
   <entry>
     <title>夏令营面试经历</title>
@@ -44,9 +61,9 @@
     
     
     
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
     <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
   </entry>
   
@@ -80,9 +97,9 @@
     
     
     
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
     <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
     <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
@@ -103,9 +120,9 @@
     
     
     
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
     <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
   </entry>
   
@@ -197,9 +214,9 @@
     
     
     
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
     <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
     <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
@@ -220,9 +237,9 @@
     
     
     
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
     <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
     <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
@@ -280,9 +297,9 @@
     
     
     
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
     <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
     <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
@@ -384,27 +401,6 @@
     <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
     <category term="PHP" scheme="https://www.bycsec.top/tags/PHP/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>CyBRICS-CTF 2020</title>
-    <link href="https://www.bycsec.top/2020/07/26/CyBRICS-CTF-2020/"/>
-    <id>https://www.bycsec.top/2020/07/26/CyBRICS-CTF-2020/</id>
-    <published>2020-07-26T12:56:52.000Z</published>
-    <updated>2021-02-18T05:08:54.237Z</updated>
-    
-    
-    <summary type="html">&lt;p&gt;Cybrics比赛感觉都没队友在打……简单记录下做的几道题&lt;/p&gt;</summary>
-    
-    
-    
-    
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
-    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
-    
-    <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
   </entry>
   

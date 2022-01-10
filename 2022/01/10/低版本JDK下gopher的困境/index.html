@@ -5,8 +5,6 @@
   <!-- SEO相关 -->
   
     
-      <meta name="robots" content="noindex,follow">
-    
   
   <!-- 渲染优化 -->
   <meta http-equiv='x-dns-prefetch-control' content='on' />
@@ -24,9 +22,13 @@
 
   <!-- 页面元数据 -->
   
-  <title>归档：2020/2 - byc_404&#39;s blog</title>
+  <title>低版本JDK下gopher的困境 - byc_404&#39;s blog</title>
+  
+    <meta name="keywords" content="Java">
   
 
+  
+    <meta name="description" content="记一次踩坑记录">
   
 
   <!-- feed -->
@@ -325,7 +327,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       <div id="l_cover">
   
     
-        <div id="half" class='cover-wrapper  dock' style="display: ;">
+        <div id="half" class='cover-wrapper post dock' style="display: ;">
           
             <div id='cover-backstretch'></div>
           
@@ -396,372 +398,213 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
           
 
 <div class='l_main'>
-	
-		
-  <section class="post-list">
+  <article class="article post white-box reveal md shadow article-type-post" id="post" itemscope itemprop="blogPost">
+  
+
+
+  
+  <div class="article-meta" id="top">
     
+    
+    
+      <h1 class="title">
+        低版本JDK下gopher的困境
+      </h1>
+      <div class='new-meta-box'>
+        
+          
+            
+<div class='new-meta-item author'>
+  <a class='author' href="https://www.bycsec.top" rel="nofollow">
+    <img no-lazy src="/assests/favicon.ico">
+    <p>byc_404</p>
+  </a>
+</div>
+
+          
+        
+          
+            
+
+          
+        
+          
+            <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Jan 10, 2022</p>
+  </a>
+</div>
+
+          
+        
+          
+            
+  <div class="new-meta-item browse leancloud">
+    <a class='notlink'>
       
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-    
-    
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/26/%E5%8D%95%E7%8B%AC%E5%A1%AB%E5%9D%91-%E5%85%AC%E7%9B%8A%E8%B5%9BNodeGame/">
-        单独填坑-公益赛NodeGame
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>  今天来填下NodeGame的坑吧。这道题确实出的很难。记得当时比赛中也只有大概8位师傅做出来。而实际上，很多师傅应该都是有思路与参考题目，但是最终被小细节所影响的。<br>这里给出出题人自己的出题思路：<a href="http://blog.5am3.com/2020/02/11/ctf-node1/#%E8%87%AA%E5%B7%B1%E5%87%BA%E7%9A%84-node-game" target="_blank" rel="noopener">http://blog.5am3.com/2020/02/11/ctf-node1/#%E8%87%AA%E5%B7%B1%E5%87%BA%E7%9A%84-node-game</a><br>其中一道他参考的国际赛题目wp:<br><a href="https://r3billions.com/writeup-split-second/" target="_blank" rel="noopener">https://r3billions.com/writeup-split-second/</a></p>
-    
+      <div id="lc-pv" data-title="低版本JDK下gopher的困境" data-path="/2022/01/10/%E4%BD%8E%E7%89%88%E6%9C%ACJDK%E4%B8%8Bgopher%E7%9A%84%E5%9B%B0%E5%A2%83/">
+        <i class="fas fa-eye fa-fw" aria-hidden="true"></i>
+        <span id='number'><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
+        次浏览
+      </div>
+    </a>
   </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-26</time>
+
+
+          
         
       </div>
+    
+  </div>
+
+
+  
+  
+  <p>记一次踩坑记录</p>
+<a id="more"></a>
+
+
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>  之前因为实习的原因，很多学习笔记没法发出来，导致博客长草一段时间了 。现在离职后发篇文章水一下(</p>
+<p>  事情的起因源自于一次审计遇到的场景，目标是一个java写的CMS，只不过java版本非常低，<code>.class</code>字节码文件基本都是1.1/1.4版本的。且风格上有点传统php cms的建站风格，存在大量jsp文件。最后审计下来的结果是，只有一处存在反序列化漏洞，且存在可以利用的gadget。其他未授权的洞基本只能做到写文件，sql注入或者是ssrf.</p>
+<p>  众所周知，只有无文件落地+不出网+未授权RCE+能打内存马才是一个漏洞利用的最佳形态。不过，该场景的一个困境就在于反序列化触发点监听在一个没有对外的端口，导致我们不能直接RCE。这时候想必第一想法就是：“欸，低版本的jdk貌似是可以支持gopher吧？那不是直接可以ssrf打内部端口触发反序列化么？”</p>
+<p>  但是当我尝试使用gopher ssrf攻击时，发现并没有打通。开了个端口nc看了下传输的数据流，发现居然出现了奇奇怪怪的问题.</p>
+<p>  以<code>gopher://127.0.0.1:9002/_%AC%EDjava</code>为例。</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_498b4341f72a58a669f29c388a10ebdc.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_498b4341f72a58a669f29c388a10ebdc.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>反序列化数据的魔数开头<code>\xAC\xED</code>在这居然变成了问号？这个我自己之前并没有听说过，所以干脆来调试研究下吧</p>
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>调试要点没有什么好说的。但是这毕竟是“远古时期”的jdk1.4,如果按照正常流程调试一些底层函数的话，大概率会碰到字节码行数对不上的问题导致断点下不下来或者是跟的行数直接错了的问题。所以还是老老实实把环境的jdk拖出来吧 :face_with_finger_covering_closed_lips: </p>
+<p>我们知道无论是java的xxe导致的ssrf还是普通的ssrf本质上都是先把我们输入的url用来实例化一个<code>URL</code>对象，然后<code>URL#openConnection()</code>或者是<code>URL#openStream()</code>，其中<code>openStream</code>就是<code>this.openConnection().getInputStream()</code>。</p>
+<p>所以我们在这里下断点看下</p>
+<p>首先关注下，在用URL实例化时，首先会尝试根据url格式来解析出对应的部分。<br><img src="https://hackmd.summershrimp.com/uploads/upload_7d39f4f53e11948b220315ff995450e6.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_7d39f4f53e11948b220315ff995450e6.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>顺便一提，这里也出现了java ssrf常见的一个绕waf的方式<code>url:</code></p>
+<p>解析出对应的protocol <code>gopher</code>后，便会尝试调用<code>getURLStreamHandler</code>为这个协议去获取对应的handler,</p>
+<p><code>getURLStreamHandler</code></p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_a8a7b9ac0fef861b6be73a19e68483f9.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_a8a7b9ac0fef861b6be73a19e68483f9.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>一般情况下handlers默认是空的。<br>所以通过解析出来的协议，java会动态找得到处理gopher的handler<br><code>sun.net.www.protocol.gopher.Handler</code>。顺便把这个handler放到缓存也就是<code>handlers</code>变量里面去。</p>
+<p>在对url解析，检查完成后，就到了<code>openConnection</code>的阶段。这里则会去调用对应handler的openConnection<br><img src="https://hackmd.summershrimp.com/uploads/upload_8924a172e3968a3b8e6c988b2a51a7a4.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_8924a172e3968a3b8e6c988b2a51a7a4.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>gopher handler 所做的也只是把url对象传给<code>GopherURLConnection</code>实例化</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_58aa5b0b321815cbbe71c6a29e12dc10.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_58aa5b0b321815cbbe71c6a29e12dc10.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>所以实际上在<code>getInputStream</code>这才真正开始发包。调用的是<code>GopherClient</code>的<code>openStream</code>。</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_1341264dd04c4a6749c5feab0c728f9a.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_1341264dd04c4a6749c5feab0c728f9a.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>发包这都挺正常的：建立连接，然后发包。然后就到了<code>decodePercent</code>这。(此处gkey即<code>%AC%EDjava</code>)<br><img src="https://hackmd.summershrimp.com/uploads/upload_5f46b60fcc929a7c89c95d616f571f0f.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_5f46b60fcc929a7c89c95d616f571f0f.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>char code完全是对的。但就是偏偏最后返回时包裹了一个<code>new String</code>。。。。</p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_11efc3d5fd12cd24c28987eb8ec1e103.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_11efc3d5fd12cd24c28987eb8ec1e103.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>当然其实这里并没有发生转换，这里返回值虽然套上了String但是遍历时仍然能拿到正确的char的。真正的转换发生在后面的<code>this.serverOutput.print</code>，调用的就是<code>java.io.PrintStream#write(java.lang.String)</code></p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_b65f8b75e06baaecec8b476606391e68.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_b65f8b75e06baaecec8b476606391e68.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>outputstream write时会在flushBuffer这一步替换byte,<br><code>sun.io.CharToByteConverter#convertAny</code></p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_efa9edc962c4c6f031e62dc8ff01ae64.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_efa9edc962c4c6f031e62dc8ff01ae64.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>可以看到这里存在一个微妙的字符范围.同时如果字符ascii码小于128的话，则会直接转<code>char</code>，一旦字符不在有效范围（128）以内就直接替换该比特为<code>63</code>,即<code>?</code></p>
+<p><img src="https://hackmd.summershrimp.com/uploads/upload_670372c97dd6b27d7568cbf7b10732bb.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_670372c97dd6b27d7568cbf7b10732bb.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>在发现gopher协议的ssrf如此之后，自然会去想能否用<code>crlf</code>来解决呢？我们都知道java7/8的低版本下尚且存在crlf漏洞，1.4自然也是存在的。但是稍微跟下http协议的发包流程就可以发现，只是所谓的<code>handler</code>不一样。最后<code>getInputStream</code>的时候调用的是属于http协议的<code>HTTPUrlConnection</code>。继续跟到深处的话：<br><img src="https://hackmd.summershrimp.com/uploads/upload_833165cc8ca6718616040a90ddac4da8.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_833165cc8ca6718616040a90ddac4da8.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>到这一步不难得出一个结论：java url的请求发起基本都是根据输入构建好要发送的buffer，建立连接后用<code>PrintStream#print</code>来发包的。也就是说无论用什么协议都传不进特殊字符 orz</p>
+<h2 id="可能的特例"><a href="#可能的特例" class="headerlink" title="可能的特例"></a>可能的特例</h2><p>  虽然上面这个情景大概率是没有办法利用了（如果有请务必教教我）。但是java ssrf 在某些特殊场景下应该还是能利用的。</p>
+<p>  eg.1: 当时发现这个问题后我在google上搜了一大圈貌似都没有看到分析文章。不过后来看到类似的问题balsn的师傅曾经在2018 的pwn2win CTF中遇到过，</p>
+<p>  <img src="https://hackmd.summershrimp.com/uploads/upload_9a4d28cf9c769c89bdeaa26902a39492.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_9a4d28cf9c769c89bdeaa26902a39492.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>当然他这说的不够精准，毕竟这个不是gopher的锅，而是<code>PrintStream</code>的问题。</p>
+<p>pwn2win的场景是直接构造了一个字符集在<code>0x00-0x7f</code>的war包，通过gopher来部署上去。。。相当厉害</p>
+<p> eg2. 我能想到的另一个场景就是用crlf去攻击redis，通过redis触发反序列化.因为低版本的java还是能CRLF的，而redis支持把16进制字符包裹起来，即直接用<code>&quot;\xac\xed&quot;</code>等等可见字符来设置数据。就算不行也可以用redis的函数来辅助一下。所以假如通过redis存储序列化数据再在服务端触发，完全是可行的</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>  不同的库对于某种功能或者说是协议的实现还是有着不小差别的，这些有的可能带来橘子哥那种ssrf花式绕过，也有的可能就导致我踩的这个坑了。。。当然还是要拒绝想当然，只有动手调过才能知道坑在哪。</p>
+
+  
+  
+    
+    <div class='footer'>
       
-        <div>
-          <a class='readmore' href='/2020/02/26/%E5%8D%95%E7%8B%AC%E5%A1%AB%E5%9D%91-%E5%85%AC%E7%9B%8A%E8%B5%9BNodeGame/'>
-            阅读全文
-          </a>
+      
+      
+        <div class='copyright'>
+          <blockquote>
+            
+              
+                <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
+
+              
+            
+              
+                <p>本文永久链接是：<a href=https://www.bycsec.top/2022/01/10/%E4%BD%8E%E7%89%88%E6%9C%ACJDK%E4%B8%8Bgopher%E7%9A%84%E5%9B%B0%E5%A2%83/>https://www.bycsec.top/2022/01/10/%E4%BD%8E%E7%89%88%E6%9C%ACJDK%E4%B8%8Bgopher%E7%9A%84%E5%9B%B0%E5%A2%83/</a></p>
+              
+            
+          </blockquote>
+        </div>
+      
+      
+        <div class='donate'>
+          <div class='imgs'>
+            
+              <img src='/assests/wechat.png'>
+            
+          </div>
         </div>
       
     </div>
   
+  
+    
 
+
+  <div class='article-meta' id="bottom">
+    <div class='new-meta-box'>
+      
+        
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2022-01-10T11:34:00+08:00">
+  <a class='notlink'>
+    <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
+    <p>更新于：Jan 10, 2022</p>
+  </a>
 </div>
 
-          </div>
         
       
         
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
+          
   
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/25/NCTF-phar-matches-everything%E5%A1%AB%E5%9D%91/">
-        NCTF-phar-matches-everything填坑
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>之前校赛web最难的一道题……当时水平菜的看都不敢看，现在按师傅要求来做做这道题。(zjy师傅说这题把php相关知识几乎全考了，看来是很集大成的一道题目。)</p>
-<p>题目首先进去后有两个功能，一个是仅限制图片的文件上传点。另一个是用<code>getimagesize()</code>搭配的读取图片文件信息的功能</p>
-<p>首先是源码泄露。在catchmachine.php存在<code>.swp</code>泄露。然而buuoj上题目并没有泄露，直接看源码好了</p>
-    
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/Java/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>Java</p></a></div>
+
+
+        
+      
+    </div>
   </div>
+
+
   
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-25</time>
-        
-      </div>
+  
+
+  
+    <div class="prev-next">
       
-        <div>
-          <a class='readmore' href='/2020/02/25/NCTF-phar-matches-everything%E5%A1%AB%E5%9D%91/'>
-            阅读全文
-          </a>
-        </div>
+      
+        <a class='next' href='/2021/10/06/%E5%A4%8F%E4%BB%A4%E8%90%A5%E9%9D%A2%E8%AF%95%E7%BB%8F%E5%8E%86/'>
+          <p class='title'>夏令营面试经历<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+          <p class='content'>简单记录下今年暑假的夏令营经历。
+
+
+最后是接受了信工所的预录取，对自己而言可以说是比较务实的选择了。也期待下自己明年的研究生生活 😃
+初期准备
+个人情况：双非强化班(分流信安专业) + GP...</p>
+        </a>
       
     </div>
   
+</article>
 
+
+  
+
+  <article class="post white-box reveal shadow" id="comments">
+    <p ct><i class='fas fa-comments'></i> 评论</p>
+    
+    <div id="valine_container" class="valine_thread">
+  <i class="fas fa-cog fa-spin fa-fw fa-2x"></i>
 </div>
 
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/19/CISCN-2019-web%E9%83%A8%E5%88%86%E5%A4%8D%E7%8E%B0/">
-        CISCN-2019-web部分复现
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>原来国赛就是CISCN……buuoj上题目挺全的，干脆选一些比较有价值的题目复现下：</p>
-<h1 id="Hack-World-盲注"><a href="#Hack-World-盲注" class="headerlink" title="Hack World(盲注)"></a>Hack World(盲注)</h1><p>简单的布尔盲注题，简单FUZZ一下发现是数值型注入。同时过滤了<code>and，or，union</code>空格等等。回显可以判断正误，考虑是布尔盲注。payload直接用if分流即可。空格可以<code>%0a</code>绕过，也可以直接括号括起来(之前总结过)</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-19</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/19/CISCN-2019-web%E9%83%A8%E5%88%86%E5%A4%8D%E7%8E%B0/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/18/%E4%BB%8E%E6%9D%AD%E7%94%B5hgame-week4%E5%AD%A6%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/">
-        从杭电hgame-week4学原型链污染
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>因为数模导致本来不打算做week4的题目的，不过当时瞅了一眼sekiro这道题并且看出来是原型链污染(也有叫Node.js污染,javasrcipt原型链污染的)。可惜当时没做过，没深入也没做出来。今天抽空看了下wp才明白。干脆把当时查阅资料学到的知识总结下。</p>
-<p>时间线上看，国内最早出现的原型链污染题目应该是出自P牛代码审计知识星球的hard-the js。整体上算比较新的洞。在各种比赛出现频次一般，原因有很多，这点之后再谈。其主要是前端形式的攻击，而且涉及到javascript知识更多些，因此还是要从javascript的角度学习下：</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-18</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/18/%E4%BB%8E%E6%9D%AD%E7%94%B5hgame-week4%E5%AD%A6%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/">
-        安洵杯2019-web复现
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>发现buuoj上安洵2019的题目有现成的，不用在vps上搭了(第一题除外，搭好才发现……)，刚好做做。</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-10</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/06/hackthebox-ezpz/">
-        hackthebox-ezpz
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>hackthebox上的web challenge ezpz是去年十二月末才新出的一道ctf题目。这道题相当的有意思，而且对我还是比较有难度的，但是做出来的那一瞬间又发现其实并非那么令人困扰，反而学到了许多。所以在此记录一下做题过程。<br>感谢zjy师傅以及外国网友Z1LV3R的提示</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-06</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/06/hackthebox-ezpz/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/">
-        学习笔记-SSRF基础
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>终于准备把欠了好久的SSRF学习记录一下了。最早接触SSRF是去年暑假，师傅给了我一道郁离歌出的入群题。当时对SSRF一无所知，东拼西凑才得到一个ip。可惜当时不知道是内网ip,最后涉及一个gopher打mysql的常见类型，最后也没能做出来。那之后也没有仔细做过ssrf题目，那我现在就来记录一下ssrf的学习笔记吧。</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-05</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/02/%E6%9D%AD%E7%94%B5hgame-week3/">
-        杭电hgame-week3
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>  week3的难度更上一层楼。果不其然ak掉web的flag倒了，最后还是差一道题(其实是因为xss花了太多时间没做出来自闭了不想做了)总而言之收获不小，也头一次感受到高手切磋的意思。下个week估计不会再花这么多时间做题了。干脆写下欠着的笔记以及其他事吧。</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-02</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/02/%E6%9D%AD%E7%94%B5hgame-week3/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-    
-  </section>
-  
-    
-  
+  </article>
 
 
-	
+
+
+
+
 </div>
 <aside class='l_side'>
   
@@ -769,85 +612,28 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
     
     
 
-<section class="widget blogger shadow desktop mobile">
-  <div class='content'>
-    
-      
-        <a class='avatar flat-box rectangle' href='/about/'>
-          <img no-lazy src='/assests/shiroyasha.jpeg'/>
-        </a>
-      
-    
-    
-    
-      <div class="social-wrapper">
-        
-          
-            <a href="/atom.xml"
-              class="social fas fa-rss flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-          
-            <a href="mailto:baiyecha404@gmail.com"
-              class="social fas fa-envelope flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-          
-            <a href="https://github.com/baiyecha404/"
-              class="social fab fa-github flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-      </div>
-    
-  </div>
-</section>
 
-  
 
-  
-    
-    
-
-  
-
-  
-    
-    
-  
-
-  <section class="widget tagcloud shadow desktop mobile">
+  <section class="widget toc-wrapper shadow desktop mobile" id="toc-div" >
     
   <header>
     
-      <a href='/blog/tags/'><i class="fas fa-tags fa-fw" aria-hidden="true"></i><span class='name'>热门标签</span></a>
+      <i class="fas fa-list fa-fw" aria-hidden="true"></i><span class='name'>本文目录</span>
     
   </header>
 
 
     <div class='content'>
-      <a href="/tags/CTF/" style="font-size: 22.75px; color: #5e5e5e">CTF</a> <a href="/tags/Go/" style="font-size: 14px; color: #999">Go</a> <a href="/tags/Java/" style="font-size: 17.75px; color: #808080">Java</a> <a href="/tags/Linux/" style="font-size: 16.5px; color: #888">Linux</a> <a href="/tags/Node-js/" style="font-size: 16.5px; color: #888">Node.js</a> <a href="/tags/PHP/" style="font-size: 17.75px; color: #808080">PHP</a> <a href="/tags/WEB/" style="font-size: 24px; color: #555">WEB</a> <a href="/tags/hackthebox/" style="font-size: 20.25px; color: #6f6f6f">hackthebox</a> <a href="/tags/javascript/" style="font-size: 15.25px; color: #919191">javascript</a> <a href="/tags/pentest/" style="font-size: 19px; color: #777">pentest</a> <a href="/tags/redis/" style="font-size: 15.25px; color: #919191">redis</a> <a href="/tags/windows/" style="font-size: 14px; color: #999">windows</a> <a href="/tags/wp/" style="font-size: 21.5px; color: #666">wp</a>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#背景"><span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#分析"><span class="toc-text">分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#可能的特例"><span class="toc-text">可能的特例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#小结"><span class="toc-text">小结</span></a></li></ol>
     </div>
   </section>
 
 
   
 
-  
-
 
 </aside>
+
 
 
 		  
@@ -856,8 +642,8 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 <script>
   window.pdata={}
-  pdata.ispage=false;
-  pdata.postTitle="";
+  pdata.ispage=true;
+  pdata.postTitle="低版本JDK下gopher的困境";
   pdata.commentPath="";
   pdata.commentPlaceholder="";
   // header 这里无论是否开启pjax都需要

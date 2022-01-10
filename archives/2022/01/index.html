@@ -24,7 +24,7 @@
 
   <!-- 页面元数据 -->
   
-  <title>归档：2020/2 - byc_404&#39;s blog</title>
+  <title>归档：2022/1 - byc_404&#39;s blog</title>
   
 
   
@@ -404,20 +404,6 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
         
           
         
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
       
     
     
@@ -431,317 +417,26 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
   
     
     <h2 class="article-title" >
-      <a href="/2020/02/26/%E5%8D%95%E7%8B%AC%E5%A1%AB%E5%9D%91-%E5%85%AC%E7%9B%8A%E8%B5%9BNodeGame/">
-        单独填坑-公益赛NodeGame
+      <a href="/2022/01/10/%E4%BD%8E%E7%89%88%E6%9C%ACJDK%E4%B8%8Bgopher%E7%9A%84%E5%9B%B0%E5%A2%83/">
+        低版本JDK下gopher的困境
       </a>
     </h2>
   
   <div class='md'>
     
-      <p>  今天来填下NodeGame的坑吧。这道题确实出的很难。记得当时比赛中也只有大概8位师傅做出来。而实际上，很多师傅应该都是有思路与参考题目，但是最终被小细节所影响的。<br>这里给出出题人自己的出题思路：<a href="http://blog.5am3.com/2020/02/11/ctf-node1/#%E8%87%AA%E5%B7%B1%E5%87%BA%E7%9A%84-node-game" target="_blank" rel="noopener">http://blog.5am3.com/2020/02/11/ctf-node1/#%E8%87%AA%E5%B7%B1%E5%87%BA%E7%9A%84-node-game</a><br>其中一道他参考的国际赛题目wp:<br><a href="https://r3billions.com/writeup-split-second/" target="_blank" rel="noopener">https://r3billions.com/writeup-split-second/</a></p>
+      <p>记一次踩坑记录</p>
     
   </div>
   
     <div class='meta-v3' line_style='solid'>
       <div>
         
-        <time>2020-02-26</time>
+        <time>2022-01-10</time>
         
       </div>
       
         <div>
-          <a class='readmore' href='/2020/02/26/%E5%8D%95%E7%8B%AC%E5%A1%AB%E5%9D%91-%E5%85%AC%E7%9B%8A%E8%B5%9BNodeGame/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/25/NCTF-phar-matches-everything%E5%A1%AB%E5%9D%91/">
-        NCTF-phar-matches-everything填坑
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>之前校赛web最难的一道题……当时水平菜的看都不敢看，现在按师傅要求来做做这道题。(zjy师傅说这题把php相关知识几乎全考了，看来是很集大成的一道题目。)</p>
-<p>题目首先进去后有两个功能，一个是仅限制图片的文件上传点。另一个是用<code>getimagesize()</code>搭配的读取图片文件信息的功能</p>
-<p>首先是源码泄露。在catchmachine.php存在<code>.swp</code>泄露。然而buuoj上题目并没有泄露，直接看源码好了</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-25</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/25/NCTF-phar-matches-everything%E5%A1%AB%E5%9D%91/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/19/CISCN-2019-web%E9%83%A8%E5%88%86%E5%A4%8D%E7%8E%B0/">
-        CISCN-2019-web部分复现
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>原来国赛就是CISCN……buuoj上题目挺全的，干脆选一些比较有价值的题目复现下：</p>
-<h1 id="Hack-World-盲注"><a href="#Hack-World-盲注" class="headerlink" title="Hack World(盲注)"></a>Hack World(盲注)</h1><p>简单的布尔盲注题，简单FUZZ一下发现是数值型注入。同时过滤了<code>and，or，union</code>空格等等。回显可以判断正误，考虑是布尔盲注。payload直接用if分流即可。空格可以<code>%0a</code>绕过，也可以直接括号括起来(之前总结过)</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-19</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/19/CISCN-2019-web%E9%83%A8%E5%88%86%E5%A4%8D%E7%8E%B0/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/18/%E4%BB%8E%E6%9D%AD%E7%94%B5hgame-week4%E5%AD%A6%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/">
-        从杭电hgame-week4学原型链污染
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>因为数模导致本来不打算做week4的题目的，不过当时瞅了一眼sekiro这道题并且看出来是原型链污染(也有叫Node.js污染,javasrcipt原型链污染的)。可惜当时没做过，没深入也没做出来。今天抽空看了下wp才明白。干脆把当时查阅资料学到的知识总结下。</p>
-<p>时间线上看，国内最早出现的原型链污染题目应该是出自P牛代码审计知识星球的hard-the js。整体上算比较新的洞。在各种比赛出现频次一般，原因有很多，这点之后再谈。其主要是前端形式的攻击，而且涉及到javascript知识更多些，因此还是要从javascript的角度学习下：</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-18</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/18/%E4%BB%8E%E6%9D%AD%E7%94%B5hgame-week4%E5%AD%A6%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/">
-        安洵杯2019-web复现
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>发现buuoj上安洵2019的题目有现成的，不用在vps上搭了(第一题除外，搭好才发现……)，刚好做做。</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-10</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/06/hackthebox-ezpz/">
-        hackthebox-ezpz
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>hackthebox上的web challenge ezpz是去年十二月末才新出的一道ctf题目。这道题相当的有意思，而且对我还是比较有难度的，但是做出来的那一瞬间又发现其实并非那么令人困扰，反而学到了许多。所以在此记录一下做题过程。<br>感谢zjy师傅以及外国网友Z1LV3R的提示</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-06</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/06/hackthebox-ezpz/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/">
-        学习笔记-SSRF基础
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>终于准备把欠了好久的SSRF学习记录一下了。最早接触SSRF是去年暑假，师傅给了我一道郁离歌出的入群题。当时对SSRF一无所知，东拼西凑才得到一个ip。可惜当时不知道是内网ip,最后涉及一个gopher打mysql的常见类型，最后也没能做出来。那之后也没有仔细做过ssrf题目，那我现在就来记录一下ssrf的学习笔记吧。</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-05</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/'>
-            阅读全文
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/02/02/%E6%9D%AD%E7%94%B5hgame-week3/">
-        杭电hgame-week3
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      <p>  week3的难度更上一层楼。果不其然ak掉web的flag倒了，最后还是差一道题(其实是因为xss花了太多时间没做出来自闭了不想做了)总而言之收获不小，也头一次感受到高手切磋的意思。下个week估计不会再花这么多时间做题了。干脆写下欠着的笔记以及其他事吧。</p>
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-02-02</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/02/02/%E6%9D%AD%E7%94%B5hgame-week3/'>
+          <a class='readmore' href='/2022/01/10/%E4%BD%8E%E7%89%88%E6%9C%ACJDK%E4%B8%8Bgopher%E7%9A%84%E5%9B%B0%E5%A2%83/'>
             阅读全文
           </a>
         </div>

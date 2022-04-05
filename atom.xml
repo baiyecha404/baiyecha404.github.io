@@ -6,7 +6,7 @@
   <link href="https://www.bycsec.top/atom.xml" rel="self"/>
   
   <link href="https://www.bycsec.top/"/>
-  <updated>2022-01-10T03:34:00.349Z</updated>
+  <updated>2022-04-05T08:18:19.753Z</updated>
   <id>https://www.bycsec.top/</id>
   
   <author>
@@ -15,6 +15,23 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Netty 内存马的一种思路</title>
+    <link href="https://www.bycsec.top/2022/04/05/Netty-%E5%86%85%E5%AD%98%E9%A9%AC%E7%9A%84%E4%B8%80%E7%A7%8D%E6%80%9D%E8%B7%AF/"/>
+    <id>https://www.bycsec.top/2022/04/05/Netty-%E5%86%85%E5%AD%98%E9%A9%AC%E7%9A%84%E4%B8%80%E7%A7%8D%E6%80%9D%E8%B7%AF/</id>
+    <published>2022-04-05T08:10:00.000Z</published>
+    <updated>2022-04-05T08:18:19.753Z</updated>
+    
+    
+    <summary type="html">Here&#39;s something encrypted, password is required to continue reading.</summary>
+    
+    
+    
+    
+    <category term="Java" scheme="https://www.bycsec.top/tags/Java/"/>
+    
+  </entry>
   
   <entry>
     <title>低版本JDK下gopher的困境</title>
@@ -382,25 +399,6 @@
     <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
     
     <category term="Java" scheme="https://www.bycsec.top/tags/Java/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Thinkphp-vuln</title>
-    <link href="https://www.bycsec.top/2020/08/05/Thinkphp-vuln/"/>
-    <id>https://www.bycsec.top/2020/08/05/Thinkphp-vuln/</id>
-    <published>2020-08-05T08:20:07.000Z</published>
-    <updated>2021-02-18T05:09:49.002Z</updated>
-    
-    
-    <summary type="html">&lt;p&gt;  这段时间因为一些原因老是有点自我纠结,很大程度上是因为对所计划学习的内容无法定夺的原因。上周因为hw所以错过了wmctf,赛后去看题发现基本都是php之类的,都不是很想看。相对感兴趣的框架的链子自己也没找全。感觉菜的不行,相比几个月前审一些比赛中的框架手生了很多。&lt;/p&gt;</summary>
-    
-    
-    
-    
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
-    <category term="PHP" scheme="https://www.bycsec.top/tags/PHP/"/>
     
   </entry>
   

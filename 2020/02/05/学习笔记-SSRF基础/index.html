@@ -466,49 +466,135 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 <h1 id="1-SSRF"><a href="#1-SSRF" class="headerlink" title="1. SSRF"></a>1. SSRF</h1><p>  ssrf全称为Server-side Request Forgery，即服务端请求伪造攻击。很多web应用都提供了从其他的服务器上获取数据的功能。使用用户指定的URL，web应用可以获取图片，下载文件，读取文件内容等。这个功能如果被恶意使用，可以利用存在缺陷的web应用作为代理攻击远程和本地的服务器。</p>
 <p>也就是说，ssrf的漏洞点在于：<strong>服务端提供了从其他服务器应用获取数据的功能，在用户可控的情况下，未对目标地址进行过滤与限制</strong>.<br>常见场景包括但不仅限于：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">1.社交分享功能：获取超链接的标题等内容进行显示</span><br><span class="line">2.转码服务：通过URL地址把原地址的网页内容调优使其适合手机屏幕浏览</span><br><span class="line">3.在线翻译：给网址翻译对应网页的内容</span><br><span class="line">4.图片加载&#x2F;下载：例如富文本编辑器中的点击下载图片到本地；通过URL地址加载或下载图片</span><br><span class="line">#比如hgameweek2</span><br><span class="line">5.图片&#x2F;文章收藏功能：主要其会取URL地址中title以及文本的内容作为显示以求一个好的用具体验</span><br><span class="line">6.云服务厂商：它会远程执行一些命令来判断网站是否存活等，所以如果可以捕获相应的信息，就可以进行ssrf测试</span><br><span class="line">7.网站采集，网站抓取的地方：一些网站会针对你输入的url进行一些信息采集工作</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
-<p>如果要从服务端的源码层面来讲，主要就是以下三种函数(php)：</p>
+<pre><code>1.社交分享功能：获取超链接的标题等内容进行显示
+2.转码服务：通过URL地址把原地址的网页内容调优使其适合手机屏幕浏览
+3.在线翻译：给网址翻译对应网页的内容
+4.图片加载/下载：例如富文本编辑器中的点击下载图片到本地；通过URL地址加载或下载图片
+#比如hgameweek2
+5.图片/文章收藏功能：主要其会取URL地址中title以及文本的内容作为显示以求一个好的用具体验
+6.云服务厂商：它会远程执行一些命令来判断网站是否存活等，所以如果可以捕获相应的信息，就可以进行ssrf测试
+7.网站采集，网站抓取的地方：一些网站会针对你输入的url进行一些信息采集工作
+......</code></pre><p>如果要从服务端的源码层面来讲，主要就是以下三种函数(php)：</p>
 <p><strong>1.file_get_contents()</strong></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_POST[<span class="string">'url'</span>])) </span><br><span class="line">&#123; </span><br><span class="line">$content = file_get_contents($_POST[<span class="string">'url'</span>]); </span><br><span class="line">$filename =<span class="string">'./images/'</span>.rand().<span class="string">';img1.jpg'</span>; </span><br><span class="line">file_put_contents($filename, $content); </span><br><span class="line"><span class="keyword">echo</span> $_POST[<span class="string">'url'</span>]; </span><br><span class="line">$img = <span class="string">"&lt;img src=\""</span>.$filename.<span class="string">"\"/&gt;"</span>; </span><br><span class="line">&#125; </span><br><span class="line"><span class="keyword">echo</span> $img; </span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+if (isset($_POST[&#39;url&#39;])) 
+{ 
+$content = file_get_contents($_POST[&#39;url&#39;]); 
+$filename =&#39;./images/&#39;.rand().&#39;;img1.jpg&#39;; 
+file_put_contents($filename, $content); 
+echo $_POST[&#39;url&#39;]; 
+$img = &quot;&lt;img src=\&quot;&quot;.$filename.&quot;\&quot;/&gt;&quot;; 
+} 
+echo $img; 
+?&gt;</code></pre>
 <p>常见的直接用<code>file_get_contents()</code>加载url指向文件<br><strong>2.fsockopen()</strong></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">GetFile</span><span class="params">($host,$port,$link)</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">$fp = fsockopen($host, intval($port), $errno, $errstr, <span class="number">30</span>); </span><br><span class="line"><span class="keyword">if</span> (!$fp) &#123; </span><br><span class="line"><span class="keyword">echo</span> <span class="string">"$errstr (error number $errno) \n"</span>; </span><br><span class="line">&#125; <span class="keyword">else</span> &#123; </span><br><span class="line">$out = <span class="string">"GET $link HTTP/1.1\r\n"</span>; </span><br><span class="line">$out .= <span class="string">"Host: $host\r\n"</span>; </span><br><span class="line">$out .= <span class="string">"Connection: Close\r\n\r\n"</span>; </span><br><span class="line">$out .= <span class="string">"\r\n"</span>; </span><br><span class="line">fwrite($fp, $out); </span><br><span class="line">$contents=<span class="string">''</span>; </span><br><span class="line"><span class="keyword">while</span> (!feof($fp)) &#123; </span><br><span class="line">$contents.= fgets($fp, <span class="number">1024</span>); </span><br><span class="line">&#125; </span><br><span class="line">fclose($fp); </span><br><span class="line"><span class="keyword">return</span> $contents; </span><br><span class="line">&#125; </span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php 
+function GetFile($host,$port,$link) 
+{ 
+$fp = fsockopen($host, intval($port), $errno, $errstr, 30); 
+if (!$fp) { 
+echo &quot;$errstr (error number $errno) \n&quot;; 
+} else { 
+$out = &quot;GET $link HTTP/1.1\r\n&quot;; 
+$out .= &quot;Host: $host\r\n&quot;; 
+$out .= &quot;Connection: Close\r\n\r\n&quot;; 
+$out .= &quot;\r\n&quot;; 
+fwrite($fp, $out); 
+$contents=&#39;&#39;; 
+while (!feof($fp)) { 
+$contents.= fgets($fp, 1024); 
+} 
+fclose($fp); 
+return $contents; 
+} 
+}
+?&gt;</code></pre>
 <p>这个函数会使用socket跟服务器建立tcp连接，传输原始数据。</p>
 <p><strong>3.curl_exec()</strong></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_POST[<span class="string">'url'</span>]))</span><br><span class="line">&#123;</span><br><span class="line">$link = $_POST[<span class="string">'url'</span>];</span><br><span class="line">$curlobj = curl_init();</span><br><span class="line">curl_setopt($curlobj, CURLOPT_POST, <span class="number">0</span>);</span><br><span class="line">curl_setopt($curlobj,CURLOPT_URL,$link);</span><br><span class="line">curl_setopt($curlobj, CURLOPT_RETURNTRANSFER, <span class="number">1</span>);</span><br><span class="line">$result=curl_exec($curlobj);</span><br><span class="line">curl_close($curlobj);</span><br><span class="line"></span><br><span class="line">$filename = <span class="string">'./curled/'</span>.rand().<span class="string">'.txt'</span>;</span><br><span class="line">file_put_contents($filename, $result); </span><br><span class="line"><span class="keyword">echo</span> $result;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php 
+if (isset($_POST[&#39;url&#39;]))
+{
+$link = $_POST[&#39;url&#39;];
+$curlobj = curl_init();
+curl_setopt($curlobj, CURLOPT_POST, 0);
+curl_setopt($curlobj,CURLOPT_URL,$link);
+curl_setopt($curlobj, CURLOPT_RETURNTRANSFER, 1);
+$result=curl_exec($curlobj);
+curl_close($curlobj);
+
+$filename = &#39;./curled/&#39;.rand().&#39;.txt&#39;;
+file_put_contents($filename, $result); 
+echo $result;
+}
+?&gt;</code></pre>
 <p>假如出现以上几种函数（已知源码前提下），通常可以尝试使用ssrf。</p>
 <h1 id="2-SSRF的利用"><a href="#2-SSRF的利用" class="headerlink" title="2.SSRF的利用"></a>2.SSRF的利用</h1><p>实话说，ssrf不像sql，xss那样属于人尽皆知的漏洞。但其利用在真实渗透中是非常常见的。其利用场景主要有：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1.让服务端去访问相应的网址</span><br><span class="line">(比如读&#x2F;flag之类的)</span><br><span class="line">2.让服务端去访问自己所处内网的一些指纹文件来判断是否存在相应的cms</span><br><span class="line">3.可以使用&#96;&#96;&#96;file、dict、gopher、ftp&#96;&#96;&#96;协议进行请求访问相应的文件</span><br><span class="line">(其中gopher被称作万金油，可以打内网也可以get,post,当然还有攻击内网未授权的mysql，主要区别在于不默认端口)</span><br><span class="line">4.攻击内网web应用（可以向内部任意主机的任意端口发送精心构造的数据包&#123;payload&#125;）</span><br><span class="line">(ssrf打redis)</span><br><span class="line">5.攻击内网应用程序（利用跨协议通信技术）</span><br><span class="line">6.判断内网主机是否存活：方法是访问看是否有**端口开放**</span><br><span class="line">7.利用phar协议触发反序列化</span><br></pre></td></tr></table></figure>
-<p>CTF题目中具体见过的包括之前hackergame的一道伪ssrf（只涉及到url）；NCTF2019 True-XML-Cookbook<br>以及hgame的Cosmos的博客后台（果然还是做得太少了）</p>
+<pre><code>1.让服务端去访问相应的网址
+(比如读/flag之类的)
+2.让服务端去访问自己所处内网的一些指纹文件来判断是否存在相应的cms
+3.可以使用```file、dict、gopher、ftp```协议进行请求访问相应的文件
+(其中gopher被称作万金油，可以打内网也可以get,post,当然还有攻击内网未授权的mysql，主要区别在于不默认端口)
+4.攻击内网web应用（可以向内部任意主机的任意端口发送精心构造的数据包{payload}）
+(ssrf打redis)
+5.攻击内网应用程序（利用跨协议通信技术）
+6.判断内网主机是否存活：方法是访问看是否有**端口开放**
+7.利用phar协议触发反序列化</code></pre><p>CTF题目中具体见过的包括之前hackergame的一道伪ssrf（只涉及到url）；NCTF2019 True-XML-Cookbook<br>以及hgame的Cosmos的博客后台（果然还是做得太少了）</p>
 <h1 id="3-绕过"><a href="#3-绕过" class="headerlink" title="3.绕过"></a>3.绕过</h1><p>关于绕过，把重点放在几个大类上：<br> 1）ip地址绕过<br>对<code>192.168.0.1</code></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">8进制：0300.0250.0.1</span><br><span class="line">16进制：0xC0.0xA8.0.1</span><br><span class="line">10进####制：3232235521</span><br><span class="line">16进制整数: 0xC0A80001</span><br></pre></td></tr></table></figure>
-<p>也可以通过省略达到同样的效果<br>对10.0.0.1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.http:&#x2F;&#x2F;0&#x2F;</span><br><span class="line">2.http:&#x2F;&#x2F;127.1&#x2F;</span><br><span class="line">3.ipv6:http:&#x2F;&#x2F;[::1]&#x2F;</span><br><span class="line">4.http:&#x2F;&#x2F;127.0.0.1.&#x2F;</span><br></pre></td></tr></table></figure>
+<pre><code>8进制：0300.0250.0.1
+16进制：0xC0.0xA8.0.1
+10进####制：3232235521
+16进制整数: 0xC0A80001</code></pre><p>也可以通过省略达到同样的效果<br>对10.0.0.1</p>
+<pre><code>1.http://0/
+2.http://127.1/
+3.ipv6:http://[::1]/
+4.http://127.0.0.1./</code></pre><h4 id="2-url-bypass"><a href="#2-url-bypass" class="headerlink" title="2)url bypass"></a>2)url bypass</h4><p>这应该是是基础类ssrf最常见的考点了，比较适合我这样的萌新总结。<br>在谈及绕过之前，先来理解下url的基本概念：<br><img src="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/1.jpg" class="lazyload" data-srcset="1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="url"><br>可以注意到url的组成部分。</p>
+<pre><code>scheme 协议
+authority 权限=主机名+端口号 ，再详细一点如
+![2.jpg](https://upload-images.jianshu.io/upload_images/18060177-6d443ccaaa9138ba.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+admin:admin@www.example.com:2333`（使用用户名为 admin，密码为 admin，访问 www.example.com 的 2333 端口获取资源）
+path 路径
+query 查询
+fragment 指向一个更低级别的资源</code></pre><p>我们常常通过构造url来bypass个别函数，最终达成ssrf的目的。<br>而orange的那篇经典的pdf指出了几个函数利用上的经典漏洞，其中离不开一个<code>@</code>：</p>
+<pre><code>php parse_url：
+host: 匹配最后一个@后面符合格式的host
 
-<h4 id="2-url-bypass"><a href="#2-url-bypass" class="headerlink" title="2)url bypass"></a>2)url bypass</h4><p>这应该是是基础类ssrf最常见的考点了，比较适合我这样的萌新总结。<br>在谈及绕过之前，先来理解下url的基本概念：<br><img src="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/1.jpg" class="lazyload" data-srcset="1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="url"><br>可以注意到url的组成部分。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">scheme 协议</span><br><span class="line">authority 权限&#x3D;主机名+端口号 ，再详细一点如</span><br><span class="line">![2.jpg](https:&#x2F;&#x2F;upload-images.jianshu.io&#x2F;upload_images&#x2F;18060177-6d443ccaaa9138ba.jpg?imageMogr2&#x2F;auto-orient&#x2F;strip%7CimageView2&#x2F;2&#x2F;w&#x2F;1240)</span><br><span class="line">admin:admin@www.example.com:2333&#96;（使用用户名为 admin，密码为 admin，访问 www.example.com 的 2333 端口获取资源）</span><br><span class="line">path 路径</span><br><span class="line">query 查询</span><br><span class="line">fragment 指向一个更低级别的资源</span><br></pre></td></tr></table></figure>
-<p>我们常常通过构造url来bypass个别函数，最终达成ssrf的目的。<br>而orange的那篇经典的pdf指出了几个函数利用上的经典漏洞，其中离不开一个<code>@</code>：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">php parse_url：</span><br><span class="line">host: 匹配最后一个@后面符合格式的host</span><br><span class="line"></span><br><span class="line">libcurl：</span><br><span class="line">host：匹配第一个@后面符合格式的host</span><br></pre></td></tr></table></figure>
-<p><img src="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="parse_url"><br>利用<code>@</code>可以轻松使google.com（默认白名单）置为host，达到绕过php parse_url的效果（这里用#将@忽略了）</p>
+libcurl：
+host：匹配第一个@后面符合格式的host</code></pre><p><img src="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="parse_url"><br>利用<code>@</code>可以轻松使google.com（默认白名单）置为host，达到绕过php parse_url的效果（这里用#将@忽略了）</p>
 <p>同样对于curl操作，假如使用libcurl<br><img src="/2020/02/05/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-SSRF%E5%9F%BA%E7%A1%80/3.jpg" class="lazyload" data-srcset="3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="lib_curl"><br>则将第一个<code>@</code>后的危险网站置为执行curl的对象，达到漏洞利用。<br>同样效果的还有<code>;</code><br>即<code>http://evil.com;google.com</code>。curl会将<code>evil.com</code>当成<br>hostname,而将后面的<code>google.com</code>当做quqerystring。</p>
 <p>提到curl,还可以提到后端代码的一种常见搭配</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.filter_var对url进行check</span><br><span class="line">2.parse_url获取url的host</span><br><span class="line">3.对host进行正则匹配</span><br><span class="line">4.exec执行命令</span><br></pre></td></tr></table></figure>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">   <span class="keyword">echo</span> <span class="string">"Argument: "</span>.$argv[<span class="number">1</span>].<span class="string">"\n"</span>;</span><br><span class="line">   <span class="comment">// check if argument is a valid URL</span></span><br><span class="line">   <span class="keyword">if</span>(filter_var($argv[<span class="number">1</span>], FILTER_VALIDATE_URL)) &#123;</span><br><span class="line">      <span class="comment">// parse URL</span></span><br><span class="line">      $r = parse_url($argv[<span class="number">1</span>]);</span><br><span class="line">      print_r($r);</span><br><span class="line">      <span class="comment">// check if host ends with google.com</span></span><br><span class="line">      <span class="keyword">if</span>(preg_match(<span class="string">'/google\.com$/'</span>, $r[<span class="string">'host'</span>])) &#123;</span><br><span class="line">         <span class="comment">// get page from URL</span></span><br><span class="line">         exec(<span class="string">'curl -v -s "'</span>.$r[<span class="string">'host'</span>].<span class="string">'"'</span>, $a);</span><br><span class="line">         print_r($a);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">         <span class="keyword">echo</span> <span class="string">"Error: Host not allowed"</span>;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">"Error: Invalid URL"</span>;</span><br><span class="line">   &#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code>1.filter_var对url进行check
+2.parse_url获取url的host
+3.对host进行正则匹配
+4.exec执行命令</code></pre><pre><code class="php">&lt;?php
+   echo &quot;Argument: &quot;.$argv[1].&quot;\n&quot;;
+   // check if argument is a valid URL
+   if(filter_var($argv[1], FILTER_VALIDATE_URL)) {
+      // parse URL
+      $r = parse_url($argv[1]);
+      print_r($r);
+      // check if host ends with google.com
+      if(preg_match(&#39;/google\.com$/&#39;, $r[&#39;host&#39;])) {
+         // get page from URL
+         exec(&#39;curl -v -s &quot;&#39;.$r[&#39;host&#39;].&#39;&quot;&#39;, $a);
+         print_r($a);
+      } else {
+         echo &quot;Error: Host not allowed&quot;;
+      }
+   } else {
+      echo &quot;Error: Invalid URL&quot;;
+   }
+?&gt;</code></pre>
 <p>关于bypass <code>filter_var</code>及<code>parse_url</code>也是有妙招的：<br>首先是 <code>filter_var</code>：<br>上面说到，<code>http://evil.com;google.com</code>是可以执行curl到危险网站的。但是假如在curl之前加上<code>filter_var</code>后要怎么绕过呢？很简单，更改协议即可</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0:&#x2F;&#x2F;evil.com;google.com</span><br></pre></td></tr></table></figure>
-<p>但是这样的话curl可能执行不了了，所以把hostname强调一下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0:&#x2F;&#x2F;evil.com:80;google.com:80</span><br></pre></td></tr></table></figure>
-<p>加上端口即可。</p>
+<pre><code>0://evil.com;google.com</code></pre><p>但是这样的话curl可能执行不了了，所以把hostname强调一下</p>
+<pre><code>0://evil.com:80;google.com:80</code></pre><p>加上端口即可。</p>
 <p>其次是parse_url：<br>pase_url并不需要完全绕过hostname。因为parse_url的作用只是将一个给定url分成上面提到的<code>scheme,hostname，port,path</code>几部分。所以下面这个paylaod</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0:&#x2F;&#x2F;evil$google.com</span><br></pre></td></tr></table></figure>
-<p>在经过<code>parse_url</code>后，<code>hostname</code>仍为evil$google.com。但是当源码中</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exec(&#39;curl -v -s &quot;&#39;.$r[&#39;host&#39;].&#39;&quot;&#39;, $a);</span><br></pre></td></tr></table></figure>
-<p>执行时，bash会将后面的<code>$google.com</code>当做一个变量并置为空，所以<code>exec()</code>时仍是指向<code>evil.com</code><br>使用前提：用<code>exec system</code>执行<code>curl  wget</code>之类的。</p>
+<pre><code>0://evil$google.com</code></pre><p>在经过<code>parse_url</code>后，<code>hostname</code>仍为evil$google.com。但是当源码中</p>
+<pre><code>exec(&#39;curl -v -s &quot;&#39;.$r[&#39;host&#39;].&#39;&quot;&#39;, $a);</code></pre><p>执行时，bash会将后面的<code>$google.com</code>当做一个变量并置为空，所以<code>exec()</code>时仍是指向<code>evil.com</code><br>使用前提：用<code>exec system</code>执行<code>curl  wget</code>之类的。</p>
 <p>以上都是curl函数的ssrf，那么如果是<code>file_get_contents()</code>呢：<br>比如只将上面<code>exec()</code>部分函数改为</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; get page from URL</span><br><span class="line">$a &#x3D; file_get_contents($argv[1]);</span><br></pre></td></tr></table></figure>
-<p>这时就可以考虑到常常利用的各种协议,比如data协议</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">data:&#x2F;&#x2F;google.com&#x2F;plain;base64,SSBsb3ZlIFBIUAo&#x3D;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#96;&#96;&#96;</span><br><span class="line">I love PHP</span><br></pre></td></tr></table></figure>
-<p>所以如果把后面的base64部分换作xss代码编码后的结果，就可以执行xss。</p>
+<pre><code>// get page from URL
+$a = file_get_contents($argv[1]);</code></pre><p>这时就可以考虑到常常利用的各种协议,比如data协议</p>
+<pre><code>data://google.com/plain;base64,SSBsb3ZlIFBIUAo=</code></pre><p><code>parse_url</code>会将host设为<code>google.com</code>，而将后面全部看作path。但实际上输出了</p>
+<pre><code>I love PHP</code></pre><p>所以如果把后面的base64部分换作xss代码编码后的结果，就可以执行xss。</p>
 <p>先这样。由于还没接触到ssrf的高级拓展场景，等日后接触到再写一篇高级利用。</p>
 <p>参考文章：</p>
 <p><a href="https://xz.aliyun.com/t/2115" target="_blank" rel="noopener">https://xz.aliyun.com/t/2115</a></p>
@@ -721,7 +807,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -733,9 +819,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -868,6 +954,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1081,7 +1169,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1137,6 +1225,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

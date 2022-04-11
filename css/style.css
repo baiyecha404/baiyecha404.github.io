@@ -4702,7 +4702,7 @@ img.lazyload:not(.placeholder).loaded {
   -ms-user-select: none;
   user-select: none;
   text-align: center;
-  color: #ccc;
+  color: #6c6e6f;
   vertical-align: top;
   padding-right: 5px;
 /* your custom style here */

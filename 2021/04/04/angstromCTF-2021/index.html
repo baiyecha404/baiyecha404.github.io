@@ -24,7 +24,7 @@
   
   <title>angstromCTF 2021 - byc_404&#39;s blog</title>
   
-    <meta name="keywords" content="CTF,WEB">
+    <meta name="keywords" content="WEB,CTF">
   
 
   
@@ -614,7 +614,7 @@ app.post(&#39;/report/:shareName&#39;, async function(req, res) {
 <p>简而言之。我们现在可控<code>shares</code>页面下直接拼接的score与name.但是页面存在CSP 的nonce 且nonce为动态刷新. 我们可控点在含nounce的script 正上方。</p>
 <p>首先对于这个CSP, 其实是非常奇怪的。一般来说设置script-nonce 可能会先加上<code>script-src: &#39;self&#39;</code> <code>default-src: &#39;self&#39;</code> <code>base-uri: none</code> 之类的。其中一种绕过方法是在没有<code>base-uri</code>的情况下先插入base标签再插入scipt(带nonce),达成xss; 但是这些要求nonce可控，此处自然是不行的。</p>
 <p>但是,注意到我们可控的name就在<code>script</code>标签正上方，一个朴素的想法自然是，想办法让我们的标签把下面的吞掉，并且nonce 正好带进去就行了。<br><code>&lt;script  src=&#39;data:text/plain,alert(1)&#39; a=</code>当然能吞进去，此时在firefox下就已经能xss了.但是chrome下可以么？为了避免<code>&lt;</code>字符的影响,这里我尝试了下设置同名属性，因为浏览器会忽略第二个同名属性。结果发现chrome下确实触发不了,尽管已经解析成正确的代码了</p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_72be679263b1b5f2017fa0b2cf482064.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_72be679263b1b5f2017fa0b2cf482064.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_72be679263b1b5f2017fa0b2cf482064.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_72be679263b1b5f2017fa0b2cf482064.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>基于题目是firefox,直接xss传html代码就行。</p>
 <pre><code class="python">def xss():
     r = requests.post(url + &#39;record&#39;, json={
@@ -743,10 +743,10 @@ document.head.appendChild(script)</code></pre>
 <p>获得jsonp的方法明白了之后还有一点注意，我们需要admin带cookie访问才能获得flags的jsonp内容。然而这里是express 自带的jsonp而不是那种php自写的jsonp。其callback并不能做到任意字符,也就没有xss了。所以这个站并没有xss利用来获取dom的内容</p>
 <p>所以。单纯利用csrf怎么才能有权访问jsonp呢？这里如果注意到passcode的奇怪写法，方法就水落石出了。</p>
 <pre><code class="javascript">res.append(&#39;Set-Cookie&#39;, `passcode=${(req.cookies.passcode || &#39;&#39;)+req.body.passcode}`)</code></pre>
-<p>此处passcode完全可控。也就是说，我们可以在set-cookie原本的cookie后加入任意内容。要加什么，或者说能加什么，MDN写的是很清楚的<br><img src="https://hackmd.summershrimp.com/uploads/upload_f48c550dfca0159fbd55272b9452de57.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_f48c550dfca0159fbd55272b9452de57.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>此处passcode完全可控。也就是说，我们可以在set-cookie原本的cookie后加入任意内容。要加什么，或者说能加什么，MDN写的是很清楚的<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_f48c550dfca0159fbd55272b9452de57.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_f48c550dfca0159fbd55272b9452de57.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>cookie的几个安全属性中。httpOnly与SameSite 是用的非常多的。其中httpOnly可以防止通过dom获取cookie.SameSite则指定cookie的作用域。尤其在跨域请求上作用很大。(如果samesite 为none, 即使是csrf也可以利用跨域请求进行xsleak)</p>
 <p>一般来说没有设置SameSite 的话，默认是为Lax的。也就是默认防csrf.所以这里直接利用passcode 设置为None即可。</p>
-<p>注意的是。现在SameSite 为None.时，必须设置Secure为true,也就是必须在https上(除了localhost)才有效。<br><img src="https://hackmd.summershrimp.com/uploads/upload_bcfd6ba59de0ccd6ec9717356a773f18.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_bcfd6ba59de0ccd6ec9717356a773f18.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>注意的是。现在SameSite 为None.时，必须设置Secure为true,也就是必须在https上(除了localhost)才有效。<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_bcfd6ba59de0ccd6ec9717356a773f18.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_bcfd6ba59de0ccd6ec9717356a773f18.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>这里简单写个表单提交(其他请求如fetch不会顺着跳转。这样set-cookie 就没意义了。)。我们在本页面开个新窗口执行表单后一直调用 location.reload()刷新本页面。这样等cookie在我们的恶意html处生效时，就会调用被劫持的load了。这里可以fetch请求下自己的站外带数据，也可以<code>navigator.sendBeacon</code> post数据</p>
 <p>这里因为他远程的puppeteer 没有timeout.所以最好把interVal的间隔设短点。</p>
 <pre><code class="html">&lt;script&gt;
@@ -819,13 +819,13 @@ for (let port = 40000; port &lt; 45000; port++) {
         &lt;link rel=&quot;stylesheet&quot; href=&quot;http://difajosdifjwioenriqoewrowifjaoijdaf.com&quot;&gt;
     &lt;/body&gt;
     &lt;/html&gt;</code></pre>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_9f8a44adf3b87817bffebb31c0f2cb28.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_9f8a44adf3b87817bffebb31c0f2cb28.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_9f8a44adf3b87817bffebb31c0f2cb28.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_9f8a44adf3b87817bffebb31c0f2cb28.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>之后我们访问其<code>json/new</code>路由。他会</p>
 <blockquote>
 <p>Opens a new tab. Responds with the websocket target data for the new tab.</p>
 </blockquote>
 <p>这样就会新开一个标签页。且我们能执行任意js.为了获取flag自然是<code>http://127.0.0.1:40027/json/new?file:///app/flag.txt</code> 来用浏览器打开flag</p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_0755bcaf56fc15a780806f90ddb83fb7.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_0755bcaf56fc15a780806f90ddb83fb7.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_0755bcaf56fc15a780806f90ddb83fb7.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_0755bcaf56fc15a780806f90ddb83fb7.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>根据 <a href="https://chromedevtools.github.io/devtools-protocol/tot/Runtime/#method-evaluate" target="_blank" rel="noopener">https://chromedevtools.github.io/devtools-protocol/tot/Runtime/#method-evaluate</a></p>
 <p>我们可以用Runtime.evaluate 来执行任意js</p>
 <pre><code class="javascript">window.ws = new WebSocket(`ws://127.0.0.1:40027/devtools/page/98D1EC60387BE0038D514389E2887339 `)
@@ -837,7 +837,7 @@ ws.onopen = () =&gt; {
         params: { expression: &#39;document.body.innerHTML&#39; }
     }))
 }</code></pre>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_ef0259a59051d89cd59c3a272b05de51.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_ef0259a59051d89cd59c3a272b05de51.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_ef0259a59051d89cd59c3a272b05de51.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_ef0259a59051d89cd59c3a272b05de51.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>还是学到很多的。预期好像是构造BSON 数据。感觉跟web关系不大。。。</p>
 <h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p>  总的来说题目质量都很不错。很难想象是给高中生准备的题。。。关于前端的一些知识自己也有了一些新的见解。希望能有机会总结下。</p>
 <h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><p><a href="https://github.com/qxxxb/ctf/tree/master/2021/angstrom_ctf/watered_down_watermark" target="_blank" rel="noopener">https://github.com/qxxxb/ctf/tree/master/2021/angstrom_ctf/watered_down_watermark</a></p>
@@ -884,10 +884,10 @@ ws.onopen = () =&gt; {
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-04-08T21:01:17+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2023-06-30T16:08:30+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Apr 8, 2021</p>
+    <p>更新于：Jun 30, 2023</p>
   </a>
 </div>
 
@@ -896,7 +896,7 @@ ws.onopen = () =&gt; {
         
           
   
-  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div>
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div>
 
 
         

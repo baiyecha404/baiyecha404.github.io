@@ -465,7 +465,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <a id="more"></a>
 
 <h2 id="analysis"><a href="#analysis" class="headerlink" title="analysis"></a>analysis</h2><p>首先拿到源码分析下。并不像简单的nodejs题目存在显眼的漏洞利用点。但是有一些地方是拥有express 开发经验的小伙伴绝不能疏忽掉的</p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_511d891830c1af317f68cad89595d906.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_511d891830c1af317f68cad89595d906.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_511d891830c1af317f68cad89595d906.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_511d891830c1af317f68cad89595d906.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>这里用的是没有<code>展开</code>的post数据中间件与json中间件。这意味着当我们发送json数据时,可以传入数组/对象。</p>
 <p>我们接下来继续看题目思路。</p>
 <p>访问admin路由需要<code>req.session.username</code> 为 admin. 之后在admin路由处调用了一个非常显眼的赋值操作。最后将我们的数据通过<code>nodemailer</code>中的<code>sendMail</code>发送邮件。</p>
@@ -473,8 +473,8 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 <pre><code class="javascript"> sql.query(&quot;SELECT * FROM users WHERE username = ? AND password = ?&quot;,[username, password],function (err, res) {
      ......
  }</code></pre>
-<p>很奇怪。虽然没有字符拼接,但也没有用常规的占位符处理。传入的参数是一个数组。我们来看官方文档对这种情况的处理。<br><img src="https://hackmd.summershrimp.com/uploads/upload_f8b8316687168c885a30ded874c17969.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_f8b8316687168c885a30ded874c17969.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
-<p>可以看出这是一种转义字符的用法。但是注意此处并没有限制传入参数只能为字符。还记得上面json中间件的存在吗，我们当然可以直接传入对象/数组,而mysql依赖对于这种情况的处理是喜闻乐见的：<br><img src="https://hackmd.summershrimp.com/uploads/upload_9ac74cc0a7c888a5b8df57c73c74ae21.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_9ac74cc0a7c888a5b8df57c73c74ae21.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>很奇怪。虽然没有字符拼接,但也没有用常规的占位符处理。传入的参数是一个数组。我们来看官方文档对这种情况的处理。<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_f8b8316687168c885a30ded874c17969.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_f8b8316687168c885a30ded874c17969.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>可以看出这是一种转义字符的用法。但是注意此处并没有限制传入参数只能为字符。还记得上面json中间件的存在吗，我们当然可以直接传入对象/数组,而mysql依赖对于这种情况的处理是喜闻乐见的：<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_9ac74cc0a7c888a5b8df57c73c74ae21.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_9ac74cc0a7c888a5b8df57c73c74ae21.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>此处的键值会被展开，那我们自然可以直接构造一个真值的登录语句</p>
 <pre><code class="sql">SELECT * FROM users WHERE username = &#39;admin&#39; AND password = `password` =1</code></pre>
 <p>看到登录路由并没有语句判断传入参数是否只为字符串，所以就可以用<code>{&quot;username&quot;:&quot;admin&quot;, &quot;password&quot;: {&quot;password&quot;: &quot;1&quot;}}</code> 成功登录,来到admin路由。</p>
@@ -513,15 +513,15 @@ After : true
 */</code></pre>
 <p>这里可以看到我们已经污染到基类原型的任意属性上了,这可以算是非常强大的。假如题目用了模板引擎基本上就结束直接RCE了。不过显然，题目的nodemailer还没有用到。我们先来看下nodemailer的历史漏洞</p>
 <p>很快我们就能找到<br><a href="https://snyk.io/vuln/SNYK-JS-NODEMAILER-1038834" target="_blank" rel="noopener">https://snyk.io/vuln/SNYK-JS-NODEMAILER-1038834</a><br>这里的命令注入漏洞。来看下关键代码</p>
-<p>nodemailer\lib\sendmail-transport\index.js<br>中 , SendmailTransport 类的send 方法<br><img src="https://hackmd.summershrimp.com/uploads/upload_e5d1ceaee1bb4a6f64015380340c71e8.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_e5d1ceaee1bb4a6f64015380340c71e8.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>nodemailer\lib\sendmail-transport\index.js<br>中 , SendmailTransport 类的send 方法<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_e5d1ceaee1bb4a6f64015380340c71e8.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_e5d1ceaee1bb4a6f64015380340c71e8.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>这里命令注入的原理是，args参数<code>-i</code>与默认为空的<code>this.args</code>与可控的<code>envelope.to</code>拼接了。这就导致我们可以额外塞入其他参数。做到参数注入,像<code>-Dfilename@example.com (Debug output ffile)</code></p>
 <p>然后,下面调用了一个_spawn,其实就是<code>spawn(sendmail,args)</code>。如果说php里大家最先会去找的恶意函数是<code>system,exec</code>等os函数，nodejs中相对应的肯定就是<code>spawn,execSync</code>这样的了(其实都是调用的spawn),更不用说,基类污染 + child_process = RCE.</p>
 <p>既然这里有子进程函数。我们又有任意链上的污染,这样就有两种方式RCE了。一个朴素的想法就是简单检查下看看其子进程函数参数是否可控。</p>
-<p>分享一个非常常见的小技巧，要知道这个属性是不是会受到链上污染的影响，直接看代码结构就好了<br><img src="https://hackmd.summershrimp.com/uploads/upload_25ae990dedc37a7e21849968339fcad6.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_25ae990dedc37a7e21849968339fcad6.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>分享一个非常常见的小技巧，要知道这个属性是不是会受到链上污染的影响，直接看代码结构就好了<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_25ae990dedc37a7e21849968339fcad6.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_25ae990dedc37a7e21849968339fcad6.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>基本上出现<code>if(xxx.xxx)</code>这样语句的,它用来判断的属性多半是没有预先赋值的。所以才会通过if来判断是否有值,来写条件语句。而这些属性基本都是可污染的。正因如此，我们可以直接做到污染<code>options.args</code> 与<code>options.path</code>.等于是完全控制了spawn的参数。</p>
 <p>spawn的第一个参数是command,第二个是数组接收 command-line arguments。我们可以用<code>/bin/sh -c &quot;xxx&quot;</code>执行任意命令</p>
 <p>那么题目中的sendmail会不会默认走到这里呢？我们看下mail.js中<code>nodemailer.createTransport</code>的代码</p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_aafe8f0bc20b3da6976a4fd16fcfe6c0.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_aafe8f0bc20b3da6976a4fd16fcfe6c0.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_aafe8f0bc20b3da6976a4fd16fcfe6c0.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_aafe8f0bc20b3da6976a4fd16fcfe6c0.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>显然需要options中设置 sendmail 为true,我们的<code>transporter</code>才会是<code>SendmailTransport</code>. 这里跟上面是一样的道理，我们直接污染 sendmail 属性即可</p>
 <p>接下来就很轻松了</p>
 <h2 id="exploit"><a href="#exploit" class="headerlink" title="exploit"></a>exploit</h2><p>  方便调试起见，我们先本地起一下代码。这里都很好配置，稍微需要注意的是smtp服务器的设置。我们直接看官方文档 <a href="https://nodemailer.com/about/" target="_blank" rel="noopener">https://nodemailer.com/about/</a> 按照官方的配置直接<a href="https://ethereal.email/create" target="_blank" rel="noopener">https://nodemailer.com/about/</a> 创立一个账户。就可以跑起来了</p>
@@ -557,8 +557,8 @@ print(r.json())</code></pre>
 &quot;constructor.prototype.shell&quot;:&quot;node&quot;,
 &quot;constructor.prototype.env.NODE_DEBUG&quot;: &quot;require(&#39;child_process&#39;).execSync(&#39;curl 127.0.0.1&#39;);process.exit();//&quot;,
 &quot;constructor.prototype.env.NODE_OPTIONS&quot;:&quot;-r /proc/self/environ&quot;,</code></pre>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_790c9ee4c7ba0655f6129ea9eadb61bd.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_790c9ee4c7ba0655f6129ea9eadb61bd.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
-<p>远程nc打通<br><img src="https://hackmd.summershrimp.com/uploads/upload_09312849190b675cac32392d97e0db1c.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_09312849190b675cac32392d97e0db1c.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_790c9ee4c7ba0655f6129ea9eadb61bd.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_790c9ee4c7ba0655f6129ea9eadb61bd.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>远程nc打通<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_09312849190b675cac32392d97e0db1c.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_09312849190b675cac32392d97e0db1c.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>由于题目打一次后数据库就会报错,只要完成第一步以admin登录的选手应该都能在登录时看到他人的payload。所以可能会有蹭车。</p>
 <h2 id="summary"><a href="#summary" class="headerlink" title="summary"></a>summary</h2><p>总的来说这道题难度一般。但是利用点其实都是比较经典的。所以值得分享一下。也提醒我们从开发的角度上，一方面在打开了json中间件或者<code>{extended： true}</code>的情况下一定要注意传参类型。另一方面也是避免使用用量低的node依赖,否则可能会存在一些未修复完全或者甚至根本不修复的代码。比如 此处没修复完全的shvl 的情形甚至都不是个例。之前 posix挖到的flat 依赖 原型链污染第一次修复的版本跟这里出现了几乎一样的问题,导致可以<code>prototype</code>绕过。。。</p>
 <p>最后就是关于RCE。 nodejs里想借由漏洞达成RCE确实不是一件简单的事情，基本上就参数注入，或者原型链污染 + gadget/ AST injection. 这也是为什么原型链污染始终是nodejs漏洞热门的原因。 之前注意到posix他们已经研究出了自动挖掘原型链污染的工具了,属实羡慕。。。</p>
@@ -604,10 +604,10 @@ print(r.json())</code></pre>
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-03-08T19:29:35+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2023-06-30T16:08:30+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Mar 8, 2021</p>
+    <p>更新于：Jun 30, 2023</p>
   </a>
 </div>
 

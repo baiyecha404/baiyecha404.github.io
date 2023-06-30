@@ -24,7 +24,7 @@
   
   <title>0ctf/tctf-soracon - byc_404&#39;s blog</title>
   
-    <meta name="keywords" content="CTF,WEB">
+    <meta name="keywords" content="WEB,CTF">
   
 
   
@@ -482,7 +482,7 @@ print_r($response);</code></pre>
 <p>关于solr自己其实以前没有看过相关漏洞，所以去新安装了下，本地可以直接<code>solr start -e cloud</code>起。</p>
 <p>这里虽然不能直接看懂题目源码的具体目的，但是我们知道，可控点只有host。也就是说response 是可控的。那么我们从response 入手</p>
 <p>我们直接找getResponse,发现起调用的是接口solr_response_get_response_impl</p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_54f1252f9274090714abfcbafac53b3e.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_54f1252f9274090714abfcbafac53b3e.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_54f1252f9274090714abfcbafac53b3e.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_54f1252f9274090714abfcbafac53b3e.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>这里的php_var_unserialize代表，这里对response执行了反序列化。输入是第二个参数raw_response。这个就非常有意思了。我们的response作为可控参数的话，如果能利用反序列化必然是可以扩大攻击面。那么回溯看下这里的参数raw_response 能否控制，从而执行恶意反序列化。</p>
 <p>首先，可以发现，raw_response 来自buffer。<code>raw_resp = (unsigned char *) buffer.str;</code><br>而buffer则是根据if条件，有多种不同方式处理得到的</p>
 <pre><code class="c">if (Z_STRLEN_P(response_writer))
@@ -539,11 +539,11 @@ app.use(logger(&#39;dev&#39;))
 app.post(&#39;/solr/*&#39;, (req, res) =&gt; res.send(&#39;233&#39;));
 
 app.listen(8983)</code></pre>
-<p>回显<br><img src="https://hackmd.summershrimp.com/uploads/upload_bfd8b68993d160d3bae4ac59b4df2145.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_bfd8b68993d160d3bae4ac59b4df2145.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>回显<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_bfd8b68993d160d3bae4ac59b4df2145.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_bfd8b68993d160d3bae4ac59b4df2145.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>从error loading root of xml基本可以确定，期望的回显肯定是xml格式。而且后续的error unserializing 也基本确定其中会发生反序列化。</p>
 <p>那么我们跟进第一个if中的<code>solr_encode_generic_xml_response</code></p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_6957d2e03fa4a9bbb9a1229b41e707a7.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_6957d2e03fa4a9bbb9a1229b41e707a7.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>发现有我们刚刚的报错信息。可以确认是这个分支了。接下来跟进<code>solr_encode_object</code><br><img src="https://hackmd.summershrimp.com/uploads/upload_37173b270a270d0f6dfe37c3668196ac.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_37173b270a270d0f6dfe37c3668196ac.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
-<p>这里不妨看下<code>solr_write_object_opener</code><br><img src="https://hackmd.summershrimp.com/uploads/upload_4f95c27cf8a0fe9f2568b6ed16360277.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_4f95c27cf8a0fe9f2568b6ed16360277.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_6957d2e03fa4a9bbb9a1229b41e707a7.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_6957d2e03fa4a9bbb9a1229b41e707a7.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>发现有我们刚刚的报错信息。可以确认是这个分支了。接下来跟进<code>solr_encode_object</code><br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_37173b270a270d0f6dfe37c3668196ac.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_37173b270a270d0f6dfe37c3668196ac.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>这里不妨看下<code>solr_write_object_opener</code><br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_4f95c27cf8a0fe9f2568b6ed16360277.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_4f95c27cf8a0fe9f2568b6ed16360277.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>其实漏洞点到这里就有雏形了。此处opener这个函数明显是在往buffer里写序列化数据字符串。实际上，上面的<code>encode_xml_node</code>以及<code>object_closer</code>跟进去也会发现，是一样的思路。</p>
 <p>既然他的序列化数据是一段段拼接而成的，那么我们的可控数据自然也作为其中一部分被拼接进去了，最后执行反序列化。然而我们知道，php中序列化数据只要满足正确格式闭合关系，是可以通过提前闭合来实现反序列化逃逸的。这个不必多说。</p>
 <p>这里后面也可以跟下solr_encode_xml_node.也会发现其实就是在根据xml node的类型来选择不同函数：</p>
@@ -584,7 +584,7 @@ static inline int solr_get_xml_type(xmlNode *node)
     } 
 ......</code></pre>
 <p>接下来本地模拟下。首先php代码选项加上proxy,抓包看下回显(这里solr已经新建了一个core byc了)</p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_cdd12cc646c1357437639f914c869267.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_cdd12cc646c1357437639f914c869267.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_cdd12cc646c1357437639f914c869267.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_cdd12cc646c1357437639f914c869267.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <pre><code class="xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;response&gt;
 
@@ -619,13 +619,13 @@ static inline int solr_get_xml_type(xmlNode *node)
   &lt;/doc&gt;
 &lt;/result&gt;
 &lt;/response&gt;</code></pre>
-<p>还是用刚刚的node server。本地看下结果<br><img src="https://hackmd.summershrimp.com/uploads/upload_476c5f23bf8d5a1f57e5226c244d7287.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_476c5f23bf8d5a1f57e5226c244d7287.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>还是用刚刚的node server。本地看下结果<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_476c5f23bf8d5a1f57e5226c244d7287.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_476c5f23bf8d5a1f57e5226c244d7287.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>发现可以触发反序列化。到此为止，这道题的漏洞部分就已经分析完了。</p>
 <h2 id="gadget"><a href="#gadget" class="headerlink" title="gadget"></a>gadget</h2><p>然后就是如何在题目远程找到触发反序列化的问题了。然而自己一方面没看到题目给的phpinfo.php，另一方面没时间看题。。。所以当时直接放弃了。后来看题解的链子，感觉还是有些难度的。</p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_e461a4f7132eca9369fd67455930a1e7.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_e461a4f7132eca9369fd67455930a1e7.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_e461a4f7132eca9369fd67455930a1e7.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_e461a4f7132eca9369fd67455930a1e7.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>注意到扩展这里的phalcon, 我们可以找到源码cphalcon。会发现其源码都是.zep文件，应该是编译成c后作为扩展使用。但是整体风格跟php差不多。所以直接手动审就行了。</p>
-<p>入口是个抽象类AbstractAdapter<br><img src="https://hackmd.summershrimp.com/uploads/upload_6d090aad0104828e6c97325ff75a4015.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_6d090aad0104828e6c97325ff75a4015.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>后续根据<code>defaultFormatter</code>调用commit方法。这里可以找到实现这个抽象类的Stream类。作为我们payload实例化的对象。然后会发现最终调用过程中，会调用其process方法。<br><img src="https://hackmd.summershrimp.com/uploads/upload_5c9f06ad9e6ab4af289a3c9077e5ad65.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_5c9f06ad9e6ab4af289a3c9077e5ad65.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
-<p>所以如果能把message控住，这里就有个任意文件写。我们回到抽象类看下<code>getFornatedItem</code>发现会实例化一个Logger\Formatter下的类作为formater,调用其format方法。<br>以Json为例<br><img src="https://hackmd.summershrimp.com/uploads/upload_59c8eade8feea8088564477e2ee0214c.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_59c8eade8feea8088564477e2ee0214c.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>入口是个抽象类AbstractAdapter<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_6d090aad0104828e6c97325ff75a4015.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_6d090aad0104828e6c97325ff75a4015.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>后续根据<code>defaultFormatter</code>调用commit方法。这里可以找到实现这个抽象类的Stream类。作为我们payload实例化的对象。然后会发现最终调用过程中，会调用其process方法。<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_5c9f06ad9e6ab4af289a3c9077e5ad65.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_5c9f06ad9e6ab4af289a3c9077e5ad65.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>所以如果能把message控住，这里就有个任意文件写。我们回到抽象类看下<code>getFornatedItem</code>发现会实例化一个Logger\Formatter下的类作为formater,调用其format方法。<br>以Json为例<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_59c8eade8feea8088564477e2ee0214c.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_59c8eade8feea8088564477e2ee0214c.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>做到了调用可控参数的<code>getTime()</code>方法。此时常见的一个思路就是全局找<code>__call</code>扩展利用链。</p>
 <p>这里后来看了下zsx的链跟Nu1L的链。其实都用了同一个<code>__call</code></p>
 <p>看到Di.zep</p>
@@ -647,11 +647,11 @@ static inline int solr_get_xml_type(xmlNode *node)
         }
     }
 ......</code></pre>
-<p>这个使用挺常见的，一般常见于处理getter，setter型的方法。那么此处我们控制住<code>services</code>数组。就能调用其get方法。<br>get方法的核心在<br><img src="https://hackmd.summershrimp.com/uploads/upload_2e194cca7074bf82083c55fdae7462b8.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_2e194cca7074bf82083c55fdae7462b8.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>这个使用挺常见的，一般常见于处理getter，setter型的方法。那么此处我们控制住<code>services</code>数组。就能调用其get方法。<br>get方法的核心在<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_2e194cca7074bf82083c55fdae7462b8.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_2e194cca7074bf82083c55fdae7462b8.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>全局找会发现一个比较好用的resolve。即\Di下的Service类resolve方法。<br>resolve方法。我们首先注意到definition可控。如果是字符串的话，可以实例化类。</p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_8ba8c7dd346dfdf9f1eabf731030cbd0.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_8ba8c7dd346dfdf9f1eabf731030cbd0.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_8ba8c7dd346dfdf9f1eabf731030cbd0.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_8ba8c7dd346dfdf9f1eabf731030cbd0.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>如果是其他的话，会调用builder来build</p>
-<p>到这里我看了下，Nu1L跟zsx的链子就有差别了。<br><img src="https://hackmd.summershrimp.com/uploads/upload_b84d3cc07fea0eaf687fb9a3aff8d719.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_b84d3cc07fea0eaf687fb9a3aff8d719.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>Nu1L选择走上面， 可以做到实例化一个类且构造方法参数可控。然后后面代码都不执行直接返回了。</p>
+<p>到这里我看了下，Nu1L跟zsx的链子就有差别了。<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_b84d3cc07fea0eaf687fb9a3aff8d719.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_b84d3cc07fea0eaf687fb9a3aff8d719.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>Nu1L选择走上面， 可以做到实例化一个类且构造方法参数可控。然后后面代码都不执行直接返回了。</p>
 <p>zsx是单纯实例化一个类。然后继续走下面。</p>
 <p>build方法下面的关键代码就在：</p>
 <pre><code class="php">for methodPosition, method in paramCalls {
@@ -709,7 +709,7 @@ static inline int solr_get_xml_type(xmlNode *node)
 }</code></pre>
 <p>由于我们上面instance可控。这个代码块里<code>methodCall</code>,<code>this-&gt;buildParameters(container, arguments)</code>跟进看的话其实都是可控的。所以相当于是，我们可以执行一个<code>create_instance</code>实例化的类的任意方法，且参数可控。</p>
 <p>这里zsx的链子是，create_instance实例化一个Validation类。然后调用add方法设置好这个Validation的validator。然后注意到上面<code>for methodPosition, method in paramCalls</code>是循环调用的。也就是说，我们还能再调用同一个instance的另一个方法。此处即<code>validate</code>方法。</p>
-<p>这个方法妙在，上面实例化时，虽然类的参数没有设置为可控值。但是由于同一个instance循环调用这点，就可以先调用add方法设置好参数，再调用validate方法执行命令。<br>这里validator是用的Callback<br><img src="https://hackmd.summershrimp.com/uploads/upload_be8eb110d3cd2a72f7c688acff81611c.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_be8eb110d3cd2a72f7c688acff81611c.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>这个方法妙在，上面实例化时，虽然类的参数没有设置为可控值。但是由于同一个instance循环调用这点，就可以先调用add方法设置好参数，再调用validate方法执行命令。<br>这里validator是用的Callback<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_be8eb110d3cd2a72f7c688acff81611c.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_be8eb110d3cd2a72f7c688acff81611c.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>callback完全可控。不过<br>这里zsx的参数是用\Phalcon\Acl\Component()控住的。其实是因为validate方法只接收数组或对象作参数。那么找一个<code>__toString</code>就行了。</p>
 <p>poc</p>
 <pre><code class="php">&lt;?php
@@ -802,9 +802,9 @@ $poc = new Stream([
         ])
 ]);
 echo (serialize($poc));</code></pre>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_46e86d905e1b9caf5c30080e5f8bcf4a.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_46e86d905e1b9caf5c30080e5f8bcf4a.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_46e86d905e1b9caf5c30080e5f8bcf4a.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_46e86d905e1b9caf5c30080e5f8bcf4a.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>还有Nu1L的方法。整体上其实比较好想。因为前面已经有一个fwrite了。控制住参数就能任意写。然后如果有文件包含就能rce了。</p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_5c0d0bc9fdf15317efe3eb48358adfb9.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_5c0d0bc9fdf15317efe3eb48358adfb9.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>这个类直接构造方法就能文件包含。所以到上面那步<code>create_instance</code>就可以包含了。</p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_5c0d0bc9fdf15317efe3eb48358adfb9.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_5c0d0bc9fdf15317efe3eb48358adfb9.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>这个类直接构造方法就能文件包含。所以到上面那步<code>create_instance</code>就可以包含了。</p>
 <p>写文件的话更简单。在format那不用触发<code>__call</code>。直接控制好里面各个方法参数就能直接fwrite。</p>
 <h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p> 比赛有时间肝这题的话，应该收获挺大的。。。<br> 其他题质量也非常不错，比如2个java。希望有机会能看到wuyx师傅跟ccl师傅放出完整题解~</p>
 
@@ -849,10 +849,10 @@ echo (serialize($poc));</code></pre>
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-07-07T00:14:41+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2023-06-30T16:08:30+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Jul 7, 2021</p>
+    <p>更新于：Jun 30, 2023</p>
   </a>
 </div>
 
@@ -861,7 +861,7 @@ echo (serialize($poc));</code></pre>
         
           
   
-  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div>
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div>
 
 
         

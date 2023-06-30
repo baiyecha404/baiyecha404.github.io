@@ -6,7 +6,7 @@
   <link href="https://www.bycsec.top/atom.xml" rel="self"/>
   
   <link href="https://www.bycsec.top/"/>
-  <updated>2022-05-05T01:05:28.688Z</updated>
+  <updated>2023-06-30T08:08:30.815Z</updated>
   <id>https://www.bycsec.top/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="https://www.bycsec.top/2022/05/05/angstormCTF-2022/"/>
     <id>https://www.bycsec.top/2022/05/05/angstormCTF-2022/</id>
     <published>2022-05-05T00:43:50.000Z</published>
-    <updated>2022-05-05T01:05:28.688Z</updated>
+    <updated>2023-06-30T08:08:30.815Z</updated>
     
     
     <summary type="html">&lt;p&gt;  上一次单挑打angstormCTF 已经是一年多以前的事了，当时记得有质量挺不错的前端web题，不过很可惜没能ak。 这次趁着最近比较闲，正好单挑ak掉web题，加上有2道题质量还不错, 这里简单记录下&lt;/p&gt;</summary>
@@ -29,9 +29,9 @@
     
     
     
-    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
-    
     <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
     
     <category term="javascript" scheme="https://www.bycsec.top/tags/javascript/"/>
     
@@ -42,7 +42,7 @@
     <link href="https://www.bycsec.top/2022/04/05/Netty-%E5%86%85%E5%AD%98%E9%A9%AC%E7%9A%84%E4%B8%80%E7%A7%8D%E6%80%9D%E8%B7%AF/"/>
     <id>https://www.bycsec.top/2022/04/05/Netty-%E5%86%85%E5%AD%98%E9%A9%AC%E7%9A%84%E4%B8%80%E7%A7%8D%E6%80%9D%E8%B7%AF/</id>
     <published>2022-04-05T08:10:00.000Z</published>
-    <updated>2022-04-11T02:36:07.300Z</updated>
+    <updated>2023-06-30T08:08:31.349Z</updated>
     
     
     <summary type="html">Here&#39;s something encrypted, password is required to continue reading.</summary>
@@ -59,7 +59,7 @@
     <link href="https://www.bycsec.top/2022/01/10/%E4%BD%8E%E7%89%88%E6%9C%ACJDK%E4%B8%8Bgopher%E7%9A%84%E5%9B%B0%E5%A2%83/"/>
     <id>https://www.bycsec.top/2022/01/10/%E4%BD%8E%E7%89%88%E6%9C%ACJDK%E4%B8%8Bgopher%E7%9A%84%E5%9B%B0%E5%A2%83/</id>
     <published>2022-01-10T03:30:56.000Z</published>
-    <updated>2022-01-10T03:34:00.349Z</updated>
+    <updated>2023-06-30T08:08:31.773Z</updated>
     
     
     <summary type="html">&lt;p&gt;记一次踩坑记录&lt;/p&gt;</summary>
@@ -91,7 +91,7 @@
     <link href="https://www.bycsec.top/2021/07/07/0ctf-tctf-soracon/"/>
     <id>https://www.bycsec.top/2021/07/07/0ctf-tctf-soracon/</id>
     <published>2021-07-06T16:11:05.000Z</published>
-    <updated>2021-07-06T16:14:41.855Z</updated>
+    <updated>2023-06-30T08:08:30.802Z</updated>
     
     
     <summary type="html">&lt;p&gt;  这次0ctf/tctf 抽空看了下soracon这题。最终还是非常可惜，可能有多点时间做题就能解出了。下面是自己的一个思路流程。&lt;/p&gt;</summary>
@@ -99,9 +99,9 @@
     
     
     
-    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
-    
     <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
     
   </entry>
   
@@ -110,7 +110,7 @@
     <link href="https://www.bycsec.top/2021/06/06/%E4%BD%BF%E7%94%A8Node-js%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E7%88%AC%E8%99%AB/"/>
     <id>https://www.bycsec.top/2021/06/06/%E4%BD%BF%E7%94%A8Node-js%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E7%88%AC%E8%99%AB/</id>
     <published>2021-06-06T12:44:20.000Z</published>
-    <updated>2021-06-08T13:41:38.799Z</updated>
+    <updated>2023-06-30T08:08:31.805Z</updated>
     
     
     <summary type="html">&lt;p&gt;  本文是关于自己用Node.js实现动态爬虫的一些记录以及踩坑。&lt;/p&gt;</summary>
@@ -127,7 +127,7 @@
     <link href="https://www.bycsec.top/2021/05/30/%E6%98%A5%E7%A7%8B%E6%9D%AF-WEB/"/>
     <id>https://www.bycsec.top/2021/05/30/%E6%98%A5%E7%A7%8B%E6%9D%AF-WEB/</id>
     <published>2021-05-29T16:56:35.000Z</published>
-    <updated>2021-05-29T16:59:59.915Z</updated>
+    <updated>2023-06-30T08:08:32.257Z</updated>
     
     
     <summary type="html">&lt;p&gt;周末看pwn2win的间隙做了下春秋杯的web。从结果上看题目质量还可以，也拿了2个三血。本来以为可以ak web的，但是因为最后一题远程环境太卡了，所以没在比赛时间内做出来。因此这里总结性地介绍下解三个web的方法思路。&lt;/p&gt;</summary>
@@ -135,9 +135,9 @@
     
     
     
-    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
-    
     <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
     
     <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
@@ -150,7 +150,7 @@
     <link href="https://www.bycsec.top/2021/04/04/angstromCTF-2021/"/>
     <id>https://www.bycsec.top/2021/04/04/angstromCTF-2021/</id>
     <published>2021-04-04T12:41:34.000Z</published>
-    <updated>2021-04-08T13:01:17.855Z</updated>
+    <updated>2023-06-30T08:08:30.833Z</updated>
     
     
     <summary type="html">&lt;p&gt;  放假时做了下 angstromCTF的题目, 质量都挺不错的。这里记录下自己做出来的题目以及复现的。&lt;/p&gt;</summary>
@@ -158,9 +158,9 @@
     
     
     
-    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
-    
     <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
     
   </entry>
   
@@ -169,7 +169,7 @@
     <link href="https://www.bycsec.top/2021/03/06/D^3CTF-8-bit-pub/"/>
     <id>https://www.bycsec.top/2021/03/06/D^3CTF-8-bit-pub/</id>
     <published>2021-03-06T14:37:32.000Z</published>
-    <updated>2021-03-08T11:29:35.095Z</updated>
+    <updated>2023-06-30T08:08:30.952Z</updated>
     
     
     <summary type="html">&lt;p&gt;周末进行的d^3CTF原本自己是没参加的。不过因为被问到了其中一道题目所以就做了下, 大概花了2个小时。题目难度虽然中等，不过个人认为其利用链的组成都是比较经典的漏洞。这里分享下自己的做题思路&lt;/p&gt;</summary>
@@ -190,7 +190,7 @@
     <link href="https://www.bycsec.top/2021/02/07/golang%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/"/>
     <id>https://www.bycsec.top/2021/02/07/golang%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/</id>
     <published>2021-02-07T13:56:47.000Z</published>
-    <updated>2021-02-18T05:09:03.594Z</updated>
+    <updated>2023-06-30T08:08:30.977Z</updated>
     
     
     <summary type="html">&lt;p&gt;寒假主要是先出完了之前心心念念的typescript 题目，之后主要是抽点时间学golang.同学推荐的仓库讲的还是很不错的&lt;/p&gt;
@@ -209,7 +209,7 @@
     <link href="https://www.bycsec.top/2020/12/30/Farewell-to-2020/"/>
     <id>https://www.bycsec.top/2020/12/30/Farewell-to-2020/</id>
     <published>2020-12-30T06:24:42.000Z</published>
-    <updated>2021-02-18T05:09:00.622Z</updated>
+    <updated>2023-06-30T08:08:30.964Z</updated>
     
     
     <summary type="html">&lt;p&gt;Time to say goodbye&lt;/p&gt;</summary>
@@ -252,34 +252,13 @@
     
     
     
-    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
-    
     <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
     
     <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
     <category term="redis" scheme="https://www.bycsec.top/tags/redis/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>N1CTF2020</title>
-    <link href="https://www.bycsec.top/2020/10/19/N1CTF2020/"/>
-    <id>https://www.bycsec.top/2020/10/19/N1CTF2020/</id>
-    <published>2020-10-19T13:11:14.000Z</published>
-    <updated>2021-02-18T05:09:36.903Z</updated>
-    
-    
-    <summary type="html">&lt;p&gt;  N1CTF的题目质量毋庸置疑,可惜自己能力不足。除了签到还看了easytp5,filters,还有渗透系列的Victim.基本都没思路或者思路跑偏了……抓紧复现下来学习学习。&lt;/p&gt;</summary>
-    
-    
-    
-    
-    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
-    
-    <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
-    
-    <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
   </entry>
   
@@ -335,9 +314,9 @@
     
     
     
-    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
-    
     <category term="WEB" scheme="https://www.bycsec.top/tags/WEB/"/>
+    
+    <category term="CTF" scheme="https://www.bycsec.top/tags/CTF/"/>
     
     <category term="wp" scheme="https://www.bycsec.top/tags/wp/"/>
     
@@ -399,6 +378,27 @@
     <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
     
     <category term="Linux" scheme="https://www.bycsec.top/tags/Linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>hackthebox-Fatty-JavaExploits</title>
+    <link href="https://www.bycsec.top/2020/08/10/hackthebox-Fatty-JavaExploits/"/>
+    <id>https://www.bycsec.top/2020/08/10/hackthebox-Fatty-JavaExploits/</id>
+    <published>2020-08-10T02:13:15.000Z</published>
+    <updated>2021-02-18T05:09:16.155Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt; Faaty 是htb这周刚退役的靶机。本来一周前自己打算下手试试的,不过做了一会发现因为即将退役就干脆搁置等ippsec出视频自己再做233. 不过整体来说这台靶机真的非常有趣。并且涉及到大量的java知识。在这一次实际操作中自己才真正体会到前段时间巩固java开发的基础知识有多么重要。因此这里记录下具体操作的流程,将学到的新知识巩固一下。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="Java" scheme="https://www.bycsec.top/tags/Java/"/>
+    
+    <category term="hackthebox" scheme="https://www.bycsec.top/tags/hackthebox/"/>
+    
+    <category term="pentest" scheme="https://www.bycsec.top/tags/pentest/"/>
     
   </entry>
   

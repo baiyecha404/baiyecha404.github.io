@@ -483,7 +483,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
 }</code></pre>
 <p>然后就是常规的page设置。UA设置为随机UA不必多说，比较重要的是开启request拦截以及注入hook代码。这些会在下面谈到。</p>
 <h2 id="hookJS"><a href="#hookJS" class="headerlink" title="hookJS"></a>hookJS</h2><p> 我们需要在dom构建之前就hook Javascript。这一步的目的当然是为了在dom构建之前就尽可能多的收集url.所以上面使用<code>await page.evaluateOnNewDocument(hookJS);</code>来在页面加载前注入 JavaScript 代码。</p>
-<p> 具体hook思路很简单,一些有可能导致页面重定向或者阻塞的函数如<code>window.open</code>或<code>window.close</code>，我们把它hook了;(其实弹窗也会阻塞,不过我们有专门的api来关闭弹窗。)一些参数里有url的我们获取到参数存起来然后正常执行;一些像超时的代码如<code>setTimeout</code>,<code>setInterVal</code>我们把它时间控制在1s多。 (注意这两个函数参数都是ms)<br> 除此以外还需要hook 事件注册。刚好借此学习到了事件注册的两种方式。<br> 一种是早期的dom0注册<br> <img src="https://hackmd.summershrimp.com/uploads/upload_acd8bfdf6ef1812cab2184630d8ff5e0.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_acd8bfdf6ef1812cab2184630d8ff5e0.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>当然这种方式已经过时了，所以我所了解到的更多是第二种注册方式<code>addEventListener</code>,即dom2级注册。</p>
+<p> 具体hook思路很简单,一些有可能导致页面重定向或者阻塞的函数如<code>window.open</code>或<code>window.close</code>，我们把它hook了;(其实弹窗也会阻塞,不过我们有专门的api来关闭弹窗。)一些参数里有url的我们获取到参数存起来然后正常执行;一些像超时的代码如<code>setTimeout</code>,<code>setInterVal</code>我们把它时间控制在1s多。 (注意这两个函数参数都是ms)<br> 除此以外还需要hook 事件注册。刚好借此学习到了事件注册的两种方式。<br> 一种是早期的dom0注册<br> <img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_acd8bfdf6ef1812cab2184630d8ff5e0.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_acd8bfdf6ef1812cab2184630d8ff5e0.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>当然这种方式已经过时了，所以我所了解到的更多是第二种注册方式<code>addEventListener</code>,即dom2级注册。</p>
 <pre><code class="javascript">function bgChange() {
   const rndCol = &#39;rgb(&#39; + random(255) + &#39;,&#39; + random(255) + &#39;,&#39; + random(255) + &#39;)&#39;;
   document.body.style.backgroundColor = rndCol;
@@ -504,7 +504,7 @@ window.location = &#39;/test3&#39;;
 &lt;/script&gt;</code></pre>
 <p>  对于上面这个例子，理论上我们必须获取到三个跳转链接。然而实际上无论是开拦截还是人工开这个页面，浏览器都只会执行最后一个跳转。因为前两个都会被下一个跳转中断。<br>  最终权衡了下，使用了<a href="https://github.com/myvyang/chromium_for_spider/releases" target="_blank" rel="noopener">https://github.com/myvyang/chromium_for_spider/releases</a> 这里重新编译源码的chromium。它把上述前端导航的url全都锁到window.info 里了。解决了问题，但是windows下就不能用了。。。。。。</p>
 <p>改用dalao的 <a href="https://github.com/myvyang/chromium_for_spider" target="_blank" rel="noopener">https://github.com/myvyang/chromium_for_spider</a><br>修改过源码的爬虫后。页面默认不会跳转了，并且待跳转的url直接在window.info里。</p>
-<p>另外需要实现的是,对于请求里包含图片资源的，我们需要返回自己的图片避免不必要的加载。对于包含logout请求的我们把它abort掉。因为如果爬虫的cookie因为logout清除了就会导致爬的信息变少。所以需要处理。<br><img src="https://hackmd.summershrimp.com/uploads/upload_e0c2b22c5f399394442482f6e2260096.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_e0c2b22c5f399394442482f6e2260096.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>另外需要实现的是,对于请求里包含图片资源的，我们需要返回自己的图片避免不必要的加载。对于包含logout请求的我们把它abort掉。因为如果爬虫的cookie因为logout清除了就会导致爬的信息变少。所以需要处理。<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_e0c2b22c5f399394442482f6e2260096.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_e0c2b22c5f399394442482f6e2260096.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>还有一个坑,我们想达到的目的是：</p>
 <blockquote>
 <p>前端重定向全部取消，并记录下目标链接放入任务队列<br>后端重定向响应的body中不包含内容，则跟随跳转<br>后端重定向响应的body中含有内容，无视重定向，渲染body内容，记录下location的值放入任务队列</p>
@@ -521,12 +521,12 @@ window.location = &#39;/test3&#39;;
 <pre><code class="javascript">let newEvent = document.createEvent(&#39;CustomEvent&#39;);
 newEvent.initCustomEvent(event[&quot;eventName&quot;], true, true, null);
 event[&quot;element&quot;].dispatchEvent(newEvent);</code></pre>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_832a76c700d679ff140dc793da546dd3.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_832a76c700d679ff140dc793da546dd3.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_832a76c700d679ff140dc793da546dd3.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_832a76c700d679ff140dc793da546dd3.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <ul>
 <li>inline event trigger</li>
 </ul>
 <p>除了dom事件触发,我们还需要触发内联事件，什么是内联事件呢？这里存在一个事件捕获与冒泡机制的问题。</p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_6c4b64749c70dfab550f812671aae34d.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_6c4b64749c70dfab550f812671aae34d.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_6c4b64749c70dfab550f812671aae34d.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_6c4b64749c70dfab550f812671aae34d.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <blockquote>
 <p>浏览器检查实际点击的元素是否在冒泡阶段中注册了一个onclick事件处理程序，如果是，则运行它<br>然后它移动到下一个直接的祖先元素，并做同样的事情，然后是下一个，等等，直到它到达<code>&lt;html&gt;</code>元素。</p>
 </blockquote>
@@ -559,7 +559,7 @@ event[&quot;element&quot;].dispatchEvent(newEvent);</code></pre>
     console.log(&#39;No&#39;);
   });
 &lt;/script&gt;</code></pre>
-<p>可以看到触发了3次。且后两次由于没有冒泡并不会触发<code>console.log(1)</code><br><img src="https://hackmd.summershrimp.com/uploads/upload_19d2c693f022dc58a1ee7dbc1088c407.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_19d2c693f022dc58a1ee7dbc1088c407.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>可以看到触发了3次。且后两次由于没有冒泡并不会触发<code>console.log(1)</code><br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_19d2c693f022dc58a1ee7dbc1088c407.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_19d2c693f022dc58a1ee7dbc1088c407.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="入队-amp-amp-url去重"><a href="#入队-amp-amp-url去重" class="headerlink" title="入队 &amp;&amp; url去重"></a>入队 &amp;&amp; url去重</h2><p>上述所有操作做完后,应该就收集到足够多的url并触发了尽可能多的事件了。把他们入队，cluster就会另外开一个线程继续执行我们的任务。</p>
 <p>当然这样就存在一个url判断与去重的问题。对于判断，我是采取只爬输入域名及其子域名的方式,否则不入队；而去重这点就比较重要了，比如我尝试爬了下baidu,结果收集到几百个链接，继续入队后爬的又几乎是重复的url,显然是在做无用功。我目前单针对url很不优雅的解决方案就是用Set数据结构维护独立性。但是假如工程项目的话肯定是要用到redis集合了。不过这样一个简单爬虫应该用不到数据库吧( </p>
 <h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p>总的来说写这个爬虫主要是锻炼下技术以及实践下文章，可以说还是学到不少知识的。假如这篇文章或者项目有帮到你的地方那就点个star 吧 :)。<a href="https://github.com/baiyecha404/Dynamic-Crawler" target="_blank" rel="noopener">https://github.com/baiyecha404/Dynamic-Crawler</a> 说不定还可以优化下。</p>
@@ -606,10 +606,10 @@ event[&quot;element&quot;].dispatchEvent(newEvent);</code></pre>
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-06-08T21:41:38+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2023-06-30T16:08:31+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Jun 8, 2021</p>
+    <p>更新于：Jun 30, 2023</p>
   </a>
 </div>
 

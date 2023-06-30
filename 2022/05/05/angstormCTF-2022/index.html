@@ -24,7 +24,7 @@
   
   <title>angstormCTF 2022 - byc_404&#39;s blog</title>
   
-    <meta name="keywords" content="CTF,WEB,javascript">
+    <meta name="keywords" content="WEB,CTF,javascript">
   
 
   
@@ -464,7 +464,7 @@ if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMo
   <p>  上一次单挑打angstormCTF 已经是一年多以前的事了，当时记得有质量挺不错的前端web题，不过很可惜没能ak。 这次趁着最近比较闲，正好单挑ak掉web题，加上有2道题质量还不错, 这里简单记录下</p>
 <a id="more"></a>
 
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_4aed0a95834bec3491065ea9e631f0d2.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_4aed0a95834bec3491065ea9e631f0d2.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_4aed0a95834bec3491065ea9e631f0d2.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_4aed0a95834bec3491065ea9e631f0d2.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <h2 id="The-Flash"><a href="#The-Flash" class="headerlink" title="The Flash"></a>The Flash</h2><p>前端js代码加了混淆，显示出的文字是假的flag, 但是正如题目名flash一样，真正的flag似乎会间隔性的一闪而过。所以直接写个定时就好 </p>
 <pre><code class="javascript">setInterval(()=&gt; console.log(flash.textContent), 50)</code></pre>
 <h2 id="Auth-Skip"><a href="#Auth-Skip" class="headerlink" title="Auth Skip"></a>Auth Skip</h2><p>通过无签名的cookie鉴权，所以带上cookie访问</p>
@@ -510,7 +510,7 @@ print(resp.text)</code></pre>
 <p>具体地说，有没有这样的情况，使得形如<code>&lt;img src=x on[BLANK]error=alert(1)&gt;</code>的payload首先绕过<code>DOMPurify</code>的检查，并且其中<code>[BKANK]</code>会被marked处理掉，从而实现绕过的目的呢？</p>
 <p>在翻看了一下markdown 的标准后，注意到：</p>
 <p><a href="https://spec.commonmark.org/0.30/#example-174" target="_blank" rel="noopener">https://spec.commonmark.org/0.30/#example-174</a></p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_04e2754a0ad87a9c15bd3c2f4d4cb022.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_04e2754a0ad87a9c15bd3c2f4d4cb022.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_04e2754a0ad87a9c15bd3c2f4d4cb022.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_04e2754a0ad87a9c15bd3c2f4d4cb022.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>可以看到<code>\n&gt;</code>作为blockquote的用法，它会去把所有以其为开头后续的字符放到<code>&lt;blockquote&gt;</code>中包裹。那么这不正好符合我们的需求，即让<code>marked</code>处理掉payload其中部分字符么？</p>
 <p>剩下就只有一个小问题了。<code>DOMPurify</code>处理输入时，往往会把未匹配的<code>&lt;</code>,<code>&gt;</code>,<code>\n</code>等字符进行转义或者清除。所以我们要把这些字符塞进一个不会被转义的地方。放到一个html tag的属性里面即可。</p>
 <pre><code class="javascript">DOMPurify.sanitize(&#39;### 213&lt;img src=&quot;aaa&gt;\n&lt;&gt;&quot; &gt;&#39;)
@@ -716,10 +716,10 @@ probeError(&#39;https://sustenance.web.actf.co/q?q=actf&#39;);</code></pre>
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2022-05-05T09:05:28+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2023-06-30T16:08:30+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：May 5, 2022</p>
+    <p>更新于：Jun 30, 2023</p>
   </a>
 </div>
 
@@ -728,7 +728,7 @@ probeError(&#39;https://sustenance.web.actf.co/q?q=actf&#39;);</code></pre>
         
           
   
-  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/javascript/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>javascript</p></a></div>
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/WEB/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>WEB</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/CTF/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>CTF</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/javascript/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>javascript</p></a></div>
 
 
         

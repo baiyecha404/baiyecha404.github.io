@@ -489,7 +489,7 @@ fmt.Println(reflect.TypeOf(sum))
 fmt.Printf(&quot;Sum is : %d&quot;,sum)
 //int8
 //-128</code></pre>
-<p>具体的值可以看到math包中的常量定义。<br><img src="https://hackmd.summershrimp.com/uploads/upload_5ffbbfdc9f0ebffa65ffa3ce5f05a35c.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_5ffbbfdc9f0ebffa65ffa3ce5f05a35c.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p>具体的值可以看到math包中的常量定义。<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_5ffbbfdc9f0ebffa65ffa3ce5f05a35c.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_5ffbbfdc9f0ebffa65ffa3ce5f05a35c.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>在类型转换中,也会出现较大整型向较小整型转换的截断问题</p>
 <pre><code class="go">var a int16 = 256
 var b  = int8(a)
@@ -504,7 +504,7 @@ fmt.Println(s)
 <p>这样就有可能导致81端口的服务启动，或者被停止。所以使用<code>ParseInt ,ParseUInt</code>会比较好。或者对端口号进行限制。</p>
 <p>CTF中出现整数溢出的scenario 一般都是 xx shop之类的。通过重复的加数进行溢出然后鉴权。</p>
 <h2 id="pseudo-rand"><a href="#pseudo-rand" class="headerlink" title="pseudo-rand"></a>pseudo-rand</h2><p>golang 的math/rand 包中，我们可以看到随机数生成的函数形式</p>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_f6708f74d8bc16d6c4f6d5085e798521.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_f6708f74d8bc16d6c4f6d5085e798521.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_f6708f74d8bc16d6c4f6d5085e798521.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_f6708f74d8bc16d6c4f6d5085e798521.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>跟进一下函数与结构体</p>
 <pre><code class="go">var globalRand = New(&amp;lockedSource{src: NewSource(1).(*rngSource)})
 
@@ -517,7 +517,7 @@ func NewSource(seed int64) Source {
 }</code></pre>
 <p>可以看到,这些随机数函数的seed默认为1.也就是说如果不使用<code>rand.Seed()</code>确认种子的话，生成的只是所谓的伪随机数。</p>
 <p>这种问题可能会出现在开发者直接用rand生成的字符串作为密钥的场景，比如gin的cookie的key.从而导致本地复现，直接鉴权。</p>
-<h2 id="go-net-http"><a href="#go-net-http" class="headerlink" title="go net/http"></a>go net/http</h2><h3 id="net-http-lt-1-11-CRLF"><a href="#net-http-lt-1-11-CRLF" class="headerlink" title="net/http &lt; 1.11 CRLF"></a>net/http &lt; 1.11 CRLF</h3><p>低版本的http库会导致CRLF.比如<code>http.NewRequest()</code>。貌似是原本没有问题，但是在一次升级中疏忽了导致重新出现<br><img src="https://hackmd.summershrimp.com/uploads/upload_c155e0320b2e007aeda1c3d2f4b63b37.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_c155e0320b2e007aeda1c3d2f4b63b37.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<h2 id="go-net-http"><a href="#go-net-http" class="headerlink" title="go net/http"></a>go net/http</h2><h3 id="net-http-lt-1-11-CRLF"><a href="#net-http-lt-1-11-CRLF" class="headerlink" title="net/http &lt; 1.11 CRLF"></a>net/http &lt; 1.11 CRLF</h3><p>低版本的http库会导致CRLF.比如<code>http.NewRequest()</code>。貌似是原本没有问题，但是在一次升级中疏忽了导致重新出现<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_c155e0320b2e007aeda1c3d2f4b63b37.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_c155e0320b2e007aeda1c3d2f4b63b37.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>现在会看到存在限制，我们无法传入<code>\r\n</code>的字符</p>
 <p>WMCTF中的gogogo出现过这一漏洞，利用自然是通过CRLF发送POST请求进行绕过与上传。</p>
 <h3 id="weird-stuff"><a href="#weird-stuff" class="headerlink" title="weird stuff"></a>weird stuff</h3><p>在之前的<a href="https://ctftime.org/event/1050" target="_blank" rel="noopener">justCTF</a>中，出现了一道go题。题目原本的漏洞是由出题人发现的一个issue<a href="https://github.com/golang/go/issues/40940" target="_blank" rel="noopener">https://github.com/golang/go/issues/40940</a> 加上其对fileServer一些代码的魔改组合的。</p>
@@ -526,7 +526,7 @@ func NewSource(seed int64) Source {
 <p>flag就在其提供文件服务的文件夹下，但是，出题人加上了web服务的flag路由,从而使得我们没法通过直接访问<code>/flag</code>来获取文件。而是得到<code>/flag</code>路由的回显。</p>
 <p>出题人的意图是利用其挖掘到的这个漏洞，造成错误的文件读取范围。通过访问其他文件越界读到flag.(http的Fileserver在我们访问时，会先根据我们访问的url进行一系列处理，杜绝路径穿越的url,之后进行文件读取返回给用户)</p>
 <p>但是比较有意思的时，比赛中出现了一个非预期读flag的方式<br><code>curl --path-as-is -X CONNECT http://gofs.web.jctf.pro/../flag</code></p>
-<p>简单说就是用CONNECT请求+路径穿越的url读取到了文件。我们看看源码是怎么处理的<br><img src="https://hackmd.summershrimp.com/uploads/upload_f9abcabe3b0a17bac5f8e41a586d74ab.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_f9abcabe3b0a17bac5f8e41a586d74ab.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>如果是CONNECT方式请求，就不会处理url中的特殊字符。导致直接读取flag.其他的请求方法都会在<code>cleanPath</code>中被处理url</p>
+<p>简单说就是用CONNECT请求+路径穿越的url读取到了文件。我们看看源码是怎么处理的<br><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_f9abcabe3b0a17bac5f8e41a586d74ab.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_f9abcabe3b0a17bac5f8e41a586d74ab.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt><br>如果是CONNECT方式请求，就不会处理url中的特殊字符。导致直接读取flag.其他的请求方法都会在<code>cleanPath</code>中被处理url</p>
 <p>算是一个很有意思的问题。不过golang1.16似乎已经处理了。但是包括我在内的大部分应该还是使用的go1.15及以下版本，所以还是值得注意的</p>
 <h2 id="feature-of-slice"><a href="#feature-of-slice" class="headerlink" title="feature of slice"></a>feature of slice</h2><p>之前在做buu上的roarCTF时遇到一道go题，其中一个利用点来自Confidence CTF,其中用到了golang slice的一个feature</p>
 <pre><code class="go">a := make([]uint64, 0)
@@ -550,7 +550,7 @@ fmt.Println(c)
     len   int
     cap   int
 }</code></pre>
-<p><img src="https://hackmd.summershrimp.com/uploads/upload_07c51c4e5face9078a0c61cadce82aa7.png" class="lazyload" data-srcset="https://hackmd.summershrimp.com/uploads/upload_07c51c4e5face9078a0c61cadce82aa7.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
+<p><img src="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_07c51c4e5face9078a0c61cadce82aa7.png" class="lazyload" data-srcset="https://imgbucket404.oss-cn-beijing.aliyuncs.com/img/upload_07c51c4e5face9078a0c61cadce82aa7.png" srcset="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" alt></p>
 <p>slice结构中的cap是按2的倍数扩容的。所以说当我们<code>append(3)</code>时会发生第一次扩容，此时len为3，cap为<code>2*2=4</code>.<br>执行<code>b := append(a, 4)</code>时，我们的4会被放在指针ptr的第四个位置。然后返回ptr len=4 cap=4给b。不过这并没有改变a的结构（slice只是指向内存的指针）之后进行<code>c := append(a, 5)</code>时，由于a没变，新元素只会覆盖之前b那放上的4.</p>
 <p>那一道题目就是利用这点，可以通过先beg三次构造出len=3,cap=4的切片，通过题目中一个append超大随机数的机会，在下一次beg时达成元素覆盖。</p>
 <p>这个可以算是slice的feature,还是很有意思的。</p>
@@ -610,10 +610,10 @@ fmt.Println(c)
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-02-18T13:09:03+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2023-06-30T16:08:30+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Feb 18, 2021</p>
+    <p>更新于：Jun 30, 2023</p>
   </a>
 </div>
 
